@@ -57,4 +57,11 @@ public class UsuarioRepository : IUsuarioRepository
     {
         await _context.SaveChangesAsync();
     }
+
+    public async Task<IEnumerable<Usuario>> ObtenerTodosAsync()
+    {
+        return await _context.Usuarios
+            .OrderByDescending(u => u.CreatedAt)
+            .ToListAsync();
+    }
 }

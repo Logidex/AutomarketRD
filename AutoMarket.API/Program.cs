@@ -29,6 +29,7 @@ builder.Services.AddScoped<ILeadRepository, LeadRepository>();
 builder.Services.AddHostedService<SuscripcionMonitorService>();
 builder.Services.AddScoped<IEmailSenderService, SmtpEmailSenderService>();
 builder.Services.AddScoped<ILeadService, LeadService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options => 
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -91,6 +92,9 @@ builder.Services.AddAuthorization();
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
+
+DatabaseSeeder.SeedAsync(app.Services).Wait();
+
 app.MapOpenApi();
 app.MapScalarApiReference();
 

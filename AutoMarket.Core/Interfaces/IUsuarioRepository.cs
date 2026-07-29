@@ -10,5 +10,6 @@ public interface IUsuarioRepository
     Task<Usuario?> ObtenerPorIdAsync(int id);
     Task<Usuario?> ObtenerDealerConPerfilPorIdAsync(int usuarioId);
     Task GuardarCambiosAsync();
+    Task<IEnumerable<Usuario>> ObtenerTodosAsync();
 
 }

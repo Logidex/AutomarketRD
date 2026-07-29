@@ -59,9 +59,15 @@ public class AuthService : IAuthService
     {
         // 1. Validar si el usuario existe por su email
         var usuario = await _repository.ObtenerPorEmailAsync(dto.Email);
-        if (usuario == null)
+
+        if (usuario == null || !BCrypt.Net.BCrypt.Verify(dto.Password, usuario.PasswordHash))
         {
-            return (false, "Credenciales incorrectas.", null);
+            throw new UnauthorizedAccessException("Credenciales inválidas.");
+        }
+
+        if (!usuario.IsActivo)
+        {
+            throw new UnauthorizedAccessException("Tu cuenta ha sido suspendida por un administrador. Contacta a soporte para más información.");
         }
 
         // 2. Verificar la contraseña con BCrypt

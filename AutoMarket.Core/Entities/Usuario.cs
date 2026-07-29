@@ -14,6 +14,8 @@ public class Usuario
     private readonly List<Anuncio> _anuncios = new();
     public IReadOnlyCollection<Anuncio> Anuncios => _anuncios.AsReadOnly();
 
+    public DateTime CreatedAt { get; private set; }
+
     // ==========================================
     // 1. CONSTRUCTOR PARA EF CORE
     // ==========================================
@@ -69,13 +71,18 @@ public class Usuario
     // MÉTODO DE FÁBRICA ESTÁTICO: Solo accesible internamente por el sistema
     public static Usuario CrearAdministradorInterno(string nombre, string apellido, string email, string passwordHash)
     {
-        var nuevoAdmin = new Usuario();
+        var usuario = new Usuario
+        {
+            Nombre = nombre,
+            Apellido = apellido,
+            Email = email,
+            EmailConfirmado = true,
+            PasswordHash = passwordHash,
+            Rol = "Admin",
+            CreatedAt = DateTime.UtcNow
+        };
 
-        // Asignación directa saltándose las restricciones del flujo público
-        nuevoAdmin.Nombre = nombre;
-        nuevoAdmin.Rol = "Admin";
-
-        return nuevoAdmin;
+        return usuario;
     }
 
     public void AsignarPerfilDealer(PerfilDealer perfil)
@@ -100,6 +107,18 @@ public class Usuario
             descripcion: descripcion,
             whatsApp: whatsApp
         );
+    }
+
+    public bool IsActivo { get; private set; } = true;
+
+    public void Suspender()
+    {
+        IsActivo = false;
+    }
+
+    public void Reactivar()
+    {
+        IsActivo = true;
     }
 
 }
