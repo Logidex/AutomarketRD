@@ -103,29 +103,29 @@ public class AdminController : ControllerBase
     [HttpDelete("anuncios/{id:int}")]
     public async Task<IActionResult> EliminarAnuncioForzoso(int id)
     {
-        // 1. Buscamos el anuncio
         var anuncio = await _anuncioRepository.ObtenerPorIdAsync(id);
 
         if (anuncio == null)
             return NotFound(new { mensaje = "Anuncio no encontrado." });
 
-        // 2. Limpiamos el bucket de S3 iterando sobre tu IReadOnlyCollection<string>
+        // 👇 TRAMPA DE DEBUG 1: Ver cuántas fotos está leyendo EF Core
+        Console.WriteLine($"\n[DEBUG S3] -> El anuncio {id} tiene {anuncio.Fotos.Count} fotos registradas.");
+
         if (anuncio.Fotos != null && anuncio.Fotos.Any())
         {
             foreach (var urlFoto in anuncio.Fotos)
             {
-                await _almacenadorArchivos.EliminarArchivoAsync(urlFoto);
+                // 1. Extraemos solo el nombre del archivo (todo lo que está después del último '/')
+                var nombreArchivo = urlFoto.Split('/').Last();
+
+                // 2. Le enviamos solo el nombre a AWS S3
+                await _almacenadorArchivos.EliminarArchivoAsync(nombreArchivo);
             }
         }
 
-        // 3. Lo eliminamos de la base de datos
         _anuncioRepository.Eliminar(anuncio);
         await _anuncioRepository.GuardarCambiosAsync();
 
-        return Ok(new
-        {
-            exito = true,
-            mensaje = $"El anuncio {id} fue eliminado forzosamente y sus {anuncio.Fotos?.Count} fotos fueron borradas de S3."
-        });
+        return Ok(new { exito = true, mensaje = "Proceso terminado." });
     }
 }

@@ -41,32 +41,21 @@ public class AlmacenadorS3 : IAlmacenadorArchivos
 
     public async Task EliminarArchivoAsync(string rutaArchivo)
     {
-        if (string.IsNullOrEmpty(rutaArchivo)) return;
+        if (string.IsNullOrWhiteSpace(rutaArchivo)) return;
 
-        try
+        // 1. Extraemos solo el nombre del archivo generado (el UUID.jpg)
+        var nombreArchivo = rutaArchivo.Split('/').Last();
+
+        // 2. 🌟 LA MAGIA: Reconstruimos la ruta exacta agregando la carpeta de tu bucket
+        var keyExacta = $"uploads/{nombreArchivo}";
+
+        var deleteRequest = new Amazon.S3.Model.DeleteObjectRequest
         {
-            // 1. Extraemos el nombre del archivo (Key) a partir de la URL completa de S3
-            var uri = new Uri(rutaArchivo);
-            // uri.AbsolutePath devolverá algo como "/uploads/nombre-de-archivo.jpg"
-            // Le quitamos la barra inicial '/' para obtener el Key exacto de AWS S3: "uploads/nombre-de-archivo.jpg"
-            var key = uri.AbsolutePath.TrimStart('/');
+            BucketName = _bucketName,
+            Key = keyExacta // Le enviamos la ruta completa a S3
+        };
 
-            // 2. Creamos la petición de eliminación correcta
-            var deleteRequest = new DeleteObjectRequest
-            {
-                BucketName = _bucketName,
-                Key = key
-            };
-
-            // 3. Enviamos la orden de eliminación a Amazon S3
-            await _s3Client.DeleteObjectAsync(deleteRequest);
-        }
-        catch (Exception)
-        {
-            // En servicios de infraestructura como el borrado de archivos huérfanos, 
-            // puedes registrar el error en un log para que no rompa el flujo principal si el archivo ya no existía en S3.
-            throw;
-        }
+        await _s3Client.DeleteObjectAsync(deleteRequest);
     }
 
 }
