@@ -133,4 +133,16 @@ public class AnuncioRepository : IAnuncioRepository
     {
         return await _context.Anuncios.CountAsync(a => a.UsuarioId == usuarioId);
     }
+
+    public async Task<IEnumerable<Anuncio>> ObtenerTodosParaAdminAsync()
+    {
+        return await _context.Anuncios
+            .OrderByDescending(a => a.CreatedAt)
+            .ToListAsync();
+    }
+
+    public void Eliminar(Anuncio anuncio)
+    {
+        _context.Anuncios.Remove(anuncio);
+    }
 }

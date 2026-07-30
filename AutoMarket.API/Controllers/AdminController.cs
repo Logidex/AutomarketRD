@@ -1,4 +1,5 @@
 using AutoMarket.Application.Interfaces;
+using AutoMarket.Application.Services;
 using AutoMarket.Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,11 +13,19 @@ public class AdminController : ControllerBase
 {
     private readonly IDashboardService _dashboardService;
     private readonly IUsuarioRepository _usuarioRepository;
+    private readonly IAnuncioRepository _anuncioRepository;
+    private readonly IAlmacenadorArchivos _almacenadorArchivos;
 
-    public AdminController(IDashboardService dashboardService, IUsuarioRepository usuarioRepository)
+    public AdminController(
+        IDashboardService dashboardService,
+        IUsuarioRepository usuarioRepository,
+        IAnuncioRepository anuncioRepository,
+        IAlmacenadorArchivos almacenadorArchivos)
     {
         _dashboardService = dashboardService;
         _usuarioRepository = usuarioRepository;
+        _anuncioRepository = anuncioRepository;
+        _almacenadorArchivos = almacenadorArchivos;
     }
 
     [HttpGet("dashboard/resumen")]
@@ -56,7 +65,6 @@ public class AdminController : ControllerBase
     {
         var usuarios = await _usuarioRepository.ObtenerTodosAsync();
 
-        // Filtramos los datos sensibles antes de enviarlos
         var resultado = usuarios.Select(u => new
         {
             u.UsuarioId,
@@ -69,5 +77,55 @@ public class AdminController : ControllerBase
         });
 
         return Ok(resultado);
+    }
+
+    // ==========================================
+    // 3. MODERACIÓN DE CATÁLOGO (ANUNCIOS)
+    // ==========================================
+
+    [HttpGet("anuncios")]
+    public async Task<IActionResult> ListarAnuncios()
+    {
+        var anuncios = await _anuncioRepository.ObtenerTodosParaAdminAsync();
+
+        var resultado = anuncios.Select(a => new
+        {
+            a.Id,
+            a.Marca,
+            a.Modelo,
+            a.Precio,
+            a.UsuarioId
+        });
+
+        return Ok(resultado);
+    }
+
+    [HttpDelete("anuncios/{id:int}")]
+    public async Task<IActionResult> EliminarAnuncioForzoso(int id)
+    {
+        // 1. Buscamos el anuncio
+        var anuncio = await _anuncioRepository.ObtenerPorIdAsync(id);
+
+        if (anuncio == null)
+            return NotFound(new { mensaje = "Anuncio no encontrado." });
+
+        // 2. Limpiamos el bucket de S3 iterando sobre tu IReadOnlyCollection<string>
+        if (anuncio.Fotos != null && anuncio.Fotos.Any())
+        {
+            foreach (var urlFoto in anuncio.Fotos)
+            {
+                await _almacenadorArchivos.EliminarArchivoAsync(urlFoto);
+            }
+        }
+
+        // 3. Lo eliminamos de la base de datos
+        _anuncioRepository.Eliminar(anuncio);
+        await _anuncioRepository.GuardarCambiosAsync();
+
+        return Ok(new
+        {
+            exito = true,
+            mensaje = $"El anuncio {id} fue eliminado forzosamente y sus {anuncio.Fotos?.Count} fotos fueron borradas de S3."
+        });
     }
 }
