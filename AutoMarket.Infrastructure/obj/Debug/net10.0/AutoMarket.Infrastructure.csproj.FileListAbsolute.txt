@@ -1,3 +1,9 @@
+C:\Users\erick\Documents\AutoMarketRDspn\AutoMarket.Infrastructure\obj\Debug\net10.0\AutoMarket.Infrastructure.csproj.AssemblyReference.cache
+C:\Users\erick\Documents\AutoMarketRDspn\AutoMarket.Infrastructure\obj\Debug\net10.0\AutoMarket.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\erick\Documents\AutoMarketRDspn\AutoMarket.Infrastructure\obj\Debug\net10.0\AutoMarket.Infrastructure.AssemblyInfoInputs.cache
+C:\Users\erick\Documents\AutoMarketRDspn\AutoMarket.Infrastructure\obj\Debug\net10.0\AutoMarket.Infrastructure.AssemblyInfo.cs
+C:\Users\erick\Documents\AutoMarketRDspn\AutoMarket.Infrastructure\obj\Debug\net10.0\AutoMarket.Infrastructure.csproj.CoreCompileInputs.cache
+C:\Users\erick\Documents\AutoMarketRDspn\AutoMarket.Infrastructure\obj\Debug\net10.0\AutoMarket.Infrastructure.sourcelink.json
 C:\Users\erick\Documents\AutoMarketRDspn\AutoMarket.Infrastructure\bin\Debug\net10.0\AutoMarket.Infrastructure.deps.json
 C:\Users\erick\Documents\AutoMarketRDspn\AutoMarket.Infrastructure\bin\Debug\net10.0\AutoMarket.Infrastructure.runtimeconfig.json
 C:\Users\erick\Documents\AutoMarketRDspn\AutoMarket.Infrastructure\bin\Debug\net10.0\AutoMarket.Infrastructure.dll
@@ -6,12 +12,6 @@ C:\Users\erick\Documents\AutoMarketRDspn\AutoMarket.Infrastructure\bin\Debug\net
 C:\Users\erick\Documents\AutoMarketRDspn\AutoMarket.Infrastructure\bin\Debug\net10.0\AutoMarket.Core.dll
 C:\Users\erick\Documents\AutoMarketRDspn\AutoMarket.Infrastructure\bin\Debug\net10.0\AutoMarket.Application.pdb
 C:\Users\erick\Documents\AutoMarketRDspn\AutoMarket.Infrastructure\bin\Debug\net10.0\AutoMarket.Core.pdb
-C:\Users\erick\Documents\AutoMarketRDspn\AutoMarket.Infrastructure\obj\Debug\net10.0\AutoMarket.Infrastructure.csproj.AssemblyReference.cache
-C:\Users\erick\Documents\AutoMarketRDspn\AutoMarket.Infrastructure\obj\Debug\net10.0\AutoMarket.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\erick\Documents\AutoMarketRDspn\AutoMarket.Infrastructure\obj\Debug\net10.0\AutoMarket.Infrastructure.AssemblyInfoInputs.cache
-C:\Users\erick\Documents\AutoMarketRDspn\AutoMarket.Infrastructure\obj\Debug\net10.0\AutoMarket.Infrastructure.AssemblyInfo.cs
-C:\Users\erick\Documents\AutoMarketRDspn\AutoMarket.Infrastructure\obj\Debug\net10.0\AutoMarket.Infrastructure.csproj.CoreCompileInputs.cache
-C:\Users\erick\Documents\AutoMarketRDspn\AutoMarket.Infrastructure\obj\Debug\net10.0\AutoMarket.Infrastructure.sourcelink.json
 C:\Users\erick\Documents\AutoMarketRDspn\AutoMarket.Infrastructure\obj\Debug\net10.0\AutoMark.5ACE3FE5.Up2Date
 C:\Users\erick\Documents\AutoMarketRDspn\AutoMarket.Infrastructure\obj\Debug\net10.0\AutoMarket.Infrastructure.dll
 C:\Users\erick\Documents\AutoMarketRDspn\AutoMarket.Infrastructure\obj\Debug\net10.0\refint\AutoMarket.Infrastructure.dll

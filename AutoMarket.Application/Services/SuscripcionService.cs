@@ -50,4 +50,16 @@ public class SuscripcionService : ISuscripcionService
         
         await _repository.ActualizarAsync(suscripcion);
     }
+
+    public async Task RenovarManualAsync(int perfilDealerId, DateTime nuevaFechaVencimiento)
+    {
+        var suscripcion = await _repository.ObtenerPorDealerIdAsync(perfilDealerId);
+
+        if (suscripcion == null)
+            throw new KeyNotFoundException("No se encontró una suscripción para este dealer.");
+
+        suscripcion.RenovarManualmente(nuevaFechaVencimiento);
+        
+        await _repository.ActualizarAsync(suscripcion);
+    }
 }

@@ -7,4 +7,5 @@ public interface ISuscripcionRepository
     Task<SuscripcionDealer?> ObtenerPorDealerIdAsync(int perfilDealerId);
     Task AgregarAsync(SuscripcionDealer suscripcion);
     Task ActualizarAsync(SuscripcionDealer suscripcion);
+
 }

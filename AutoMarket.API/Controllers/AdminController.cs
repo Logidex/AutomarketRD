@@ -1,3 +1,4 @@
+using AutoMarket.Application.DTOs.Admin;
 using AutoMarket.Application.Interfaces;
 using AutoMarket.Application.Services;
 using AutoMarket.Core.Interfaces;
@@ -15,17 +16,20 @@ public class AdminController : ControllerBase
     private readonly IUsuarioRepository _usuarioRepository;
     private readonly IAnuncioRepository _anuncioRepository;
     private readonly IAlmacenadorArchivos _almacenadorArchivos;
+    private readonly ISuscripcionService _suscripcionService;
 
     public AdminController(
         IDashboardService dashboardService,
         IUsuarioRepository usuarioRepository,
         IAnuncioRepository anuncioRepository,
-        IAlmacenadorArchivos almacenadorArchivos)
+        IAlmacenadorArchivos almacenadorArchivos,
+        ISuscripcionService suscripcionService)
     {
         _dashboardService = dashboardService;
         _usuarioRepository = usuarioRepository;
         _anuncioRepository = anuncioRepository;
         _almacenadorArchivos = almacenadorArchivos;
+        _suscripcionService = suscripcionService;
     }
 
     [HttpGet("dashboard/resumen")]
@@ -127,5 +131,39 @@ public class AdminController : ControllerBase
         await _anuncioRepository.GuardarCambiosAsync();
 
         return Ok(new { exito = true, mensaje = "Proceso terminado." });
+    }
+
+    // ==========================================
+    // 4. MODERACIÓN DE SUSCRIPCIONES
+    // ==========================================
+
+    [HttpPut("suscripciones/{dealerId:int}/plan")]
+    public async Task<IActionResult> CambiarPlanForzoso(int dealerId, [FromBody] CambiarPlanAdminDto dto)
+    {
+        try
+        {
+            await _suscripcionService.CambiarPlanAsync(dealerId, dto.NuevoNivel);
+            return Ok(new { exito = true, mensaje = $"Plan del dealer {dealerId} actualizado a {dto.NuevoNivel}." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { exito = false, mensaje = ex.Message });
+        }
+    }
+
+    [HttpPut("suscripciones/{dealerId:int}/renovar")]
+    public async Task<IActionResult> RenovarSuscripcionManual(int dealerId, [FromBody] RenovarSuscripcionDto dto)
+    {
+        try
+        {
+            var fechaUtc = dto.NuevaFechaVencimiento.ToUniversalTime();
+
+            await _suscripcionService.RenovarManualAsync(dealerId, fechaUtc);
+            return Ok(new { exito = true, mensaje = $"Suscripción extendida y activada hasta {fechaUtc:dd/MM/yyyy}." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { exito = false, mensaje = ex.Message });
+        }
     }
 }

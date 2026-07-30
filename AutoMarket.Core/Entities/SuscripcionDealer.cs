@@ -68,5 +68,19 @@ public class SuscripcionDealer
         Nivel = nuevoNivel;
 
     }
+
+    // ==========================================
+    // 4. RENOVACIÓN MANUAL (BACKOFFICE)
+    // ==========================================
+    public void RenovarManualmente(DateTime nuevaFechaVencimiento)
+    {
+        if (nuevaFechaVencimiento <= DateTime.UtcNow)
+        {
+            throw new ArgumentException("La nueva fecha de vencimiento debe ser en el futuro.");
+        }
+
+        FechaVencimientoUtc = nuevaFechaVencimiento;
+        Estado = EstadoSuscripcion.Activa; // Revive al moroso automáticamente
+    }
 }
 
