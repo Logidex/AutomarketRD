@@ -15,6 +15,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<PerfilDealer> PerfilesDealers { get; set; }
     public DbSet<SuscripcionDealer> SuscripcionDealers { get; set; }
     public DbSet<Lead> Leads { get; set; }
+    public DbSet<UsuarioFavorito> Favoritos { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -152,5 +153,23 @@ public class ApplicationDbContext : DbContext
                 .HasForeignKey(l => l.AnuncioId)
                 .OnDelete(DeleteBehavior.Cascade); // Si se elimina un anuncio, se borran sus leads asociados
         });
+        
+        // ==========================================
+        // CONFIGURACIÓN DE FAVORITOS (Muchos a Muchos)
+        // ==========================================
+        modelBuilder.Entity<UsuarioFavorito>()
+            .HasKey(f => new { f.UsuarioId, f.AnuncioId }); // Llave compuesta para evitar duplicados
+
+        modelBuilder.Entity<UsuarioFavorito>()
+            .HasOne(f => f.Usuario)
+            .WithMany() 
+            .HasForeignKey(f => f.UsuarioId)
+            .OnDelete(DeleteBehavior.Cascade); // Si borran al usuario, se borran sus favoritos
+
+        modelBuilder.Entity<UsuarioFavorito>()
+            .HasOne(f => f.Anuncio)
+            .WithMany()
+            .HasForeignKey(f => f.AnuncioId)
+            .OnDelete(DeleteBehavior.Cascade); // Si el dealer borra el anuncio, desaparece de los favoritos
     }
 }

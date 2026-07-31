@@ -145,4 +145,29 @@ public class AnuncioRepository : IAnuncioRepository
     {
         _context.Anuncios.Remove(anuncio);
     }
+
+    public async Task<IEnumerable<Anuncio>> ObtenerPorIdsAsync(IEnumerable<int> ids)
+    {
+        return await _context.Anuncios
+            .Where(a => ids.Contains(a.Id)) 
+            .ToListAsync();
+    }
+
+    public async Task<(IEnumerable<Anuncio> Anuncios, int Total)> ObtenerPaginadosAsync(int pagina, int tamanoPagina)
+    {
+        // 1. Armamos la consulta base (solo anuncios públicos)
+        var query = _context.Anuncios.AsQueryable();
+
+        // 2. Contamos cuántos hay en total (antes de paginar)
+        var total = await query.CountAsync();
+
+        // 3. Paginamos usando Skip y Take, ordenados por los más recientes
+        var anuncios = await query
+            .OrderByDescending(a => a.Id) 
+            .Skip((pagina - 1) * tamanoPagina) // Si estoy en la pag 2 y el tamaño es 20, salta los primeros 20
+            .Take(tamanoPagina) // Toma los siguientes 20
+            .ToListAsync();
+
+        return (anuncios, total);
+    }
 }
