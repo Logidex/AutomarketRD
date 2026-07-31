@@ -1,6 +1,7 @@
 using AutoMarket.Application.DTOs;
 using AutoMarket.Application.Interfaces;
 using AutoMarket.Core.Entities;
+using AutoMarket.Core.Entities.Enums;
 using AutoMarket.Core.Exceptions;
 using AutoMarket.Core.Interfaces;
 
@@ -29,15 +30,38 @@ public class AnuncioService : IAnuncioService
         if (usuario == null)
             throw new KeyNotFoundException("El usuario especificado no existe.");
 
+        int cantidadAnuncios = await _repository.ContarAnunciosPorUsuarioAsync(dto.UsuarioId);
+
         bool esVendedorParticular = usuario.PerfilDealer == null;
 
         if (esVendedorParticular)
         {
-            int cantidadAnuncios = await _repository.ContarAnunciosPorUsuarioAsync(dto.UsuarioId);
-
             if (cantidadAnuncios >= 1)
             {
-                throw new BusinessRuleException("Has alcanzado el límite de 1 anuncio gratuito. Mejora tu cuenta a Dealer para publicar más inventario.");
+                throw new BusinessRuleException(
+                    "Has alcanzado el límite de 1 anuncio gratuito. Mejora tu cuenta a Dealer para publicar más inventario.");
+            }
+        }
+        else
+        {
+            var suscripcion = usuario.PerfilDealer?.Suscripcion;
+
+            if (suscripcion == null)
+            {
+                throw new BusinessRuleException(
+                    "Tu cuenta Dealer no tiene una suscripción activa configurada. Debes activar un plan para publicar más inventario.");
+            }
+
+            if (suscripcion.Estado != EstadoSuscripcion.Activa)
+            {
+                throw new BusinessRuleException(
+                    "Tu suscripción Dealer no está activa. Debes renovarla para publicar anuncios.");
+            }
+
+            if (!suscripcion.PermiteNuevosAnuncios(cantidadAnuncios))
+            {
+                throw new BusinessRuleException(
+                    "Has alcanzado el límite de anuncios permitidos por tu plan actual. Cambia de plan o renueva tu suscripción.");
             }
         }
 

@@ -22,10 +22,14 @@ public class SuscripcionServiceTests
     // =========================================================================
     // HELPER: Crear Entidades Encapsuladas para Tests
     // =========================================================================
-    private SuscripcionDealer CrearSuscripcionSimulada(int perfilDealerId, PlanNivel nivel, EstadoSuscripcion estado)
+    private SuscripcionDealer CrearSuscripcionSimulada(
+        int perfilDealerId,
+        PlanNivel nivel,
+        EstadoSuscripcion estado,
+        CicloFacturacion ciclo = CicloFacturacion.Mensual)
     {
-        var suscripcion = new SuscripcionDealer(perfilDealerId, nivel, CicloFacturacion.Mensual);
-        
+        var suscripcion = new SuscripcionDealer(perfilDealerId, nivel, ciclo);
+
         var propEstado = typeof(SuscripcionDealer).GetProperty("Estado");
         propEstado?.SetValue(suscripcion, estado);
 
@@ -41,12 +45,12 @@ public class SuscripcionServiceTests
         // Arrange
         int perfilId = 1;
         var suscripcionExistente = CrearSuscripcionSimulada(perfilId, PlanNivel.Basico, EstadoSuscripcion.Activa);
-        
+
         _mockRepo.Setup(r => r.ObtenerPorDealerIdAsync(perfilId))
             .ReturnsAsync(suscripcionExistente);
 
         // Act & Assert
-        var excepcion = await Assert.ThrowsAsync<BusinessRuleException>(() => 
+        var excepcion = await Assert.ThrowsAsync<BusinessRuleException>(() =>
             _servicio.AsignarPlanInicialAsync(perfilId, PlanNivel.Basico, CicloFacturacion.Mensual));
 
         Assert.Equal("El dealer ya posee una suscripción registrada.", excepcion.Message);
@@ -68,8 +72,10 @@ public class SuscripcionServiceTests
         await _servicio.AsignarPlanInicialAsync(perfilId, PlanNivel.Basico, CicloFacturacion.Mensual);
 
         // Assert
-        _mockRepo.Verify(r => r.AgregarAsync(It.Is<SuscripcionDealer>(s => 
-            s.PerfilDealerId == perfilId && s.Nivel == PlanNivel.Basico)), Times.Once);
+        _mockRepo.Verify(r => r.AgregarAsync(It.Is<SuscripcionDealer>(s =>
+            s.PerfilDealerId == perfilId &&
+            s.Nivel == PlanNivel.Basico &&
+            s.Ciclo == CicloFacturacion.Mensual)), Times.Once);
     }
 
     // =========================================================================
@@ -84,8 +90,8 @@ public class SuscripcionServiceTests
             .ReturnsAsync((SuscripcionDealer?)null);
 
         // Act & Assert
-        var excepcion = await Assert.ThrowsAsync<KeyNotFoundException>(() => 
-            _servicio.CambiarPlanAsync(perfilId, PlanNivel.Pro));
+        var excepcion = await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            _servicio.CambiarPlanAsync(perfilId, PlanNivel.Pro, CicloFacturacion.Mensual));
 
         Assert.Equal("No se encontró una suscripción activa para este dealer.", excepcion.Message);
     }
@@ -104,10 +110,11 @@ public class SuscripcionServiceTests
             .ReturnsAsync(suscripcionActual);
 
         // Act & Assert
-        var excepcion = await Assert.ThrowsAsync<BusinessRuleException>(() => 
-            _servicio.CambiarPlanAsync(perfilId, PlanNivel.Pro)); 
+        var excepcion = await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            _servicio.CambiarPlanAsync(perfilId, PlanNivel.Pro, CicloFacturacion.Mensual));
 
-        Assert.Equal("El dealer ya se encuentra suscrito a este plan. No se requiere actualización.", excepcion.Message);
+        Assert.Contains("ya se encuentra suscrito a este plan", excepcion.Message);
+        Assert.Contains("mismo ciclo", excepcion.Message);
         _mockRepo.Verify(r => r.ActualizarAsync(It.IsAny<SuscripcionDealer>()), Times.Never);
     }
 
@@ -125,8 +132,8 @@ public class SuscripcionServiceTests
             .ReturnsAsync(suscripcionMorosa);
 
         // Act & Assert
-        var excepcion = await Assert.ThrowsAsync<BusinessRuleException>(() => 
-            _servicio.CambiarPlanAsync(perfilId, PlanNivel.Elite));
+        var excepcion = await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            _servicio.CambiarPlanAsync(perfilId, PlanNivel.Pro, CicloFacturacion.Mensual));
 
         Assert.Equal("La suscripción está cancelada. Debe adquirir una nueva en lugar de cambiar de plan.", excepcion.Message);
     }
@@ -135,7 +142,7 @@ public class SuscripcionServiceTests
     // PRUEBA 06: Cambiar Plan - Éxito (Mutación Segura)
     // =========================================================================
     [Fact]
-    public async Task CambiarPlanAsync_DatosValidos_DebeActualizarNivelYGuardar()
+    public async Task CambiarPlanAsync_DatosValidos_DebeActualizarNivelYCicloYGuardar()
     {
         // Arrange
         int perfilId = 6;
@@ -145,10 +152,114 @@ public class SuscripcionServiceTests
             .ReturnsAsync(suscripcionValida);
 
         // Act
-        await _servicio.CambiarPlanAsync(perfilId, PlanNivel.Pro);
+        await _servicio.CambiarPlanAsync(perfilId, PlanNivel.Pro, CicloFacturacion.Anual);
 
         // Assert
         Assert.Equal(PlanNivel.Pro, suscripcionValida.Nivel);
+        Assert.Equal(CicloFacturacion.Anual, suscripcionValida.Ciclo);
         _mockRepo.Verify(r => r.ActualizarAsync(suscripcionValida), Times.Once);
+    }
+
+    // =========================================================================
+    // PRUEBA 07: Procesar Pago - Sin suscripción previa crea nueva
+    // =========================================================================
+    [Fact]
+    public async Task ProcesarPagoSuscripcionAsync_SinSuscripcion_DebeCrearNueva()
+    {
+        // Arrange
+        int perfilId = 10;
+
+        _mockRepo.Setup(r => r.ObtenerPorDealerIdAsync(perfilId))
+            .ReturnsAsync((SuscripcionDealer?)null);
+
+        // Act
+        await _servicio.ProcesarPagoSuscripcionAsync(perfilId, PlanNivel.Pro, CicloFacturacion.Mensual);
+
+        // Assert
+        _mockRepo.Verify(r => r.AgregarAsync(It.Is<SuscripcionDealer>(s =>
+            s.PerfilDealerId == perfilId &&
+            s.Nivel == PlanNivel.Pro &&
+            s.Ciclo == CicloFacturacion.Mensual)), Times.Once);
+
+        _mockRepo.Verify(r => r.ActualizarAsync(It.IsAny<SuscripcionDealer>()), Times.Never);
+    }
+
+    // =========================================================================
+    // PRUEBA 08: Procesar Pago - Mismo plan y ciclo renueva
+    // =========================================================================
+    [Fact]
+    public async Task ProcesarPagoSuscripcionAsync_MismoPlanYCiclo_DebeRenovarYActualizar()
+    {
+        // Arrange
+        int perfilId = 11;
+        var suscripcion = CrearSuscripcionSimulada(
+            perfilId,
+            PlanNivel.Pro,
+            EstadoSuscripcion.Activa,
+            CicloFacturacion.Mensual);
+
+        var vencimientoAnterior = suscripcion.FechaVencimientoUtc;
+
+        _mockRepo.Setup(r => r.ObtenerPorDealerIdAsync(perfilId))
+            .ReturnsAsync(suscripcion);
+
+        // Act
+        await _servicio.ProcesarPagoSuscripcionAsync(perfilId, PlanNivel.Pro, CicloFacturacion.Mensual);
+
+        // Assert
+        Assert.True(suscripcion.FechaVencimientoUtc >= vencimientoAnterior);
+        _mockRepo.Verify(r => r.ActualizarAsync(suscripcion), Times.Once);
+        _mockRepo.Verify(r => r.AgregarAsync(It.IsAny<SuscripcionDealer>()), Times.Never);
+    }
+
+    // =========================================================================
+    // PRUEBA 09: Procesar Pago - Plan o ciclo distinto cambia plan
+    // =========================================================================
+    [Fact]
+    public async Task ProcesarPagoSuscripcionAsync_PlanOCicloDistinto_DebeCambiarPlanYActualizar()
+    {
+        // Arrange
+        int perfilId = 12;
+        var suscripcion = CrearSuscripcionSimulada(
+            perfilId,
+            PlanNivel.Basico,
+            EstadoSuscripcion.Activa,
+            CicloFacturacion.Mensual);
+
+        _mockRepo.Setup(r => r.ObtenerPorDealerIdAsync(perfilId))
+            .ReturnsAsync(suscripcion);
+
+        // Act
+        await _servicio.ProcesarPagoSuscripcionAsync(perfilId, PlanNivel.Elite, CicloFacturacion.Anual);
+
+        // Assert
+        Assert.Equal(PlanNivel.Elite, suscripcion.Nivel);
+        Assert.Equal(CicloFacturacion.Anual, suscripcion.Ciclo);
+        _mockRepo.Verify(r => r.ActualizarAsync(suscripcion), Times.Once);
+    }
+
+    // =========================================================================
+    // PRUEBA 10: Procesar Pago - Suscripción cancelada falla
+    // =========================================================================
+    [Fact]
+    public async Task ProcesarPagoSuscripcionAsync_SuscripcionCancelada_DebeLanzarBusinessRuleException()
+    {
+        // Arrange
+        int perfilId = 13;
+        var suscripcionCancelada = CrearSuscripcionSimulada(
+            perfilId,
+            PlanNivel.Basico,
+            EstadoSuscripcion.Cancelada,
+            CicloFacturacion.Mensual);
+
+        _mockRepo.Setup(r => r.ObtenerPorDealerIdAsync(perfilId))
+            .ReturnsAsync(suscripcionCancelada);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            _servicio.ProcesarPagoSuscripcionAsync(perfilId, PlanNivel.Basico, CicloFacturacion.Mensual));
+
+        _mockRepo.Verify(r => r.ActualizarAsync(It.IsAny<SuscripcionDealer>()), Times.Never);
+        _mockRepo.Verify(r => r.AgregarAsync(It.IsAny<SuscripcionDealer>()), Times.Never);
     }
 }

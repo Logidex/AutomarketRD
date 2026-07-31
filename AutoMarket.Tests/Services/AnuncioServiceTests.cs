@@ -6,6 +6,8 @@ using AutoMarket.Core.Entities;
 using AutoMarket.Application.DTOs;
 using Microsoft.AspNetCore.Http;
 using AutoMarket.Core.Exceptions;
+using System.Reflection;
+using AutoMarket.Core.Entities.Enums;
 
 namespace AutoMarket.Tests.Services;
 
@@ -343,14 +345,14 @@ public class AnuncioServiceTests
         // Arrange
         // 🌟 FIX: Agregamos Anio = 2022 para pasar la validación
         var dto = new AnuncioCreateDto { UsuarioId = 1, Marca = "Toyota", Modelo = "Civic", Precio = 500000, Anio = 2022 };
-        
-        var usuarioParticular = CrearUsuarioSimulado(id: 1, esDealer: false); 
+
+        var usuarioParticular = CrearUsuarioSimulado(id: 1, esDealer: false);
 
         _mockUsuarioRepo.Setup(repo => repo.ObtenerDealerConPerfilPorIdAsync(1))
             .ReturnsAsync(usuarioParticular);
-            
+
         _mockRepo.Setup(repo => repo.ContarAnunciosPorUsuarioAsync(1))
-            .ReturnsAsync(0); 
+            .ReturnsAsync(0);
 
         // Act
         await _servicio.CrearAnuncioAsync(dto);
@@ -385,26 +387,170 @@ public class AnuncioServiceTests
     }
 
     // =========================================================================
-    // PRUEBA 23: Crear Anuncio - Éxito para Dealer (Bypass del límite)
+    // PRUEBA 23: Crear Anuncio - Fallo para Dealer sin suscripción
     // =========================================================================
     [Fact]
-    public async Task CrearAnuncioAsync_UsuarioDealerConUnAnuncio_DebeCrearAnuncio()
+    public async Task CrearAnuncioAsync_DealerSinSuscripcion_DebeLanzarBusinessRuleException()
     {
-        // Arrange
-        // 🌟 FIX: Agregamos Anio = 2023 para pasar la validación
-        var dto = new AnuncioCreateDto { UsuarioId = 2, Marca = "Ford", Modelo = "CRV", Precio = 900000, Anio = 2023 };
-        
-        var usuarioDealer = CrearUsuarioSimulado(id: 2, esDealer: true);
+        var dto = new AnuncioCreateDto
+        {
+            UsuarioId = 2,
+            Marca = "Ford",
+            Modelo = "Explorer",
+            TipoVehiculo = "SUV",
+            ColorExterior = "Negro",
+            ColorInterior = "Negro",
+            Anio = 2023,
+            Precio = 900000,
+            Kilometraje = 40000,
+            Transmision = "Automática",
+            Combustible = "Gasolina",
+            Accesorios = new List<string>(),
+            Ubicacion = "Santo Domingo",
+            Descripcion = "Dealer sin plan"
+        };
+
+        var usuarioDealer = CrearUsuarioDealerSinSuscripcion(2);
 
         _mockUsuarioRepo.Setup(repo => repo.ObtenerDealerConPerfilPorIdAsync(2))
             .ReturnsAsync(usuarioDealer);
-            
-        // Act
+
+        _mockRepo.Setup(repo => repo.ContarAnunciosPorUsuarioAsync(2))
+            .ReturnsAsync(0);
+
+        var excepcion = await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            _servicio.CrearAnuncioAsync(dto));
+
+        Assert.Contains("suscripción activa", excepcion.Message);
+        _mockRepo.Verify(repo => repo.AgregarAsync(It.IsAny<Anuncio>()), Times.Never);
+    }
+
+    // =========================================================================
+    // PRUEBA 24: Crear Anuncio - Fallo para Dealer con suscripción cancelada
+    // =========================================================================
+    [Fact]
+    public async Task CrearAnuncioAsync_DealerConSuscripcionCancelada_DebeLanzarBusinessRuleException()
+    {
+        var dto = new AnuncioCreateDto
+        {
+            UsuarioId = 3,
+            Marca = "Honda",
+            Modelo = "CRV",
+            TipoVehiculo = "SUV",
+            ColorExterior = "Blanco",
+            ColorInterior = "Negro",
+            Anio = 2024,
+            Precio = 1100000,
+            Kilometraje = 25000,
+            Transmision = "Automática",
+            Combustible = "Gasolina",
+            Accesorios = new List<string>(),
+            Ubicacion = "Santiago",
+            Descripcion = "Dealer cancelado"
+        };
+
+        var usuarioDealer = CrearUsuarioDealerConSuscripcion(
+            id: 3,
+            nivel: PlanNivel.Pro,
+            ciclo: CicloFacturacion.Mensual,
+            estado: EstadoSuscripcion.Cancelada);
+
+        _mockUsuarioRepo.Setup(repo => repo.ObtenerDealerConPerfilPorIdAsync(3))
+            .ReturnsAsync(usuarioDealer);
+
+        _mockRepo.Setup(repo => repo.ContarAnunciosPorUsuarioAsync(3))
+            .ReturnsAsync(0);
+
+        var excepcion = await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            _servicio.CrearAnuncioAsync(dto));
+
+        Assert.Contains("no está activa", excepcion.Message);
+        _mockRepo.Verify(repo => repo.AgregarAsync(It.IsAny<Anuncio>()), Times.Never);
+    }
+
+    // =========================================================================
+    // PRUEBA 25: Crear Anuncio - Fallo para Dealer con límite alcanzado
+    // =========================================================================
+    [Fact]
+    public async Task CrearAnuncioAsync_DealerConLimiteAlcanzado_DebeLanzarBusinessRuleException()
+    {
+        var dto = new AnuncioCreateDto
+        {
+            UsuarioId = 4,
+            Marca = "BMW",
+            Modelo = "X5",
+            TipoVehiculo = "SUV",
+            ColorExterior = "Azul",
+            ColorInterior = "Beige",
+            Anio = 2022,
+            Precio = 1800000,
+            Kilometraje = 30000,
+            Transmision = "Automática",
+            Combustible = "Gasolina",
+            Accesorios = new List<string>(),
+            Ubicacion = "Santo Domingo",
+            Descripcion = "Límite alcanzado"
+        };
+
+        var usuarioDealer = CrearUsuarioDealerConSuscripcion(
+            id: 4,
+            nivel: PlanNivel.Basico,
+            ciclo: CicloFacturacion.Mensual,
+            estado: EstadoSuscripcion.Activa);
+
+        _mockUsuarioRepo.Setup(repo => repo.ObtenerDealerConPerfilPorIdAsync(4))
+            .ReturnsAsync(usuarioDealer);
+
+        _mockRepo.Setup(repo => repo.ContarAnunciosPorUsuarioAsync(4))
+            .ReturnsAsync((int)PlanNivel.Basico);
+
+        var excepcion = await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            _servicio.CrearAnuncioAsync(dto));
+
+        Assert.Contains("límite de anuncios permitidos", excepcion.Message);
+        _mockRepo.Verify(repo => repo.AgregarAsync(It.IsAny<Anuncio>()), Times.Never);
+    }
+
+    // =========================================================================
+    // PRUEBA 26: Crear Anuncio - Éxito para Dealer con suscripción activa y cupo
+    // =========================================================================
+    [Fact]
+    public async Task CrearAnuncioAsync_DealerConSuscripcionActivaYCupo_DebeCrearAnuncio()
+    {
+        var dto = new AnuncioCreateDto
+        {
+            UsuarioId = 5,
+            Marca = "Kia",
+            Modelo = "Sorento",
+            TipoVehiculo = "SUV",
+            ColorExterior = "Gris",
+            ColorInterior = "Negro",
+            Anio = 2023,
+            Precio = 1250000,
+            Kilometraje = 15000,
+            Transmision = "Automática",
+            Combustible = "Gasolina",
+            Accesorios = new List<string>(),
+            Ubicacion = "La Vega",
+            Descripcion = "Dealer con cupo"
+        };
+
+        var usuarioDealer = CrearUsuarioDealerConSuscripcion(
+            id: 5,
+            nivel: PlanNivel.Pro,
+            ciclo: CicloFacturacion.Mensual,
+            estado: EstadoSuscripcion.Activa);
+
+        _mockUsuarioRepo.Setup(repo => repo.ObtenerDealerConPerfilPorIdAsync(5))
+            .ReturnsAsync(usuarioDealer);
+
+        _mockRepo.Setup(repo => repo.ContarAnunciosPorUsuarioAsync(5))
+            .ReturnsAsync(1);
+
         await _servicio.CrearAnuncioAsync(dto);
 
-        // Assert
-        _mockRepo.Verify(repo => repo.ContarAnunciosPorUsuarioAsync(It.IsAny<int>()), Times.Never);
         _mockRepo.Verify(repo => repo.AgregarAsync(It.IsAny<Anuncio>()), Times.Once);
+        _mockRepo.Verify(repo => repo.GuardarCambiosAsync(), Times.Once);
     }
 
     // =========================================================================
@@ -412,20 +558,86 @@ public class AnuncioServiceTests
     // =========================================================================
     private Usuario CrearUsuarioSimulado(int id, bool esDealer)
     {
-        // 1. Bypasseamos el constructor privado (usado por EF Core) usando Reflection
-        var usuario = (Usuario)Activator.CreateInstance(typeof(Usuario), nonPublic: true)!;
-
-        // 2. Seteamos el ID (Buscando si tu propiedad se llama 'Id' o 'UsuarioId')
-        var propId = typeof(Usuario).GetProperty("Id") ?? typeof(Usuario).GetProperty("UsuarioId");
-        propId?.SetValue(usuario, id);
-
-        // 3. Si es dealer, instanciamos su Perfil y lo inyectamos a la fuerza
         if (esDealer)
-        {
-            var perfil = (PerfilDealer)Activator.CreateInstance(typeof(PerfilDealer), nonPublic: true)!;
-            typeof(Usuario).GetProperty("PerfilDealer")?.SetValue(usuario, perfil);
-        }
+            return CrearUsuarioDealerSinSuscripcion(id);
+
+        return new Usuario(
+            nombre: "Erick",
+            apellido: "Lopez",
+            email: $"user{id}@test.com",
+            passwordHash: "hash",
+            telefonoPersonal: "8090000000",
+            rol: "Vendedor",
+            emailConfirmado: true
+        );
+    }
+
+    private Usuario CrearUsuarioDealerSinSuscripcion(int id)
+    {
+        var usuario = new Usuario(
+            nombre: "Dealer",
+            apellido: "SinPlan",
+            email: $"dealer{id}@test.com",
+            passwordHash: "hash",
+            telefonoPersonal: "8091111111",
+            rol: "Dealer",
+            emailConfirmado: true
+        );
+
+        var perfil = new PerfilDealer(
+            usuario: usuario,
+            nombreAgencia: "AutoMarket Dealer",
+            agenciaRNC: "123456789",
+            ubicacion: "Santo Domingo",
+            telefonoAgencia: "8092222222",
+            descripcion: "Dealer de prueba"
+        );
+
+        usuario.AsignarPerfilDealer(perfil);
+
+        SetPrivateProperty(usuario, "UsuarioId", id);
+        SetPrivateProperty(perfil, "UsuarioId", id);
 
         return usuario;
     }
+
+    private Usuario CrearUsuarioDealerConSuscripcion(
+        int id,
+        PlanNivel nivel,
+        CicloFacturacion ciclo,
+        EstadoSuscripcion estado)
+    {
+        var usuario = CrearUsuarioDealerSinSuscripcion(id);
+        var perfil = usuario.PerfilDealer!;
+
+        var suscripcion = new SuscripcionDealer(
+            perfilDealerId: id,
+            nivel: nivel,
+            ciclo: ciclo
+        );
+
+        if (estado != EstadoSuscripcion.Activa)
+        {
+            SetPrivateProperty(suscripcion, "Estado", estado);
+        }
+
+        SetPrivateProperty(perfil, "Suscripcion", suscripcion);
+        SetPrivateProperty(suscripcion, "PerfilDealer", perfil);
+
+        return usuario;
+    }
+
+    private static void SetPrivateProperty(object obj, string propertyName, object? value)
+    {
+        var prop = obj.GetType().GetProperty(
+            propertyName,
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+        if (prop == null)
+            throw new InvalidOperationException(
+                $"No se encontró la propiedad '{propertyName}' en {obj.GetType().Name}.");
+
+        prop.SetValue(obj, value);
+    }
+
 }

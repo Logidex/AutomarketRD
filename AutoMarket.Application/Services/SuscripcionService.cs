@@ -71,12 +71,38 @@ public class SuscripcionService : ISuscripcionService
         }
 
         if (suscripcionExistente.Estado == EstadoSuscripcion.Cancelada)
-            throw new BusinessRuleException("La suscripción está cancelada. Debe definirse una política de reactivación.");
+        {
+            throw new BusinessRuleException(
+                "La suscripción está cancelada. Debe definirse una política de reactivación antes de procesar este pago.");
+        }
 
         if (suscripcionExistente.Nivel == nivel && suscripcionExistente.Ciclo == ciclo)
-            throw new BusinessRuleException("El dealer ya posee ese mismo plan y ciclo.");
+        {
+            var nuevaFechaVencimiento = CalcularNuevaVigenciaDesdePago(suscripcionExistente, ciclo);
+            suscripcionExistente.RenovarManualmente(nuevaFechaVencimiento);
+
+            await _repository.ActualizarAsync(suscripcionExistente);
+            return;
+        }
 
         suscripcionExistente.CambiarPlan(nivel, ciclo);
         await _repository.ActualizarAsync(suscripcionExistente);
+    }
+
+    private static DateTime CalcularNuevaVigenciaDesdePago(SuscripcionDealer suscripcion, CicloFacturacion ciclo)
+    {
+        var ahora = DateTime.UtcNow;
+
+        var baseFecha = suscripcion.FechaVencimientoUtc > ahora
+            ? suscripcion.FechaVencimientoUtc
+            : ahora;
+
+        return ciclo switch
+        {
+            CicloFacturacion.Mensual => baseFecha.AddMonths(1),
+            CicloFacturacion.Trimestral => baseFecha.AddMonths(3),
+            CicloFacturacion.Anual => baseFecha.AddYears(1),
+            _ => throw new ArgumentOutOfRangeException(nameof(ciclo), "Ciclo de facturación no válido.")
+        };
     }
 }
