@@ -1,8 +1,9 @@
+using System.Globalization;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using Microsoft.Extensions.Configuration;
 using AutoMarket.Application.Interfaces;
+using Microsoft.Extensions.Configuration;
 
 namespace AutoMarket.Application.Services;
 
@@ -12,47 +13,65 @@ public class PayPalService : IPayPalService
     private readonly string _baseUrl;
     private readonly string _clientId;
     private readonly string _clientSecret;
+    private readonly string _returnUrl;
+    private readonly string _cancelUrl;
+    private readonly string _webhookId;
 
     public PayPalService(HttpClient httpClient, IConfiguration configuration)
     {
         _httpClient = httpClient;
-        
-        // Leemos de la configuración (appsettings + User Secrets fusionados)
-        _baseUrl = configuration["PayPal:UrlBase"] ?? throw new ArgumentNullException("PayPal:UrlBase no configurada");
-        _clientId = configuration["PayPal:ClientId"] ?? throw new ArgumentNullException("Falta ClientId");
-        _clientSecret = configuration["PayPal:ClientSecret"] ?? throw new ArgumentNullException("Falta ClientSecret");
+
+        _baseUrl = configuration["PayPal:UrlBase"]
+            ?? throw new ArgumentNullException("PayPal:UrlBase no configurada.");
+
+        _clientId = configuration["PayPal:ClientId"]
+            ?? throw new ArgumentNullException("Falta PayPal:ClientId.");
+
+        _clientSecret = configuration["PayPal:ClientSecret"]
+            ?? throw new ArgumentNullException("Falta PayPal:ClientSecret.");
+
+        _returnUrl = configuration["PayPal:ReturnUrl"]
+            ?? throw new ArgumentNullException("Falta PayPal:ReturnUrl.");
+
+        _cancelUrl = configuration["PayPal:CancelUrl"]
+            ?? throw new ArgumentNullException("Falta PayPal:CancelUrl.");
+
+        _webhookId = configuration["PayPal:WebhookId"]
+            ?? string.Empty;
     }
 
-    // 🔑 Método privado para conseguir nuestro "Gafete de acceso"
     private async Task<string> ObtenerTokenDeAccesoAsync()
     {
         var authBytes = Encoding.UTF8.GetBytes($"{_clientId}:{_clientSecret}");
         var authBase64 = Convert.ToBase64String(authBytes);
-        
+
         var request = new HttpRequestMessage(HttpMethod.Post, $"{_baseUrl}/v1/oauth2/token");
         request.Headers.Authorization = new AuthenticationHeaderValue("Basic", authBase64);
-        
-        // PayPal exige que enviemos este string exacto para darnos el token
-        request.Content = new StringContent("grant_type=client_credentials", Encoding.UTF8, "application/x-www-form-urlencoded");
+        request.Content = new StringContent(
+            "grant_type=client_credentials",
+            Encoding.UTF8,
+            "application/x-www-form-urlencoded");
 
         var response = await _httpClient.SendAsync(request);
         response.EnsureSuccessStatusCode();
 
         var json = await response.Content.ReadAsStringAsync();
         using var document = JsonDocument.Parse(json);
-        
+
         return document.RootElement.GetProperty("access_token").GetString()!;
     }
 
-    // 💸 Método 1: Crear la orden para que el Dealer pague
-    public async Task<string> CrearOrdenDeSuscripcionAsync(int dealerId, decimal monto, string nombrePlan, string ciclo)
+    public async Task<string> CrearOrdenDeSuscripcionAsync(
+        int dealerId,
+        decimal monto,
+        string nombrePlan,
+        string ciclo)
     {
         var token = await ObtenerTokenDeAccesoAsync();
-        
+
         var request = new HttpRequestMessage(HttpMethod.Post, $"{_baseUrl}/v2/checkout/orders");
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-        // Estructura oficial requerida por PayPal
         var orderPayload = new
         {
             intent = "CAPTURE",
@@ -60,33 +79,35 @@ public class PayPalService : IPayPalService
             {
                 new
                 {
-                    reference_id = $"DEALER_{dealerId}_PLAN_{nombrePlan.ToUpper()}_CICLO_{ciclo.ToUpper()}",
+                    reference_id = $"DEALER-{dealerId}-PLAN-{nombrePlan.ToUpperInvariant()}-CICLO-{ciclo.ToUpperInvariant()}",
                     amount = new
                     {
-                        currency_code = "USD", // Cobraremos en dólares por ahora
-                        value = monto.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)
+                        currency_code = "USD",
+                        value = monto.ToString("0.00", CultureInfo.InvariantCulture)
                     },
                     description = $"Suscripción AutoMarket - {nombrePlan}"
                 }
             },
             application_context = new
             {
-                // Cuando terminemos el frontend, PayPal enviará al usuario a estas rutas
-                return_url = "http://localhost:3000/pago-exitoso", 
-                cancel_url = "http://localhost:3000/pago-cancelado"
+                return_url = _returnUrl,
+                cancel_url = _cancelUrl
             }
         };
 
-        request.Content = new StringContent(JsonSerializer.Serialize(orderPayload), Encoding.UTF8, "application/json");
+        request.Content = new StringContent(
+            JsonSerializer.Serialize(orderPayload),
+            Encoding.UTF8,
+            "application/json");
 
         var response = await _httpClient.SendAsync(request);
         response.EnsureSuccessStatusCode();
 
         var json = await response.Content.ReadAsStringAsync();
         using var document = JsonDocument.Parse(json);
-        
-        // PayPal devuelve varios links. Buscamos el de "approve" (donde el cliente pone la tarjeta)
+
         var links = document.RootElement.GetProperty("links").EnumerateArray();
+
         foreach (var link in links)
         {
             if (link.GetProperty("rel").GetString() == "approve")
@@ -98,19 +119,66 @@ public class PayPalService : IPayPalService
         throw new Exception("No se encontró el link de aprobación de pago en la respuesta de PayPal.");
     }
 
-    // ✅ Método 2: Capturar el dinero cuando el webhook nos avise
     public async Task<bool> CapturarOrdenAsync(string idOrden)
     {
         var token = await ObtenerTokenDeAccesoAsync();
-        
-        var request = new HttpRequestMessage(HttpMethod.Post, $"{_baseUrl}/v2/checkout/orders/{idOrden}/capture");
+
+        var request = new HttpRequestMessage(
+            HttpMethod.Post,
+            $"{_baseUrl}/v2/checkout/orders/{idOrden}/capture");
+
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        
-        // Este endpoint requiere un body vacío con content-type application/json
-        request.Content = new StringContent("{}", Encoding.UTF8, "application/json");
+        request.Content = new StringContent(string.Empty, Encoding.UTF8, "application/json");
 
         var response = await _httpClient.SendAsync(request);
-        
+
         return response.IsSuccessStatusCode;
+    }
+
+    public async Task<bool> VerificarFirmaWebhookAsync(
+    string jsonBody,
+    string transmissionId,
+    string transmissionTime,
+    string transmissionSig,
+    string certUrl,
+    string authAlgo)
+    {
+        if (string.IsNullOrWhiteSpace(_webhookId))
+            throw new InvalidOperationException("Falta PayPal:WebhookId.");
+
+        var token = await ObtenerTokenDeAccesoAsync();
+
+        using var webhookEvent = JsonDocument.Parse(jsonBody);
+
+        var payload = new
+        {
+            transmission_id = transmissionId,
+            transmission_time = transmissionTime,
+            cert_url = certUrl,
+            auth_algo = authAlgo,
+            transmission_sig = transmissionSig,
+            webhook_id = _webhookId,
+            webhook_event = webhookEvent.RootElement
+        };
+
+        var request = new HttpRequestMessage(
+            HttpMethod.Post,
+            $"{_baseUrl}/v1/notifications/verify-webhook-signature");
+
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        request.Content = new StringContent(
+            JsonSerializer.Serialize(payload),
+            Encoding.UTF8,
+            "application/json");
+
+        var response = await _httpClient.SendAsync(request);
+        response.EnsureSuccessStatusCode();
+
+        var responseJson = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(responseJson);
+
+        var status = doc.RootElement.GetProperty("verification_status").GetString();
+
+        return string.Equals(status, "SUCCESS", StringComparison.OrdinalIgnoreCase);
     }
 }

@@ -6,14 +6,14 @@ public enum PlanNivel
     Basico = 50,
     Pro = 200,
     Elite = 999999
-}
-
-public enum CicloFacturacion
+}public enum CicloFacturacion
 {
     Mensual = 1,
     Trimestral = 3,
     Anual = 12
 }
+
+
 
 public enum EstadoSuscripcion
 {

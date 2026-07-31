@@ -7,4 +7,5 @@ public interface ISuscripcionService
     Task AsignarPlanInicialAsync(int perfilDealerId, PlanNivel nivel, CicloFacturacion ciclo);
     Task CambiarPlanAsync(int dealerId, PlanNivel nuevoPlan, CicloFacturacion ciclo);
     Task RenovarManualAsync(int perfilDealerId, DateTime nuevaFechaVencimiento);
+    Task ProcesarPagoSuscripcionAsync(int perfilDealerId, PlanNivel nivel, CicloFacturacion ciclo);
 }

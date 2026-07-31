@@ -23,7 +23,7 @@ public class SuscripcionService : ISuscripcionService
             throw new BusinessRuleException("El dealer ya posee una suscripción registrada.");
 
         var nuevaSuscripcion = new SuscripcionDealer(perfilDealerId, nivel, ciclo);
-        
+
         await _repository.AgregarAsync(nuevaSuscripcion);
     }
 
@@ -31,23 +31,19 @@ public class SuscripcionService : ISuscripcionService
     {
         var suscripcion = await _repository.ObtenerPorDealerIdAsync(perfilDealerId);
 
-        // Regla 1: El Fantasma (Debe existir)
         if (suscripcion == null)
             throw new KeyNotFoundException("No se encontró una suscripción activa para este dealer.");
 
-        // Regla 2: El Cobro Doble (No puede comprar lo que ya tiene)
-        if (suscripcion.Nivel == nuevoNivel)
-            throw new BusinessRuleException("El dealer ya se encuentra suscrito a este plan. No se requiere actualización.");
+        if (suscripcion.Nivel == nuevoNivel && suscripcion.Ciclo == ciclo)
+            throw new BusinessRuleException(
+                "El dealer ya se encuentra suscrito a este plan con ese mismo ciclo.");
 
-        // Regla 3: El Moroso (Debe reactivar, no solo cambiar de plan)
         if (suscripcion.Estado == EstadoSuscripcion.Cancelada)
-            throw new BusinessRuleException("La suscripción está cancelada. Debe adquirir una nueva en lugar de cambiar de plan.");
+            throw new BusinessRuleException(
+                "La suscripción está cancelada. Debe adquirir una nueva en lugar de cambiar de plan.");
 
-        // ==========================================
-        // LA MUTACIÓN SEGURA
-        // ==========================================
-        suscripcion.ActualizarNivel(nuevoNivel);
-        
+        suscripcion.CambiarPlan(nuevoNivel, ciclo);
+
         await _repository.ActualizarAsync(suscripcion);
     }
 
@@ -59,7 +55,28 @@ public class SuscripcionService : ISuscripcionService
             throw new KeyNotFoundException("No se encontró una suscripción para este dealer.");
 
         suscripcion.RenovarManualmente(nuevaFechaVencimiento);
-        
+
         await _repository.ActualizarAsync(suscripcion);
+    }
+
+    public async Task ProcesarPagoSuscripcionAsync(int perfilDealerId, PlanNivel nivel, CicloFacturacion ciclo)
+    {
+        var suscripcionExistente = await _repository.ObtenerPorDealerIdAsync(perfilDealerId);
+
+        if (suscripcionExistente == null)
+        {
+            var nuevaSuscripcion = new SuscripcionDealer(perfilDealerId, nivel, ciclo);
+            await _repository.AgregarAsync(nuevaSuscripcion);
+            return;
+        }
+
+        if (suscripcionExistente.Estado == EstadoSuscripcion.Cancelada)
+            throw new BusinessRuleException("La suscripción está cancelada. Debe definirse una política de reactivación.");
+
+        if (suscripcionExistente.Nivel == nivel && suscripcionExistente.Ciclo == ciclo)
+            throw new BusinessRuleException("El dealer ya posee ese mismo plan y ciclo.");
+
+        suscripcionExistente.CambiarPlan(nivel, ciclo);
+        await _repository.ActualizarAsync(suscripcionExistente);
     }
 }
