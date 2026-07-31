@@ -262,4 +262,112 @@ public class SuscripcionServiceTests
         _mockRepo.Verify(r => r.ActualizarAsync(It.IsAny<SuscripcionDealer>()), Times.Never);
         _mockRepo.Verify(r => r.AgregarAsync(It.IsAny<SuscripcionDealer>()), Times.Never);
     }
+
+        // =========================================================================
+    // PRUEBA 11: Renovar Manual - Fallo si no existe suscripción
+    // =========================================================================
+    [Fact]
+    public async Task RenovarManualAsync_SuscripcionNoExiste_DebeLanzarKeyNotFoundException()
+    {
+        // Arrange
+        int perfilId = 20;
+        var nuevaFecha = DateTime.UtcNow.AddMonths(1);
+
+        _mockRepo.Setup(r => r.ObtenerPorDealerIdAsync(perfilId))
+            .ReturnsAsync((SuscripcionDealer?)null);
+
+        // Act & Assert
+        var excepcion = await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            _servicio.RenovarManualAsync(perfilId, nuevaFecha));
+
+        Assert.Equal("No se encontró una suscripción para este dealer.", excepcion.Message);
+        _mockRepo.Verify(r => r.ActualizarAsync(It.IsAny<SuscripcionDealer>()), Times.Never);
+    }
+
+    // =========================================================================
+    // PRUEBA 12: Renovar Manual - Éxito
+    // =========================================================================
+    [Fact]
+    public async Task RenovarManualAsync_SuscripcionExiste_DebeActualizarVencimientoYGuardar()
+    {
+        // Arrange
+        int perfilId = 21;
+        var suscripcion = CrearSuscripcionSimulada(
+            perfilId,
+            PlanNivel.Pro,
+            EstadoSuscripcion.Activa,
+            CicloFacturacion.Mensual);
+
+        var nuevaFecha = DateTime.UtcNow.AddMonths(4);
+
+        _mockRepo.Setup(r => r.ObtenerPorDealerIdAsync(perfilId))
+            .ReturnsAsync(suscripcion);
+
+        // Act
+        await _servicio.RenovarManualAsync(perfilId, nuevaFecha);
+
+        // Assert
+        Assert.Equal(nuevaFecha, suscripcion.FechaVencimientoUtc);
+        Assert.Equal(EstadoSuscripcion.Activa, suscripcion.Estado);
+        _mockRepo.Verify(r => r.ActualizarAsync(suscripcion), Times.Once);
+    }
+
+    // =========================================================================
+    // PRUEBA 13: Procesar Pago - Mismo plan y ciclo con suscripción vencida
+    // =========================================================================
+    [Fact]
+    public async Task ProcesarPagoSuscripcionAsync_MismoPlanYCiclo_ConSuscripcionVencida_DebeRenovarDesdeAhora()
+    {
+        // Arrange
+        int perfilId = 22;
+        var suscripcion = CrearSuscripcionSimulada(
+            perfilId,
+            PlanNivel.Pro,
+            EstadoSuscripcion.Activa,
+            CicloFacturacion.Mensual);
+
+        var propFechaVencimiento = typeof(SuscripcionDealer).GetProperty("FechaVencimientoUtc");
+        propFechaVencimiento?.SetValue(suscripcion, DateTime.UtcNow.AddDays(-10));
+
+        var antesDeProcesar = DateTime.UtcNow;
+
+        _mockRepo.Setup(r => r.ObtenerPorDealerIdAsync(perfilId))
+            .ReturnsAsync(suscripcion);
+
+        // Act
+        await _servicio.ProcesarPagoSuscripcionAsync(perfilId, PlanNivel.Pro, CicloFacturacion.Mensual);
+
+        // Assert
+        Assert.True(suscripcion.FechaVencimientoUtc > antesDeProcesar);
+        _mockRepo.Verify(r => r.ActualizarAsync(suscripcion), Times.Once);
+        _mockRepo.Verify(r => r.AgregarAsync(It.IsAny<SuscripcionDealer>()), Times.Never);
+    }
+
+    // =========================================================================
+    // PRUEBA 14: Renovar Manual - Fallo si la nueva fecha no es futura
+    // =========================================================================
+    [Fact]
+    public async Task RenovarManualAsync_FechaInvalida_DebePropagarArgumentException()
+    {
+        // Arrange
+        int perfilId = 23;
+        var suscripcion = CrearSuscripcionSimulada(
+            perfilId,
+            PlanNivel.Basico,
+            EstadoSuscripcion.Activa,
+            CicloFacturacion.Mensual);
+
+        var fechaInvalida = DateTime.UtcNow.AddMinutes(-1);
+
+        _mockRepo.Setup(r => r.ObtenerPorDealerIdAsync(perfilId))
+            .ReturnsAsync(suscripcion);
+
+        // Act & Assert
+        var excepcion = await Assert.ThrowsAsync<ArgumentException>(() =>
+            _servicio.RenovarManualAsync(perfilId, fechaInvalida));
+
+        Assert.Equal("nuevaFechaVencimiento", excepcion.ParamName);
+        Assert.Contains("debe ser en el futuro", excepcion.Message);
+        _mockRepo.Verify(r => r.ActualizarAsync(It.IsAny<SuscripcionDealer>()), Times.Never);
+    }
 }

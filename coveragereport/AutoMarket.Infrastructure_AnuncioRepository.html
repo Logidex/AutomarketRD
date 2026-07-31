@@ -45,19 +45,19 @@
 </tr>
 <tr>
 <th>Uncovered lines:</th>
-<td class="limit-width right" title="100">100</td>
+<td class="limit-width right" title="115">115</td>
 </tr>
 <tr>
 <th>Coverable lines:</th>
-<td class="limit-width right" title="100">100</td>
+<td class="limit-width right" title="115">115</td>
 </tr>
 <tr>
 <th>Total lines:</th>
-<td class="limit-width right" title="148">148</td>
+<td class="limit-width right" title="173">173</td>
 </tr>
 <tr>
 <th>Line coverage:</th>
-<td class="limit-width right" title="0 of 100">0%</td>
+<td class="limit-width right" title="0 of 115">0%</td>
 </tr>
 </table>
 </div>
@@ -117,6 +117,8 @@
 <tr><td title="ContarAnunciosPorUsuarioAsync()"><a href="#file0_line133" class="navigatetohash">ContarAnunciosPorUsuarioAsync()</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
 <tr><td title="ObtenerTodosParaAdminAsync()"><a href="#file0_line138" class="navigatetohash">ObtenerTodosParaAdminAsync()</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
 <tr><td title="Eliminar(AutoMarket.Core.Entities.Anuncio)"><a href="#file0_line145" class="navigatetohash">Eliminar(...)</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
+<tr><td title="ObtenerPorIdsAsync()"><a href="#file0_line150" class="navigatetohash">ObtenerPorIdsAsync()</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
+<tr><td title="ObtenerPaginadosAsync()"><a href="#file0_line157" class="navigatetohash">ObtenerPaginadosAsync()</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
 </tbody>
 </table>
 </div>
@@ -273,11 +275,36 @@
 <tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line145"></a><code>145</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;{</code></td></tr>
 <tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line146"></a><code>146</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_context.Anuncios.Remove(anuncio);</code></td></tr>
 <tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line147"></a><code>147</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;}</code></td></tr>
-<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line148"></a><code>148</code></td><td></td><td class="lightgray"><code>}</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line148"></a><code>148</code></td><td></td><td class="lightgray"><code></code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line149"></a><code>149</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;public&nbsp;async&nbsp;Task&lt;IEnumerable&lt;Anuncio&gt;&gt;&nbsp;ObtenerPorIdsAsync(IEnumerable&lt;int&gt;&nbsp;ids)</code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line150"></a><code>150</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;{</code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line151"></a><code>151</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;await&nbsp;_context.Anuncios</code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line152"></a><code>152</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.Where(a&nbsp;=&gt;&nbsp;ids.Contains(a.Id))</code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line153"></a><code>153</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.ToListAsync();</code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line154"></a><code>154</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;}</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line155"></a><code>155</code></td><td></td><td class="lightgray"><code></code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line156"></a><code>156</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;public&nbsp;async&nbsp;Task&lt;(IEnumerable&lt;Anuncio&gt;&nbsp;Anuncios,&nbsp;int&nbsp;Total)&gt;&nbsp;ObtenerPaginadosAsync(int&nbsp;pagina,&nbsp;int&nbsp;tamanoPagina)</code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line157"></a><code>157</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;{</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line158"></a><code>158</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;1.&nbsp;Armamos&nbsp;la&nbsp;consulta&nbsp;base&nbsp;(solo&nbsp;anuncios&nbsp;p&#250;blicos)</code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line159"></a><code>159</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;var&nbsp;query&nbsp;=&nbsp;_context.Anuncios.AsQueryable();</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line160"></a><code>160</code></td><td></td><td class="lightgray"><code></code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line161"></a><code>161</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;2.&nbsp;Contamos&nbsp;cu&#225;ntos&nbsp;hay&nbsp;en&nbsp;total&nbsp;(antes&nbsp;de&nbsp;paginar)</code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line162"></a><code>162</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;var&nbsp;total&nbsp;=&nbsp;await&nbsp;query.CountAsync();</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line163"></a><code>163</code></td><td></td><td class="lightgray"><code></code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line164"></a><code>164</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;3.&nbsp;Paginamos&nbsp;usando&nbsp;Skip&nbsp;y&nbsp;Take,&nbsp;ordenados&nbsp;por&nbsp;los&nbsp;m&#225;s&nbsp;recientes</code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line165"></a><code>165</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;var&nbsp;anuncios&nbsp;=&nbsp;await&nbsp;query</code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line166"></a><code>166</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.OrderByDescending(a&nbsp;=&gt;&nbsp;a.Id)</code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line167"></a><code>167</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.Skip((pagina&nbsp;-&nbsp;1)&nbsp;*&nbsp;tamanoPagina)&nbsp;//&nbsp;Si&nbsp;estoy&nbsp;en&nbsp;la&nbsp;pag&nbsp;2&nbsp;y&nbsp;el&nbsp;tama&#241;o&nbsp;es&nbsp;20,&nbsp;salta&nbsp;los&nbsp;primeros&nbsp;20</code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line168"></a><code>168</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.Take(tamanoPagina)&nbsp;//&nbsp;Toma&nbsp;los&nbsp;siguientes&nbsp;20</code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line169"></a><code>169</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.ToListAsync();</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line170"></a><code>170</code></td><td></td><td class="lightgray"><code></code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line171"></a><code>171</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;(anuncios,&nbsp;total);</code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line172"></a><code>172</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;}</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line173"></a><code>173</code></td><td></td><td class="lightgray"><code>}</code></td></tr>
 </tbody>
 </table>
 </div>
-<div class="footer">Generated by: ReportGenerator 5.5.10.0<br />7/30/2026 - 12:10:43 AM<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="https://reportgenerator.io">reportgenerator.io</a></div></div>
+<div class="footer">Generated by: ReportGenerator 5.5.10.0<br />7/31/2026 - 6:16:48 PM<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="https://reportgenerator.io">reportgenerator.io</a></div></div>
 <div class="containerright">
 <div class="containerrightfixed">
 <h1>Methods/Properties</h1>
@@ -291,6 +318,8 @@
 <a href="#file0_line133" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ContarAnunciosPorUsuarioAsync()"><i class="icon-cube"></i>ContarAnunciosPorUsuarioAsync()</a><br />
 <a href="#file0_line138" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ObtenerTodosParaAdminAsync()"><i class="icon-cube"></i>ObtenerTodosParaAdminAsync()</a><br />
 <a href="#file0_line145" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - Eliminar(AutoMarket.Core.Entities.Anuncio)"><i class="icon-cube"></i>Eliminar(AutoMarket.Core.Entities.Anuncio)</a><br />
+<a href="#file0_line150" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ObtenerPorIdsAsync()"><i class="icon-cube"></i>ObtenerPorIdsAsync()</a><br />
+<a href="#file0_line157" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ObtenerPaginadosAsync()"><i class="icon-cube"></i>ObtenerPaginadosAsync()</a><br />
 <br/></div>
 </div></div>
 <script type="text/javascript" src="class.js"></script>

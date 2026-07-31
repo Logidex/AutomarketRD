@@ -290,36 +290,53 @@ var assemblies = [
   {
     "name": "AutoMarket.API",
     "classes": [
-      { "name": "AuthController", "rp": "AutoMarket.API_AuthController.html", "cl": 0, "ucl": 18, "cal": 18, "tl": 43, "cb": 0, "tb": 4, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "AutoMarket.API.Controllers.AdminController", "rp": "AutoMarket.API_AdminController.html", "cl": 33, "ucl": 47, "cal": 80, "tl": 131, "cb": 13, "tb": 24, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "AuthController", "rp": "AutoMarket.API_AuthController.html", "cl": 18, "ucl": 0, "cal": 18, "tl": 43, "cb": 4, "tb": 4, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "AutoMarket.API.Controllers.AdminController", "rp": "AutoMarket.API_AdminController.html", "cl": 46, "ucl": 78, "cal": 124, "tl": 170, "cb": 18, "tb": 36, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "AutoMarket.API.Controllers.AnunciosController", "rp": "AutoMarket.API_AnunciosController.html", "cl": 0, "ucl": 63, "cal": 63, "tl": 155, "cb": 0, "tb": 18, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "AutoMarket.API.Controllers.CatalogoController", "rp": "AutoMarket.API_CatalogoController.html", "cl": 8, "ucl": 0, "cal": 8, "tl": 24, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "AutoMarket.API.Controllers.ComparadorController", "rp": "AutoMarket.API_ComparadorController.html", "cl": 15, "ucl": 0, "cal": 15, "tl": 34, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "AutoMarket.API.Controllers.DealersController", "rp": "AutoMarket.API_DealersController.html", "cl": 0, "ucl": 46, "cal": 46, "tl": 86, "cb": 0, "tb": 10, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "AutoMarket.API.Controllers.FavoritosController", "rp": "AutoMarket.API_FavoritosController.html", "cl": 33, "ucl": 0, "cal": 33, "tl": 66, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "AutoMarket.API.Controllers.LeadsController", "rp": "AutoMarket.API_LeadsController.html", "cl": 35, "ucl": 0, "cal": 35, "tl": 70, "cb": 14, "tb": 14, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "AutoMarket.API.Controllers.PagosController", "rp": "AutoMarket.API_PagosController.html", "cl": 127, "ucl": 34, "cal": 161, "tl": 251, "cb": 45, "tb": 58, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "Microsoft.AspNetCore.OpenApi.Generated", "rp": "AutoMarket.API_Generated.html", "cl": 0, "ucl": 380, "cal": 380, "tl": 605, "cb": 0, "tb": 204, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "Program", "rp": "AutoMarket.API_Program.html", "cl": 0, "ucl": 81, "cal": 81, "tl": 110, "cb": 0, "tb": 4, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "Program", "rp": "AutoMarket.API_Program.html", "cl": 0, "ucl": 98, "cal": 98, "tl": 116, "cb": 0, "tb": 10, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "System.Runtime.CompilerServices", "rp": "AutoMarket.API_CompilerServices.html", "cl": 0, "ucl": 3, "cal": 3, "tl": 23, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
     ]},
   {
     "name": "AutoMarket.Application",
     "classes": [
-      { "name": "AutoMarket.Application.DTOs.Admin.DashboardResumenDto", "rp": "AutoMarket.Application_DashboardResumenDto.html", "cl": 0, "ucl": 3, "cal": 3, "tl": 8, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "AutoMarket.Application.DTOs.Admin.CambiarPlanAdminDto", "rp": "AutoMarket.Application_CambiarPlanAdminDto.html", "cl": 0, "ucl": 1, "cal": 1, "tl": 19, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "AutoMarket.Application.DTOs.Admin.DashboardResumenDto", "rp": "AutoMarket.Application_DashboardResumenDto.html", "cl": 0, "ucl": 4, "cal": 4, "tl": 19, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "AutoMarket.Application.DTOs.Admin.RenovarSuscripcionDto", "rp": "AutoMarket.Application_RenovarSuscripcionDto.html", "cl": 0, "ucl": 1, "cal": 1, "tl": 19, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "AutoMarket.Application.DTOs.Anuncio.AnuncioCatalogoDto", "rp": "AutoMarket.Application_AnuncioCatalogoDto.html", "cl": 7, "ucl": 0, "cal": 7, "tl": 12, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "AutoMarket.Application.DTOs.Anuncio.AnuncioComparadorDto", "rp": "AutoMarket.Application_AnuncioComparadorDto.html", "cl": 10, "ucl": 0, "cal": 10, "tl": 15, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "AutoMarket.Application.DTOs.AnuncioCreateDto", "rp": "AutoMarket.Application_AnuncioCreateDto.html", "cl": 14, "ucl": 0, "cal": 14, "tl": 22, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "AutoMarket.Application.DTOs.AnuncioDto", "rp": "AutoMarket.Application_AnuncioDto.html", "cl": 22, "ucl": 0, "cal": 22, "tl": 28, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "AutoMarket.Application.DTOs.AnuncioImagenUploadDto", "rp": "AutoMarket.Application_AnuncioImagenUploadDto.html", "cl": 3, "ucl": 0, "cal": 3, "tl": 16, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "AutoMarket.Application.DTOs.AnuncioListadoDto", "rp": "AutoMarket.Application_AnuncioListadoDto.html", "cl": 7, "ucl": 0, "cal": 7, "tl": 14, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "AutoMarket.Application.DTOs.AnuncioSearchDto", "rp": "AutoMarket.Application_AnuncioSearchDto.html", "cl": 15, "ucl": 6, "cal": 21, "tl": 29, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "AutoMarket.Application.DTOs.AnuncioUpdateDto", "rp": "AutoMarket.Application_AnuncioUpdateDto.html", "cl": 14, "ucl": 1, "cal": 15, "tl": 23, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "AutoMarket.Application.DTOs.Common.PagedResult\u003CT\u003E", "rp": "AutoMarket.Application_PagedResult_1.html", "cl": 11, "ucl": 3, "cal": 14, "tl": 22, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "AutoMarket.Application.DTOs.Favorito.AnuncioFavoritoDto", "rp": "AutoMarket.Application_AnuncioFavoritoDto.html", "cl": 6, "ucl": 0, "cal": 6, "tl": 11, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "AutoMarket.Application.DTOs.LeadCreateDto", "rp": "AutoMarket.Application_LeadCreateDto.html", "cl": 6, "ucl": 0, "cal": 6, "tl": 28, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "AutoMarket.Application.DTOs.PagedResult\u003CT\u003E", "rp": "AutoMarket.Application_PagedResult_1.html", "cl": 12, "ucl": 0, "cal": 12, "tl": 27, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "AutoMarket.Application.DTOs.PagedResult\u003CT\u003E", "rp": "AutoMarket.Application_PagedResult_1.2.html", "cl": 12, "ucl": 0, "cal": 12, "tl": 27, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "AutoMarket.Application.DTOs.Paypal.CrearOrdenDto", "rp": "AutoMarket.Application_CrearOrdenDto.html", "cl": 3, "ucl": 0, "cal": 3, "tl": 18, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "AutoMarket.Application.DTOs.Paypal.ReferenciaPagoPayPal", "rp": "AutoMarket.Application_ReferenciaPagoPayPal.html", "cl": 3, "ucl": 0, "cal": 3, "tl": 10, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "AutoMarket.Application.DTOs.RegistroDto", "rp": "AutoMarket.Application_RegistroDto.html", "cl": 10, "ucl": 0, "cal": 10, "tl": 19, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "AutoMarket.Application.DTOs.Usuario.LoginDto", "rp": "AutoMarket.Application_LoginDto.html", "cl": 2, "ucl": 0, "cal": 2, "tl": 8, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "AutoMarket.Application.DTOs.Usuario.PerfilDealerPublicoDto", "rp": "AutoMarket.Application_PerfilDealerPublicoDto.html", "cl": 8, "ucl": 0, "cal": 8, "tl": 14, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "AutoMarket.Application.DTOs.Usuario.PerfilDealerUpdateDto", "rp": "AutoMarket.Application_PerfilDealerUpdateDto.html", "cl": 7, "ucl": 0, "cal": 7, "tl": 17, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "AutoMarket.Application.Services.AnuncioService", "rp": "AutoMarket.Application_AnuncioService.html", "cl": 195, "ucl": 21, "cal": 216, "tl": 237, "cb": 62, "tb": 88, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "AutoMarket.Application.Helpers.ReferenciaPagoPayPalParser", "rp": "AutoMarket.Application_ReferenciaPagoPayPalParser.html", "cl": 20, "ucl": 0, "cal": 20, "tl": 35, "cb": 14, "tb": 16, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "AutoMarket.Application.Services.AnuncioService", "rp": "AutoMarket.Application_AnuncioService.html", "cl": 200, "ucl": 46, "cal": 246, "tl": 262, "cb": 107, "tb": 180, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "AutoMarket.Application.Services.AuthService", "rp": "AutoMarket.Application_AuthService.html", "cl": 49, "ucl": 0, "cal": 49, "tl": 86, "cb": 18, "tb": 20, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "AutoMarket.Application.Services.CatalogoService", "rp": "AutoMarket.Application_CatalogoService.html", "cl": 20, "ucl": 0, "cal": 20, "tl": 41, "cb": 9, "tb": 10, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "AutoMarket.Application.Services.ComparadorService", "rp": "AutoMarket.Application_ComparadorService.html", "cl": 27, "ucl": 0, "cal": 27, "tl": 47, "cb": 11, "tb": 12, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "AutoMarket.Application.Services.FavoritoService", "rp": "AutoMarket.Application_FavoritoService.html", "cl": 33, "ucl": 0, "cal": 33, "tl": 57, "cb": 9, "tb": 10, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "AutoMarket.Application.Services.LeadService", "rp": "AutoMarket.Application_LeadService.html", "cl": 48, "ucl": 6, "cal": 54, "tl": 87, "cb": 8, "tb": 8, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "AutoMarket.Application.Services.PayPalService", "rp": "AutoMarket.Application_PayPalService.html", "cl": 120, "ucl": 0, "cal": 120, "tl": 193, "cb": 17, "tb": 22, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "AutoMarket.Application.Services.PerfilDealerService", "rp": "AutoMarket.Application_PerfilDealerService.html", "cl": 67, "ucl": 7, "cal": 74, "tl": 117, "cb": 15, "tb": 20, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "AutoMarket.Application.Services.SuscripcionService", "rp": "AutoMarket.Application_SuscripcionService.html", "cl": 22, "ucl": 0, "cal": 22, "tl": 53, "cb": 8, "tb": 8, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "AutoMarket.Application.Services.SuscripcionService", "rp": "AutoMarket.Application_SuscripcionService.html", "cl": 65, "ucl": 3, "cal": 68, "tl": 108, "cb": 29, "tb": 34, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
     ]},
   {
     "name": "AutoMarket.Core",
@@ -327,16 +344,17 @@ var assemblies = [
       { "name": "AutoMarket.Core.Entities.Anuncio", "rp": "AutoMarket.Core_Anuncio.html", "cl": 122, "ucl": 24, "cal": 146, "tl": 175, "cb": 41, "tb": 84, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "AutoMarket.Core.Entities.AnuncioQueryFilter", "rp": "AutoMarket.Core_AnuncioQueryFilter.html", "cl": 15, "ucl": 1, "cal": 16, "tl": 22, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "AutoMarket.Core.Entities.Lead", "rp": "AutoMarket.Core_Lead.html", "cl": 20, "ucl": 4, "cal": 24, "tl": 42, "cb": 2, "tb": 4, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "AutoMarket.Core.Entities.PerfilDealer", "rp": "AutoMarket.Core_PerfilDealer.html", "cl": 69, "ucl": 8, "cal": 77, "tl": 92, "cb": 22, "tb": 44, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "AutoMarket.Core.Entities.SuscripcionDealer", "rp": "AutoMarket.Core_SuscripcionDealer.html", "cl": 23, "ucl": 13, "cal": 36, "tl": 72, "cb": 2, "tb": 12, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "AutoMarket.Core.Entities.Usuario", "rp": "AutoMarket.Core_Usuario.html", "cl": 68, "ucl": 35, "cal": 103, "tl": 124, "cb": 26, "tb": 48, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "AutoMarket.Core.Entities.PerfilDealer", "rp": "AutoMarket.Core_PerfilDealer.html", "cl": 71, "ucl": 6, "cal": 77, "tl": 92, "cb": 22, "tb": 44, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "AutoMarket.Core.Entities.SuscripcionDealer", "rp": "AutoMarket.Core_SuscripcionDealer.html", "cl": 58, "ucl": 8, "cal": 66, "tl": 84, "cb": 16, "tb": 28, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "AutoMarket.Core.Entities.Usuario", "rp": "AutoMarket.Core_Usuario.html", "cl": 71, "ucl": 32, "cal": 103, "tl": 124, "cb": 29, "tb": 48, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "AutoMarket.Core.Entities.UsuarioFavorito", "rp": "AutoMarket.Core_UsuarioFavorito.html", "cl": 11, "ucl": 1, "cal": 12, "tl": 28, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "AutoMarket.Core.Exceptions.BusinessRuleException", "rp": "AutoMarket.Core_BusinessRuleException.html", "cl": 3, "ucl": 0, "cal": 3, "tl": 8, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
     ]},
   {
     "name": "AutoMarket.Infrastructure",
     "classes": [
       { "name": "AutoMarket.Infrastructure.BackgroundServices.SuscripcionMonitorService", "rp": "AutoMarket.Infrastructure_SuscripcionMonitorService.html", "cl": 0, "ucl": 58, "cal": 58, "tl": 103, "cb": 0, "tb": 10, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "AutoMarket.Infrastructure.Data.ApplicationDbContext", "rp": "AutoMarket.Infrastructure_ApplicationDbContext.html", "cl": 0, "ucl": 124, "cal": 124, "tl": 156, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "AutoMarket.Infrastructure.Data.ApplicationDbContext", "rp": "AutoMarket.Infrastructure_ApplicationDbContext.html", "cl": 0, "ucl": 143, "cal": 143, "tl": 175, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "AutoMarket.Infrastructure.Data.DatabaseSeeder", "rp": "AutoMarket.Infrastructure_DatabaseSeeder.html", "cl": 0, "ucl": 18, "cal": 18, "tl": 40, "cb": 0, "tb": 2, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "AutoMarket.Infrastructure.Migrations.AddSuscripcionDealerSaaS", "rp": "AutoMarket.Infrastructure_AddSuscripcionDealerSaaS.html", "cl": 0, "ucl": 286, "cal": 286, "tl": 340, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "AutoMarket.Infrastructure.Migrations.AgregarCamposPerfilDealer", "rp": "AutoMarket.Infrastructure_AgregarCamposPerfilDealer.html", "cl": 0, "ucl": 218, "cal": 218, "tl": 267, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
@@ -345,10 +363,12 @@ var assemblies = [
       { "name": "AutoMarket.Infrastructure.Migrations.AgregarEstadoUsuario", "rp": "AutoMarket.Infrastructure_AgregarEstadoUsuario.html", "cl": 0, "ucl": 324, "cal": 324, "tl": 377, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "AutoMarket.Infrastructure.Migrations.AgregarPublicarAlGuardar", "rp": "AutoMarket.Infrastructure_AgregarPublicarAlGuardar.html", "cl": 0, "ucl": 93, "cal": 93, "tl": 135, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "AutoMarket.Infrastructure.Migrations.AgregarTablaLeads", "rp": "AutoMarket.Infrastructure_AgregarTablaLeads.html", "cl": 0, "ucl": 339, "cal": 339, "tl": 395, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "AutoMarket.Infrastructure.Migrations.ApplicationDbContextModelSnapshot", "rp": "AutoMarket.Infrastructure_ApplicationDbContextModelSnapshot.html", "cl": 0, "ucl": 318, "cal": 318, "tl": 345, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "AutoMarket.Infrastructure.Migrations.AgregaTablaFavoritos", "rp": "AutoMarket.Infrastructure_AgregaTablaFavoritos.html", "cl": 0, "ucl": 380, "cal": 380, "tl": 437, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "AutoMarket.Infrastructure.Migrations.ApplicationDbContextModelSnapshot", "rp": "AutoMarket.Infrastructure_ApplicationDbContextModelSnapshot.html", "cl": 0, "ucl": 352, "cal": 352, "tl": 382, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "AutoMarket.Infrastructure.Migrations.MigracionInicial", "rp": "AutoMarket.Infrastructure_MigracionInicial.html", "cl": 0, "ucl": 110, "cal": 110, "tl": 155, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "AutoMarket.Infrastructure.Migrations.SistemaUsuariosManual", "rp": "AutoMarket.Infrastructure_SistemaUsuariosManual.html", "cl": 0, "ucl": 271, "cal": 271, "tl": 328, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "AutoMarket.Infrastructure.Repositories.AnuncioRepository", "rp": "AutoMarket.Infrastructure_AnuncioRepository.html", "cl": 0, "ucl": 100, "cal": 100, "tl": 148, "cb": 0, "tb": 22, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "AutoMarket.Infrastructure.Repositories.AnuncioRepository", "rp": "AutoMarket.Infrastructure_AnuncioRepository.html", "cl": 0, "ucl": 115, "cal": 115, "tl": 173, "cb": 0, "tb": 22, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "AutoMarket.Infrastructure.Repositories.FavoritoRepository", "rp": "AutoMarket.Infrastructure_FavoritoRepository.html", "cl": 0, "ucl": 23, "cal": 23, "tl": 43, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "AutoMarket.Infrastructure.Repositories.LeadRepository", "rp": "AutoMarket.Infrastructure_LeadRepository.html", "cl": 0, "ucl": 32, "cal": 32, "tl": 55, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "AutoMarket.Infrastructure.Repositories.SuscripcionRepository", "rp": "AutoMarket.Infrastructure_SuscripcionRepository.html", "cl": 0, "ucl": 16, "cal": 16, "tl": 34, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "AutoMarket.Infrastructure.Repositories.UsuarioRepository", "rp": "AutoMarket.Infrastructure_UsuarioRepository.html", "cl": 0, "ucl": 39, "cal": 39, "tl": 67, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
@@ -406,10 +426,22 @@ var riskHotspots = [
       { "value": 10, "exceeded": false },
     ]},
   {
+    "assembly": "AutoMarket.API", "class": "AutoMarket.API.Controllers.PagosController", "reportPath": "AutoMarket.API_PagosController.html", "methodName": "PayPalWebhook()", "methodShortName": "PayPalWebhook()", "fileIndex": 0, "line": 78,
+    "metrics": [
+      { "value": 108, "exceeded": true },
+      { "value": 52, "exceeded": true },
+    ]},
+  {
     "assembly": "AutoMarket.Infrastructure", "class": "AutoMarket.Infrastructure.BackgroundServices.SuscripcionMonitorService", "reportPath": "AutoMarket.Infrastructure_SuscripcionMonitorService.html", "methodName": "ProcesarMorososAsync()", "methodShortName": "ProcesarMorososAsync()", "fileIndex": 0, "line": 47,
     "metrics": [
       { "value": 72, "exceeded": true },
       { "value": 8, "exceeded": false },
+    ]},
+  {
+    "assembly": "AutoMarket.API", "class": "AutoMarket.API.Controllers.AdminController", "reportPath": "AutoMarket.API_AdminController.html", "methodName": "SuspenderUsuario()", "methodShortName": "SuspenderUsuario()", "fileIndex": 0, "line": 45,
+    "metrics": [
+      { "value": 42, "exceeded": true },
+      { "value": 6, "exceeded": false },
     ]},
   {
     "assembly": "AutoMarket.API", "class": "AutoMarket.API.Controllers.AdminController", "reportPath": "AutoMarket.API_AdminController.html", "methodName": "SuspenderUsuario()", "methodShortName": "SuspenderUsuario()", "fileIndex": 0, "line": 40,
@@ -442,10 +474,28 @@ var riskHotspots = [
       { "value": 6, "exceeded": false },
     ]},
   {
+    "assembly": "AutoMarket.Application", "class": "AutoMarket.Application.Services.AnuncioService", "reportPath": "AutoMarket.Application_AnuncioService.html", "methodName": "SubirImagenesAsync()", "methodShortName": "SubirImagenesAsync()", "fileIndex": 0, "line": 186,
+    "metrics": [
+      { "value": 35, "exceeded": true },
+      { "value": 12, "exceeded": false },
+    ]},
+  {
+    "assembly": "AutoMarket.Application", "class": "AutoMarket.Application.Services.AnuncioService", "reportPath": "AutoMarket.Application_AnuncioService.html", "methodName": "SubirImagenesAsync()", "methodShortName": "SubirImagenesAsync()", "fileIndex": 0, "line": 162,
+    "metrics": [
+      { "value": 35, "exceeded": true },
+      { "value": 12, "exceeded": false },
+    ]},
+  {
     "assembly": "AutoMarket.Application", "class": "AutoMarket.Application.Services.AnuncioService", "reportPath": "AutoMarket.Application_AnuncioService.html", "methodName": "SubirImagenesAsync()", "methodShortName": "SubirImagenesAsync()", "fileIndex": 0, "line": 161,
     "metrics": [
       { "value": 35, "exceeded": true },
       { "value": 12, "exceeded": false },
+    ]},
+  {
+    "assembly": "AutoMarket.Core", "class": "AutoMarket.Core.Entities.Usuario", "reportPath": "AutoMarket.Core_Usuario.html", "methodName": ".ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.Boolean)", "methodShortName": ".ctor(...)", "fileIndex": 0, "line": 28,
+    "metrics": [
+      { "value": 24, "exceeded": false },
+      { "value": 20, "exceeded": true },
     ]},
   {
     "assembly": "AutoMarket.Core", "class": "AutoMarket.Core.Entities.Usuario", "reportPath": "AutoMarket.Core_Usuario.html", "methodName": ".ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.Boolean)", "methodShortName": ".ctor(...)", "fileIndex": 0, "line": 26,
@@ -454,10 +504,10 @@ var riskHotspots = [
       { "value": 20, "exceeded": true },
     ]},
   {
-    "assembly": "AutoMarket.Core", "class": "AutoMarket.Core.Entities.Usuario", "reportPath": "AutoMarket.Core_Usuario.html", "methodName": ".ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.Boolean)", "methodShortName": ".ctor(...)", "fileIndex": 0, "line": 28,
+    "assembly": "AutoMarket.Application", "class": "AutoMarket.Application.Helpers.ReferenciaPagoPayPalParser", "reportPath": "AutoMarket.Application_ReferenciaPagoPayPalParser.html", "methodName": "TryParse(System.String,AutoMarket.Application.DTOs.Paypal.ReferenciaPagoPayPal\u0026)", "methodShortName": "TryParse(...)", "fileIndex": 0, "line": 9,
     "metrics": [
-      { "value": 26, "exceeded": false },
-      { "value": 20, "exceeded": true },
+      { "value": 16, "exceeded": false },
+      { "value": 16, "exceeded": true },
     ]},
 ];
 
