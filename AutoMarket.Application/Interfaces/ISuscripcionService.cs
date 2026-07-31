@@ -5,6 +5,6 @@ namespace AutoMarket.Application.Interfaces;
 public interface ISuscripcionService
 {
     Task AsignarPlanInicialAsync(int perfilDealerId, PlanNivel nivel, CicloFacturacion ciclo);
-    Task CambiarPlanAsync(int perfilDealerId, PlanNivel nuevoNivel);
+    Task CambiarPlanAsync(int dealerId, PlanNivel nuevoPlan, CicloFacturacion ciclo);
     Task RenovarManualAsync(int perfilDealerId, DateTime nuevaFechaVencimiento);
 }

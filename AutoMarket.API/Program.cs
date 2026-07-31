@@ -33,6 +33,9 @@ builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IFavoritoService, FavoritoService>();
 builder.Services.AddScoped<IComparadorService, ComparadorService>();
 builder.Services.AddScoped<ICatalogoService, CatalogoService>();
+builder.Services.AddHttpClient<IPayPalService, PayPalService>();
+builder.Services.AddScoped<IFavoritoRepository, FavoritoRepository>();
+builder.Services.AddScoped<ISuscripcionService, SuscripcionService>();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options => 
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));

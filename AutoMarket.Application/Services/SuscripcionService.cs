@@ -27,7 +27,7 @@ public class SuscripcionService : ISuscripcionService
         await _repository.AgregarAsync(nuevaSuscripcion);
     }
 
-    public async Task CambiarPlanAsync(int perfilDealerId, PlanNivel nuevoNivel)
+    public async Task CambiarPlanAsync(int perfilDealerId, PlanNivel nuevoNivel, CicloFacturacion ciclo)
     {
         var suscripcion = await _repository.ObtenerPorDealerIdAsync(perfilDealerId);
 

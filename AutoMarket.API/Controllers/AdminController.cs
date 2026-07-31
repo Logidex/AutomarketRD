@@ -1,6 +1,7 @@
 using AutoMarket.Application.DTOs.Admin;
 using AutoMarket.Application.Interfaces;
 using AutoMarket.Application.Services;
+using AutoMarket.Core.Entities.Enums;
 using AutoMarket.Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -142,7 +143,7 @@ public class AdminController : ControllerBase
     {
         try
         {
-            await _suscripcionService.CambiarPlanAsync(dealerId, dto.NuevoNivel);
+            await _suscripcionService.CambiarPlanAsync(dealerId, dto.NuevoNivel, CicloFacturacion.Mensual);
             return Ok(new { exito = true, mensaje = $"Plan del dealer {dealerId} actualizado a {dto.NuevoNivel}." });
         }
         catch (Exception ex)
