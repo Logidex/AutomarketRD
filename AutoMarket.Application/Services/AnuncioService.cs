@@ -1,11 +1,12 @@
 using AutoMarket.Application.DTOs;
+using AutoMarket.Application.Interfaces;
 using AutoMarket.Core.Entities;
 using AutoMarket.Core.Exceptions;
 using AutoMarket.Core.Interfaces;
 
 namespace AutoMarket.Application.Services;
 
-public class AnuncioService
+public class AnuncioService : IAnuncioService
 {
     private readonly IAnuncioRepository _repository;
     private readonly IAlmacenadorArchivos _almacenadorArchivos;

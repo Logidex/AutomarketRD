@@ -150,33 +150,42 @@ public class PayPalService : IPayPalService
 
         using var webhookEvent = JsonDocument.Parse(jsonBody);
 
-        var payload = new
+        using var stream = new MemoryStream();
+        using (var writer = new Utf8JsonWriter(stream))
         {
-            transmission_id = transmissionId,
-            transmission_time = transmissionTime,
-            cert_url = certUrl,
-            auth_algo = authAlgo,
-            transmission_sig = transmissionSig,
-            webhook_id = _webhookId,
-            webhook_event = webhookEvent.RootElement
-        };
+            writer.WriteStartObject();
+            writer.WriteString("transmission_id", transmissionId);
+            writer.WriteString("transmission_time", transmissionTime);
+            writer.WriteString("cert_url", certUrl);
+            writer.WriteString("auth_algo", authAlgo);
+            writer.WriteString("transmission_sig", transmissionSig);
+            writer.WriteString("webhook_id", _webhookId);
+            writer.WritePropertyName("webhook_event");
+            webhookEvent.RootElement.WriteTo(writer);
+            writer.WriteEndObject();
+        }
+
+        var requestBody = Encoding.UTF8.GetString(stream.ToArray());
+
+        Console.WriteLine("=== VERIFY WEBHOOK REQUEST ===");
+        Console.WriteLine(requestBody);
 
         var request = new HttpRequestMessage(
             HttpMethod.Post,
             $"{_baseUrl}/v1/notifications/verify-webhook-signature");
 
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        request.Content = new StringContent(
-            JsonSerializer.Serialize(payload),
-            Encoding.UTF8,
-            "application/json");
+        request.Content = new StringContent(requestBody, Encoding.UTF8, "application/json");
 
         var response = await _httpClient.SendAsync(request);
+        var responseBody = await response.Content.ReadAsStringAsync();
+
+        Console.WriteLine("=== VERIFY WEBHOOK RESPONSE ===");
+        Console.WriteLine(responseBody);
+
         response.EnsureSuccessStatusCode();
 
-        var responseJson = await response.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(responseJson);
-
+        using var doc = JsonDocument.Parse(responseBody);
         var status = doc.RootElement.GetProperty("verification_status").GetString();
 
         return string.Equals(status, "SUCCESS", StringComparison.OrdinalIgnoreCase);
