@@ -1,13 +1,24 @@
-# Carpetas de compilación de .NET
+# .env files (MUY IMPORTANTE)
+.env
+.env.dev
+.env.prod
+*.env
+!*.env.example
+
+# Build outputs
 bin/
 obj/
+frontend/dist/
+frontend/node_modules/
 
-# Herramientas de análisis locales
-graphify-out/
-.graphify_analysis.json
-
-# Archivos de configuración de usuario de VS Code
+# IDE
 .vscode/
-*.user
-*.userosscache
-*.sln.docstates
+.idea/
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db

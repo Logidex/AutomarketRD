@@ -1,384 +1,234 @@
-# Arquitectura de AutoMarketRD
+# AutoMarketRD
 
-## Información general
+Plataforma de compraventa de vehículos con roles de usuario y dealer, autenticación JWT, pagos con PayPal y más.
 
-- **Proyecto:** AutoMarketRD
-- **Tipo:** API REST para marketplace de vehículos
-- **Arquitectura:** Semi-Clean Architecture por capas
-- **Framework:** ASP.NET Core / .NET 10
-- **Base de datos:** PostgreSQL
-- **ORM:** Entity Framework Core
-- **Autenticación:** JWT Bearer
-- **Almacenamiento de imágenes:** Amazon S3 (Abstraído)
-- **Notificaciones:** SMTP Client nativo (C#)
-- **Documentación de API:** OpenAPI y Scalar
-- **Pruebas:** xUnit y Moq
+## 📂 Estructura del Proyecto
+AutoMarketRDspn/
+├── backend/ # API .NET 8 + PostgreSQL
+│ ├── AutoMarket.API/
+│ ├── AutoMarket.Application/
+│ ├── AutoMarket.Core/
+│ ├── AutoMarket.Infrastructure/
+│ ├── docker-compose.dev.yml
+│ ├── docker-compose.prod.yml
+│ ├── .env.dev
+│ ├── .env.prod
+│ └── .env.example # Template de variables
+├── frontend/ # React + Vite + TypeScript (próximamente)
+├── .gitignore
+└── README.md
 
-## Propósito
+## 🛠️ Requisitos
 
-AutoMarketRD es una API REST orientada a un marketplace de vehículos.
-Permite a usuarios particulares y dealers registrarse, autenticarse,
-crear y publicar anuncios de vehículos, subir imágenes, administrar
-perfiles de dealer, manejar planes de suscripción y recibir contactos (leads)
-directamente en sus bandejas de entrada mediante un sistema de notificaciones.
+- [.NET 8 SDK](https://dotnet.microsoft.com/download)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+- [Node.js 18+](https://nodejs.org/) (para el frontend)
+- [Git](https://git-scm.com/)
 
-## Alcance actual
+## 🚀 Desarrollo Local
 
-El sistema incluye:
+### Backend
 
-- Registro e inicio de sesión de usuarios.
-- Autenticación y Autorización basada en JWT.
-- Usuarios compradores, dealers y administradores.
-- Creación, consulta, edición y publicación de anuncios.
-- Búsqueda paginada de anuncios.
-- Carga de imágenes asociadas a anuncios.
-- Perfil público y actualización de perfil para dealers.
-- Almacenamiento de archivos desacoplado.
-- Gestión de suscripciones y planes SaaS para dealers.
-- Monitoreo en segundo plano de morosidad de suscripciones.
-- **Captación de leads (contactos) anónimos y autenticados.**
-- **Envío de alertas por correo electrónico vía servidor SMTP.**
-- Pruebas unitarias para servicios principales (Cobertura 100% en flujos críticos).
+#### 1. Configurar variables de entorno
 
-## Arquitectura general
+En `backend/`, crea `.env.dev` basado en `.env.example`:
 
-El proyecto utiliza una arquitectura semi-Clean Architecture. La solución
-se organiza en capas para separar responsabilidades y reducir el
-acoplamiento entre la lógica de negocio, la capa HTTP y los detalles de
-infraestructura.
-
-```text
-Cliente web / móvil
-        |
-        v
-AutoMarket.API
-Controllers, JWT, middleware, configuración HTTP
-        |
-        v
-AutoMarket.Application
-Servicios, casos de uso, DTOs, interfaces de aplicación
-        |
-        v
-AutoMarket.Core
-Entidades, reglas de negocio, contratos de repositorios y notificaciones
-        ^
-        |
-AutoMarket.Infrastructure
-EF Core, PostgreSQL, Repositorios, JWT, S3, SMTP, Migraciones
+```bash
+# Copia y edita backend/.env.example a backend/.env.dev
+# Asegúrate de cambiar contraseñas y secrets
 ```
 
-## Regla de dependencias
+#### 2. Levantar entorno de desarrollo
 
-Las dependencias deben dirigirse hacia las capas internas.
+```bash
+cd backend
 
-- `Core` no debe depender de ASP.NET Core, Entity Framework Core, PostgreSQL, Amazon S3, SMTP ni JWT.
-- `Application` coordina casos de uso y depende de `Core`.
-- `Infrastructure` contiene implementaciones técnicas de contratos definidos en las capas internas.
-- `API` recibe solicitudes HTTP y delega las operaciones a servicios de `Application`.
-- `Tests` valida las reglas y servicios del sistema de forma aislada.
+# Levantar solo desarrollo
+docker compose -f docker-compose.dev.yml --env-file .env.dev up -d
 
-## Estructura de la solución
+# Ver logs en tiempo real
+docker compose -f docker-compose.dev.yml --env-file .env.dev logs -f api
 
-```text
-AutoMarketRD.sln
-│
-├── AutoMarket.API/
-│   ├── Controllers/
-│   │   ├── AnunciosController.cs
-│   │   ├── AuthController.cs
-│   │   ├── DealersController.cs
-│   │   └── LeadsController.cs
-│   ├── Program.cs
-│   └── appsettings.json
-│
-├── AutoMarket.Application/
-│   ├── DTOs/
-│   │   ├── Anuncio/
-│   │   ├── Dealer/
-│   │   ├── Lead/
-│   │   └── Usuario/
-│   ├── Interfaces/
-│   └── Services/
-│
-├── AutoMarket.Core/
-│   ├── Entities/
-│   │   ├── Anuncio.cs
-│   │   ├── Lead.cs
-│   │   ├── Usuario.cs
-│   │   ├── PerfilDealer.cs
-│   │   └── SuscripcionDealer.cs
-│   ├── Entities/Enums/
-│   ├── Entities/Exceptions/
-│   ├── Entities/Filters/
-│   └── Interfaces/
-│
-├── AutoMarket.Infrastructure/
-│   ├── BackgroundServices/
-│   ├── Data/
-│   ├── Migrations/
-│   ├── Repositories/
-│   └── Services/
-│
-└── AutoMarket.Tests/
-    ├── Controllers/
-    └── Services/
+# Detener
+docker compose -f docker-compose.dev.yml --env-file .env.dev down
 ```
 
-## Responsabilidad de capas
+**Endpoints:**
+- API: `http://localhost:8080`
+- Health check: `http://localhost:8080/health/ready`
+- Swagger/Scalar: `http://localhost:8080/scalar`
 
-### AutoMarket.Core
+**Base de datos (solo dev):**
+- Host: `localhost`
+- Puerto: `5432`
+- Usuario: `postgres`
+- Password: (ver `.env.dev`)
+- Base de datos: `AutoMarketDB`
 
-Representa el núcleo del negocio. Contiene las entidades, reglas de
-dominio, enums, filtros, excepciones y contratos que no dependen de
-tecnologías externas.
+#### 3. Levantar entorno de producción (local)
 
-Entidades principales:
+```bash
+cd backend
 
-- `Usuario`: representa una cuenta del sistema y permite crear perfiles de dealer o administradores internos.
-- `Anuncio`: representa una publicación de vehículo y contiene operaciones como actualizar información, publicar, agregar y eliminar fotos.
-- `PerfilDealer`: representa la información pública y comercial de un dealer.
-- `SuscripcionDealer`: representa el plan y estado de la suscripción de un dealer.
-- `Lead`: representa una intención de compra o contacto hacia un anuncio específico.
+# Detener desarrollo si está corriendo
+docker compose -f docker-compose.dev.yml --env-file .env.dev down
 
-Contratos principales:
+# Levantar producción
+docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
 
-- `IUsuarioRepository`
-- `IAnuncioRepository`
-- `ISuscripcionRepository`
-- `IAlmacenadorArchivos`
-- `ILeadRepository`: Contrato para guardar y consultar mensajes.
-- `IEmailSenderService`: Contrato de dominio para enviar correos, sin atarse a un proveedor.
+# Ver logs
+docker compose -f docker-compose.prod.yml --env-file .env.prod logs -f api
 
-### AutoMarket.Application
-
-Coordina los casos de uso de la aplicación. Aplica las reglas de negocio
-utilizando entidades, repositorios y servicios externos.
-
-Servicios principales:
-
-| Servicio | Responsabilidad |
-|---|---|
-| `AuthService` | Registro, validación de credenciales e inicio de sesión |
-| `AnuncioService` | Creación, consulta, actualización, publicación e imágenes |
-| `PerfilDealerService` | Consulta y actualización del perfil de comercial |
-| `SuscripcionService` | Asignación y cambio de planes de suscripción |
-| `LeadService` | Orquestación de captación de leads y disparador de correos |
-
-DTOs principales:
-
-- `RegistroDto`
-- `LoginDto`
-- `AnuncioCreateDto`
-- `AnuncioUpdateDto`
-- `AnuncioDto`
-- `AnuncioListadoDto`
-- `AnuncioSearchDto`
-- `PagedResult`
-- `PerfilDealerPublicoDto`
-- `PerfilDealerUpdateDto`
-- `LeadCreateDto`
-- `LeadDto`
-
-### AutoMarket.Infrastructure
-
-Contiene las implementaciones vinculadas a tecnologías específicas.
-
-Componentes principales:
-
-| Componente | Responsabilidad |
-|---|---|
-| `ApplicationDbContext` | Configuración y acceso a BD con EF Core |
-| `UsuarioRepository` | Implementación de `IUsuarioRepository` |
-| `AnuncioRepository` | Implementación de `IAnuncioRepository` |
-| `SuscripcionRepository` | Implementación de `ISuscripcionRepository` |
-| `LeadRepository` | Implementación de `ILeadRepository` |
-| `TokenService` | Generación de tokens JWT |
-| `AlmacenadorS3` | Carga y eliminación de archivos en Amazon S3 |
-| `SuscripcionMonitorService` | Proceso Background (`IHostedService`) para morosos |
-| `SmtpEmailSenderService` | Implementación real de envío de correos vía `System.Net.Mail` |
-
-### AutoMarket.API
-
-Capa de presentación y punto de entrada HTTP. Configura inyección de
-dependencias, autenticación, documentación de API y rutas.
-
-Controllers principales:
-
-| Controller | Responsabilidad |
-|---|---|
-| `AuthController` | Autenticación y registro |
-| `AnunciosController` | Gestión del catálogo de vehículos |
-| `DealersController` | Gestión de agencias |
-| `LeadsController` | Recepción pública de mensajes y lectura privada protegida |
-
-### AutoMarket.Tests
-
-Pruebas unitarias aisladas utilizando xUnit y Moq. El objetivo es validar
-reglas de negocio sin depender de la base de datos ni servicios externos.
-
-Pruebas actuales:
-
-- `AnuncioServiceTests`
-- `UsuarioServiceTests`
-- `PerfilDealerServiceTests`
-- `SuscripcionServiceTests`
-- `LeadServiceTests`: Valida orquestación y resiliencia si el servidor SMTP falla.
-- `LeadsControllerTests`: Valida políticas de acceso HTTP (`AllowAnonymous` vs `Authorize`).
-
-## Módulos funcionales
-
-### Autenticación y usuarios
-
-Permite registrar usuarios, validar que un correo no esté repetido e
-iniciar sesión. Cuando las credenciales son válidas, se genera un token JWT.
-
-Flujo:
-
-```text
-POST /auth/registrar o POST /auth/login
-        |
-        v
-AuthController
-        |
-        v
-IAuthService / AuthService
-        |
-        v
-IUsuarioRepository
-        |
-        v
-UsuarioRepository + ApplicationDbContext
-        |
-        v
-PostgreSQL
+# Detener
+docker compose -f docker-compose.prod.yml --env-file .env.prod down
 ```
+
+**Endpoints:**
+- API: `http://localhost` (puerto 80)
+- Health check: `http://localhost/health/ready`
+
+**Nota:** En producción, el puerto 5432 de la BD **no está expuesto** por seguridad.
+
+#### 4. Cambiar entre entornos
+
+```bash
+cd backend
+
+# De dev a prod
+docker compose -f docker-compose.dev.yml --env-file .env.dev down
+docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
+
+# De prod a dev
+docker compose -f docker-compose.prod.yml --env-file .env.prod down
+docker compose -f docker-compose.dev.yml --env-file .env.dev up -d
+```
+
+#### 5. Aplicar migraciones (si es necesario)
+
+Las migraciones se aplican automáticamente al iniciar, pero si necesitas hacerlo manualmente:
+
+```bash
+cd backend
+dotnet ef database update --project AutoMarket.Infrastructure --startup-project AutoMarket.API
+```
+
+#### 6. Build y tests
+
+```bash
+cd backend
+
+# Build
+dotnet build
+
+# Tests (si los tienes)
+dotnet test
+```
+
+### Frontend (Próximamente)
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+**URL:** `http://localhost:5173`
+
+## 📡 Endpoints de la API
+
+### Autenticación
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| POST | `/api/auth/registro` | Registrar nuevo usuario |
+| POST | `/api/auth/login` | Login y obtener JWT |
 
 ### Anuncios
 
-Gestiona la publicación de vehículos. Incluye creación, consulta,
-actualización, publicación, búsqueda paginada y carga de imágenes.
+| Método | Endpoint | Descripción | Auth |
+|--------|----------|-------------|------|
+| GET | `/api/anuncios` | Obtener todos los anuncios | No |
+| GET | `/api/anuncios/{id}` | Obtener anuncio por ID | No |
+| POST | `/api/anuncios` | Crear nuevo anuncio | Sí |
+| PUT | `/api/anuncios/{id}` | Actualizar anuncio | Sí |
+| DELETE | `/api/anuncios/{id}` | Eliminar anuncio | Sí |
+| PATCH | `/api/anuncios/{id}/publicar` | Publicar anuncio | Sí |
 
-Reglas de negocio documentadas:
+### Dealers
 
-- Solo el propietario puede actualizar o publicar su anuncio.
-- Un usuario particular tiene límites de anuncios.
-- Un dealer puede publicar según las reglas de su suscripción.
-- Las imágenes deben cumplir las validaciones de tamaño y formato.
-- Un anuncio debe existir antes de actualizarlo, publicarlo o subir imágenes.
+| Método | Endpoint | Descripción | Auth |
+|--------|----------|-------------|------|
+| GET | `/api/dealers/{id}` | Obtener perfil público de dealer | No |
+| PUT | `/api/dealers/me` | Actualizar mi perfil | Sí (Dealer) |
 
-### Motor de Ventas y Captación de Leads (RF-005)
+### Favoritos
 
-Permite a compradores anónimos contactar vendedores de vehículos.
+| Método | Endpoint | Descripción | Auth |
+|--------|----------|-------------|------|
+| GET | `/api/favoritos` | Obtener mis favoritos | Sí |
+| POST | `/api/favoritos/anuncio/{id}` | Agregar a favoritos | Sí |
+| DELETE | `/api/favoritos/anuncio/{id}` | Quitar de favoritos | Sí |
 
-- Los visitantes no necesitan cuenta para enviar mensajes (`[AllowAnonymous]`).
-- Los dealers necesitan estar logueados para ver su bandeja (`[Authorize]`).
-- Se dispara un correo HTML en tiempo real al dueño del vehículo usando `SmtpClient`.
-- **Resiliencia:** Si el correo falla temporalmente, el Lead se guarda en BD para no perder al cliente.
+### Leads
 
-### Perfil de dealer
+| Método | Endpoint | Descripción | Auth |
+|--------|----------|-------------|------|
+| POST | `/api/leads` | Crear lead (contactar vendedor) | No |
+| GET | `/api/leads/anuncio/{anuncioId}` | Ver leads de un anuncio | Sí |
+| GET | `/api/leads/mis-leads` | Ver mis leads (dealer) | Sí (Dealer) |
 
-Permite consultar públicamente el perfil de un dealer y que el dealer
-autenticado actualice su propia información, incluyendo su logo.
+### Pagos
 
-Reglas de negocio:
+| Método | Endpoint | Descripción | Auth |
+|--------|----------|-------------|------|
+| POST | `/api/pagos/generar-link` | Generar link de pago PayPal | Sí |
+| POST | `/api/pagos/webhook` | Webhook de PayPal | No |
 
-- Solo un usuario dealer puede actualizar su perfil.
-- El logo debe cumplir validaciones de extensión y tamaño.
-- Los archivos se almacenan mediante la abstracción `IAlmacenadorArchivos`.
+## 🔧 Tecnologías
 
-### Suscripciones SaaS
+### Backend
 
-Administra los planes de los dealers y sus restricciones de publicación.
+- .NET 8
+- Entity Framework Core 8
+- PostgreSQL 16
+- JWT Authentication
+- Docker + Docker Compose
+- AutoMapper
+- FluentValidation
+- Scalar (API docs)
 
-- Un dealer no puede tener más de una suscripción activa.
-- No se puede cambiar al mismo plan actual.
-- Una suscripción cancelada no puede cambiar de plan.
-- Un servicio en segundo plano (`SuscripcionMonitorService`) realiza barridos diarios automatizados.
+### Frontend (Próximamente)
 
-## Flujo: publicar un anuncio
+- React 18
+- Vite
+- TypeScript
+- Tailwind CSS
+- React Router
+- Axios / React Query
 
-```text
-1. El usuario envía una petición autenticada.
-2. AnunciosController obtiene el identificador del usuario desde el JWT.
-3. AnuncioService busca el anuncio mediante IAnuncioRepository.
-4. El servicio verifica que el usuario sea el propietario.
-5. Se aplican las reglas de publicación del dominio.
-6. El repositorio actualiza el anuncio mediante EF Core.
-7. La API devuelve la respuesta HTTP correspondiente.
-```
+## 📝 Contribuir
 
-## Persistencia
+1. Crear rama desde `develop`: `git checkout -b feature/nombre-feature`
+2. Hacer cambios y commits descriptivos
+3. Crear Pull Request a `develop`
 
-La persistencia utiliza Entity Framework Core y PostgreSQL mediante
-`ApplicationDbContext`.
+## 🔒 Seguridad
 
-Las migraciones registran cambios de estructura, incluyendo:
+- **NUNCA** commitear `.env.dev` o `.env.prod` al repo
+- Usar `.env.example` como template
+- Los secrets van en GitHub Secrets para CI/CD
 
-- Migración inicial
-- Cambio para publicar al guardar
-- Soporte de fotos en anuncios
-- Sistema de usuarios
-- Campos para perfil de dealer
-- Suscripción SaaS para dealers
-- Entidad Lead y relaciones
+## 📄 Licencia
 
-## Seguridad
+© 2025 Erick Pérez. Todos los derechos reservados.
 
-- La autenticación se basa en JWT Bearer.
-- Los endpoints que modifican recursos requieren un usuario autenticado.
-- El identificador del usuario autenticado se obtiene desde los claims del token.
-- La capa Application valida que el usuario sea dueño del anuncio o perfil que intenta modificar.
-- Las contraseñas deben almacenarse como hash usando BCrypt.
-- Las credenciales de PostgreSQL, JWT, Amazon S3 y SMTP deben configurarse por variables de entorno o secretos; nunca deben subirse al repositorio.
+Este es un proyecto privado. No se permite el uso, reproducción,
+distribución o modificación sin autorización expresa del autor.
 
-## Integraciones externas
+## 👤 Autor
 
-| Integración | Uso |
-|---|---|
-| PostgreSQL | Persistencia relacional general |
-| Amazon S3 | Almacenamiento de imágenes de anuncios y logos |
-| Servidor SMTP | Envío de correos electrónicos transaccionales (ej. Gmail) |
-| JWT | Autenticación stateless |
-| Scalar / OpenAPI | Exploración y documentación de endpoints |
+Erick - [[Tu GitHub](https://github.com/Logidex)/[LinkedIn](https://www.linkedin.com/in/erick-hipolito-lopez-genao-8172b9271/)]
 
-## Decisiones arquitectónicas
+---
 
-### ADR-001: Semi-Clean Architecture
-
-Mantiene límites claros sin abstracciones innecesarias que resten velocidad de desarrollo.
-
-### ADR-002: Repositorios como contratos
-
-Aislan a EF Core de la lógica de aplicación. Los repositorios se definen como interfaces en Core y se implementan en Infrastructure.
-
-### ADR-003: Servicios Externos Desacoplados
-
-`IAlmacenadorArchivos` e `IEmailSenderService` permiten cambiar a AWS SES, SendGrid o Cloudinary en el futuro tocando solo un archivo en Infrastructure.
-
-### ADR-004: Background Services
-
-`SuscripcionMonitorService` se ejecuta como proceso automático sin depender de Cron Jobs externos ni solicitudes HTTP.
-
-## 🚀 Roadmap hacia Producción
-
-### Fase 1: Seguridad y Preparación Frontend
-
-- [ ] **Configurar CORS:** Habilitar políticas de orígenes cruzados en `Program.cs` para el consumo desde el cliente web (React).
-- [ ] **Limpieza de Secretos:** Migrar la conexión PostgreSQL, secretos JWT y contraseñas SMTP a User Secrets / Variables de Entorno.
-- [ ] **Rate Limiting:** Implementar limitador de peticiones en los endpoints públicos (`LeadsController`) para evitar ataques de Spam.
-
-### Fase 2: Módulo Backoffice (Admin Supremo)
-
-- [ ] **Data Seeder:** Script de inicialización para crear el usuario Administrador primario.
-- [ ] **Admin Controller:** Endpoints protegidos para la moderación forzada de anuncios y suspensión de perfiles.
-
-### Fase 3: Retención UX y Analíticas
-
-- [ ] **Favoritos:** Entidad y relación N:M para guardar vehículos.
-- [ ] **Comparador:** Endpoint optimizado para cruzar especificaciones técnicas de múltiples vehículos.
-- [ ] **Paginación Global:** Refactorizar listados para implementar el modelo `PagedResult`.
-
-### Fase 4: Monetización
-
-- [ ] **Pasarela de Pagos:** Integración con proveedor (Stripe / Local) para el cobro real de suscripciones.
-- [ ] **Webhooks:** Recepción de eventos del banco para detonar la activación del plan.
+**¿Problemas?** Revisa los logs con `docker compose logs -f api` o abre un issue.

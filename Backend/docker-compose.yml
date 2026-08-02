@@ -1,0 +1,73 @@
+services:
+  db:
+    image: postgres:16
+    container_name: automarket-db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: AutoMarket.API/Dockerfile
+    container_name: automarket-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+
+      # Connection string
+      ConnectionStrings__DefaultConnection: ${CONNECTION_STRING}
+
+      # JWT
+      Jwt__Secret: ${JWT_SECRET}
+      Jwt__Issuer: ${JWT_ISSUER}
+      Jwt__Audience: ${JWT_AUDIENCE}
+
+      # SMTP
+      SmtpSettings__Host: ${SMTP_HOST}
+      SmtpSettings__Port: ${SMTP_PORT}
+      SmtpSettings__User: ${SMTP_USER}
+      SmtpSettings__Password: ${SMTP_PASSWORD}
+      SmtpSettings__SenderName: ${SMTP_SENDER_NAME}
+
+      # AWS S3
+      AWS__AccessKey: ${AWS_ACCESS_KEY}
+      AWS__SecretKey: ${AWS_SECRET_KEY}
+      AWS__Region: ${AWS_REGION}
+      AWS__BucketName: ${AWS_BUCKET_NAME}
+
+      # PayPal
+      PayPal__UrlBase: ${PAYPAL_URL_BASE}
+      PayPal__ClientId: ${PAYPAL_CLIENT_ID}
+      PayPal__ClientSecret: ${PAYPAL_CLIENT_SECRET}
+      PayPal__ReturnUrl: ${PAYPAL_RETURN_URL}
+      PayPal__CancelUrl: ${PAYPAL_CANCEL_URL}
+      PayPal__WebhookId: ${PAYPAL_WEBHOOK_ID}
+
+      # CORS
+      Cors__AllowedOrigins: ${CORS_ALLOWED_ORIGINS}
+
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health/ready"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  pgdata:
