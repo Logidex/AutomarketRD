@@ -47,12 +47,12 @@ public class ExceptionHandlingMiddleware
         {
             UnauthorizedAccessException => (
                 (int)HttpStatusCode.Unauthorized,
-                "No autorizado. Debes iniciar sesión.",
+                exception.Message,  // ← Usa el mensaje de la excepción
                 "Unauthorized"
             ),
             KeyNotFoundException => (
                 (int)HttpStatusCode.NotFound,
-                "El recurso solicitado no fue encontrado.",
+                exception.Message,
                 "NotFound"
             ),
             ArgumentException => (
@@ -79,11 +79,10 @@ public class ExceptionHandlingMiddleware
 
         context.Response.StatusCode = statusCode;
 
-        // En producción no exponemos el stack trace
         var response = new
         {
-            success = false,
-            message = message,
+            exito = false,
+            mensaje = message,
             error = error,
             stackTrace = _env.IsDevelopment() ? exception.StackTrace : null
         };

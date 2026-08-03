@@ -21,10 +21,10 @@ public class AuthController : ControllerBase
 
         if (!resultado.Exito)
         {
-            return BadRequest(resultado.Mensaje);
+            return BadRequest(new { mensaje = resultado.Mensaje });
         }
 
-        return Ok(resultado.Mensaje);
+        return Ok(new { exito = true, mensaje = resultado.Mensaje });
     }
 
     [HttpPost("login")]
@@ -32,12 +32,16 @@ public class AuthController : ControllerBase
     {
         var resultado = await _authService.LoginAsync(dto);
 
-        if (!resultado.Exito)
+        var response = new
         {
-            return BadRequest(resultado.Mensaje);
-        }
+            Exito = true,
+            Mensaje = resultado.Mensaje,
+            Token = resultado.Token
+        };
 
-        return Ok(new { resultado.Mensaje, resultado.Token });
+        Console.WriteLine($"Response: Exito={response.Exito}, Mensaje={response.Mensaje}, Token={response.Token?.Substring(0, 10)}...");
+
+        return Ok(response);
     }
 
     [HttpGet("test-error")]

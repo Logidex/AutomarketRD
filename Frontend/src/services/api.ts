@@ -1,16 +1,14 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
-
-// Crear instancia de axios
-export const api = axios.create({
-  baseURL: API_URL,
+const api = axios.create({
+  baseURL: 'http://localhost:5217',
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: false,
 });
 
-// Interceptor para agregar token en requests
+// Interceptor para agregar el token
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
@@ -19,15 +17,21 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Interceptor para manejar errores
+// Interceptor para manejar errores y leer el mensaje del backend
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // Token expirado o inválido
-      localStorage.removeItem('token');
-      window.location.href = '/login';
+    // Si el backend respondió con un error (4xx, 5xx)
+    if (error.response) {
+      // Lee el mensaje del backend
+      const backendMessage = error.response.data?.mensaje || error.response.data?.message;
+      
+      // Si hay un mensaje personalizado del backend, úsalo
+      if (backendMessage) {
+        error.message = backendMessage;
+      }
     }
+    
     return Promise.reject(error);
   }
 );
