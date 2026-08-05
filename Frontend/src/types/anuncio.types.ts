@@ -42,3 +42,6 @@ export interface AnuncioCreateDto {
   ubicacion: string;
   descripcion: string;
 }
+
+export type AnuncioCreateFormDto = Omit<AnuncioCreateDto, "usuarioId" | "accesorios">;
+export type AnuncioCreateRequestDto = Omit<AnuncioCreateDto, "usuarioId">;

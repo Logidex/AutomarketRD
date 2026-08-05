@@ -5,6 +5,9 @@ namespace AutoMarket.Application.DTOs
         public int Id { get; set; }
         public string NombreAnuncio { get; set; } = null!;
         public decimal Precio { get; set; }
+        public string TipoVehiculo { get; set; } = null!;
+        public string Transmision { get; set; } = null!;
+        public string Combustible { get; set; } = null!;
         public string Ubicacion { get; set; } = null!;
         public string Estado { get; set; } = null!;
         public List<string> Fotos { get; set; } = new();

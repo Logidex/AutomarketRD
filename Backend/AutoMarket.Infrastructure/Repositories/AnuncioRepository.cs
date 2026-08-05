@@ -113,9 +113,13 @@ public class AnuncioRepository : IAnuncioRepository
             query = query.Where(a => a.Kilometraje <= filtro.KilometrajeMaximo.Value);
         }
 
-        if (filtro.UsuarioId.HasValue)
+        if (filtro.UsuarioId.HasValue && filtro.UsuarioId.Value > 0)
         {
             query = query.Where(a => a.UsuarioId == filtro.UsuarioId.Value);
+        }
+        else
+        {
+            query = query.Where(a => a.Estado == "Publicado");
         }
 
         int totalRegistros = await query.CountAsync();
@@ -149,23 +153,24 @@ public class AnuncioRepository : IAnuncioRepository
     public async Task<IEnumerable<Anuncio>> ObtenerPorIdsAsync(IEnumerable<int> ids)
     {
         return await _context.Anuncios
-            .Where(a => ids.Contains(a.Id)) 
+            .Where(a => ids.Contains(a.Id))
             .ToListAsync();
     }
 
     public async Task<(IEnumerable<Anuncio> Anuncios, int Total)> ObtenerPaginadosAsync(int pagina, int tamanoPagina)
     {
         // 1. Armamos la consulta base (solo anuncios públicos)
-        var query = _context.Anuncios.AsQueryable();
+        // AÑADIMOS EL WHERE AQUÍ PARA QUE SEA CIERTO
+        var query = _context.Anuncios.Where(a => a.Estado == "Publicado").AsQueryable();
 
         // 2. Contamos cuántos hay en total (antes de paginar)
         var total = await query.CountAsync();
 
         // 3. Paginamos usando Skip y Take, ordenados por los más recientes
         var anuncios = await query
-            .OrderByDescending(a => a.Id) 
-            .Skip((pagina - 1) * tamanoPagina) // Si estoy en la pag 2 y el tamaño es 20, salta los primeros 20
-            .Take(tamanoPagina) // Toma los siguientes 20
+            .OrderByDescending(a => a.Id)
+            .Skip((pagina - 1) * tamanoPagina)
+            .Take(tamanoPagina)
             .ToListAsync();
 
         return (anuncios, total);

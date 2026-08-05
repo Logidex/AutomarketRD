@@ -23,7 +23,7 @@ public class AnuncioService : IAnuncioService
         _usuarioRepository = usuarioRepository;
     }
 
-    public async Task CrearAnuncioAsync(AnuncioCreateDto dto)
+    public async Task<int> CrearAnuncioAsync(AnuncioCreateDto dto)
     {
         var usuario = await _usuarioRepository.ObtenerDealerConPerfilPorIdAsync(dto.UsuarioId);
 
@@ -84,6 +84,7 @@ public class AnuncioService : IAnuncioService
 
         await _repository.AgregarAsync(nuevoAnuncio);
         await _repository.GuardarCambiosAsync();
+        return nuevoAnuncio.Id;
     }
 
     public async Task<AnuncioDto?> ObtenerAnuncioPorIdAsync(int id)
@@ -124,6 +125,9 @@ public class AnuncioService : IAnuncioService
             Id = e.Id,
             NombreAnuncio = e.NombreAnuncio,
             Precio = e.Precio,
+            TipoVehiculo = e.TipoVehiculo,
+            Transmision = e.Transmision,
+            Combustible = e.Combustible,
             Ubicacion = e.Ubicacion,
             Estado = e.Estado,
             // Enviamos solo la primera foto para la miniatura de la tarjeta
@@ -245,9 +249,13 @@ public class AnuncioService : IAnuncioService
         var anunciosDto = anuncios.Select(a => new AnuncioListadoDto
         {
             Id = a.Id,
+            NombreAnuncio = a.NombreAnuncio,
+            Estado = a.Estado,
             Precio = a.Precio,
+            TipoVehiculo = a.TipoVehiculo,
+            Transmision = a.Transmision,
+            Combustible = a.Combustible,
             Ubicacion = a.Ubicacion,
-            // Tomamos solo la primera foto para la miniatura de la tarjeta, si hay alguna
             Fotos = a.Fotos != null && a.Fotos.Any() ? a.Fotos.ToList() : new List<string> { "url_imagen_por_defecto.jpg" },
             BadgeSuscripcion = a.Usuario?.PerfilDealer?.Suscripcion?.Nivel.ToString() ?? "Gratis"
         }).ToList();
@@ -258,5 +266,20 @@ public class AnuncioService : IAnuncioService
             paginaActual: dto.PaginaActual,
             cantidadPorPagina: dto.CantidadAnuncios
         );
+    }
+
+    public async Task<bool> CambiarEstadoAsync(int id, int usuarioId, string estado)
+    {
+        var anuncio = await _repository.ObtenerPorIdAsync(id);
+
+        if (anuncio == null) return false;
+
+        if (anuncio.UsuarioId != usuarioId)
+            throw new UnauthorizedAccessException("Acceso denegado: No tienes permiso para cambiar el estado de este anuncio.");
+
+        anuncio.CambiarEstado(estado); // o la lógica equivalente en tu entidad
+
+        await _repository.ActualizarAsync(anuncio);
+        return true;
     }
 }

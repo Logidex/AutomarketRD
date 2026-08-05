@@ -3,6 +3,7 @@ using AutoMarket.Application.DTOs;
 using AutoMarket.Application.Services;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using AutoMarket.Application.Interfaces;
 
 namespace AutoMarket.API.Controllers;
 
@@ -10,9 +11,9 @@ namespace AutoMarket.API.Controllers;
 [Route("api/[controller]")]
 public class AnunciosController : ControllerBase
 {
-    private readonly AnuncioService _anuncioService;
+    private readonly IAnuncioService _anuncioService;
 
-    public AnunciosController(AnuncioService anuncioService)
+    public AnunciosController(IAnuncioService anuncioService)
     {
         _anuncioService = anuncioService;
     }
@@ -24,13 +25,13 @@ public class AnunciosController : ControllerBase
     [Authorize]
     public async Task<IActionResult> CrearAnuncio([FromBody] AnuncioCreateDto dto)
     {
-        int usuarioId = ObtenerUsuarioIdDelToken();
+        dto.UsuarioId = ObtenerUsuarioIdDelToken();
 
-        // Asignamos el ID del creador al DTO antes de enviarlo al servicio
-        dto.UsuarioId = usuarioId;
+        // Capturamos el ID recién creado
+        int nuevoId = await _anuncioService.CrearAnuncioAsync(dto);
 
-        await _anuncioService.CrearAnuncioAsync(dto);
-        return Ok(new { mensaje = "Anuncio creado correctamente." });
+        // Devolvemos el ID al frontend junto con el mensaje
+        return Ok(new { mensaje = "Anuncio creado correctamente.", id = nuevoId });
     }
 
     // ==========================================
@@ -151,5 +152,22 @@ public class AnunciosController : ControllerBase
 
         // Devolvemos el HTTP 200 OK junto con el JSON estructurado
         return Ok(resultado);
+    }
+
+    [HttpPatch("{id}/estado")]
+    [Authorize]
+    public async Task<IActionResult> CambiarEstado(int id, [FromBody] AnuncioEstadoDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.Estado))
+            return BadRequest(new { mensaje = "El estado es obligatorio." });
+
+        int usuarioId = ObtenerUsuarioIdDelToken();
+
+        var cambiado = await _anuncioService.CambiarEstadoAsync(id, usuarioId, dto.Estado);
+
+        if (!cambiado)
+            return NotFound(new { mensaje = "No se encontró el anuncio o no tienes permisos." });
+
+        return Ok(new { mensaje = "Estado actualizado correctamente." });
     }
 }

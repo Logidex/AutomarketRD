@@ -21,10 +21,10 @@ public class Anuncio
 
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
-    
+
     // El ID del creador (sea Dealer o Usuario Común)
-    public int UsuarioId { get; private set; } 
-    
+    public int UsuarioId { get; private set; }
+
     // Propiedad de navegación hacia el padre
     public Usuario Usuario { get; private set; } = null!;
 
@@ -33,7 +33,7 @@ public class Anuncio
     // ==========================================
     public List<string> Accesorios { get; private set; } = new();
     private readonly List<string> _fotos = new();
-    public IReadOnlyCollection<string> Fotos => _fotos.AsReadOnly(); 
+    public IReadOnlyCollection<string> Fotos => _fotos.AsReadOnly();
     private readonly List<Lead> _leads = new();
     public IReadOnlyCollection<Lead> Leads => _leads.AsReadOnly();
 
@@ -110,7 +110,7 @@ public class Anuncio
 
     public void Publicar()
     {
-        if (Estado == "Publicado") 
+        if (Estado == "Publicado")
             throw new InvalidOperationException("El anuncio ya está publicado.");
 
         if (_fotos.Count < 5)
@@ -151,13 +151,13 @@ public class Anuncio
         Accesorios = accesorios ?? new List<string>();
         Ubicacion = ubicacion;
         Descripcion = descripcion;
-        
-        Estado = "Borrador"; 
+
+        Estado = "Borrador";
         UpdatedAt = DateTime.UtcNow;
 
         if (publicarAlGuardar)
         {
-            Publicar(); 
+            Publicar();
         }
     }
 
@@ -171,5 +171,10 @@ public class Anuncio
 
         _fotos.Remove(urlFoto);
         UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void CambiarEstado(string nuevoEstado)
+    {
+        Estado = nuevoEstado;
     }
 }

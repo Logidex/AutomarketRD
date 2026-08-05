@@ -17,6 +17,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using AutoMarket.API.Middleware;
 using Serilog;
 using Serilog.Events;
+using System.Text.Json.Serialization;
 
 // Configurar Serilog
 Log.Logger = new LoggerConfiguration()
@@ -40,7 +41,11 @@ try
 
     builder.Host.UseSerilog();
 
-    builder.Services.AddControllers();
+    builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 
     builder.Services.AddScoped<IAlmacenadorArchivos, AlmacenadorS3>();
     builder.Services.AddScoped<IAnuncioService, AnuncioService>();
