@@ -45,12 +45,16 @@ public class UsuarioRepository : IUsuarioRepository
         return usuarioEncontrado;
     }
 
-    public async Task<Usuario?> ObtenerDealerConPerfilPorIdAsync(int usuarioId)
+    public async Task<Usuario?>
+    ObtenerDealerConPerfilPorIdAsync(int usuarioId)
     {
         return await _context.Usuarios
             .AsNoTracking()
             .Include(u => u.PerfilDealer)
-            .FirstOrDefaultAsync(u => u.UsuarioId == usuarioId);
+                .ThenInclude(p => p!.Suscripcion)
+            .FirstOrDefaultAsync(u =>
+                u.UsuarioId == usuarioId
+            );
     }
 
     public async Task GuardarCambiosAsync()

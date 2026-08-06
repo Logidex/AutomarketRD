@@ -74,7 +74,7 @@ public class ApplicationDbContext : DbContext
 
             b.Property(a => a.Descripcion)
                 .IsRequired()
-                .HasMaxLength(2000);
+                .HasColumnType("text");
 
             b.Property(a => a.Estado)
                 .IsRequired()

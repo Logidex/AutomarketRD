@@ -129,6 +129,20 @@ public class Anuncio
                 "Año de fabricación inválido."
             );
         }
+        
+        if (string.IsNullOrWhiteSpace(descripcion))
+        {
+            throw new ArgumentException(
+                "La descripción es obligatoria."
+            );
+        }
+
+        if (descripcion.Length > 5000)
+        {
+            throw new ArgumentException(
+                "La descripción no puede superar los 5000 caracteres."
+            );
+        }
 
         UsuarioId = usuarioId;
         Marca = marca;
@@ -202,6 +216,20 @@ public class Anuncio
     string ubicacion,
     string descripcion)
     {
+        if (string.IsNullOrWhiteSpace(descripcion))
+        {
+            throw new ArgumentException(
+                "La descripción es obligatoria."
+            );
+        }
+
+        if (descripcion.Length > 5000)
+        {
+            throw new ArgumentException(
+                "La descripción no puede superar los 5000 caracteres."
+            );
+        }
+
         if (string.IsNullOrWhiteSpace(marca))
         {
             throw new ArgumentException(

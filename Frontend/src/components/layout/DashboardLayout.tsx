@@ -1,19 +1,9 @@
-import {
-  Outlet,
-  Link,
-  useNavigate,
-  useLocation
-} from 'react-router-dom';
+import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 
-import {
-  FaCar,
-  FaPlusCircle,
-  FaChartPie,
-  FaSignOutAlt
-} from 'react-icons/fa';
+import { FaCar, FaPlusCircle, FaChartPie, FaSignOutAlt } from "react-icons/fa";
 
-import { authService } from '../../services/auth.service';
-import logo from '../../assets/AutoMarketRD_Logo.svg';
+import { authService } from "../../services/auth.service";
+import logo from "../../assets/AutoMarketRD_Logo.svg";
 
 export default function DashboardLayout() {
   const navigate = useNavigate();
@@ -22,37 +12,37 @@ export default function DashboardLayout() {
   const usuario = authService.getCurrentUser();
 
   const nombreUsuario = usuario
-    ? `${usuario.nombre} ${usuario.apellido ?? ''}`.trim()
-    : 'Usuario';
+    ? `${usuario.nombre} ${usuario.apellido ?? ""}`.trim()
+    : "Usuario";
 
   const inicialUsuario = usuario?.nombre
     ? usuario.nombre.charAt(0).toUpperCase()
-    : 'U';
+    : "U";
 
   const handleLogout = () => {
     authService.logout();
 
-    navigate('/login', {
-      replace: true
+    navigate("/login", {
+      replace: true,
     });
   };
 
   const menuItems = [
     {
-      path: '/dashboard',
-      label: 'Resumen',
-      icon: <FaChartPie />
+      path: "/dashboard",
+      label: "Resumen",
+      icon: <FaChartPie />,
     },
     {
-      path: '/dashboard/mis-anuncios',
-      label: 'Mi Inventario',
-      icon: <FaCar />
+      path: "/dashboard/mis-anuncios",
+      label: "Mi Inventario",
+      icon: <FaCar />,
     },
     {
-      path: '/dashboard/publicar',
-      label: 'Publicar Vehículo',
-      icon: <FaPlusCircle />
-    }
+      path: "/dashboard/publicar",
+      label: "Publicar Vehículo",
+      icon: <FaPlusCircle />,
+    },
   ];
 
   return (
@@ -60,21 +50,21 @@ export default function DashboardLayout() {
       {/* SIDEBAR */}
       <aside className="z-10 flex h-full w-[260px] flex-col bg-[#11141a] text-white shadow-lg">
         {/* LOGO */}
-        <div className="flex h-[110px] items-center justify-center px-4">
+        <div className="flex h-[120px] items-center justify-center px-4 py-3">
           <img
             src={logo}
             alt="AutoMarket RD"
-            className="w-48 object-contain md:w-56"
+            className="h-[145px] w-[210px] object-contain"
           />
         </div>
 
         {/* MENÚ PRINCIPAL */}
         <nav className="flex flex-1 flex-col gap-2 p-6">
           {menuItems.map((item) => {
-            const esDashboardPrincipal = item.path === '/dashboard';
+            const esDashboardPrincipal = item.path === "/dashboard";
 
             const isActive = esDashboardPrincipal
-              ? location.pathname === '/dashboard'
+              ? location.pathname === "/dashboard"
               : location.pathname === item.path ||
                 location.pathname.startsWith(`${item.path}/`);
 
@@ -84,13 +74,11 @@ export default function DashboardLayout() {
                 to={item.path}
                 className={`flex items-center rounded-lg px-4 py-3 font-medium transition-colors ${
                   isActive
-                    ? 'bg-blue-600 text-white'
-                    : 'text-[#8a94a6] hover:bg-white/5 hover:text-white'
+                    ? "bg-blue-600 text-white"
+                    : "text-[#8a94a6] hover:bg-white/5 hover:text-white"
                 }`}
               >
-                <span className="mr-3 text-lg">
-                  {item.icon}
-                </span>
+                <span className="mr-3 text-lg">{item.icon}</span>
 
                 <span>{item.label}</span>
               </Link>
@@ -127,9 +115,7 @@ export default function DashboardLayout() {
               </p>
 
               {usuario?.rol && (
-                <p className="text-xs text-gray-500">
-                  {usuario.rol}
-                </p>
+                <p className="text-xs text-gray-500">{usuario.rol}</p>
               )}
             </div>
 
