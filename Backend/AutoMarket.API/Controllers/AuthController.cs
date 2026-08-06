@@ -32,16 +32,16 @@ public class AuthController : ControllerBase
     {
         var resultado = await _authService.LoginAsync(dto);
 
-        var response = new
-        {
-            Exito = true,
-            Mensaje = resultado.Mensaje,
-            Token = resultado.Token
-        };
+        Console.WriteLine(
+            $"Response: Exito={resultado.Exito}, " +
+            $"Mensaje={resultado.Mensaje}, " +
+            $"Token={resultado.Token?.Substring(
+                0,
+                Math.Min(10, resultado.Token.Length)
+            )}..."
+        );
 
-        Console.WriteLine($"Response: Exito={response.Exito}, Mensaje={response.Mensaje}, Token={response.Token?.Substring(0, 10)}...");
-
-        return Ok(response);
+        return Ok(resultado);
     }
 
     [HttpGet("test-error")]

@@ -26,22 +26,139 @@ public class ApplicationDbContext : DbContext
         // ==========================================
         modelBuilder.Entity<Anuncio>(b =>
         {
-            // Definimos el comparador para que EF Core sepa rastrear los cambios de la lista
+            b.HasKey(a => a.Id);
+
+            b.Property(a => a.Marca)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            b.Property(a => a.Modelo)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            b.Property(a => a.Version)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            b.Property(a => a.TipoVehiculo)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            b.Property(a => a.Motor)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            b.Property(a => a.Traccion)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            b.Property(a => a.ColorExterior)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            b.Property(a => a.ColorInterior)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            b.Property(a => a.Transmision)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            b.Property(a => a.Combustible)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            b.Property(a => a.Ubicacion)
+                .IsRequired()
+                .HasMaxLength(150);
+
+            b.Property(a => a.Descripcion)
+                .IsRequired()
+                .HasMaxLength(2000);
+
+            b.Property(a => a.Estado)
+                .IsRequired()
+                .HasMaxLength(30);
+
+            b.Property(a => a.Precio)
+                .HasPrecision(18, 2);
+
+            b.Property(a => a.Kilometraje)
+                .IsRequired();
+
+            b.Property(a => a.Anio)
+                .IsRequired();
+
+            b.Property(a => a.CreatedAt)
+                .IsRequired()
+                .HasColumnType("timestamp with time zone");
+
+            b.Property(a => a.UpdatedAt)
+                .HasColumnType("timestamp with time zone");
+
+            /*
+             * Configuración de la colección de fotos privada.
+             */
             var fotosComparer = new ValueComparer<List<string>>(
-                (c1, c2) => c1!.SequenceEqual(c2!), // Compara si los elementos son iguales
-                c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())), // Genera el código Hash
-                c => c.ToList() // Crea una copia limpia para la snapshot de EF Core
+                (c1, c2) =>
+                    c1 != null &&
+                    c2 != null &&
+                    c1.SequenceEqual(c2),
+
+                c =>
+                    c.Aggregate(
+                        0,
+                        (a, v) => HashCode.Combine(
+                            a,
+                            v.GetHashCode()
+                        )
+                    ),
+
+                c => c.ToList()
             );
 
             b.Property<List<string>>("_fotos")
                 .HasColumnName("Fotos")
                 .HasConversion(
                     v => string.Join(',', v),
-                    v => !string.IsNullOrEmpty(v)
-                        ? v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList()
-                        : new List<string>()
+
+                    v =>
+                        !string.IsNullOrEmpty(v)
+                            ? v.Split(
+                                ',',
+                                StringSplitOptions
+                                    .RemoveEmptyEntries
+                            ).ToList()
+                            : new List<string>()
                 )
                 .Metadata.SetValueComparer(fotosComparer);
+
+            /*
+             * Accesorios como arreglo de texto de PostgreSQL.
+             *
+             * Si esta propiedad ya existe en tu base de datos
+             * con otra configuración, revisaremos la migración
+             * antes de aplicarla.
+             */
+            b.Property(a => a.Accesorios)
+                .HasColumnType("text[]");
+
+            /*
+             * Relación Anuncio -> Usuario.
+             */
+            b.HasOne(a => a.Usuario)
+                .WithMany(u => u.Anuncios)
+                .HasForeignKey(a => a.UsuarioId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            /*
+             * Índices para búsquedas frecuentes.
+             */
+            b.HasIndex(a => a.Marca);
+            b.HasIndex(a => a.Modelo);
+            b.HasIndex(a => a.TipoVehiculo);
+            b.HasIndex(a => a.Estado);
+            b.HasIndex(a => a.UsuarioId);
         });
 
         // ==========================================
@@ -153,7 +270,7 @@ public class ApplicationDbContext : DbContext
                 .HasForeignKey(l => l.AnuncioId)
                 .OnDelete(DeleteBehavior.Cascade); // Si se elimina un anuncio, se borran sus leads asociados
         });
-        
+
         // ==========================================
         // CONFIGURACIÓN DE FAVORITOS (Muchos a Muchos)
         // ==========================================
@@ -162,7 +279,7 @@ public class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<UsuarioFavorito>()
             .HasOne(f => f.Usuario)
-            .WithMany() 
+            .WithMany()
             .HasForeignKey(f => f.UsuarioId)
             .OnDelete(DeleteBehavior.Cascade); // Si borran al usuario, se borran sus favoritos
 

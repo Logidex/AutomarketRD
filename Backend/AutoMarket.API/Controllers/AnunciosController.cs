@@ -22,7 +22,7 @@ public class AnunciosController : ControllerBase
     // 1. CREAR: Necesitamos saber quién lo crea
     // ==========================================
     [HttpPost]
-    [Authorize]
+    [Authorize(Roles = "Dealer,Vendedor")]
     public async Task<IActionResult> CrearAnuncio([FromBody] AnuncioCreateDto dto)
     {
         dto.UsuarioId = ObtenerUsuarioIdDelToken();
@@ -38,7 +38,7 @@ public class AnunciosController : ControllerBase
     // 2. OBTENER: Dejamos esto público (sin Authorize) 
     // para que cualquier visitante vea la vitrina
     // ==========================================
-    [HttpGet("{id}")]
+    [HttpGet("{id:int}")]
     public async Task<IActionResult> ObtenerPorId(int id)
     {
         var anuncioDto = await _anuncioService.ObtenerAnuncioPorIdAsync(id);
@@ -60,7 +60,7 @@ public class AnunciosController : ControllerBase
     // 3. ACTUALIZAR: Protegido y validando propiedad
     // ==========================================
     [HttpPut("{id}")]
-    [Authorize]
+    [Authorize(Roles = "Dealer,Vendedor")]
     public async Task<IActionResult> ActualizarAnuncio(int id, [FromBody] AnuncioUpdateDto updateDto)
     {
         int usuarioId = ObtenerUsuarioIdDelToken();
@@ -78,7 +78,7 @@ public class AnunciosController : ControllerBase
     // 4. PUBLICAR: Añadimos Authorize
     // ==========================================
     [HttpPatch("{id}/publicar")]
-    [Authorize]
+    [Authorize(Roles = "Dealer,Vendedor")]
     public async Task<IActionResult> Publicar(int id)
     {
         int usuarioId = ObtenerUsuarioIdDelToken();
@@ -95,7 +95,7 @@ public class AnunciosController : ControllerBase
     // 5. SUBIR IMÁGENES: Validación estricta
     // ==========================================
     [HttpPost("{id}/imagenes")]
-    [Authorize]
+    [Authorize(Roles = "Dealer,Vendedor")]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> SubirImagenes(int id, [FromForm] List<IFormFile> imagenes)
     {
@@ -133,8 +133,6 @@ public class AnunciosController : ControllerBase
 
         if (string.IsNullOrEmpty(claimId) || !int.TryParse(claimId, out int usuarioId))
         {
-            // Si llega aquí, significa que el token es inválido o no tiene el claim.
-            // Aunque [Authorize] debería detenerlo antes, es una buena práctica de seguridad.
             throw new UnauthorizedAccessException("Token inválido o usuario no identificado.");
         }
 
@@ -155,7 +153,7 @@ public class AnunciosController : ControllerBase
     }
 
     [HttpPatch("{id}/estado")]
-    [Authorize]
+    [Authorize(Roles = "Dealer,Vendedor")]
     public async Task<IActionResult> CambiarEstado(int id, [FromBody] AnuncioEstadoDto dto)
     {
         if (string.IsNullOrWhiteSpace(dto.Estado))

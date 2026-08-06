@@ -4,6 +4,8 @@ import AnuncioCard from "../components/AnuncioCard";
 import { anuncioService } from "../services/anuncio.service";
 import type { AnuncioListado } from "../types/anuncio.types";
 import { getUserIdFromToken } from "../utils/jwt.util";
+import { Link } from "react-router-dom";
+import { FaCar, FaPlusCircle } from "react-icons/fa";
 
 export default function MisAnuncios() {
   const [anuncios, setAnuncios] = useState<AnuncioListado[]>([]);
@@ -123,19 +125,56 @@ export default function MisAnuncios() {
 
   return (
     <div className="mx-auto max-w-6xl p-6">
-      <h1 className="mb-6 text-2xl font-bold text-gray-900">Mis Anuncios</h1>
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-gray-900">Mis Anuncios</h1>
 
-      <ul className="space-y-4">
-        {anuncios.map((anuncio) => (
-          <AnuncioCard
-            key={anuncio.id}
-            anuncio={anuncio}
-            onPublicar={handlePublicar}
-            onCambiarEstado={handleCambiarEstado}
-            onEditar={handleEditar}
-          />
-        ))}
-      </ul>
+        {anuncios.length > 0 && (
+          <Link
+            to="/dashboard/publicar"
+            className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white transition-colors hover:bg-blue-700"
+          >
+            <FaPlusCircle />
+            Publicar vehículo
+          </Link>
+        )}
+      </div>
+
+      {anuncios.length === 0 ? (
+        <div className="flex min-h-[420px] flex-col items-center justify-center rounded-2xl border border-gray-200 bg-white px-6 text-center shadow-sm">
+          <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-blue-50">
+            <FaCar className="text-4xl text-blue-600" />
+          </div>
+
+          <h2 className="mb-2 text-2xl font-bold text-gray-800">
+            Todavía no tienes anuncios
+          </h2>
+
+          <p className="mb-6 max-w-md text-gray-500">
+            Aún no has publicado ningún vehículo. Comienza agregando tu primer
+            anuncio para mostrarlo en AutoMarket RD.
+          </p>
+
+          <Link
+            to="/dashboard/publicar"
+            className="flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-blue-700"
+          >
+            <FaPlusCircle />
+            Publicar vehículo
+          </Link>
+        </div>
+      ) : (
+        <ul className="space-y-4">
+          {anuncios.map((anuncio) => (
+            <AnuncioCard
+              key={anuncio.id}
+              anuncio={anuncio}
+              onPublicar={handlePublicar}
+              onCambiarEstado={handleCambiarEstado}
+              onEditar={handleEditar}
+            />
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

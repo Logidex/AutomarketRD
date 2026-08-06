@@ -18,9 +18,9 @@ public class TokenService : ITokenService
     public string GenerarToken(Usuario usuario)
     {
         // 1. Obtener la clave secreta desde el archivo appsettings.json
-        var jwtSecret = _config["Jwt:Secret"] 
+        var jwtSecret = _config["Jwt:Secret"]
             ?? throw new InvalidOperationException("La clave JWT no está configurada.");
-        
+
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
@@ -29,8 +29,11 @@ public class TokenService : ITokenService
         {
             new Claim(ClaimTypes.NameIdentifier, usuario.UsuarioId.ToString()),
             new Claim(ClaimTypes.Email, usuario.Email),
-            new Claim(ClaimTypes.Role, usuario.Rol)
+            new Claim(ClaimTypes.Role, usuario.Rol),
+            new Claim(ClaimTypes.Name, usuario.Nombre),
+            new Claim("Surname", usuario.Apellido ?? "")
         };
+
 
         // 3. Configurar la estructura y expiración del token
         var tokenOptions = new JwtSecurityToken(

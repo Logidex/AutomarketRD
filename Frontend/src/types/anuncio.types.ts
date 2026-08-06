@@ -1,21 +1,35 @@
 export interface AnuncioListado {
   id: number;
   usuarioId: number;
+
   nombreAnuncio: string;
+
   marca: string;
   modelo: string;
+  version: string;
+
   tipoVehiculo: string;
+  motor: string;
+  traccion: string;
+
   colorExterior: string;
   colorInterior: string;
+
   anio: number;
   precio: number;
   kilometraje: number;
+
   transmision: string;
   combustible: string;
+
   accesorios: string[];
   ubicacion: string;
   descripcion: string;
+
+  // Estado del anuncio:
+  // Borrador, Publicado, Vendido, Pausado, etc.
   estado: string;
+
   fotos: string[];
 }
 
@@ -28,20 +42,36 @@ export interface PagedResult<T> {
 
 export interface AnuncioCreateDto {
   usuarioId: number;
+
   marca: string;
   modelo: string;
+  version: string;
+
   tipoVehiculo: string;
+  motor: string;
+  traccion: string;
+
   colorExterior: string;
   colorInterior: string;
+
   anio: number;
   precio: number;
   kilometraje: number;
+
   transmision: string;
   combustible: string;
+
   accesorios: string[];
   ubicacion: string;
   descripcion: string;
 }
 
-export type AnuncioCreateFormDto = Omit<AnuncioCreateDto, "usuarioId" | "accesorios">;
-export type AnuncioCreateRequestDto = Omit<AnuncioCreateDto, "usuarioId">;
+export type AnuncioCreateFormDto = Omit<
+  AnuncioCreateDto,
+  'usuarioId' | 'accesorios'
+>;
+
+export type AnuncioCreateRequestDto = Omit<
+  AnuncioCreateDto,
+  'usuarioId'
+>;

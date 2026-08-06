@@ -1,4 +1,5 @@
 using AutoMarket.Application.DTOs;
+using AutoMarket.Application.DTOs.Auth;
 using AutoMarket.Application.DTOs.Usuario;
 using AutoMarket.Application.Interfaces;
 using AutoMarket.Core.Entities;
@@ -55,32 +56,58 @@ public class AuthService : IAuthService
 
     }
 
-    public async Task<(bool Exito, string Mensaje, string? Token)> LoginAsync(LoginDto dto)
+    public async Task<LoginResultDto> LoginAsync(LoginDto dto)
     {
-        // 1. Validar si el usuario existe por su email
+        // 1. Buscar el usuario por email
         var usuario = await _repository.ObtenerPorEmailAsync(dto.Email);
 
         if (usuario == null)
         {
-            throw new UnauthorizedAccessException("Correo electrónico o contraseña incorrectos.");
+            throw new UnauthorizedAccessException(
+                "Correo electrónico o contraseña incorrectos."
+            );
         }
 
         // 2. Verificar si la cuenta está activa
         if (!usuario.IsActivo)
         {
-            throw new UnauthorizedAccessException("Tu cuenta ha sido suspendida por un administrador. Contacta a soporte para más información.");
+            throw new UnauthorizedAccessException(
+                "Tu cuenta ha sido suspendida por un administrador. " +
+                "Contacta a soporte para más información."
+            );
         }
 
-        // 3. Verificar la contraseña con BCrypt
-        bool passwordValido = BCrypt.Net.BCrypt.Verify(dto.Password, usuario.PasswordHash);
+        // 3. Verificar la contraseña
+        bool passwordValido = BCrypt.Net.BCrypt.Verify(
+            dto.Password,
+            usuario.PasswordHash
+        );
+
         if (!passwordValido)
         {
-            throw new UnauthorizedAccessException("Correo electrónico o contraseña incorrectos.");
+            throw new UnauthorizedAccessException(
+                "Correo electrónico o contraseña incorrectos."
+            );
         }
 
+        // 4. Generar el token
         var token = _tokenService.GenerarToken(usuario);
 
-        return (true, "Inicio de sesión exitoso.", token);
+        // 5. Devolver solamente los datos públicos del usuario
+        return new LoginResultDto
+        {
+            Exito = true,
+            Mensaje = "Inicio de sesión exitoso.",
+            Token = token,
+            Usuario = new UsuarioAuthDto
+            {
+                UsuarioId = usuario.UsuarioId,
+                Nombre = usuario.Nombre,
+                Apellido = usuario.Apellido ?? string.Empty,
+                Email = usuario.Email,
+                Rol = usuario.Rol
+            }
+        };
     }
 }
 

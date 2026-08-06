@@ -3,10 +3,19 @@ export interface LoginDto {
   password: string;
 }
 
+export interface UsuarioAuth {
+  usuarioId: number;
+  nombre: string;
+  apellido: string;
+  email: string;
+  rol: string;
+}
+
 export interface AuthResponse {
   exito: boolean;
   mensaje: string;
   token?: string;
+  usuario?: UsuarioAuth;
 }
 
 export interface RegistroDto {

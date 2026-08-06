@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Swal from "sweetalert2";
@@ -21,26 +20,71 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const response = await authService.login({ email, password });
+      const response = await authService.login({
+        email,
+        password,
+      });
 
-      if (response.token) {
-        await Swal.fire({
-          icon: "success",
-          title: "¡Bienvenido!",
-          text: response.mensaje,
-          timer: 1500,
-          showConfirmButton: false,
-        });
-        navigate("/dashboard");
-      } else {
+      if (!response.token || !response.usuario) {
         await Swal.fire({
           icon: "error",
-          title: "Error al iniciar sesión",
-          text: "Correo electrónico o contraseña incorrectos.",
+          title: "Respuesta incompleta",
+          text: "El servidor no devolvió la información del usuario.",
           confirmButtonColor: "#3b82f6",
         });
+
+        return;
       }
+
+      await Swal.fire({
+        icon: "success",
+        title: "¡Bienvenido!",
+        text: response.mensaje,
+        timer: 1500,
+        showConfirmButton: false,
+      });
+
+      const rol = response.usuario.rol?.trim().toLowerCase();
+
+      if (rol === "dealer") {
+        navigate("/dashboard", {
+          replace: true,
+        });
+
+        return;
+      }
+
+      if (rol === "vendedor") {
+        navigate("/vendedor", {
+          replace: true,
+        });
+
+        return;
+      }
+
+      if (rol === "comprador") {
+        navigate("/", {
+          replace: true,
+        });
+
+        return;
+      }
+
+      // Si el rol no está definido o no es reconocido
+      authService.logout();
+
+      await Swal.fire({
+        icon: "error",
+        title: "Rol no reconocido",
+        text: "Tu cuenta tiene un rol no válido.",
+        confirmButtonColor: "#3b82f6",
+      });
+
+      navigate("/login", {
+        replace: true,
+      });
     } catch (err) {
+      console.log(err);
       await Swal.fire({
         icon: "error",
         title: "Error al iniciar sesión",
@@ -55,7 +99,6 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-[#0c101b] flex items-center justify-center p-4">
       <div className="w-full max-w-[950px] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row">
-        
         {/* Columna Izquierda - Visual */}
         <div className="md:flex-1 bg-[#0e1422] p-12 text-white flex flex-col">
           <div className="mb-10">
@@ -68,9 +111,7 @@ export default function Login() {
             </div>
           </div>
 
-          <h1 className="text-3xl font-bold mb-4">
-            Bienvenido de nuevo
-          </h1>
+          <h1 className="text-3xl font-bold mb-4">Bienvenido de nuevo</h1>
           <p className="text-[#9aa1b1] mb-10">
             Accede a tu cuenta para explorar los mejores vehículos del mercado.
           </p>
@@ -128,7 +169,10 @@ export default function Login() {
 
           <p className="text-center text-sm text-gray-500 mt-6">
             ¿No tienes cuenta?{" "}
-            <Link to="/registro" className="text-blue-500 font-semibold hover:underline">
+            <Link
+              to="/registro"
+              className="text-blue-500 font-semibold hover:underline"
+            >
               Regístrate aquí
             </Link>
           </p>

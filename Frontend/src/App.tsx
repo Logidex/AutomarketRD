@@ -1,14 +1,14 @@
 import { Routes, Route } from 'react-router-dom';
 
-// Páginas Públicas
+// Páginas públicas
 import Login from './pages/Login';
 import Registro from './pages/Registro';
 
-// Componentes de Estructura
+// Componentes de estructura
 import ProtectedRoute from './components/ProtectedRoute';
 import DashboardLayout from './components/layout/DashboardLayout';
 
-// Páginas del Dashboard
+// Páginas del dashboard de Dealers
 import DashboardIndex from './pages/DashboardIndex';
 import MisAnuncios from './pages/MisAnuncios';
 import PublicarVehiculo from './pages/PublicarVehiculo';
@@ -16,27 +16,72 @@ import PublicarVehiculo from './pages/PublicarVehiculo';
 function App() {
   return (
     <Routes>
-      {/* --- RUTAS PÚBLICAS --- */}
-      <Route path="/" element={<h1 className="text-3xl font-bold p-4">AutoMarket RD - Inicio</h1>} />
+      {/* INICIO PÚBLICO */}
+      <Route
+        path="/"
+        element={
+          <h1 className="p-4 text-3xl font-bold">
+            AutoMarket RD - Inicio
+          </h1>
+        }
+      />
+
+      {/* AUTENTICACIÓN */}
       <Route path="/login" element={<Login />} />
       <Route path="/registro" element={<Registro />} />
 
-      {/* --- RUTAS PROTEGIDAS --- */}
-      <Route element={<ProtectedRoute />}>
-        {/* Todas las rutas dentro de /dashboard usarán el DashboardLayout */}
+      {/* RUTA TEMPORAL PARA VENDEDORES */}
+      <Route
+        path="/vendedor"
+        element={
+          <div className="p-8">
+            <h1 className="text-3xl font-bold">
+              Interfaz de Vendedor
+            </h1>
+
+            <p className="mt-2 text-gray-600">
+              Esta sección estará disponible próximamente.
+            </p>
+          </div>
+        }
+      />
+
+      {/* DASHBOARD EXCLUSIVO PARA DEALERS */}
+      <Route
+        element={
+          <ProtectedRoute allowedRoles={['Dealer']} />
+        }
+      >
         <Route path="/dashboard" element={<DashboardLayout />}>
-          
-          {/* Index: /dashboard */}
-          <Route index element={<DashboardIndex />} />
-          
-          {/* Lista de vehículos: /dashboard/mis-anuncios */}
-          <Route path="mis-anuncios" element={<MisAnuncios />} />
-          
-          {/* Formulario: /dashboard/publicar */}
-          <Route path="publicar" element={<PublicarVehiculo />} />
-          
+          {/* /dashboard */}
+          <Route
+            index
+            element={<DashboardIndex />}
+          />
+
+          {/* /dashboard/mis-anuncios */}
+          <Route
+            path="mis-anuncios"
+            element={<MisAnuncios />}
+          />
+
+          {/* /dashboard/publicar */}
+          <Route
+            path="publicar"
+            element={<PublicarVehiculo />}
+          />
         </Route>
       </Route>
+
+      {/* CUALQUIER RUTA DESCONOCIDA */}
+      <Route
+        path="*"
+        element={
+          <h1 className="p-8 text-2xl font-bold">
+            Página no encontrada
+          </h1>
+        }
+      />
     </Routes>
   );
 }
