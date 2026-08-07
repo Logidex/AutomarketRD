@@ -4,22 +4,10 @@ import { useFormularioVehiculo } from "../hooks/useFormularioVehiculo";
 
 export default function CrearAnuncio() {
   const {
-    formData, 
-    kilometraje, 
-    setKilometraje, 
-    accesoriosTexto, 
-    setAccesoriosTexto,
-    mostrarTransmisionPersonalizada, 
-    transmisionPersonalizada, 
-    setTransmisionPersonalizada,
-    archivos,               
-    fotosGuardadas, 
-    cargando, 
-    handleChange, 
-    handleImageChange, 
-    handleEliminarArchivo,  
-    handleEliminarFotoGuardada, 
-    guardar
+    formData, kilometraje, setKilometraje, accesoriosTexto, setAccesoriosTexto,
+    mostrarTransmisionPersonalizada, transmisionPersonalizada, setTransmisionPersonalizada,
+    archivos, fotosGuardadas, handleChange, handleImageChange, 
+    handleEliminarArchivo, handleEliminarFotoGuardada, guardar
   } = useFormularioVehiculo(false);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -55,8 +43,8 @@ export default function CrearAnuncio() {
           onEliminarArchivo={handleEliminarArchivo}
           onEliminarFotoGuardada={handleEliminarFotoGuardada}
         />
-        <button type="submit" disabled={cargando} className="bg-blue-600 text-white px-6 py-2 rounded">
-          {cargando ? "Creando..." : "Publicar Anuncio"}
+        <button type="submit" className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition-colors">
+          Publicar Anuncio
         </button>
       </form>
     </div>
