@@ -12,6 +12,7 @@ import DashboardLayout from './components/layout/DashboardLayout';
 import DashboardIndex from './pages/DashboardIndex';
 import MisAnuncios from './pages/MisAnuncios';
 import PublicarVehiculo from './pages/PublicarVehiculo';
+import EditarVehiculo from './pages/EditarVehiculo';
 
 function App() {
   return (
@@ -69,6 +70,11 @@ function App() {
           <Route
             path="publicar"
             element={<PublicarVehiculo />}
+          />
+          {/* /dashboard/editar-anuncio/:id --> NUEVA PUERTA */}
+          <Route
+            path="editar-anuncio/:id"
+            element={<EditarVehiculo />}
           />
         </Route>
       </Route>

@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import type { AnuncioListado } from "../types/anuncio.types";
 
 interface AnuncioCardProps {
@@ -11,7 +12,6 @@ export default function AnuncioCard({
   anuncio,
   onPublicar,
   onCambiarEstado,
-  onEditar,
 }: AnuncioCardProps) {
   const fotoPrincipal =
     anuncio.fotos && anuncio.fotos.length > 0
@@ -29,6 +29,7 @@ export default function AnuncioCard({
   const combustible = anuncio.combustible || "Sin combustible";
   const precio = Number(anuncio.precio ?? 0);
   const kilometraje = Number(anuncio.kilometraje ?? 0);
+  const navigate = useNavigate();
 
   const getEstadoStyle = (estado: string) => {
     const value = estado.trim().toLowerCase();
@@ -197,7 +198,7 @@ export default function AnuncioCard({
                 )}
 
                 <button
-                  onClick={() => onEditar?.(anuncio.id)}
+                  onClick={() => navigate(`/dashboard/editar-anuncio/${anuncio.id}`)}
                   className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
                 >
                   Editar

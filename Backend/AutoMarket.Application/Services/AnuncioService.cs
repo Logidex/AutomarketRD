@@ -312,6 +312,27 @@ public class AnuncioService : IAnuncioService
         await _repository.ActualizarAsync(_anuncio);
     }
 
+    public async Task EliminarImagenAsync(int anuncioId, int usuarioId, string urlImagen)
+    {
+        var anuncio = await _repository.ObtenerPorIdAsync(anuncioId);
+        
+        if (anuncio == null) 
+            throw new KeyNotFoundException("El anuncio no existe.");
+
+        if (anuncio.UsuarioId != usuarioId)
+            throw new UnauthorizedAccessException("Acceso denegado: No tienes permiso para modificar las fotos de este anuncio.");
+
+        // 1. Eliminar la referencia en la base de datos
+        // Asegúrate de tener este método RemoverFoto creado en tu entidad Anuncio (Core/Entities)
+        anuncio.EliminarFoto(urlImagen);
+
+        await _repository.ActualizarAsync(anuncio);
+        await _repository.GuardarCambiosAsync();
+
+        // 2. Destrucción física en AWS S3 usando el método que ya tenías
+        await _almacenadorArchivos.EliminarArchivoAsync(urlImagen);
+    }
+
     public async Task<
     PagedResult<AnuncioListadoDto>
 > BuscarAnunciosAsync(

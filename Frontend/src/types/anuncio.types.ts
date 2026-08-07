@@ -75,3 +75,24 @@ export type AnuncioCreateRequestDto = Omit<
   AnuncioCreateDto,
   'usuarioId'
 >;
+
+export interface AnuncioDetalle {
+  id: number;
+  marca: string;
+  modelo: string;
+  version: string;
+  tipoVehiculo: string;
+  motor: string;
+  traccion: string;
+  colorExterior: string;
+  colorInterior: string;
+  anio: number;
+  precio: number;
+  kilometraje: number;
+  transmision: string;
+  combustible: string;
+  ubicacion: string;
+  descripcion: string;
+  accesorios: string[];
+  fotos: string[];
+}

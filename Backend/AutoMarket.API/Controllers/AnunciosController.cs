@@ -168,4 +168,26 @@ public class AnunciosController : ControllerBase
 
         return Ok(new { mensaje = "Estado actualizado correctamente." });
     }
+
+    // ==========================================
+    // 6. ELIMINAR IMAGEN: Seguridad y limpieza
+    // ==========================================
+    [HttpDelete("{id}/imagenes")]
+    [Authorize(Roles = "Dealer,Vendedor")]
+    public async Task<IActionResult> EliminarImagen(int id, [FromBody] EliminarImagenDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.UrlImagen))
+            return BadRequest(new { error = "La URL de la imagen es obligatoria." });
+
+        int usuarioId = ObtenerUsuarioIdDelToken();
+
+        try
+        {
+            await _anuncioService.EliminarImagenAsync(id, usuarioId, dto.UrlImagen);
+            return Ok(new { mensaje = "Imagen eliminada de la base de datos y de S3 correctamente." });
+        }
+        catch (KeyNotFoundException ex) { return NotFound(new { error = ex.Message }); }
+        catch (UnauthorizedAccessException ex) { return StatusCode(403, new { error = ex.Message }); }
+        catch (Exception ex) { return BadRequest(new { error = ex.Message }); }
+    }
 }

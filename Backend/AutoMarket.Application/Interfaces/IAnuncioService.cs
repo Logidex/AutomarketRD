@@ -29,5 +29,8 @@ namespace AutoMarket.Application.Interfaces
 
         // 8. Cambiar estado de Anuncio
         Task<bool> CambiarEstadoAsync(int id, int usuarioId, string estado);
+
+        // 9. Eliminar Foto
+        Task EliminarImagenAsync(int anuncioId, int usuarioId, string urlImagen);
     }
 }
