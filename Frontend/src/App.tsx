@@ -11,7 +11,7 @@ import DashboardLayout from './components/layout/DashboardLayout';
 // Páginas del dashboard de Dealers
 import DashboardIndex from './pages/DashboardIndex';
 import MisAnuncios from './pages/MisAnuncios';
-import PublicarVehiculo from './pages/PublicarVehiculo';
+import PublicarVehiculo from './pages/CrearAnuncio';
 import EditarVehiculo from './pages/EditarVehiculo';
 
 function App() {
