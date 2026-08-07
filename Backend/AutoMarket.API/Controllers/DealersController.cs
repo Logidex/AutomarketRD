@@ -11,10 +11,14 @@ namespace AutoMarket.API.Controllers;
 public class DealersController : ControllerBase
 {
     private readonly IPerfilDealerService _perfilDealerService;
+    private readonly IDashboardService _dashboardService;
 
-    public DealersController(IPerfilDealerService perfilDealerService)
+    public DealersController(
+        IPerfilDealerService perfilDealerService,
+        IDashboardService dashboardService)
     {
         _perfilDealerService = perfilDealerService;
+        _dashboardService = dashboardService;
     }
 
     [HttpGet("{dealerId:int}")]
@@ -73,6 +77,15 @@ public class DealersController : ControllerBase
                 mensaje = ex.Message
             });
         }
+    }
+
+    [HttpGet("me/dashboard-resumen")]
+    [Authorize(Roles = "Dealer")]
+    public async Task<IActionResult> ObtenerDashboardResumen()
+    {
+        // No necesitas el dealerId porque el servicio ya lo obtiene internamente
+        var resumen = await _dashboardService.ObtenerResumenAsync();
+        return Ok(resumen);
     }
 
     private int? ObtenerUsuarioIdDelToken()

@@ -12,6 +12,7 @@ public class Anuncio
     public int Anio { get; private set; }
     public decimal Precio { get; private set; }
     public int Kilometraje { get; private set; }
+    public int Vistas { get; private set; }
     public string Transmision { get; private set; } = null!;
     public string Combustible { get; private set; } = null!;
     public string Ubicacion { get; private set; } = null!;
@@ -21,6 +22,7 @@ public class Anuncio
     public string Version { get; private set; } = null!;
     public string Traccion { get; private set; } = null!;
     public bool PublicarAlGuardar { get; private set; }
+
 
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
@@ -129,7 +131,7 @@ public class Anuncio
                 "Año de fabricación inválido."
             );
         }
-        
+
         if (string.IsNullOrWhiteSpace(descripcion))
         {
             throw new ArgumentException(
@@ -369,5 +371,10 @@ public class Anuncio
     public void CambiarEstado(string nuevoEstado)
     {
         Estado = nuevoEstado;
+    }
+
+    public void RegistrarVista()
+    {
+        Vistas++;
     }
 }

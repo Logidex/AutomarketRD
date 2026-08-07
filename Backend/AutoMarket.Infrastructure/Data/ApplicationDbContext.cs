@@ -96,6 +96,11 @@ public class ApplicationDbContext : DbContext
             b.Property(a => a.UpdatedAt)
                 .HasColumnType("timestamp with time zone");
 
+            b.Property(a => a.Vistas)
+                .IsRequired();
+
+            b.HasIndex(a => a.Vistas);
+
             /*
              * Configuración de la colección de fotos privada.
              */
