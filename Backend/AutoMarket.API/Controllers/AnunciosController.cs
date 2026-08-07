@@ -190,4 +190,19 @@ public class AnunciosController : ControllerBase
         catch (UnauthorizedAccessException ex) { return StatusCode(403, new { error = ex.Message }); }
         catch (Exception ex) { return BadRequest(new { error = ex.Message }); }
     }
+
+    [HttpPost("{id:int}/registrar-vista")]
+    [AllowAnonymous]
+    public async Task<IActionResult> RegistrarVista(int id)
+    {
+        try
+        {
+            await _anuncioService.RegistrarVistaAsync(id);
+            return Ok(new { mensaje = "Vista registrada." });
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(new { mensaje = "Anuncio no encontrado." });
+        }
+    }
 }

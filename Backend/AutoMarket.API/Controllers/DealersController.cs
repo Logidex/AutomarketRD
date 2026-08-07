@@ -83,8 +83,12 @@ public class DealersController : ControllerBase
     [Authorize(Roles = "Dealer")]
     public async Task<IActionResult> ObtenerDashboardResumen()
     {
-        // No necesitas el dealerId porque el servicio ya lo obtiene internamente
-        var resumen = await _dashboardService.ObtenerResumenAsync();
+        var dealerId = ObtenerUsuarioIdDelToken();
+
+        if (dealerId is null)
+            return Unauthorized(new { mensaje = "Token inválido o usuario no identificado." });
+
+        var resumen = await _dashboardService.ObtenerResumenAsync(dealerId.Value);
         return Ok(resumen);
     }
 

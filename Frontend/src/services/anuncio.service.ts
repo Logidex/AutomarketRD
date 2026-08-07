@@ -78,13 +78,20 @@ export const anuncioService = {
     return response.data;
   },
 
-  async eliminarImagen(id: number, urlImagen: string): Promise<{ mensaje: string }> {
+  async eliminarImagen(
+    id: number,
+    urlImagen: string,
+  ): Promise<{ mensaje: string }> {
     const response = await api.delete<{ mensaje: string }>(
-      `/api/anuncios/${id}/imagenes`, 
+      `/api/anuncios/${id}/imagenes`,
       {
-        data: { urlImagen } // El truco de Axios para el DELETE
-      }
+        data: { urlImagen }, // El truco de Axios para el DELETE
+      },
     );
     return response.data;
+  },
+
+  async registrarVista(id: number): Promise<void> {
+    await api.post(`/api/anuncios/${id}/registrar-vista`);
   },
 };

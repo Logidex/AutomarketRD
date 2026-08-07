@@ -315,8 +315,8 @@ public class AnuncioService : IAnuncioService
     public async Task EliminarImagenAsync(int anuncioId, int usuarioId, string urlImagen)
     {
         var anuncio = await _repository.ObtenerPorIdAsync(anuncioId);
-        
-        if (anuncio == null) 
+
+        if (anuncio == null)
             throw new KeyNotFoundException("El anuncio no existe.");
 
         if (anuncio.UsuarioId != usuarioId)
@@ -441,5 +441,18 @@ public class AnuncioService : IAnuncioService
 
         await _repository.ActualizarAsync(anuncio);
         return true;
+    }
+
+    public async Task RegistrarVistaAsync(int anuncioId)
+    {
+        var anuncio = await _repository.ObtenerPorIdAsync(anuncioId);
+
+        if (anuncio is null)
+        {
+            throw new KeyNotFoundException("Anuncio no encontrado.");
+        }
+
+        anuncio.RegistrarVista();
+        await _repository.GuardarCambiosAsync();
     }
 }

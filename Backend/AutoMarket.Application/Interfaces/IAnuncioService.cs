@@ -32,5 +32,8 @@ namespace AutoMarket.Application.Interfaces
 
         // 9. Eliminar Foto
         Task EliminarImagenAsync(int anuncioId, int usuarioId, string urlImagen);
+        
+        // 10. Registrar vistas
+        Task RegistrarVistaAsync(int anuncioId);
     }
 }
