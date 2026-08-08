@@ -152,7 +152,7 @@ public class UsuarioServiceTests
         // Validamos que el método lance la excepción esperada
         var excepcion = await Assert.ThrowsAsync<UnauthorizedAccessException>(() => servicio.LoginAsync(dto));
         
-        Assert.Equal("Credenciales inválidas.", excepcion.Message);
+        Assert.Equal("Correo electrónico o contraseña incorrectos.", excepcion.Message);
         
         // Nos aseguramos de que el sistema NUNCA intentó generar un token
         mockTokenService.Verify(t => t.GenerarToken(It.IsAny<Usuario>()), Times.Never);
@@ -188,7 +188,7 @@ public class UsuarioServiceTests
         // Validamos que el método lance la excepción esperada por la clave incorrecta
         var excepcion = await Assert.ThrowsAsync<UnauthorizedAccessException>(() => servicio.LoginAsync(dto));
         
-        Assert.Equal("Credenciales inválidas.", excepcion.Message);
+        Assert.Equal("Correo electrónico o contraseña incorrectos.", excepcion.Message);
         
         // Nos aseguramos de que el sistema NUNCA intentó generar un token
         mockTokenService.Verify(t => t.GenerarToken(It.IsAny<Usuario>()), Times.Never);

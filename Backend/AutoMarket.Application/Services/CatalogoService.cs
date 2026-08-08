@@ -1,5 +1,5 @@
 using AutoMarket.Application.DTOs.Anuncio;
-using AutoMarket.Application.DTOs.Common;
+using AutoMarket.Application.DTOs;
 using AutoMarket.Application.Interfaces;
 using AutoMarket.Core.Interfaces;
 

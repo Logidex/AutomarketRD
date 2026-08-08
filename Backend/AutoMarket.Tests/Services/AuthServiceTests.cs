@@ -150,7 +150,7 @@ public class AuthServiceTests
 
         var ex = await Assert.ThrowsAsync<UnauthorizedAccessException>(() => servicio.LoginAsync(dto));
 
-        Assert.Equal("Credenciales inválidas.", ex.Message);
+        Assert.Equal("Correo electrónico o contraseña incorrectos.", ex.Message);
         mockTokenService.Verify(t => t.GenerarToken(It.IsAny<Usuario>()), Times.Never);
     }
 
@@ -184,7 +184,7 @@ public class AuthServiceTests
 
         var ex = await Assert.ThrowsAsync<UnauthorizedAccessException>(() => servicio.LoginAsync(dto));
 
-        Assert.Equal("Credenciales inválidas.", ex.Message);
+        Assert.Equal("Correo electrónico o contraseña incorrectos.", ex.Message);
         mockTokenService.Verify(t => t.GenerarToken(It.IsAny<Usuario>()), Times.Never);
     }
 

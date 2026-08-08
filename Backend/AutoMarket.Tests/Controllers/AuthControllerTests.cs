@@ -1,4 +1,5 @@
 using AutoMarket.Application.DTOs;
+using AutoMarket.Application.DTOs.Auth;
 using AutoMarket.Application.DTOs.Usuario;
 using AutoMarket.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -38,7 +39,12 @@ public class AuthControllerTests
         var resultado = await _controller.Registrar(dto);
 
         var ok = Assert.IsType<OkObjectResult>(resultado);
-        Assert.Equal("Usuario registrado exitosamente", ok.Value);
+        var tipo = ok.Value!.GetType();
+        var exito = (bool)tipo.GetProperty("exito")!.GetValue(ok.Value)!;
+        var mensaje = tipo.GetProperty("mensaje")!.GetValue(ok.Value)!.ToString();
+
+        Assert.True(exito);
+        Assert.Equal("Usuario registrado exitosamente", mensaje);
 
         _mockAuthService.Verify(s => s.RegistrarUsuarioAsync(dto), Times.Once);
     }
@@ -63,7 +69,10 @@ public class AuthControllerTests
         var resultado = await _controller.Registrar(dto);
 
         var badRequest = Assert.IsType<BadRequestObjectResult>(resultado);
-        Assert.Equal("El correo electrónico ya está registrado.", badRequest.Value);
+        var tipo = badRequest.Value!.GetType();
+        var mensaje = tipo.GetProperty("mensaje")!.GetValue(badRequest.Value)!.ToString();
+
+        Assert.Equal("El correo electrónico ya está registrado.", mensaje);
 
         _mockAuthService.Verify(s => s.RegistrarUsuarioAsync(dto), Times.Once);
     }
@@ -79,7 +88,12 @@ public class AuthControllerTests
 
         _mockAuthService
             .Setup(s => s.LoginAsync(dto))
-            .ReturnsAsync((true, "Inicio de sesión exitoso.", "token-jwt-demo"));
+            .ReturnsAsync(new LoginResultDto
+            {
+                Exito = true,
+                Mensaje = "Inicio de sesión exitoso.",
+                Token = "token-jwt-demo"
+            });
 
         var resultado = await _controller.Login(dto);
 
@@ -107,7 +121,12 @@ public class AuthControllerTests
 
         _mockAuthService
             .Setup(s => s.LoginAsync(dto))
-            .ReturnsAsync((false, "Credenciales incorrectas.", null));
+            .ReturnsAsync(new LoginResultDto
+            {
+                Exito = false,
+                Mensaje = "Credenciales incorrectas.",
+                Token = null
+            });
 
         var resultado = await _controller.Login(dto);
 

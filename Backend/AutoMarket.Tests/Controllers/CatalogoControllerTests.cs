@@ -1,6 +1,6 @@
 using AutoMarket.API.Controllers;
 using AutoMarket.Application.DTOs.Anuncio;
-using AutoMarket.Application.DTOs.Common;
+using AutoMarket.Application.DTOs;
 using AutoMarket.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Moq;

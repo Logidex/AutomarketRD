@@ -1,5 +1,5 @@
 using AutoMarket.Application.DTOs.Anuncio;
-using AutoMarket.Application.DTOs.Common;
+using AutoMarket.Application.DTOs;
 using AutoMarket.Application.Services;
 using AutoMarket.Core.Entities;
 using AutoMarket.Core.Interfaces;
@@ -35,7 +35,10 @@ public class CatalogoServiceTests
             usuarioId,
             marca,
             modelo,
+            "",
             "Sedan",
+            "1.8L",
+            "Delantera",
             colorExterior,
             "Negro",
             anio,
@@ -108,7 +111,7 @@ public class CatalogoServiceTests
 
         Assert.IsType<PagedResult<AnuncioCatalogoDto>>(resultado);
         Assert.Single(resultado.Items);
-        Assert.Equal(20, resultado.PageSize);
+        Assert.Equal(20, resultado.CantidadPorPagina);
     }
 
     [Fact]

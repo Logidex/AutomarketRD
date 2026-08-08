@@ -19,6 +19,11 @@ frontend/node_modules/
 *.log
 logs/
 
+# Artefactos de test/cobertura y herramientas
+**/TestResults/
+**/coveragereport/
+**/graphify-out/
+
 # OS
 .DS_Store
 Thumbs.db

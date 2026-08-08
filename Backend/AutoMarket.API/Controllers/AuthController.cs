@@ -41,6 +41,11 @@ public class AuthController : ControllerBase
             )}..."
         );
 
+        if (!resultado.Exito)
+        {
+            return BadRequest(resultado.Mensaje);
+        }
+
         return Ok(resultado);
     }
 

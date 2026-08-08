@@ -39,7 +39,7 @@ public class AnuncioServiceTests
         // 1. ARRANGE
         var listaSimulada = new List<Anuncio>
         {
-            new Anuncio(1, "Toyota", "Corolla", "Sedan", "Blanco", "Negro", 2015, 600000, 80000, "Automática", "Gasolina", new List<string> { "Ninguno" }, "Santo Domingo", "Excelente estado")
+            new Anuncio(1, "Toyota", "Corolla", "", "Sedan", "1.8L", "Delantera", "Blanco", "Negro", 2015, 600000, 80000, "Automática", "Gasolina", new List<string> { "Ninguno" }, "Santo Domingo", "Excelente estado")
         };
 
         // Configuramos el mock centralizado
@@ -79,7 +79,7 @@ public class AnuncioServiceTests
     {
         // 1. ARRANGE
         var idReal = 5;
-        var anuncioEnBD = new Anuncio(1, "Honda", "Civic", "Sedan", "Rojo", "Gris", 2022, 1200000, 15000, "Automática", "Gasolina", new List<string> { "Sunroof" }, "Santiago", "Casi nuevo");
+        var anuncioEnBD = new Anuncio(1, "Honda", "Civic", "", "Sedan", "1.8L", "Delantera", "Rojo", "Gris", 2022, 1200000, 15000, "Automática", "Gasolina", new List<string> { "Sunroof" }, "Santiago", "Casi nuevo");
 
         _mockRepo.Setup(r => r.ObtenerPorIdAsync(idReal)).ReturnsAsync(anuncioEnBD);
 
@@ -106,6 +106,8 @@ public class AnuncioServiceTests
             Marca = "Toyota",
             Modelo = "Corolla",
             TipoVehiculo = "Sedan",
+            Motor = "1.8L",
+            Traccion = "Delantera",
             ColorExterior = "Blanco",
             ColorInterior = "Negro",
             Anio = 2020,
@@ -162,7 +164,7 @@ public class AnuncioServiceTests
         var idDueñoReal = 1;
         var idHacker = 99;
 
-        var anuncioEnBD = new Anuncio(idDueñoReal, "Honda", "Civic", "Sedan", "Rojo", "Gris", 2022, 1200000, 15000, "Automática", "Gasolina", new List<string>(), "Santiago", "Casi nuevo");
+        var anuncioEnBD = new Anuncio(idDueñoReal, "Honda", "Civic", "", "Sedan", "1.8L", "Delantera", "Rojo", "Gris", 2022, 1200000, 15000, "Automática", "Gasolina", new List<string>(), "Santiago", "Casi nuevo");
 
         _mockRepo.Setup(r => r.ObtenerPorIdAsync(idAnuncio)).ReturnsAsync(anuncioEnBD);
 
@@ -185,13 +187,15 @@ public class AnuncioServiceTests
         var idAnuncio = 5;
         var idDueño = 1;
 
-        var anuncioEnBD = new Anuncio(idDueño, "Honda", "Civic", "Sedan", "Rojo", "Gris", 2022, 1200000, 15000, "Automática", "Gasolina", new List<string>(), "Santiago", "Casi nuevo");
+        var anuncioEnBD = new Anuncio(idDueño, "Honda", "Civic", "", "Sedan", "1.8L", "Delantera", "Rojo", "Gris", 2022, 1200000, 15000, "Automática", "Gasolina", new List<string>(), "Santiago", "Casi nuevo");
 
         var updateDto = new AnuncioUpdateDto
         {
             Marca = "Honda",
             Modelo = "Civic",
             TipoVehiculo = "Sedan",
+            Motor = "1.5L",
+            Traccion = "Delantera",
             ColorExterior = "Azul", // 👈 Cambió a Azul
             ColorInterior = "Gris",
             Anio = 2022,
@@ -201,8 +205,7 @@ public class AnuncioServiceTests
             Combustible = "Gasolina",
             Accesorios = new List<string>(),
             Ubicacion = "Santiago",
-            Descripcion = "Actualizado",
-            PublicarAlGuardar = false
+            Descripcion = "Actualizado"
         };
 
         _mockRepo.Setup(r => r.ObtenerPorIdAsync(idAnuncio)).ReturnsAsync(anuncioEnBD);
@@ -242,7 +245,7 @@ public class AnuncioServiceTests
         var idDueñoReal = 1;
         var idHacker = 99;
 
-        var anuncioEnBD = new Anuncio(idDueñoReal, "Honda", "Civic", "Sedan", "Rojo", "Gris", 2022, 1200000, 15000, "Automática", "Gasolina", new List<string>(), "Santiago", "Casi nuevo");
+        var anuncioEnBD = new Anuncio(idDueñoReal, "Honda", "Civic", "", "Sedan", "1.8L", "Delantera", "Rojo", "Gris", 2022, 1200000, 15000, "Automática", "Gasolina", new List<string>(), "Santiago", "Casi nuevo");
 
         _mockRepo.Setup(r => r.ObtenerPorIdAsync(idAnuncio)).ReturnsAsync(anuncioEnBD);
 
@@ -264,7 +267,7 @@ public class AnuncioServiceTests
         var idAnuncio = 5;
         var idDueño = 1;
 
-        var anuncioEnBD = new Anuncio(idDueño, "Honda", "Civic", "Sedan", "Rojo", "Gris", 2022, 1200000, 15000, "Automática", "Gasolina", new List<string>(), "Santiago", "Casi nuevo");
+        var anuncioEnBD = new Anuncio(idDueño, "Honda", "Civic", "", "Sedan", "1.8L", "Delantera", "Rojo", "Gris", 2022, 1200000, 15000, "Automática", "Gasolina", new List<string>(), "Santiago", "Casi nuevo");
 
         // Regla de negocio: agregamos 5 fotos
         anuncioEnBD.AgregarFotos(new List<string>
@@ -307,7 +310,7 @@ public class AnuncioServiceTests
         var idDueñoReal = 1;
         var dto = new AnuncioImagenUploadDto { AnuncioId = 5, UsuarioId = 99, Imagenes = new List<IFormFile>() };
 
-        var anuncioEnBD = new Anuncio(idDueñoReal, "Honda", "Civic", "Sedan", "Rojo", "Gris", 2022, 1200000, 15000, "Automática", "Gasolina", new List<string>(), "Santiago", "Casi nuevo");
+        var anuncioEnBD = new Anuncio(idDueñoReal, "Honda", "Civic", "", "Sedan", "1.8L", "Delantera", "Rojo", "Gris", 2022, 1200000, 15000, "Automática", "Gasolina", new List<string>(), "Santiago", "Casi nuevo");
 
         _mockRepo.Setup(r => r.ObtenerPorIdAsync(dto.AnuncioId)).ReturnsAsync(anuncioEnBD);
 
@@ -323,7 +326,7 @@ public class AnuncioServiceTests
     {
         // 1. ARRANGE
         var idDueño = 1;
-        var anuncioEnBD = new Anuncio(idDueño, "Honda", "Civic", "Sedan", "Rojo", "Gris", 2022, 1200000, 15000, "Automática", "Gasolina", new List<string>(), "Santiago", "Casi nuevo");
+        var anuncioEnBD = new Anuncio(idDueño, "Honda", "Civic", "", "Sedan", "1.8L", "Delantera", "Rojo", "Gris", 2022, 1200000, 15000, "Automática", "Gasolina", new List<string>(), "Santiago", "Casi nuevo");
         _mockRepo.Setup(r => r.ObtenerPorIdAsync(5)).ReturnsAsync(anuncioEnBD);
 
         // Simulamos un archivo de 6 Megabytes
@@ -344,7 +347,7 @@ public class AnuncioServiceTests
     {
         // Arrange
         // 🌟 FIX: Agregamos Anio = 2022 para pasar la validación
-        var dto = new AnuncioCreateDto { UsuarioId = 1, Marca = "Toyota", Modelo = "Civic", Precio = 500000, Anio = 2022 };
+        var dto = new AnuncioCreateDto { UsuarioId = 1, Marca = "Toyota", Modelo = "Civic", TipoVehiculo = "Sedan", Motor = "1.8L", Traccion = "Delantera", ColorExterior = "Blanco", ColorInterior = "Negro", Precio = 500000, Anio = 2022, Kilometraje = 0, Transmision = "Automática", Combustible = "Gasolina", Accesorios = new List<string>(), Ubicacion = "Santo Domingo", Descripcion = "Vehículo de prueba" };
 
         var usuarioParticular = CrearUsuarioSimulado(id: 1, esDealer: false);
 
@@ -523,6 +526,8 @@ public class AnuncioServiceTests
             Marca = "Kia",
             Modelo = "Sorento",
             TipoVehiculo = "SUV",
+            Motor = "1.8L",
+            Traccion = "Delantera",
             ColorExterior = "Gris",
             ColorInterior = "Negro",
             Anio = 2023,
