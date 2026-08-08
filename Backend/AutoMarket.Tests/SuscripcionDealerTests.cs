@@ -76,17 +76,39 @@ public class SuscripcionDealerTests
         Assert.False(resultado);
     }
 
-    // =========================================================================
-    // PRUEBA 05: PermiteNuevosAnuncios - Falla por suscripción cancelada
+// =========================================================================
+    // PRUEBA 05: PermiteNuevosAnuncios - Suscripción cancelada con días vigentes permite
     // =========================================================================
     [Fact]
-    public void PermiteNuevosAnuncios_SuscripcionCancelada_DebeRetornarFalse()
+    public void PermiteNuevosAnuncios_SuscripcionCanceladaConVigencia_DebeRetornarTrue()
     {
         // Arrange
         var suscripcion = new SuscripcionDealer(1, PlanNivel.Pro, CicloFacturacion.Mensual);
 
         var propEstado = typeof(SuscripcionDealer).GetProperty("Estado");
         propEstado?.SetValue(suscripcion, EstadoSuscripcion.Cancelada);
+
+        // Act
+        var resultado = suscripcion.PermiteNuevosAnuncios(0);
+
+        // Assert
+        Assert.True(resultado);
+    }
+
+    // =========================================================================
+    // PRUEBA 05b: PermiteNuevosAnuncios - Cancelada Y vencida no permite
+    // =========================================================================
+    [Fact]
+    public void PermiteNuevosAnuncios_SuscripcionCanceladaYVencida_DebeRetornarFalse()
+    {
+        // Arrange
+        var suscripcion = new SuscripcionDealer(1, PlanNivel.Pro, CicloFacturacion.Mensual);
+
+        var propEstado = typeof(SuscripcionDealer).GetProperty("Estado");
+        propEstado?.SetValue(suscripcion, EstadoSuscripcion.Cancelada);
+
+        var propFechaVencimiento = typeof(SuscripcionDealer).GetProperty("FechaVencimientoUtc");
+        propFechaVencimiento?.SetValue(suscripcion, DateTime.UtcNow.AddMinutes(-1));
 
         // Act
         var resultado = suscripcion.PermiteNuevosAnuncios(0);

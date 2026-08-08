@@ -139,6 +139,11 @@ export default function DashboardSuscripcion() {
   const esActiva =
     suscripcion !== null && suscripcion.estado === "Activa" && suscripcion.activa;
 
+  const esCanceladaConVigencia =
+    suscripcion !== null &&
+    suscripcion.estado === "Cancelada" &&
+    suscripcion.activa;
+
   return (
     <div className="space-y-6 p-6">
       {/* Estado actual */}
@@ -159,7 +164,9 @@ export default function DashboardSuscripcion() {
                   {suscripcion.estado === "Activa"
                     ? `${suscripcion.diasRestantes} días restantes`
                     : suscripcion.estado === "Cancelada"
-                      ? "suscripción cancelada"
+                      ? esCanceladaConVigencia
+                        ? `cancelada · beneficios vigentes hasta la fecha (${suscripcion.diasRestantes} días restantes)`
+                        : "suscripción cancelada"
                       : "vencida"}
                 </p>
               )}
@@ -178,9 +185,24 @@ export default function DashboardSuscripcion() {
         </div>
 
         {suscripcion && suscripcion.estado === "Cancelada" && (
-          <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-            Tu suscripción está cancelada. Elige un plan para{" "}
-            <strong>reactivarla</strong> y seguir publicando anuncios.
+          <div className="mt-4 space-y-3">
+            <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+              {esCanceladaConVigencia ? (
+                <>
+                  Cancelaste tu suscripción, pero <strong>conservas el plan hasta su
+                  vencimiento</strong> ({suscripcion.diasRestantes} días restantes,{" "}
+                  {new Date(suscripcion.fechaVencimientoUtc).toLocaleDateString("es-DO")}).
+                  Podrás seguir publicando hasta entonces.
+                </>
+              ) : (
+                <>
+                  Tu suscripción está cancelada. Elige un plan para{" "}
+                  <strong>reactivarla</strong> y seguir publicando anuncios.
+                </>
+              )}
+            </div>
+
+            <SoporteCard />
           </div>
         )}
       </div>
@@ -260,4 +282,25 @@ function nombrePlan(nivel: string): string {
     Elite: "Elite",
   };
   return mapa[nivel] ?? nivel;
+}
+
+function SoporteCard() {
+  return (
+    <div className="flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+      <span className="text-lg">?</span>
+      <div>
+        <p className="font-semibold">¿Cancelaste por error?</p>
+        <p>
+          Escríbenos a{" "}
+          <a
+            href="mailto:noreply.automarketrd@gmail.com?subject=Cancelación por error - AutoMarket RD"
+            className="font-semibold underline"
+          >
+            noreply.automarketrd@gmail.com
+          </a>{" "}
+          y te ayudaremos a recuperar tu suscripción.
+        </p>
+      </div>
+    </div>
+  );
 }

@@ -34,7 +34,8 @@ public class SuscripcionDealer
 
     public bool PermiteNuevosAnuncios(int cantidadAnunciosActuales)
     {
-        if (Estado != EstadoSuscripcion.Activa) return false;
+        // La cancelación no revierte los días ya pagados: se permite mientras la
+        // vigencia siga vigente. El freno efectivo es la fecha de vencimiento.
         if (DateTime.UtcNow > FechaVencimientoUtc) return false;
 
         return cantidadAnunciosActuales < LimiteAnuncios;

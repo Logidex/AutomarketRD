@@ -429,10 +429,10 @@ public class AnuncioServiceTests
     }
 
     // =========================================================================
-    // PRUEBA 24: Crear Anuncio - Fallo para Dealer con suscripción cancelada
+    // PRUEBA 24: Crear Anuncio - Dealer con suscripción cancelada pero días vigentes puede publicar
     // =========================================================================
     [Fact]
-    public async Task CrearAnuncioAsync_DealerConSuscripcionCancelada_DebeLanzarBusinessRuleException()
+    public async Task CrearAnuncioAsync_DealerConSuscripcionCanceladaConVigencia_DebePermitir()
     {
         var dto = new AnuncioCreateDto
         {
@@ -440,6 +440,8 @@ public class AnuncioServiceTests
             Marca = "Honda",
             Modelo = "CRV",
             TipoVehiculo = "SUV",
+            Motor = "2.4L",
+            Traccion = "En las 4 ruedas",
             ColorExterior = "Blanco",
             ColorInterior = "Negro",
             Anio = 2024,
@@ -464,11 +466,11 @@ public class AnuncioServiceTests
         _mockRepo.Setup(repo => repo.ContarAnunciosPorUsuarioAsync(3))
             .ReturnsAsync(0);
 
-        var excepcion = await Assert.ThrowsAsync<BusinessRuleException>(() =>
-            _servicio.CrearAnuncioAsync(dto));
+        // Act
+        await _servicio.CrearAnuncioAsync(dto);
 
-        Assert.Contains("no está activa", excepcion.Message);
-        _mockRepo.Verify(repo => repo.AgregarAsync(It.IsAny<Anuncio>()), Times.Never);
+        // Assert: la cancelación no retira los días ya pagados
+        _mockRepo.Verify(repo => repo.AgregarAsync(It.IsAny<Anuncio>()), Times.Once);
     }
 
     // =========================================================================

@@ -74,12 +74,12 @@ public class AnuncioService : IAnuncioService
             }
 
             if (
-                suscripcion.Estado !=
-                EstadoSuscripcion.Activa
+                suscripcion.FechaVencimientoUtc <=
+                DateTime.UtcNow
             )
             {
                 throw new BusinessRuleException(
-                    "Tu suscripción Dealer no está activa."
+                    "Tu suscripción Dealer está vencida. Renuevala para seguir publicando."
                 );
             }
 

@@ -1,4 +1,3 @@
-using AutoMarket.Core.Entities.Enums;
 using AutoMarket.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -54,12 +53,12 @@ public class SuscripcionMonitorService : BackgroundService
 
         _logger.LogInformation("Ejecutando barrido de dealers morosos. Límite de gracia: {FechaLimite}", fechaLimite);
 
-        // 1. Encontrar a los usuarios con suscripción vencida o cancelada
+        // 1. Encontrar a los usuarios con suscripción vencida (la cancelación
+        //    no retira los beneficios ya pagados: solo la fecha de vencimiento)
         var usuariosMorososIds = await dbContext.Usuarios
             .Where(u => u.PerfilDealer != null && 
                         u.PerfilDealer.Suscripcion != null &&
-                        (u.PerfilDealer.Suscripcion.FechaVencimientoUtc < fechaLimite || 
-                         u.PerfilDealer.Suscripcion.Estado == EstadoSuscripcion.Cancelada))
+                        u.PerfilDealer.Suscripcion.FechaVencimientoUtc < fechaLimite)
             .Select(u => u.UsuarioId)
             .ToListAsync(stoppingToken);
 

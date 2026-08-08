@@ -109,7 +109,7 @@ public class SuscripcionService : ISuscripcionService
             FechaInicioUtc = suscripcion.FechaInicioUtc,
             FechaVencimientoUtc = suscripcion.FechaVencimientoUtc,
             DiasRestantes = Math.Max(0, (int)Math.Ceiling((suscripcion.FechaVencimientoUtc - DateTime.UtcNow).TotalDays)),
-            Activa = suscripcion.Estado == EstadoSuscripcion.Activa
+            Activa = suscripcion.FechaVencimientoUtc > DateTime.UtcNow
         };
     }
 
