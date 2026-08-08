@@ -13,6 +13,8 @@ import DashboardIndex from './pages/DashboardIndex';
 import MisAnuncios from './pages/MisAnuncios';
 import PublicarVehiculo from './pages/CrearAnuncio';
 import EditarVehiculo from './pages/EditarVehiculo';
+import Leads from './pages/Leads';
+import MiPerfil from './pages/MiPerfil';
 
 function App() {
   return (
@@ -75,6 +77,18 @@ function App() {
           <Route
             path="editar-anuncio/:id"
             element={<EditarVehiculo />}
+          />
+
+          {/* /dashboard/leads */}
+          <Route
+            path="leads"
+            element={<Leads />}
+          />
+
+          {/* /dashboard/mi-perfil */}
+          <Route
+            path="mi-perfil"
+            element={<MiPerfil />}
           />
         </Route>
       </Route>

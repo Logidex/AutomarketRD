@@ -205,4 +205,28 @@ public class AnunciosController : ControllerBase
             return NotFound(new { mensaje = "Anuncio no encontrado." });
         }
     }
+
+    // ==========================================
+    // 7. ELIMINAR ANUNCIO COMPLETO
+    // ==========================================
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "Dealer,Vendedor")]
+    public async Task<IActionResult> EliminarAnuncio(int id)
+    {
+        int usuarioId = ObtenerUsuarioIdDelToken();
+
+        try
+        {
+            var eliminado = await _anuncioService.EliminarAnuncioAsync(id, usuarioId);
+
+            if (!eliminado)
+                return NotFound(new { mensaje = "No se encontró el anuncio o no tienes permisos." });
+
+            return Ok(new { mensaje = "Anuncio eliminado correctamente." });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(403, new { mensaje = ex.Message });
+        }
+    }
 }

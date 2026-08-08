@@ -67,4 +67,34 @@ public class LeadsController : ControllerBase
         var leads = await _leadService.ObtenerLeadsPorDealerAsync(dealerId);
         return Ok(leads);
     }
+
+    // =========================================================================
+    // ENDPOINT 4: Marcar un Lead como Leído (Protegido)
+    // PATCH: api/leads/{id}/leido
+    // =========================================================================
+    [HttpPatch("{id:int}/leido")]
+    [Authorize]
+    public async Task<IActionResult> MarcarLeido(int id)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int dealerId))
+        {
+            return Unauthorized(new { mensaje = "Usuario no válido o sesión expirada." });
+        }
+
+        try
+        {
+            var marcado = await _leadService.MarcarLeidoAsync(id, dealerId);
+
+            if (!marcado)
+                return NotFound(new { mensaje = "El lead no fue encontrado." });
+
+            return Ok(new { mensaje = "Lead marcado como leído." });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(403, new { mensaje = ex.Message });
+        }
+    }
 }

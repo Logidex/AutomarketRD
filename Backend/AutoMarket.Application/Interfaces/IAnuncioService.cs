@@ -35,5 +35,8 @@ namespace AutoMarket.Application.Interfaces
         
         // 10. Registrar vistas
         Task RegistrarVistaAsync(int anuncioId);
+
+        // 11. Eliminar Anuncio completo
+        Task<bool> EliminarAnuncioAsync(int id, int usuarioId);
     }
 }

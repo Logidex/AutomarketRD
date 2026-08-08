@@ -90,7 +90,7 @@ public class AnuncioService : IAnuncioService
             )
             {
                 throw new BusinessRuleException(
-                    "Has alcanzado el límite de anuncios permitido por tu plan."
+                    "Has alcanzado el límite de anuncios permitidos por tu plan."
                 );
             }
         }
@@ -231,7 +231,7 @@ public class AnuncioService : IAnuncioService
         if (anuncio.UsuarioId != usuarioId)
         {
             throw new UnauthorizedAccessException(
-                "No tienes permiso para modificar este anuncio."
+                "Acceso denegado: No tienes permiso para modificar un anuncio que no te pertenece."
             );
         }
 
@@ -454,5 +454,27 @@ public class AnuncioService : IAnuncioService
 
         anuncio.RegistrarVista();
         await _repository.GuardarCambiosAsync();
+    }
+
+    public async Task<bool> EliminarAnuncioAsync(int id, int usuarioId)
+    {
+        var anuncio = await _repository.ObtenerPorIdAsync(id);
+
+        if (anuncio == null) return false;
+
+        if (anuncio.UsuarioId != usuarioId)
+            throw new UnauthorizedAccessException("Acceso denegado: No tienes permiso para eliminar un anuncio que no te pertenece.");
+
+        // Destrucción física de las fotos en AWS S3
+        foreach (var foto in anuncio.Fotos)
+        {
+            try { await _almacenadorArchivos.EliminarArchivoAsync(foto); }
+            catch { /* No bloqueamos el borrado si S3 falla */ }
+        }
+
+        _repository.Eliminar(anuncio);
+        await _repository.GuardarCambiosAsync();
+
+        return true;
     }
 }

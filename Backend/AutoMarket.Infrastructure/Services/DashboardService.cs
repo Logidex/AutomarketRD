@@ -79,7 +79,8 @@ public class DashboardService : IDashboardService
             .Where(l => anunciosDealer.Select(a => a.Id).Contains(l.AnuncioId));
 
         var totalLeads = await leadsQuery.CountAsync();
-        var leadsNoLeidos = 0;
+        var leadsNoLeidos = await leadsQuery
+            .CountAsync(l => !l.Leido);
 
         var perfilDealer = await _context.PerfilesDealers
             .Include(p => p.Suscripcion)

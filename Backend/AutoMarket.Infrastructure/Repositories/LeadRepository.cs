@@ -52,4 +52,9 @@ public class LeadRepository : ILeadRepository
         return await _context.Leads
             .CountAsync(l => l.Anuncio.UsuarioId == usuarioId);
     }
+
+    public async Task GuardarCambiosAsync()
+    {
+        await _context.SaveChangesAsync();
+    }
 }

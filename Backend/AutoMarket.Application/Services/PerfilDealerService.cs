@@ -62,7 +62,22 @@ public class PerfilDealerService : IPerfilDealerService
                 dto.Logo.ContentType
             );
 
+            var logoAnterior = perfil.LogoUrl;
+
             perfil.ActualizarLogo(rutaLogo);
+
+            // Eliminamos el logo anterior de S3 para no acumular archivos huérfanos
+            if (!string.IsNullOrWhiteSpace(logoAnterior))
+            {
+                try
+                {
+                    await _almacenadorArchivos.EliminarArchivoAsync(logoAnterior);
+                }
+                catch
+                {
+                    // No bloqueamos la actualización si falla la limpieza en S3
+                }
+            }
         }
 
         await _usuarioRepository.GuardarCambiosAsync();

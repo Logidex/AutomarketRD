@@ -1,6 +1,6 @@
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 
-import { FaCar, FaPlusCircle, FaChartPie, FaSignOutAlt } from "react-icons/fa";
+import { FaCar, FaPlusCircle, FaChartPie, FaSignOutAlt, FaEnvelope, FaStore } from "react-icons/fa";
 
 import { authService } from "../../services/auth.service";
 import logo from "../../assets/AutoMarketRD_Logo.svg";
@@ -42,6 +42,16 @@ export default function DashboardLayout() {
       path: "/dashboard/publicar",
       label: "Publicar Vehículo",
       icon: <FaPlusCircle />,
+    },
+    {
+      path: "/dashboard/leads",
+      label: "Leads",
+      icon: <FaEnvelope />,
+    },
+    {
+      path: "/dashboard/mi-perfil",
+      label: "Mi Perfil",
+      icon: <FaStore />,
     },
   ];
 

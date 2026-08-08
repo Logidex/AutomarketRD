@@ -1,17 +1,19 @@
 import { useNavigate } from "react-router-dom";
+import { FaTrash } from "react-icons/fa";
 import type { AnuncioListado } from "../types/anuncio.types";
 
 interface AnuncioCardProps {
   anuncio: AnuncioListado;
   onPublicar: (id: number) => void;
   onCambiarEstado: (id: number, estado: string) => void;
-  onEditar?: (id: number) => void;
+  onEliminar: (id: number) => void;
 }
 
 export default function AnuncioCard({
   anuncio,
   onPublicar,
   onCambiarEstado,
+  onEliminar,
 }: AnuncioCardProps) {
   const fotoPrincipal =
     anuncio.fotos && anuncio.fotos.length > 0
@@ -202,6 +204,14 @@ export default function AnuncioCard({
                   className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
                 >
                   Editar
+                </button>
+
+                <button
+                  onClick={() => onEliminar(anuncio.id)}
+                  className="flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-700 transition-colors hover:bg-red-100"
+                >
+                  <FaTrash />
+                  Eliminar
                 </button>
               </div>
             </div>

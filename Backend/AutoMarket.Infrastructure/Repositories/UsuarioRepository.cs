@@ -49,7 +49,6 @@ public class UsuarioRepository : IUsuarioRepository
     ObtenerDealerConPerfilPorIdAsync(int usuarioId)
     {
         return await _context.Usuarios
-            .AsNoTracking()
             .Include(u => u.PerfilDealer)
                 .ThenInclude(p => p!.Suscripcion)
             .FirstOrDefaultAsync(u =>

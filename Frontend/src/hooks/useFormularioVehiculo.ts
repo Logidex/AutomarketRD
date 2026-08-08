@@ -75,8 +75,28 @@ export const useFormularioVehiculo = (isEditMode: boolean = false) => {
 
   const handleEliminarArchivo = (indice: number) => setArchivos((prev) => prev.filter((_, i) => i !== indice));
   
-  const handleEliminarFotoGuardada = (indice: number) => {
-    setFotosGuardadas((prev) => prev.filter((_, i) => i !== indice));
+  const handleEliminarFotoGuardada = async (indice: number) => {
+    if (!isEditMode || !id) {
+      setFotosGuardadas((prev) => prev.filter((_, i) => i !== indice));
+      return;
+    }
+
+    const url = fotosGuardadas[indice];
+    if (!url) return;
+
+    try {
+      await anuncioService.eliminarImagen(Number(id), url);
+      setFotosGuardadas((prev) => prev.filter((_, i) => i !== indice));
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      console.error(error);
+      Swal.fire({
+        title: "Error",
+        text: error.message || "No se pudo eliminar la imagen.",
+        icon: "error",
+        confirmButtonColor: "#ef4444",
+      });
+    }
   };
 
   const guardar = async (payload: AnuncioCreateRequestDto) => {

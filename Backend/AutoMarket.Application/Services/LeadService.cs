@@ -84,4 +84,20 @@ public class LeadService : ILeadService
     {
         return await _leadRepository.ObtenerPorUsuarioIdAsync(dealerId);
     }
+
+    public async Task<bool> MarcarLeidoAsync(int leadId, int usuarioId)
+    {
+        var lead = await _leadRepository.ObtenerPorIdAsync(leadId);
+
+        if (lead is null) return false;
+
+        // Solo el dueño del anuncio puede atender sus leads
+        if (lead.Anuncio.UsuarioId != usuarioId)
+            throw new UnauthorizedAccessException("Acceso denegado: Este lead no pertenece a tu inventario.");
+
+        lead.MarcarComoLeido();
+        await _leadRepository.GuardarCambiosAsync();
+
+        return true;
+    }
 }

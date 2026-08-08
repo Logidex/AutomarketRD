@@ -20,6 +20,9 @@ public class Lead
     public CanalContacto Canal { get; private set; }
     public DateTime FechaCreacionUtc { get; private set; }
 
+    // Para gestión del dealer: ¿el lead ya fue atendido?
+    public bool Leido { get; private set; }
+
     private Lead() { }
 
     // Constructor de dominio para instanciación segura
@@ -38,5 +41,11 @@ public class Lead
         Mensaje = mensaje;
         Canal = canal;
         FechaCreacionUtc = DateTime.UtcNow;
+        Leido = false;
+    }
+
+    public void MarcarComoLeido()
+    {
+        Leido = true;
     }
 }

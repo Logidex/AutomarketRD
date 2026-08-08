@@ -94,4 +94,11 @@ export const anuncioService = {
   async registrarVista(id: number): Promise<void> {
     await api.post(`/api/anuncios/${id}/registrar-vista`);
   },
+
+  async eliminarAnuncio(id: number): Promise<{ mensaje: string }> {
+    const response = await api.delete<{ mensaje: string }>(
+      `/api/anuncios/${id}`,
+    );
+    return response.data;
+  },
 };

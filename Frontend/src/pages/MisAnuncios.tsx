@@ -119,8 +119,40 @@ export default function MisAnuncios() {
     }
   };
 
-  const handleEditar = (id: number) => {
-    console.log("Editar anuncio:", id);
+  const handleEliminar = async (id: number) => {
+    const result = await Swal.fire({
+      title: "¿Eliminar anuncio?",
+      text: "Esta acción eliminará el anuncio y sus fotos. No se puede deshacer.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "Cancelar",
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      await anuncioService.eliminarAnuncio(id);
+
+      setAnuncios((prev) => prev.filter((anuncio) => anuncio.id !== id));
+
+      Swal.fire({
+        title: "Eliminado",
+        text: "El anuncio fue eliminado correctamente.",
+        icon: "success",
+        confirmButtonColor: "#2563eb",
+      });
+    } catch (error) {
+      console.error(error);
+      Swal.fire({
+        title: "Error",
+        text: "No se pudo eliminar el anuncio.",
+        icon: "error",
+        confirmButtonColor: "#ef4444",
+      });
+    }
   };
 
   return (
@@ -170,7 +202,7 @@ export default function MisAnuncios() {
               anuncio={anuncio}
               onPublicar={handlePublicar}
               onCambiarEstado={handleCambiarEstado}
-              onEditar={handleEditar}
+              onEliminar={handleEliminar}
             />
           ))}
         </ul>

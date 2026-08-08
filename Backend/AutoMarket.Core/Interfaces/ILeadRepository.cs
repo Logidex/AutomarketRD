@@ -18,4 +18,7 @@ public interface ILeadRepository
 
     // Para las métricas del dashboard (KPIs)
     Task<int> ContarLeadsPorUsuarioAsync(int usuarioId);
+
+    // Para persistir cambios (ej: marcar como leído)
+    Task GuardarCambiosAsync();
 }
