@@ -20,6 +20,7 @@ public class AdminControllerTests
         var mockDashboard = new Mock<IDashboardService>();
         var mockUsuarios = new Mock<IUsuarioRepository>();
         var mockSuscripcionService = new Mock<ISuscripcionService>();
+        var mockPlanCatalogo = new Mock<IPlanCatalogoService>();
 
         var anuncio = new Anuncio(
             1,
@@ -50,7 +51,8 @@ public class AdminControllerTests
             mockUsuarios.Object,
             mockRepo.Object,
             mockS3.Object,
-            mockSuscripcionService.Object);
+            mockSuscripcionService.Object,
+            mockPlanCatalogo.Object);
 
         // 2. ACT
         var resultado = await controller.EliminarAnuncioForzoso(1);

@@ -325,6 +325,7 @@ export default function MiPerfil() {
               value={form.ubicacion}
               onChange={handleChange}
               disabled={!modoEdicion}
+              required
               className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-gray-50 disabled:text-gray-600"
             />
           </div>
@@ -339,6 +340,7 @@ export default function MiPerfil() {
               value={form.telefonoAgencia}
               onChange={handleChange}
               disabled={!modoEdicion}
+              required
               className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-gray-50 disabled:text-gray-600"
             />
           </div>

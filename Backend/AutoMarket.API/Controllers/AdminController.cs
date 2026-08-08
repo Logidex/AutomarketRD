@@ -1,4 +1,5 @@
 using AutoMarket.Application.DTOs.Admin;
+using AutoMarket.Application.DTOs.Planes;
 using AutoMarket.Application.Interfaces;
 using AutoMarket.Application.Services;
 using AutoMarket.Core.Entities.Enums;
@@ -18,19 +19,22 @@ public class AdminController : ControllerBase
     private readonly IAnuncioRepository _anuncioRepository;
     private readonly IAlmacenadorArchivos _almacenadorArchivos;
     private readonly ISuscripcionService _suscripcionService;
+    private readonly IPlanCatalogoService _planCatalogoService;
 
     public AdminController(
         IDashboardService dashboardService,
         IUsuarioRepository usuarioRepository,
         IAnuncioRepository anuncioRepository,
         IAlmacenadorArchivos almacenadorArchivos,
-        ISuscripcionService suscripcionService)
+        ISuscripcionService suscripcionService,
+        IPlanCatalogoService planCatalogoService)
     {
         _dashboardService = dashboardService;
         _usuarioRepository = usuarioRepository;
         _anuncioRepository = anuncioRepository;
         _almacenadorArchivos = almacenadorArchivos;
         _suscripcionService = suscripcionService;
+        _planCatalogoService = planCatalogoService;
     }
 
     [HttpGet("dashboard/resumen")]
@@ -161,6 +165,67 @@ public class AdminController : ControllerBase
 
             await _suscripcionService.RenovarManualAsync(dealerId, fechaUtc);
             return Ok(new { exito = true, mensaje = $"Suscripción extendida y activada hasta {fechaUtc:dd/MM/yyyy}." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { exito = false, mensaje = ex.Message });
+        }
+    }
+
+    // ==========================================
+    // 5. CATÁLOGO DE PLANES
+    // ==========================================
+
+    [HttpGet("planes")]
+    public async Task<IActionResult> ListarPlanes()
+    {
+        var planes = await _planCatalogoService.ObtenerCatalogoAdminAsync();
+        return Ok(planes);
+    }
+
+    [HttpPost("planes")]
+    public async Task<IActionResult> CrearPlan([FromBody] PlanCatalogoCreateDto dto)
+    {
+        try
+        {
+            var plan = await _planCatalogoService.CrearPlanAsync(dto);
+            return CreatedAtAction(nameof(ListarPlanes), new { }, plan);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { exito = false, mensaje = ex.Message });
+        }
+    }
+
+    [HttpPut("planes/{id:int}")]
+    public async Task<IActionResult> ActualizarPlan(int id, [FromBody] PlanCatalogoUpdateDto dto)
+    {
+        try
+        {
+            var plan = await _planCatalogoService.ActualizarPlanAsync(id, dto);
+            return Ok(plan);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { exito = false, mensaje = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { exito = false, mensaje = ex.Message });
+        }
+    }
+
+    [HttpDelete("planes/{id:int}")]
+    public async Task<IActionResult> EliminarPlan(int id)
+    {
+        try
+        {
+            await _planCatalogoService.EliminarPlanAsync(id);
+            return Ok(new { exito = true, mensaje = "Plan desactivado." });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { exito = false, mensaje = ex.Message });
         }
         catch (Exception ex)
         {

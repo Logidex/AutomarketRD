@@ -68,6 +68,31 @@ public class SuscripcionDealer
         Estado = EstadoSuscripcion.Activa;
     }
 
+    /// <summary>Marca la suscripción como cancelada.</summary>
+    public void Cancelar()
+    {
+        if (Estado == EstadoSuscripcion.Cancelada)
+        {
+            throw new InvalidOperationException(
+                "La suscripción ya se encuentra cancelada.");
+        }
+
+        Estado = EstadoSuscripcion.Cancelada;
+    }
+
+    /// <summary>
+    /// Reactiva una suscripción cancelada asignando el plan y ciclo elegidos
+    /// con una nueva vigencia desde ahora.
+    /// </summary>
+    public void ActivarConPlan(PlanNivel nuevoNivel, CicloFacturacion nuevoCiclo)
+    {
+        Nivel = nuevoNivel;
+        Ciclo = nuevoCiclo;
+        Estado = EstadoSuscripcion.Activa;
+        FechaInicioUtc = DateTime.UtcNow;
+        FechaVencimientoUtc = CalcularFechaVencimiento(nuevoCiclo);
+    }
+
     private static DateTime CalcularFechaVencimiento(CicloFacturacion ciclo)
     {
         var ahora = DateTime.UtcNow;

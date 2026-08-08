@@ -45,6 +45,14 @@ export default function DashboardIndex() {
 
   return (
     <div className="space-y-6 p-6">
+      {/* Banner de estado del plan */}
+      <PlanBanner
+        planActual={resumen.planActual}
+        diasRestantes={resumen.diasRestantesSuscripcion}
+        anunciosActivos={resumen.anunciosActivos ?? 0}
+        totalAnuncios={resumen.totalAnuncios ?? 0}
+      />
+
       {/* Fila 1: Métricas principales */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <MetricaCard
@@ -149,6 +157,39 @@ function MetricaCard({
           {subtitulo && <p className="mt-1 text-xs text-gray-500">{subtitulo}</p>}
         </div>
         <div className={`h-12 w-12 rounded-full ${color} opacity-20`} />
+      </div>
+    </div>
+  );
+}
+
+function PlanBanner({
+  planActual,
+  diasRestantes,
+  anunciosActivos,
+  totalAnuncios,
+}: {
+  planActual: string | null | undefined;
+  diasRestantes: number | null | undefined;
+  anunciosActivos: number;
+  totalAnuncios: number;
+}) {
+  const esPlanGratis = planActual === "Gratis";
+  const sinPlan = !planActual || planActual === "N/A";
+
+  if (!esPlanGratis && !sinPlan) return null;
+
+  const mensaje = sinPlan
+    ? "Aún no tienes un plan configurado. Contacta a soporte para activar tu suscripción."
+    : `Estás en el Plan Gratis (${anunciosActivos}/${totalAnuncios} anuncios activos) y vence en ${diasRestantes ?? 0} días.`;
+
+  return (
+    <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4">
+      <span className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-amber-400 text-sm font-bold text-white">
+        !
+      </span>
+      <div>
+        <p className="font-semibold text-amber-900">Plan {planActual || "no configurado"}</p>
+        <p className="text-sm text-amber-800">{mensaje}</p>
       </div>
     </div>
   );

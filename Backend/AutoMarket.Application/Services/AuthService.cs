@@ -3,6 +3,7 @@ using AutoMarket.Application.DTOs.Auth;
 using AutoMarket.Application.DTOs.Usuario;
 using AutoMarket.Application.Interfaces;
 using AutoMarket.Core.Entities;
+using AutoMarket.Core.Entities.Enums;
 using AutoMarket.Core.Interfaces;
 using BCrypt.Net;
 
@@ -12,11 +13,16 @@ public class AuthService : IAuthService
 {
     private readonly IUsuarioRepository _repository;
     private readonly ITokenService _tokenService;
+    private readonly ISuscripcionService _suscripcionService;
 
-    public AuthService(IUsuarioRepository repository, ITokenService tokenService)
+    public AuthService(
+        IUsuarioRepository repository,
+        ITokenService tokenService,
+        ISuscripcionService suscripcionService)
     {
         _repository = repository;
         _tokenService = tokenService;
+        _suscripcionService = suscripcionService;
     }
 
     public async Task<(bool Exito, string Mensaje)> RegistrarUsuarioAsync(RegistroDto dto)
@@ -43,6 +49,15 @@ public class AuthService : IAuthService
                 return (false, "Los datos de la agencia y el RNC son obligatorios para cuentas tipo Dealer.");
             }
 
+            var planInicial = string.IsNullOrWhiteSpace(dto.PlanInicial)
+                ? "Gratis"
+                : dto.PlanInicial.Trim();
+
+            if (!EsPlanGratis(planInicial))
+            {
+                return (false, "Los planes de pago estarán disponibles próximamente. Por ahora regístrate con el Plan Gratis.");
+            }
+
             nuevoUsuario.CrearPerfilDealer(
                 nombreAgencia: dto.NombreAgencia,
                 agenciaRNC: dto.AgenciaRNC,
@@ -52,8 +67,25 @@ public class AuthService : IAuthService
         }
 
         await _repository.CrearUsuarioAsync(nuevoUsuario);
+
+        if (nuevoUsuario.Rol == "Dealer")
+        {
+            var perfilDealerId = nuevoUsuario.PerfilDealer!.UsuarioId;
+
+            await _suscripcionService.AsignarPlanInicialAsync(
+                perfilDealerId,
+                PlanNivel.Gratis,
+                CicloFacturacion.Mensual
+            );
+        }
+
         return (true, "Usuario registrado exitosamente");
 
+    }
+
+    private static bool EsPlanGratis(string planInicial)
+    {
+        return string.Equals(planInicial, "Gratis", StringComparison.OrdinalIgnoreCase);
     }
 
     public async Task<LoginResultDto> LoginAsync(LoginDto dto)

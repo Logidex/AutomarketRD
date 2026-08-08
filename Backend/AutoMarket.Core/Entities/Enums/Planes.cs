@@ -2,10 +2,10 @@ namespace AutoMarket.Core.Entities.Enums;
 
 public enum PlanNivel
 {
-    Gratis = 5,
+    Gratis = 1,
     Basico = 50,
     Pro = 200,
-    Elite = 999999
+    Elite = 500
 }public enum CicloFacturacion
 {
     Mensual = 1,

@@ -114,7 +114,14 @@ export const useFormularioVehiculo = (isEditMode: boolean = false) => {
       navigate("/dashboard/mis-anuncios");
     } catch (err) {
       console.error(err);
-      Swal.fire("Error", "No se pudo guardar", "error");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const msg = (err as any)?.response?.data?.mensaje || (err as Error)?.message;
+      Swal.fire({
+        title: "Error",
+        text: msg || "No se pudo guardar el anuncio.",
+        icon: "error",
+        confirmButtonColor: "#ef4444",
+      });
     } finally {
       setLoading(false);
     }

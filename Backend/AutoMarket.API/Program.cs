@@ -67,6 +67,8 @@ try
     builder.Services.AddHttpClient<IPayPalService, PayPalService>();
     builder.Services.AddScoped<IFavoritoRepository, FavoritoRepository>();
     builder.Services.AddScoped<ISuscripcionService, SuscripcionService>();
+    builder.Services.AddScoped<IPlanCatalogoRepository, PlanCatalogoRepository>();
+    builder.Services.AddScoped<IPlanCatalogoService, PlanCatalogoService>();
 
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
         options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));

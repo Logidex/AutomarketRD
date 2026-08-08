@@ -2,12 +2,14 @@ using System.Security.Claims;
 using System.Text;
 using AutoMarket.API.Controllers;
 using AutoMarket.Application.DTOs.Paypal;
+using AutoMarket.Application.DTOs.Planes;
 using AutoMarket.Application.Interfaces;
 using AutoMarket.Core.Entities;
 using AutoMarket.Core.Entities.Enums;
 using AutoMarket.Core.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
@@ -19,7 +21,9 @@ public class PagosControllerTests
     private readonly Mock<IPayPalService> _mockPayPalService;
     private readonly Mock<ISuscripcionService> _mockSuscripcionService;
     private readonly Mock<IUsuarioRepository> _mockUsuarioRepository;
+    private readonly Mock<IPlanCatalogoService> _mockPlanCatalogoService;
     private readonly Mock<ILogger<PagosController>> _mockLogger;
+    private readonly IConfiguration _configuration;
     private readonly PagosController _controller;
 
     public PagosControllerTests()
@@ -27,12 +31,22 @@ public class PagosControllerTests
         _mockPayPalService = new Mock<IPayPalService>();
         _mockSuscripcionService = new Mock<ISuscripcionService>();
         _mockUsuarioRepository = new Mock<IUsuarioRepository>();
+        _mockPlanCatalogoService = new Mock<IPlanCatalogoService>();
         _mockLogger = new Mock<ILogger<PagosController>>();
+
+        _configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Pago:TasaCambioRD_USD"] = "0.01"
+            })
+            .Build();
 
         _controller = new PagosController(
             _mockPayPalService.Object,
             _mockSuscripcionService.Object,
             _mockUsuarioRepository.Object,
+            _mockPlanCatalogoService.Object,
+            _configuration,
             _mockLogger.Object);
     }
 
@@ -90,6 +104,30 @@ public class PagosControllerTests
         return usuario;
     }
 
+    private void ConfigurarPlanCatalogoPro()
+    {
+        _mockPlanCatalogoService
+            .Setup(s => s.ObtenerPlanPorNivelAsync(PlanNivel.Pro))
+            .ReturnsAsync(new PlanCatalogoDto
+            {
+                Nivel = PlanNivel.Pro,
+                Nombre = "Plan Pro",
+                LimiteAnuncios = 200,
+                PrecioMensual = 3000m,
+                PrecioTrimestral = 8370m,
+                PrecioAnual = 30600m
+            });
+    }
+
+    private static CrearOrdenDto CrearOrdenProMensual()
+    {
+        return new CrearOrdenDto
+        {
+            NombrePlan = "Pro",
+            Ciclo = "Mensual"
+        };
+    }
+
     // =========================================================================
     // GENERAR LINK DE PAGO
     // =========================================================================
@@ -99,12 +137,7 @@ public class PagosControllerTests
     {
         // Arrange
         SimularUsuarioAutenticado("abc");
-        var dto = new CrearOrdenDto
-        {
-            Monto = 100m,
-            NombrePlan = "Pro",
-            Ciclo = "Mensual"
-        };
+        var dto = CrearOrdenProMensual();
 
         // Act
         var resultado = await _controller.GenerarLinkDePago(dto);
@@ -124,10 +157,31 @@ public class PagosControllerTests
             .Setup(r => r.ObtenerDealerConPerfilPorIdAsync(15))
             .ReturnsAsync((Usuario?)null);
 
+        var dto = CrearOrdenProMensual();
+
+        // Act
+        var resultado = await _controller.GenerarLinkDePago(dto);
+
+        // Assert
+        var badRequest = Assert.IsType<BadRequestObjectResult>(resultado);
+        Assert.Equal(400, badRequest.StatusCode);
+    }
+
+    [Fact]
+    public async Task GenerarLinkDePago_PlanInvalido_DebeRetornarBadRequest()
+    {
+        // Arrange
+        SimularUsuarioAutenticado("15");
+
+        var usuario = CrearUsuarioConPerfilDealer(15);
+
+        _mockUsuarioRepository
+            .Setup(r => r.ObtenerDealerConPerfilPorIdAsync(15))
+            .ReturnsAsync(usuario);
+
         var dto = new CrearOrdenDto
         {
-            Monto = 100m,
-            NombrePlan = "Pro",
+            NombrePlan = "PlanInexistente",
             Ciclo = "Mensual"
         };
 
@@ -137,6 +191,79 @@ public class PagosControllerTests
         // Assert
         var badRequest = Assert.IsType<BadRequestObjectResult>(resultado);
         Assert.Equal(400, badRequest.StatusCode);
+        _mockPayPalService.Verify(s =>
+            s.CrearOrdenDeSuscripcionAsync(It.IsAny<int>(), It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task GenerarLinkDePago_PlanNoEncontrado_DebeRetornarBadRequest()
+    {
+        // Arrange
+        SimularUsuarioAutenticado("15");
+
+        var usuario = CrearUsuarioConPerfilDealer(15);
+
+        _mockUsuarioRepository
+            .Setup(r => r.ObtenerDealerConPerfilPorIdAsync(15))
+            .ReturnsAsync(usuario);
+
+        _mockPlanCatalogoService
+            .Setup(s => s.ObtenerPlanPorNivelAsync(PlanNivel.Pro))
+            .ReturnsAsync((PlanCatalogoDto?)null);
+
+        var dto = CrearOrdenProMensual();
+
+        // Act
+        var resultado = await _controller.GenerarLinkDePago(dto);
+
+        // Assert
+        var badRequest = Assert.IsType<BadRequestObjectResult>(resultado);
+        Assert.Equal(400, badRequest.StatusCode);
+        _mockPayPalService.Verify(m =>
+            m.CrearOrdenDeSuscripcionAsync(It.IsAny<int>(), It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task GenerarLinkDePago_PlanGratis_DebeRetornarBadRequest()
+    {
+        // Arrange
+        SimularUsuarioAutenticado("15");
+
+        var usuario = CrearUsuarioConPerfilDealer(15);
+
+        _mockUsuarioRepository
+            .Setup(r => r.ObtenerDealerConPerfilPorIdAsync(15))
+            .ReturnsAsync(usuario);
+
+        _mockPlanCatalogoService
+            .Setup(s => s.ObtenerPlanPorNivelAsync(PlanNivel.Gratis))
+            .ReturnsAsync(new PlanCatalogoDto
+            {
+                Nivel = PlanNivel.Gratis,
+                Nombre = "Plan Gratis",
+                LimiteAnuncios = 1,
+                PrecioMensual = 0m,
+                PrecioTrimestral = 0m,
+                PrecioAnual = 0m
+            });
+
+        var dto = new CrearOrdenDto
+        {
+            NombrePlan = "Gratis",
+            Ciclo = "Mensual"
+        };
+
+        // Act
+        var resultado = await _controller.GenerarLinkDePago(dto);
+
+        // Assert
+        var badRequest = Assert.IsType<BadRequestObjectResult>(resultado);
+        Assert.Equal(400, badRequest.StatusCode);
+        _mockPayPalService.Verify(s =>
+            s.CrearOrdenDeSuscripcionAsync(It.IsAny<int>(), It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>()),
+            Times.Never);
     }
 
     [Fact]
@@ -151,16 +278,14 @@ public class PagosControllerTests
             .Setup(r => r.ObtenerDealerConPerfilPorIdAsync(15))
             .ReturnsAsync(usuario);
 
+        ConfigurarPlanCatalogoPro();
+
+        // 3000 RD$ * 0.01 = 30.00 USD
         _mockPayPalService
-            .Setup(s => s.CrearOrdenDeSuscripcionAsync(15, 100m, "Pro", "Mensual"))
+            .Setup(s => s.CrearOrdenDeSuscripcionAsync(15, 30.00m, "Pro", "Mensual"))
             .ReturnsAsync("https://paypal.com/approve");
 
-        var dto = new CrearOrdenDto
-        {
-            Monto = 100m,
-            NombrePlan = "Pro",
-            Ciclo = "Mensual"
-        };
+        var dto = CrearOrdenProMensual();
 
         // Act
         var resultado = await _controller.GenerarLinkDePago(dto);
@@ -172,7 +297,7 @@ public class PagosControllerTests
         Assert.Equal("https://paypal.com/approve", url);
 
         _mockPayPalService.Verify(s =>
-            s.CrearOrdenDeSuscripcionAsync(15, 100m, "Pro", "Mensual"), Times.Once);
+            s.CrearOrdenDeSuscripcionAsync(15, 30.00m, "Pro", "Mensual"), Times.Once);
     }
 
     [Fact]
@@ -187,16 +312,13 @@ public class PagosControllerTests
             .Setup(r => r.ObtenerDealerConPerfilPorIdAsync(15))
             .ReturnsAsync(usuario);
 
+        ConfigurarPlanCatalogoPro();
+
         _mockPayPalService
-            .Setup(s => s.CrearOrdenDeSuscripcionAsync(15, 100m, "Pro", "Mensual"))
+            .Setup(s => s.CrearOrdenDeSuscripcionAsync(15, 30.00m, "Pro", "Mensual"))
             .ThrowsAsync(new Exception("falló paypal"));
 
-        var dto = new CrearOrdenDto
-        {
-            Monto = 100m,
-            NombrePlan = "Pro",
-            Ciclo = "Mensual"
-        };
+        var dto = CrearOrdenProMensual();
 
         // Act
         var resultado = await _controller.GenerarLinkDePago(dto);

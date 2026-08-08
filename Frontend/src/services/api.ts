@@ -23,15 +23,31 @@ api.interceptors.response.use(
   (error) => {
     // Si el backend respondió con un error (4xx, 5xx)
     if (error.response) {
-      // Lee el mensaje del backend
-      const backendMessage = error.response.data?.mensaje || error.response.data?.message;
-      
-      // Si hay un mensaje personalizado del backend, úsalo
+      const data = error.response.data;
+
+      // 1. Lee el mensaje del backend
+      const backendMessage = data?.mensaje || data?.message;
+
+      // 2. Si no hay mensaje, intenta leer los errores de validación
+      //    (ValidationProblemDetails de ASP.NET Core, e.g. "errors": {...})
+      const erroresValidacion = data?.errors;
+
       if (backendMessage) {
         error.message = backendMessage;
+      } else if (
+        erroresValidacion &&
+        typeof erroresValidacion === "object"
+      ) {
+        const detalles = Object.values(erroresValidacion)
+          .flat()
+          .filter((v): v is string => typeof v === "string");
+
+        if (detalles.length > 0) {
+          error.message = detalles.join(" ");
+        }
       }
     }
-    
+
     return Promise.reject(error);
   }
 );

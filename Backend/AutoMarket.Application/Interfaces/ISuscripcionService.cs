@@ -1,3 +1,4 @@
+using AutoMarket.Application.DTOs.Suscripcion;
 using AutoMarket.Core.Entities.Enums;
 
 namespace AutoMarket.Application.Interfaces;
@@ -8,4 +9,6 @@ public interface ISuscripcionService
     Task CambiarPlanAsync(int dealerId, PlanNivel nuevoPlan, CicloFacturacion ciclo);
     Task RenovarManualAsync(int perfilDealerId, DateTime nuevaFechaVencimiento);
     Task ProcesarPagoSuscripcionAsync(int perfilDealerId, PlanNivel nivel, CicloFacturacion ciclo);
+    Task<SuscripcionDealerDto?> ObtenerSuscripcionAsync(int perfilDealerId);
+    Task CancelarSuscripcionAsync(int perfilDealerId);
 }

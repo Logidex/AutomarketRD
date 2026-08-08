@@ -16,4 +16,12 @@ public class RegistroDto
     public string? AgenciaRNC { get; set; }
     public string UbicacionAgencia { get; set; } = null!;
     public string TelefonoAgencia { get; set; } = null!;
+
+    // ==========================================
+    // PLAN INICIAL PARA DEALERS
+    // Valores: "Gratis", "Basico", "Pro", "Elite".
+    // Mientras no exista un flujo de pago activo,
+    // solo se permite el plan "Gratis" al registrarse.
+    // ==========================================
+    public string? PlanInicial { get; set; }
 }

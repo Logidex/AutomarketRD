@@ -6,6 +6,7 @@ using AutoMarket.Core.Interfaces;
 using AutoMarket.Application.Interfaces;
 using AutoMarket.Application.DTOs.Usuario;
 using AutoMarket.Core.Entities;
+using AutoMarket.Core.Entities.Enums;
 
 namespace AutoMarket.Tests.Services;
 
@@ -25,10 +26,11 @@ public class AuthServiceTests
 
         var mockRepo = new Mock<IUsuarioRepository>();
         var mockTokenService = new Mock<ITokenService>();
+        var mockSuscripcionService = new Mock<ISuscripcionService>();
 
         mockRepo.Setup(r => r.ExisteEmailAsync(dto.Email)).ReturnsAsync(true);
 
-        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object);
+        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object);
 
         var resultado = await servicio.RegistrarUsuarioAsync(dto);
 
@@ -51,12 +53,13 @@ public class AuthServiceTests
 
         var mockRepo = new Mock<IUsuarioRepository>();
         var mockTokenService = new Mock<ITokenService>();
+        var mockSuscripcionService = new Mock<ISuscripcionService>();
 
         mockRepo.Setup(r => r.ExisteEmailAsync(dto.Email)).ReturnsAsync(false);
         mockRepo.Setup(r => r.CrearUsuarioAsync(It.IsAny<Usuario>()))
             .ReturnsAsync((Usuario u) => u);
 
-        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object);
+        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object);
 
         var resultado = await servicio.RegistrarUsuarioAsync(dto);
 
@@ -84,14 +87,15 @@ public class AuthServiceTests
 
         var mockRepo = new Mock<IUsuarioRepository>();
         var mockTokenService = new Mock<ITokenService>();
+        var mockSuscripcionService = new Mock<ISuscripcionService>();
 
         mockRepo.Setup(r => r.ExisteEmailAsync(dto.Email)).ReturnsAsync(false);
 
-        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object);
+        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object);
 
         var resultado = await servicio.RegistrarUsuarioAsync(dto);
 
-        Assert.False(resultado.Exito);
+Assert.False(resultado.Exito);
         Assert.Equal("Los datos de la agencia y el RNC son obligatorios para cuentas tipo Dealer.", resultado.Mensaje);
         mockRepo.Verify(r => r.CrearUsuarioAsync(It.IsAny<Usuario>()), Times.Never);
     }
@@ -114,12 +118,13 @@ public class AuthServiceTests
 
         var mockRepo = new Mock<IUsuarioRepository>();
         var mockTokenService = new Mock<ITokenService>();
+        var mockSuscripcionService = new Mock<ISuscripcionService>();
 
         mockRepo.Setup(r => r.ExisteEmailAsync(dto.Email)).ReturnsAsync(false);
         mockRepo.Setup(r => r.CrearUsuarioAsync(It.IsAny<Usuario>()))
             .ReturnsAsync((Usuario u) => u);
 
-        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object);
+        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object);
 
         var resultado = await servicio.RegistrarUsuarioAsync(dto);
 
@@ -130,6 +135,47 @@ public class AuthServiceTests
             u.PerfilDealer != null &&
             u.PerfilDealer.NombreAgencia == "AutoMotors RD"
         )), Times.Once);
+        mockSuscripcionService.Verify(s => s.AsignarPlanInicialAsync(
+            It.IsAny<int>(),
+            PlanNivel.Gratis,
+            CicloFacturacion.Mensual
+        ), Times.Once);
+    }
+
+    [Fact]
+    public async Task RegistrarUsuarioAsyncDealerConPlanPagadoDebeRechazarse()
+    {
+        var dto = new RegistroDto
+        {
+            Nombre = "Pedro",
+            Apellido = "Lopez",
+            Email = "dealerpremium@test.com",
+            Password = "MiPasswordSeguro123",
+            Rol = "Dealer",
+            NombreAgencia = "Premium Motors",
+            AgenciaRNC = "130-11111-1",
+            UbicacionAgencia = "Santiago",
+            TelefonoAgencia = "809-777-7777",
+            PlanInicial = "Pro"
+        };
+
+        var mockRepo = new Mock<IUsuarioRepository>();
+        var mockTokenService = new Mock<ITokenService>();
+        var mockSuscripcionService = new Mock<ISuscripcionService>();
+
+        mockRepo.Setup(r => r.ExisteEmailAsync(dto.Email)).ReturnsAsync(false);
+
+        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object);
+
+        var resultado = await servicio.RegistrarUsuarioAsync(dto);
+
+        Assert.False(resultado.Exito);
+        mockRepo.Verify(r => r.CrearUsuarioAsync(It.IsAny<Usuario>()), Times.Never);
+        mockSuscripcionService.Verify(s => s.AsignarPlanInicialAsync(
+            It.IsAny<int>(),
+            It.IsAny<PlanNivel>(),
+            It.IsAny<CicloFacturacion>()
+        ), Times.Never);
     }
 
     [Fact]
@@ -143,10 +189,11 @@ public class AuthServiceTests
 
         var mockRepo = new Mock<IUsuarioRepository>();
         var mockTokenService = new Mock<ITokenService>();
+        var mockSuscripcionService = new Mock<ISuscripcionService>();
 
         mockRepo.Setup(r => r.ObtenerPorEmailAsync(dto.Email)).ReturnsAsync((Usuario?)null);
 
-        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object);
+        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object);
 
         var ex = await Assert.ThrowsAsync<UnauthorizedAccessException>(() => servicio.LoginAsync(dto));
 
@@ -177,10 +224,11 @@ public class AuthServiceTests
 
         var mockRepo = new Mock<IUsuarioRepository>();
         var mockTokenService = new Mock<ITokenService>();
+        var mockSuscripcionService = new Mock<ISuscripcionService>();
 
         mockRepo.Setup(r => r.ObtenerPorEmailAsync(dto.Email)).ReturnsAsync(usuarioEnBaseDeDatos);
 
-        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object);
+        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object);
 
         var ex = await Assert.ThrowsAsync<UnauthorizedAccessException>(() => servicio.LoginAsync(dto));
 
@@ -213,11 +261,12 @@ public class AuthServiceTests
 
         var mockRepo = new Mock<IUsuarioRepository>();
         var mockTokenService = new Mock<ITokenService>();
+        var mockSuscripcionService = new Mock<ISuscripcionService>();
 
         mockRepo.Setup(r => r.ObtenerPorEmailAsync(dto.Email)).ReturnsAsync(usuarioEnBaseDeDatos);
         mockTokenService.Setup(t => t.GenerarToken(usuarioEnBaseDeDatos)).Returns(tokenFalso);
 
-        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object);
+        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object);
 
         var resultado = await servicio.LoginAsync(dto);
 

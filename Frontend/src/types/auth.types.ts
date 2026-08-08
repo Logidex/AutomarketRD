@@ -29,4 +29,5 @@ export interface RegistroDto {
   agenciaRNC?: string;
   ubicacionAgencia: string;
   telefonoAgencia: string;
+  planInicial?: string;
 }

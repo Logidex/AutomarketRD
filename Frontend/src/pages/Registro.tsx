@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Swal from "sweetalert2";
 import { authService } from "../services/auth.service";
+import { planesService, type PlanCatalogo } from "../services/planes.service";
 import logo from "../assets/AutoMarketRD_Logo.svg";
 
 export default function Registro() {
@@ -18,8 +19,24 @@ export default function Registro() {
     telefonoAgencia: "",
   });
 
+  const [planInicial, setPlanInicial] = useState("Gratis");
+  const [planes, setPlanes] = useState<PlanCatalogo[]>([]);
+
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    planesService
+      .obtenerCatalogo()
+      .then(setPlanes)
+      .catch(() => {
+        // Si la API no responde, dejamos la lista vacía y mostramos opciones locales
+        setPlanes([]);
+      });
+  }, []);
+
+  const formatPrecio = (cantidad: number) =>
+    cantidad === 0 ? "Gratis" : `RD$ ${cantidad.toLocaleString("es-DO")}`;
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -35,7 +52,7 @@ export default function Registro() {
     setLoading(true);
 
     try {
-      const response = await authService.register(formData);
+      const response = await authService.register({ ...formData, planInicial });
 
       if (response.exito) {
         await Swal.fire({
@@ -66,6 +83,8 @@ export default function Registro() {
   };
 
   const esDealer = formData.rol === "Dealer";
+  const planGratis = planes.find((p) => p.nivel === "Gratis");
+  const planesPago = planes.filter((p) => p.nivel !== "Gratis");
 
   return (
     <div className="min-h-screen bg-[#0c101b] flex items-center justify-center p-4">
@@ -269,6 +288,98 @@ export default function Registro() {
                       className="w-full px-4 py-3 bg-[#f7f9fc] border border-[#e1e7f0] rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
                       required={esDealer}
                     />
+                  </div>
+                </div>
+
+                <div className="mt-6">
+                  <h3 className="text-lg font-semibold text-blue-500 mb-2">
+                    Elige tu plan de inicio
+                  </h3>
+                  <p className="text-sm text-gray-500 mb-4">
+                    Comienza gratis y potencia tu agencia cuando quieras con los
+                    planes de pago.
+                  </p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setPlanInicial("Gratis")}
+                      className={`text-left rounded-lg border-2 p-4 transition-colors ${
+                        planInicial === "Gratis"
+                          ? "border-blue-500 bg-blue-50 shadow-sm"
+                          : "border-[#e1e7f0] bg-white hover:border-blue-300"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-semibold text-gray-800">
+                          {planGratis?.nombre ?? "Plan Gratis"}
+                        </span>
+                        <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+                          Recomendado
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-500">
+                        {planGratis
+                          ? `${planGratis.limiteAnuncios} ${planGratis.limiteAnuncios === 1 ? "anuncio" : "anuncios"}`
+                          : "1 anuncio"}
+                      </p>
+                      <p className="text-sm font-semibold text-green-600 mt-1">
+                        Gratis
+                      </p>
+                    </button>
+
+                    {planesPago.length > 0 ? (
+                      planesPago.map((item) => (
+                        <button
+                          key={item.nivel}
+                          type="button"
+                          disabled
+                          className="rounded-lg border border-dashed border-[#e1e7f0] p-4 bg-gray-50 opacity-60 cursor-not-allowed text-left"
+                        >
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="font-semibold text-gray-700">{item.nombre}</span>
+                            <span className="text-xs font-bold text-gray-400 bg-gray-200 px-2 py-0.5 rounded-full">
+                              Próximamente
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-400">
+                            {item.limiteAnuncios} anuncios
+                          </p>
+                          <p className="text-sm font-semibold text-gray-600 mt-1">
+                            {formatPrecio(item.precioMensual)} / mes
+                            {item.precioMensual > 0 && (
+                              <span className="text-xs text-gray-400 font-normal">
+                                {" "}
+                                · {item.descuentoAnualPorcentaje}% {item.descuentoAnualPorcentaje > 0 && `· anual ${formatPrecio(item.precioAnual)}`}
+                              </span>
+                            )}
+                          </p>
+                        </button>
+                      ))
+                    ) : (
+                      <>
+                        {[
+                          { nombre: "Plan Básico", limiteAnuncios: 50 },
+                          { nombre: "Plan Pro", limiteAnuncios: 200 },
+                          { nombre: "Plan Elite", limiteAnuncios: 500 },
+                        ].map((item) => (
+                          <button
+                            key={item.nombre}
+                            type="button"
+                            disabled
+                            className="rounded-lg border border-dashed border-[#e1e7f0] p-4 bg-gray-50 opacity-60 cursor-not-allowed text-left"
+                          >
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="font-semibold text-gray-700">{item.nombre}</span>
+                              <span className="text-xs font-bold text-gray-400 bg-gray-200 px-2 py-0.5 rounded-full">
+                                Próximamente
+                              </span>
+                            </div>
+                            <p className="text-sm text-gray-400">{item.limiteAnuncios} anuncios</p>
+                          </button>
+                        ))}
+                      </>
+                    )}
                   </div>
                 </div>
               </div>

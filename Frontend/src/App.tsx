@@ -3,6 +3,9 @@ import { Routes, Route } from 'react-router-dom';
 // Páginas públicas
 import Login from './pages/Login';
 import Registro from './pages/Registro';
+import Precios from './pages/Precios';
+import PagoExitoso from './pages/PagoExitoso';
+import PagoCancelado from './pages/PagoCancelado';
 
 // Componentes de estructura
 import ProtectedRoute from './components/ProtectedRoute';
@@ -15,6 +18,7 @@ import PublicarVehiculo from './pages/CrearAnuncio';
 import EditarVehiculo from './pages/EditarVehiculo';
 import Leads from './pages/Leads';
 import MiPerfil from './pages/MiPerfil';
+import DashboardSuscripcion from './pages/DashboardSuscripcion';
 
 function App() {
   return (
@@ -28,6 +32,13 @@ function App() {
           </h1>
         }
       />
+
+      {/* PRECIOS PÚBLICOS */}
+      <Route path="/precios" element={<Precios />} />
+
+      {/* RESULTADO DE PAGO PAYPAL */}
+      <Route path="/pago-exitoso" element={<PagoExitoso />} />
+      <Route path="/pago-cancelado" element={<PagoCancelado />} />
 
       {/* AUTENTICACIÓN */}
       <Route path="/login" element={<Login />} />
@@ -89,6 +100,12 @@ function App() {
           <Route
             path="mi-perfil"
             element={<MiPerfil />}
+          />
+
+          {/* /dashboard/suscripcion */}
+          <Route
+            path="suscripcion"
+            element={<DashboardSuscripcion />}
           />
         </Route>
       </Route>

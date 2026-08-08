@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using AutoMarket.Application.DTOs.Usuario;
 using AutoMarket.Application.Interfaces;
+using AutoMarket.Core.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,13 +13,16 @@ public class DealersController : ControllerBase
 {
     private readonly IPerfilDealerService _perfilDealerService;
     private readonly IDashboardService _dashboardService;
+    private readonly ISuscripcionService _suscripcionService;
 
     public DealersController(
         IPerfilDealerService perfilDealerService,
-        IDashboardService dashboardService)
+        IDashboardService dashboardService,
+        ISuscripcionService suscripcionService)
     {
         _perfilDealerService = perfilDealerService;
         _dashboardService = dashboardService;
+        _suscripcionService = suscripcionService;
     }
 
     [HttpGet("{dealerId:int}")]
@@ -90,6 +94,51 @@ public class DealersController : ControllerBase
 
         var resumen = await _dashboardService.ObtenerResumenAsync(dealerId.Value);
         return Ok(resumen);
+    }
+
+    [HttpGet("me/suscripcion")]
+    [Authorize(Roles = "Dealer")]
+    public async Task<IActionResult> ObtenerMiSuscripcion()
+    {
+        var dealerId = ObtenerUsuarioIdDelToken();
+
+        if (dealerId is null)
+            return Unauthorized(new { mensaje = "Token inválido o usuario no identificado." });
+
+        var suscripcion = await _suscripcionService.ObtenerSuscripcionAsync(dealerId.Value);
+
+        if (suscripcion is null)
+            return NotFound(new { mensaje = "El dealer aún no posee una suscripción." });
+
+        return Ok(suscripcion);
+    }
+
+    [HttpPost("me/suscripcion/cancelar")]
+    [Authorize(Roles = "Dealer")]
+    public async Task<IActionResult> CancelarMiSuscripcion()
+    {
+        var dealerId = ObtenerUsuarioIdDelToken();
+
+        if (dealerId is null)
+            return Unauthorized(new { mensaje = "Token inválido o usuario no identificado." });
+
+        try
+        {
+            await _suscripcionService.CancelarSuscripcionAsync(dealerId.Value);
+            return Ok(new { mensaje = "Suscripción cancelada correctamente." });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { mensaje = ex.Message });
+        }
+        catch (BusinessRuleException ex)
+        {
+            return BadRequest(new { mensaje = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { mensaje = ex.Message });
+        }
     }
 
     private int? ObtenerUsuarioIdDelToken()

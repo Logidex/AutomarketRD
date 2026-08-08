@@ -1,3 +1,4 @@
+using AutoMarket.Application.DTOs.Suscripcion;
 using AutoMarket.Application.Interfaces;
 using AutoMarket.Core.Entities;
 using AutoMarket.Core.Entities.Enums;
@@ -72,8 +73,10 @@ public class SuscripcionService : ISuscripcionService
 
         if (suscripcionExistente.Estado == EstadoSuscripcion.Cancelada)
         {
-            throw new BusinessRuleException(
-                "La suscripción está cancelada. Debe definirse una política de reactivación antes de procesar este pago.");
+            suscripcionExistente.ActivarConPlan(nivel, ciclo);
+
+            await _repository.ActualizarAsync(suscripcionExistente);
+            return;
         }
 
         if (suscripcionExistente.Nivel == nivel && suscripcionExistente.Ciclo == ciclo)
@@ -87,6 +90,42 @@ public class SuscripcionService : ISuscripcionService
 
         suscripcionExistente.CambiarPlan(nivel, ciclo);
         await _repository.ActualizarAsync(suscripcionExistente);
+    }
+
+    public async Task<SuscripcionDealerDto?> ObtenerSuscripcionAsync(int perfilDealerId)
+    {
+        var suscripcion = await _repository.ObtenerPorDealerIdAsync(perfilDealerId);
+
+        if (suscripcion == null)
+            return null;
+
+        return new SuscripcionDealerDto
+        {
+            PerfilDealerId = suscripcion.PerfilDealerId,
+            Nivel = suscripcion.Nivel,
+            Ciclo = suscripcion.Ciclo,
+            Estado = suscripcion.Estado,
+            LimiteAnuncios = suscripcion.LimiteAnuncios,
+            FechaInicioUtc = suscripcion.FechaInicioUtc,
+            FechaVencimientoUtc = suscripcion.FechaVencimientoUtc,
+            DiasRestantes = Math.Max(0, (int)Math.Ceiling((suscripcion.FechaVencimientoUtc - DateTime.UtcNow).TotalDays)),
+            Activa = suscripcion.Estado == EstadoSuscripcion.Activa
+        };
+    }
+
+    public async Task CancelarSuscripcionAsync(int perfilDealerId)
+    {
+        var suscripcion = await _repository.ObtenerPorDealerIdAsync(perfilDealerId);
+
+        if (suscripcion == null)
+            throw new KeyNotFoundException("No se encontró una suscripción para este dealer.");
+
+        if (suscripcion.Estado == EstadoSuscripcion.Cancelada)
+            throw new BusinessRuleException("La suscripción ya se encuentra cancelada.");
+
+        suscripcion.Cancelar();
+
+        await _repository.ActualizarAsync(suscripcion);
     }
 
     private static DateTime CalcularNuevaVigenciaDesdePago(SuscripcionDealer suscripcion, CicloFacturacion ciclo)

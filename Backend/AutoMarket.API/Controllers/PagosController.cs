@@ -4,6 +4,7 @@ using AutoMarket.Core.Entities.Enums;
 using AutoMarket.Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Globalization;
 using System.Security.Claims;
 using System.Text.Json;
 
@@ -16,17 +17,23 @@ public class PagosController : ControllerBase
     private readonly IPayPalService _payPalService;
     private readonly ISuscripcionService _suscripcionService;
     private readonly IUsuarioRepository _usuarioRepository;
+    private readonly IPlanCatalogoService _planCatalogoService;
+    private readonly IConfiguration _configuration;
     private readonly ILogger<PagosController> _logger;
 
     public PagosController(
         IPayPalService payPalService,
         ISuscripcionService suscripcionService,
         IUsuarioRepository usuarioRepository,
+        IPlanCatalogoService planCatalogoService,
+        IConfiguration configuration,
         ILogger<PagosController> logger)
     {
         _payPalService = payPalService;
         _suscripcionService = suscripcionService;
         _usuarioRepository = usuarioRepository;
+        _planCatalogoService = planCatalogoService;
+        _configuration = configuration;
         _logger = logger;
     }
 
@@ -52,18 +59,62 @@ public class PagosController : ControllerBase
 
             var perfilDealerId = dealer.PerfilDealer.UsuarioId;
 
+            if (!Enum.TryParse<PlanNivel>(request.NombrePlan, false, out var planNivel) ||
+                !Enum.TryParse<CicloFacturacion>(request.Ciclo, false, out var ciclo))
+            {
+                return BadRequest(new { mensaje = "El plan o el ciclo seleccionado no es válido." });
+            }
+
+            var plan = await _planCatalogoService.ObtenerPlanPorNivelAsync(planNivel);
+
+            if (plan is null)
+            {
+                return BadRequest(new { mensaje = "El plan seleccionado no está disponible en este momento." });
+            }
+
+            var precioRd = ciclo switch
+            {
+                CicloFacturacion.Mensual => plan.PrecioMensual,
+                CicloFacturacion.Trimestral => plan.PrecioTrimestral,
+                CicloFacturacion.Anual => plan.PrecioAnual,
+                _ => 0m
+            };
+
+            if (precioRd <= 0m)
+            {
+                return BadRequest(new { mensaje = "El plan Gratis no requiere pago." });
+            }
+
+            var tasaStr = _configuration["Pago:TasaCambioRD_USD"];
+            var tasa = decimal.TryParse(tasaStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var tasaParseada)
+                ? tasaParseada
+                : 0.017m;
+
+            if (tasa <= 0m)
+            {
+                tasa = 0.017m;
+            }
+
+            // Solo usa el precio del catálogo de planes (RD$), convertido a USD para PayPal.
+            var montoUsd = Math.Round(precioRd * tasa, 2);
+
+            if (montoUsd < 0.01m)
+            {
+                return BadRequest(new { mensaje = "El monto de pago resultante es demasiado pequeño." });
+            }
+
             var linkPago = await _payPalService.CrearOrdenDeSuscripcionAsync(
                 perfilDealerId,
-                request.Monto,
+                montoUsd,
                 request.NombrePlan,
                 request.Ciclo
             );
 
             _logger.LogInformation(
-                "Link de PayPal generado correctamente para DealerId {DealerId}, Plan {Plan}, Ciclo {Ciclo}",
-                perfilDealerId, request.NombrePlan, request.Ciclo);
+                "Link de PayPal generado correctamente para DealerId {DealerId}, Plan {Plan}, Ciclo {Ciclo}, MontoUSD {MontoUSD}",
+                perfilDealerId, request.NombrePlan, request.Ciclo, montoUsd);
 
-            return Ok(new { url = linkPago });
+            return Ok(new { url = linkPago, monto = montoUsd, moneda = "USD" });
         }
         catch (Exception ex)
         {

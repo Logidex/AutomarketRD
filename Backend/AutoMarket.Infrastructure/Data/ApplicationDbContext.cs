@@ -16,6 +16,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<SuscripcionDealer> SuscripcionDealers { get; set; }
     public DbSet<Lead> Leads { get; set; }
     public DbSet<UsuarioFavorito> Favoritos { get; set; }
+    public DbSet<PlanCatalogo> PlanesCatalogo { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -293,5 +294,41 @@ public class ApplicationDbContext : DbContext
             .WithMany()
             .HasForeignKey(f => f.AnuncioId)
             .OnDelete(DeleteBehavior.Cascade); // Si el dealer borra el anuncio, desaparece de los favoritos
+
+        // ==========================================
+        // CONFIGURACIÓN: CATÁLOGO DE PLANES
+        // ==========================================
+        modelBuilder.Entity<PlanCatalogo>(b =>
+        {
+            b.HasKey(p => p.Id);
+
+            b.Property(p => p.Nivel)
+                .IsRequired()
+                .HasColumnType("integer");
+
+            b.Property(p => p.Nombre)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            b.Property(p => p.Descripcion)
+                .HasMaxLength(500);
+
+            b.Property(p => p.PrecioMensual)
+                .HasPrecision(18, 2);
+
+            b.Property(p => p.DescuentoTrimestralPorcentaje)
+                .HasPrecision(5, 2);
+
+            b.Property(p => p.DescuentoAnualPorcentaje)
+                .HasPrecision(5, 2);
+
+            b.Property(p => p.Activo)
+                .IsRequired();
+
+            // Un solo plan por nivel (Gratis, Basico, Pro, Elite)
+            b.HasIndex(p => p.Nivel)
+                .IsUnique()
+                .HasDatabaseName("IX_PlanesCatalogo_Nivel");
+        });
     }
 }

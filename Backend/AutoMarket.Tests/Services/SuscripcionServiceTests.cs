@@ -239,10 +239,10 @@ public class SuscripcionServiceTests
     }
 
     // =========================================================================
-    // PRUEBA 10: Procesar Pago - Suscripción cancelada falla
+    // PRUEBA 10: Procesar Pago - Suscripción cancelada se reactiva
     // =========================================================================
     [Fact]
-    public async Task ProcesarPagoSuscripcionAsync_SuscripcionCancelada_DebeLanzarBusinessRuleException()
+    public async Task ProcesarPagoSuscripcionAsync_SuscripcionCancelada_DebeReactivar()
     {
         // Arrange
         int perfilId = 13;
@@ -255,11 +255,14 @@ public class SuscripcionServiceTests
         _mockRepo.Setup(r => r.ObtenerPorDealerIdAsync(perfilId))
             .ReturnsAsync(suscripcionCancelada);
 
-        // Act & Assert
-        await Assert.ThrowsAsync<BusinessRuleException>(() =>
-            _servicio.ProcesarPagoSuscripcionAsync(perfilId, PlanNivel.Basico, CicloFacturacion.Mensual));
+        // Act
+        await _servicio.ProcesarPagoSuscripcionAsync(perfilId, PlanNivel.Elite, CicloFacturacion.Anual);
 
-        _mockRepo.Verify(r => r.ActualizarAsync(It.IsAny<SuscripcionDealer>()), Times.Never);
+        // Assert
+        Assert.Equal(EstadoSuscripcion.Activa, suscripcionCancelada.Estado);
+        Assert.Equal(PlanNivel.Elite, suscripcionCancelada.Nivel);
+        Assert.Equal(CicloFacturacion.Anual, suscripcionCancelada.Ciclo);
+        _mockRepo.Verify(r => r.ActualizarAsync(suscripcionCancelada), Times.Once);
         _mockRepo.Verify(r => r.AgregarAsync(It.IsAny<SuscripcionDealer>()), Times.Never);
     }
 
@@ -369,5 +372,109 @@ public class SuscripcionServiceTests
         Assert.Equal("nuevaFechaVencimiento", excepcion.ParamName);
         Assert.Contains("debe ser en el futuro", excepcion.Message);
         _mockRepo.Verify(r => r.ActualizarAsync(It.IsAny<SuscripcionDealer>()), Times.Never);
+    }
+
+    // =========================================================================
+    // PRUEBA 15: Cancelar - Fallo si no existe suscripción
+    // =========================================================================
+    [Fact]
+    public async Task CancelarSuscripcionAsync_SuscripcionNoExiste_DebeLanzarKeyNotFoundException()
+    {
+        // Arrange
+        int perfilId = 30;
+        _mockRepo.Setup(r => r.ObtenerPorDealerIdAsync(perfilId))
+            .ReturnsAsync((SuscripcionDealer?)null);
+
+        // Act & Assert
+        var excepcion = await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            _servicio.CancelarSuscripcionAsync(perfilId));
+
+        Assert.Equal("No se encontró una suscripción para este dealer.", excepcion.Message);
+        _mockRepo.Verify(r => r.ActualizarAsync(It.IsAny<SuscripcionDealer>()), Times.Never);
+    }
+
+    // =========================================================================
+    // PRUEBA 16: Cancelar - Éxito
+    // =========================================================================
+    [Fact]
+    public async Task CancelarSuscripcionAsync_SuscripcionActiva_DebeMarcarComoCanceladaYGuardar()
+    {
+        // Arrange
+        int perfilId = 31;
+        var suscripcion = CrearSuscripcionSimulada(perfilId, PlanNivel.Pro, EstadoSuscripcion.Activa);
+
+        _mockRepo.Setup(r => r.ObtenerPorDealerIdAsync(perfilId))
+            .ReturnsAsync(suscripcion);
+
+        // Act
+        await _servicio.CancelarSuscripcionAsync(perfilId);
+
+        // Assert
+        Assert.Equal(EstadoSuscripcion.Cancelada, suscripcion.Estado);
+        _mockRepo.Verify(r => r.ActualizarAsync(suscripcion), Times.Once);
+    }
+
+    // =========================================================================
+    // PRUEBA 17: Cancelar - Fallo si ya está cancelada
+    // =========================================================================
+    [Fact]
+    public async Task CancelarSuscripcionAsync_SuscripcionYaCancelada_DebeLanzarBusinessRuleException()
+    {
+        // Arrange
+        int perfilId = 32;
+        var suscripcion = CrearSuscripcionSimulada(perfilId, PlanNivel.Basico, EstadoSuscripcion.Cancelada);
+
+        _mockRepo.Setup(r => r.ObtenerPorDealerIdAsync(perfilId))
+            .ReturnsAsync(suscripcion);
+
+        // Act & Assert
+        var excepcion = await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            _servicio.CancelarSuscripcionAsync(perfilId));
+
+        Assert.Equal("La suscripción ya se encuentra cancelada.", excepcion.Message);
+        _mockRepo.Verify(r => r.ActualizarAsync(It.IsAny<SuscripcionDealer>()), Times.Never);
+    }
+
+    // =========================================================================
+    // PRUEBA 18: Obtener Suscripción - No existe retorna null
+    // =========================================================================
+    [Fact]
+    public async Task ObtenerSuscripcionAsync_SuscripcionNoExiste_DebeRetornarNull()
+    {
+        // Arrange
+        int perfilId = 33;
+        _mockRepo.Setup(r => r.ObtenerPorDealerIdAsync(perfilId))
+            .ReturnsAsync((SuscripcionDealer?)null);
+
+        // Act
+        var resultado = await _servicio.ObtenerSuscripcionAsync(perfilId);
+
+        // Assert
+        Assert.Null(resultado);
+    }
+
+    // =========================================================================
+    // PRUEBA 19: Obtener Suscripción - Éxito mapea DTO
+    // =========================================================================
+    [Fact]
+    public async Task ObtenerSuscripcionAsync_SuscripcionActiva_DebeRetornarDtoCorrecto()
+    {
+        // Arrange
+        int perfilId = 34;
+        var suscripcion = CrearSuscripcionSimulada(perfilId, PlanNivel.Elite, EstadoSuscripcion.Activa);
+
+        _mockRepo.Setup(r => r.ObtenerPorDealerIdAsync(perfilId))
+            .ReturnsAsync(suscripcion);
+
+        // Act
+        var resultado = await _servicio.ObtenerSuscripcionAsync(perfilId);
+
+        // Assert
+        Assert.NotNull(resultado);
+        Assert.Equal(perfilId, resultado!.PerfilDealerId);
+        Assert.Equal(PlanNivel.Elite, resultado.Nivel);
+        Assert.Equal(EstadoSuscripcion.Activa, resultado.Estado);
+        Assert.Equal((int)PlanNivel.Elite, resultado.LimiteAnuncios);
+        Assert.True(resultado.Activa);
     }
 }

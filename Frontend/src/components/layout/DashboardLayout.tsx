@@ -1,8 +1,10 @@
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
 
-import { FaCar, FaPlusCircle, FaChartPie, FaSignOutAlt, FaEnvelope, FaStore } from "react-icons/fa";
+import { FaCar, FaPlusCircle, FaChartPie, FaSignOutAlt, FaEnvelope, FaStore, FaCreditCard } from "react-icons/fa";
 
 import { authService } from "../../services/auth.service";
+import { suscripcionService, type SuscripcionDealer } from "../../services/suscripcion.service";
 import logo from "../../assets/AutoMarketRD_Logo.svg";
 
 export default function DashboardLayout() {
@@ -18,6 +20,15 @@ export default function DashboardLayout() {
   const inicialUsuario = usuario?.nombre
     ? usuario.nombre.charAt(0).toUpperCase()
     : "U";
+
+  const [suscripcion, setSuscripcion] = useState<SuscripcionDealer | null>(null);
+
+  useEffect(() => {
+    suscripcionService
+      .obtenerSuscripcion()
+      .then(setSuscripcion)
+      .catch(() => setSuscripcion(null));
+  }, [location.pathname]);
 
   const handleLogout = () => {
     authService.logout();
@@ -52,6 +63,11 @@ export default function DashboardLayout() {
       path: "/dashboard/mi-perfil",
       label: "Mi Perfil",
       icon: <FaStore />,
+    },
+    {
+      path: "/dashboard/suscripcion",
+      label: "Suscripción",
+      icon: <FaCreditCard />,
     },
   ];
 
@@ -119,6 +135,9 @@ export default function DashboardLayout() {
 
           {/* INFORMACIÓN DEL USUARIO */}
           <div className="flex items-center gap-3">
+            {/* INDICADOR DE PLAN */}
+            <PlanBadge suscripcion={suscripcion} />
+
             <div className="hidden text-right sm:block">
               <p className="text-sm font-semibold text-gray-800">
                 {nombreUsuario}
@@ -142,4 +161,48 @@ export default function DashboardLayout() {
       </main>
     </div>
   );
+}
+
+function PlanBadge({ suscripcion }: { suscripcion: SuscripcionDealer | null }) {
+  if (!suscripcion) {
+    return (
+      <Link
+        to="/dashboard/suscripcion"
+        className="hidden rounded-full border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-600 transition-colors hover:border-blue-400 hover:text-blue-600 sm:block"
+      >
+        Suscríbete
+      </Link>
+    );
+  }
+
+  const nombrePlan = nombrePlanKey(suscripcion.nivel);
+  const esCancelada = suscripcion.estado === "Cancelada";
+  const vencida = !esCancelada && suscripcion.diasRestantes <= 0;
+
+  const colorClase = esCancelada || vencida ? "border-red-300 text-red-600" : "border-green-300 text-green-700";
+
+  return (
+    <Link
+      to="/dashboard/suscripcion"
+      className={`hidden rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors sm:block ${colorClase} hover:bg-gray-50`}
+      title={`Plan ${nombrePlan}`}
+    >
+      Plan {nombrePlan}
+      {!esCancelada && !vencida && (
+        <span className="ml-1 opacity-70">· {suscripcion.diasRestantes}d</span>
+      )}
+      {esCancelada && <span className="ml-1 opacity-70">cancelada</span>}
+      {vencida && <span className="ml-1 opacity-70">vencida</span>}
+    </Link>
+  );
+}
+
+function nombrePlanKey(nivel: string): string {
+  const mapa: Record<string, string> = {
+    Gratis: "Gratis",
+    Basico: "Básico",
+    Pro: "Pro",
+    Elite: "Elite",
+  };
+  return mapa[nivel] ?? nivel;
 }
