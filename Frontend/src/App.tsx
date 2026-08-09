@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 
 // Páginas públicas
+import Home from './pages/Home';
 import Login from './pages/Login';
 import Registro from './pages/Registro';
 import Precios from './pages/Precios';
@@ -32,14 +33,7 @@ function App() {
   return (
     <Routes>
       {/* INICIO PÚBLICO */}
-      <Route
-        path="/"
-        element={
-          <h1 className="p-4 text-3xl font-bold">
-            AutoMarket RD - Inicio
-          </h1>
-        }
-      />
+      <Route path="/" element={<Home />} />
 
       {/* PRECIOS PÚBLICOS */}
       <Route path="/precios" element={<Precios />} />

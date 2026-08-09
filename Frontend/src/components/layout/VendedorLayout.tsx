@@ -21,9 +21,9 @@ export default function VendedorLayout() {
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-[#f6f7f9] font-sans">
       {/* BARRA SUPERIOR SOBRIA */}
-      <header className="flex h-14 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-6">
+      <header className="flex h-20 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-6">
         <Link to="/vendedor" className="flex items-center gap-2">
-          <img src={logo} alt="AutoMarket RD" className="h-8 w-24 object-contain" />
+          <img src={logo} alt="AutoMarket RD" className="h-20 w-40 object-contain" />
           <span className="hidden text-xs text-gray-500 sm:inline">
             Área de Vendedor
           </span>
