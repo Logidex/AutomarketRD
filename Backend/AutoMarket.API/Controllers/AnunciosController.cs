@@ -124,7 +124,6 @@ public class AnunciosController : ControllerBase
         }
         catch (KeyNotFoundException ex) { return NotFound(new { error = ex.Message }); }
         catch (UnauthorizedAccessException ex) { return StatusCode(403, new { error = ex.Message }); } // 403 Forbidden si no es el dueño
-        catch (Exception ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     private int? ObtenerUsuarioIdSiAutenticado()
@@ -193,7 +192,6 @@ public class AnunciosController : ControllerBase
         }
         catch (KeyNotFoundException ex) { return NotFound(new { error = ex.Message }); }
         catch (UnauthorizedAccessException ex) { return StatusCode(403, new { error = ex.Message }); }
-        catch (Exception ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpPost("{id:int}/registrar-vista")]

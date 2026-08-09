@@ -140,31 +140,17 @@ public class AdminController : ControllerBase
     [HttpPut("suscripciones/{dealerId:int}/plan")]
     public async Task<IActionResult> CambiarPlanForzoso(int dealerId, [FromBody] CambiarPlanAdminDto dto)
     {
-        try
-        {
-            await _suscripcionService.CambiarPlanAsync(dealerId, dto.NuevoNivel, CicloFacturacion.Mensual);
-            return Ok(new { exito = true, mensaje = $"Plan del dealer {dealerId} actualizado a {dto.NuevoNivel}." });
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { exito = false, mensaje = ex.Message });
-        }
+        await _suscripcionService.CambiarPlanAsync(dealerId, dto.NuevoNivel, CicloFacturacion.Mensual);
+        return Ok(new { exito = true, mensaje = $"Plan del dealer {dealerId} actualizado a {dto.NuevoNivel}." });
     }
 
     [HttpPut("suscripciones/{dealerId:int}/renovar")]
     public async Task<IActionResult> RenovarSuscripcionManual(int dealerId, [FromBody] RenovarSuscripcionDto dto)
     {
-        try
-        {
-            var fechaUtc = dto.NuevaFechaVencimiento.ToUniversalTime();
+        var fechaUtc = dto.NuevaFechaVencimiento.ToUniversalTime();
 
-            await _suscripcionService.RenovarManualAsync(dealerId, fechaUtc);
-            return Ok(new { exito = true, mensaje = $"Suscripción extendida y activada hasta {fechaUtc:dd/MM/yyyy}." });
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { exito = false, mensaje = ex.Message });
-        }
+        await _suscripcionService.RenovarManualAsync(dealerId, fechaUtc);
+        return Ok(new { exito = true, mensaje = $"Suscripción extendida y activada hasta {fechaUtc:dd/MM/yyyy}." });
     }
 
     // ==========================================
@@ -181,15 +167,8 @@ public class AdminController : ControllerBase
     [HttpPost("planes")]
     public async Task<IActionResult> CrearPlan([FromBody] PlanCatalogoCreateDto dto)
     {
-        try
-        {
-            var plan = await _planCatalogoService.CrearPlanAsync(dto);
-            return CreatedAtAction(nameof(ListarPlanes), new { }, plan);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { exito = false, mensaje = ex.Message });
-        }
+        var plan = await _planCatalogoService.CrearPlanAsync(dto);
+        return CreatedAtAction(nameof(ListarPlanes), new { }, plan);
     }
 
     [HttpPut("planes/{id:int}")]
@@ -204,10 +183,6 @@ public class AdminController : ControllerBase
         {
             return NotFound(new { exito = false, mensaje = ex.Message });
         }
-        catch (Exception ex)
-        {
-            return BadRequest(new { exito = false, mensaje = ex.Message });
-        }
     }
 
     [HttpDelete("planes/{id:int}")]
@@ -221,10 +196,6 @@ public class AdminController : ControllerBase
         catch (KeyNotFoundException ex)
         {
             return NotFound(new { exito = false, mensaje = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { exito = false, mensaje = ex.Message });
         }
     }
 }

@@ -10,6 +10,7 @@ import {
 import { leadService } from "../services/lead.service";
 import type { LeadDealer } from "../types/lead.types";
 import Spinner from "../components/Spinner";
+import { formatearFecha } from "../utils/fecha";
 
 export default function Leads() {
   const [leads, setLeads] = useState<LeadDealer[]>([]);
@@ -135,13 +136,7 @@ export default function Leads() {
                       Vía: {lead.canal}
                     </span>
                     <span className="rounded-full bg-gray-100 px-3 py-1">
-                      {new Date(lead.fechaCreacionUtc).toLocaleDateString("es-DO", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                      {formatearFecha(lead.fechaCreacionUtc, true)}
                     </span>
                   </div>
                 </div>

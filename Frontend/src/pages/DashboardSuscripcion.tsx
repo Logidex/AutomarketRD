@@ -8,6 +8,7 @@ import { dashboardService } from "../services/dashboard.service";
 import Spinner from "../components/Spinner";
 import { formatearRD$, precioCicloDe } from "../utils/formato";
 import { nombrePlan } from "../constants/planes";
+import { formatearFecha } from "../utils/fecha";
 
 type Ciclo = "Mensual" | "Trimestral" | "Anual";
 
@@ -205,7 +206,7 @@ export default function DashboardSuscripcion() {
                 <>
                   Cancelaste tu suscripción, pero <strong>conservas el plan hasta su
                   vencimiento</strong> ({suscripcion.diasRestantes} días restantes,{" "}
-                  {new Date(suscripcion.fechaVencimientoUtc).toLocaleDateString("es-DO")}).
+                  {formatearFecha(suscripcion.fechaVencimientoUtc)}).
                   Podrás seguir publicando hasta entonces.
                 </>
               ) : (
@@ -309,11 +310,7 @@ export default function DashboardSuscripcion() {
                 {pagos.map((pago) => (
                   <tr key={pago.id} className="border-b border-gray-100 last:border-0">
                     <td className="py-3 pr-4 text-gray-700">
-                      {new Date(pago.fechaUtc).toLocaleDateString("es-DO", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      })}
+                      {formatearFecha(pago.fechaUtc)}
                     </td>
                     <td className="py-3 pr-4 font-semibold text-gray-900">{nombrePlan(pago.nivel)}</td>
                     <td className="py-3 pr-4 capitalize text-gray-700">{pago.ciclo}</td>
