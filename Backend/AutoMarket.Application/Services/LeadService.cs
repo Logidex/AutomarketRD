@@ -1,6 +1,7 @@
 using AutoMarket.Application.DTOs;
 using AutoMarket.Application.DTOs.Lead;
 using AutoMarket.Core.Entities;
+using AutoMarket.Core.Exceptions;
 using AutoMarket.Core.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -34,6 +35,10 @@ public class LeadService : ILeadService
         
         if (anuncio == null)
             throw new KeyNotFoundException("El vehículo al que intentas contactar no existe o ya fue vendido.");
+
+        // Solo se pueden enviar leads a vehículos visibles en la vitrina.
+        if (anuncio.Estado != "Publicado")
+            throw new BusinessRuleException("Este vehículo ya no está disponible para contactos.");
 
         var vendedor = await _usuarioRepository.ObtenerDealerConPerfilPorIdAsync(anuncio.UsuarioId);
         

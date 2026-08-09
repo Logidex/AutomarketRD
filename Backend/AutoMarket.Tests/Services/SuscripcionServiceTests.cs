@@ -11,12 +11,14 @@ namespace AutoMarket.Tests.Services;
 public class SuscripcionServiceTests
 {
     private readonly Mock<ISuscripcionRepository> _mockRepo;
+    private readonly Mock<IAnuncioRepository> _mockAnuncioRepo;
     private readonly SuscripcionService _servicio;
 
     public SuscripcionServiceTests()
     {
         _mockRepo = new Mock<ISuscripcionRepository>();
-        _servicio = new SuscripcionService(_mockRepo.Object);
+        _mockAnuncioRepo = new Mock<IAnuncioRepository>();
+        _servicio = new SuscripcionService(_mockRepo.Object, _mockAnuncioRepo.Object);
     }
 
     // =========================================================================

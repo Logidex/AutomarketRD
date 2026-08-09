@@ -57,6 +57,14 @@ export default function MisAnuncios() {
     return <Spinner />;
   }
 
+  const recargarResumen = async () => {
+    try {
+      setResumen(await dashboardService.obtenerResumen());
+    } catch {
+      // Banner opcional: si falla, se conserva el valor anterior.
+    }
+  };
+
   const handlePublicar = async (id: number) => {
     try {
       await anuncioService.publicarAnuncio(id);
@@ -66,6 +74,8 @@ export default function MisAnuncios() {
           anuncio.id === id ? { ...anuncio, estado: "Publicado" } : anuncio,
         ),
       );
+
+      await recargarResumen();
 
       Swal.fire({
         title: "Publicado",
@@ -107,6 +117,8 @@ export default function MisAnuncios() {
         ),
       );
 
+      await recargarResumen();
+
       Swal.fire({
         title: "Actualizado",
         text: "El estado del anuncio se actualizó correctamente.",
@@ -142,6 +154,8 @@ export default function MisAnuncios() {
       await anuncioService.eliminarAnuncio(id);
 
       setAnuncios((prev) => prev.filter((anuncio) => anuncio.id !== id));
+
+      await recargarResumen();
 
       Swal.fire({
         title: "Eliminado",

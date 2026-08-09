@@ -23,6 +23,11 @@ public class AnuncioService : IAnuncioService
         _usuarioRepository = usuarioRepository;
     }
 
+    private static readonly HashSet<string> EstadosValidos = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Publicado", "Borrador", "Pausado", "Vendido"
+    };
+
     public async Task<int> CrearAnuncioAsync(
     AnuncioCreateDto dto)
     {
@@ -241,9 +246,28 @@ public class AnuncioService : IAnuncioService
             throw new UnauthorizedAccessException("Acceso denegado: No tienes permiso para publicar un anuncio que no te pertenece.");
         }
 
-        // El límite del plan se aplica también al publicar: evita saltarse el cupo
-        // acumulando borradores. Solo cuentan los anuncios activos en la vitrina;
-        // si este anuncio ya está pausado (ya cuenta), se excluye para no ocupar doble cupo.
+        if (anuncio.Estado == "Publicado")
+            return true;
+
+        await ValidarCupoParaPublicarAsync(anuncio, usuarioId);
+
+        anuncio.Publicar();
+
+        await _repository.ActualizarAsync(anuncio);
+        return true;
+    }
+
+    /// <summary>
+    /// Valida cupo del plan, suscripción vigente y que el anuncio tenga el mínimo de
+    /// fotos antes de publicarlo. El límite aplica a la vitrina activa (Publicado +
+    /// Pausado); los borradores no ocupan cupo.
+    /// </summary>
+    private async Task ValidarCupoParaPublicarAsync(Anuncio anuncio, int usuarioId)
+    {
+        if (anuncio.Estado == "Publicado") return;
+
+        // Solo cuentan los activos en vitrina; si este anuncio ya está publicado o
+        // pausado (ya ocupa cupo), se descuenta para no ocupar doble cupo.
         int cantidadActiva = await _repository.ContarAnunciosPorUsuarioAsync(usuarioId);
         if (anuncio.Estado == "Publicado" || anuncio.Estado == "Pausado")
             cantidadActiva--;
@@ -263,37 +287,32 @@ public class AnuncioService : IAnuncioService
                     "Mejora tu cuenta a Dealer para publicar más inventario."
                 );
             }
+
+            return;
         }
-        else
+
+        var suscripcion = usuario?.PerfilDealer?.Suscripcion;
+
+        if (suscripcion == null)
         {
-            var suscripcion = usuario?.PerfilDealer?.Suscripcion;
-
-            if (suscripcion == null)
-            {
-                throw new BusinessRuleException(
-                    "Tu cuenta Dealer no tiene una suscripción activa configurada."
-                );
-            }
-
-            if (suscripcion.FechaVencimientoUtc <= DateTime.UtcNow)
-            {
-                throw new BusinessRuleException(
-                    "Tu suscripción Dealer está vencida. Renuevala para seguir publicando."
-                );
-            }
-
-            if (!suscripcion.PermiteNuevosAnuncios(cantidadActiva))
-            {
-                throw new BusinessRuleException(
-                    "Has alcanzado el límite de anuncios permitidos por tu plan."
-                );
-            }
+            throw new BusinessRuleException(
+                "Tu cuenta Dealer no tiene una suscripción activa configurada."
+            );
         }
 
-        anuncio.Publicar();
+        if (suscripcion.FechaVencimientoUtc <= DateTime.UtcNow)
+        {
+            throw new BusinessRuleException(
+                "Tu suscripción Dealer está vencida. Renuevala para seguir publicando."
+            );
+        }
 
-        await _repository.ActualizarAsync(anuncio);
-        return true;
+        if (!suscripcion.PermiteNuevosAnuncios(cantidadActiva))
+        {
+            throw new BusinessRuleException(
+                "Has alcanzado el límite de anuncios permitidos por tu plan."
+            );
+        }
     }
 
     public async Task SubirImagenesAsync(AnuncioImagenUploadDto dto)
@@ -407,6 +426,13 @@ var anunciosDto = anuncios
 
     public async Task<bool> CambiarEstadoAsync(int id, int usuarioId, string estado)
     {
+        if (string.IsNullOrWhiteSpace(estado) || !EstadosValidos.Contains(estado))
+        {
+            throw new BusinessRuleException(
+                $"El estado '{estado}' no es válido. Estados permitidos: Publicado, Borrador, Pausado, Vendido."
+            );
+        }
+
         var anuncio = await _repository.ObtenerPorIdAsync(id);
 
         if (anuncio == null) return false;
@@ -414,7 +440,20 @@ var anunciosDto = anuncios
         if (anuncio.UsuarioId != usuarioId)
             throw new UnauthorizedAccessException("Acceso denegado: No tienes permiso para cambiar el estado de este anuncio.");
 
-        anuncio.CambiarEstado(estado); // o la lógica equivalente en tu entidad
+        if (anuncio.Estado == estado)
+            return true;
+
+        // Pasar a Publicado aplica las mismas reglas que publicar: cupo del plan,
+        // suscripción vigente y mínimo de 5 fotos.
+        if (string.Equals(estado, "Publicado", StringComparison.OrdinalIgnoreCase))
+        {
+            await ValidarCupoParaPublicarAsync(anuncio, usuarioId);
+            anuncio.Publicar();
+        }
+        else
+        {
+            anuncio.CambiarEstado(estado);
+        }
 
         await _repository.ActualizarAsync(anuncio);
         return true;
@@ -426,8 +465,13 @@ var anunciosDto = anuncios
 
         if (anuncio is null)
         {
-            throw new KeyNotFoundException("Anuncio no encontrado.");
+            throw new KeyNotFoundException("El anuncio no está disponible.");
         }
+
+        // Solo los anuncios publicados cuentan vistas; los borradores, pausados o
+        // vendidos no deben inflar estadísticas.
+        if (anuncio.Estado != "Publicado")
+            return;
 
         anuncio.RegistrarVista();
         await _repository.GuardarCambiosAsync();

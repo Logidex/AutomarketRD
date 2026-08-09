@@ -10,10 +10,12 @@ namespace AutoMarket.Application.Services;
 public class SuscripcionService : ISuscripcionService
 {
     private readonly ISuscripcionRepository _repository;
+    private readonly IAnuncioRepository _anuncioRepository;
 
-    public SuscripcionService(ISuscripcionRepository repository)
+    public SuscripcionService(ISuscripcionRepository repository, IAnuncioRepository anuncioRepository)
     {
         _repository = repository;
+        _anuncioRepository = anuncioRepository;
     }
 
     public async Task AsignarPlanInicialAsync(int perfilDealerId, PlanNivel nivel, CicloFacturacion ciclo)
@@ -43,6 +45,8 @@ public class SuscripcionService : ISuscripcionService
             throw new BusinessRuleException(
                 "La suscripción está cancelada. Debe adquirir una nueva en lugar de cambiar de plan.");
 
+        await ValidarInventarioContraNuevoPlanAsync(perfilDealerId, nuevoNivel);
+
         suscripcion.CambiarPlan(nuevoNivel, ciclo);
 
         await _repository.ActualizarAsync(suscripcion);
@@ -66,6 +70,8 @@ public class SuscripcionService : ISuscripcionService
 
         if (suscripcionExistente == null)
         {
+            await ValidarInventarioContraNuevoPlanAsync(perfilDealerId, nivel);
+
             var nuevaSuscripcion = new SuscripcionDealer(perfilDealerId, nivel, ciclo);
             await _repository.AgregarAsync(nuevaSuscripcion);
             return;
@@ -73,6 +79,8 @@ public class SuscripcionService : ISuscripcionService
 
         if (suscripcionExistente.Estado == EstadoSuscripcion.Cancelada)
         {
+            await ValidarInventarioContraNuevoPlanAsync(perfilDealerId, nivel);
+
             suscripcionExistente.ActivarConPlan(nivel, ciclo);
 
             await _repository.ActualizarAsync(suscripcionExistente);
@@ -88,8 +96,28 @@ public class SuscripcionService : ISuscripcionService
             return;
         }
 
+        await ValidarInventarioContraNuevoPlanAsync(perfilDealerId, nivel);
+
         suscripcionExistente.CambiarPlan(nivel, ciclo);
         await _repository.ActualizarAsync(suscripcionExistente);
+    }
+
+    /// <summary>
+    /// Impide bajar de plan (o reactivar uno menor) si el dealer mantiene más anuncios
+    /// activos en la vitrina de los que permite el nuevo plan.
+    /// </summary>
+    private async Task ValidarInventarioContraNuevoPlanAsync(int perfilDealerId, PlanNivel nuevoNivel)
+    {
+        var limite = (int)nuevoNivel;
+        var anunciosActivos = await _anuncioRepository.ContarAnunciosPorUsuarioAsync(perfilDealerId);
+
+        if (anunciosActivos > limite)
+        {
+            throw new BusinessRuleException(
+                $"No puedes bajar a este plan: tienes {anunciosActivos} anuncios activos y el plan " +
+                $"{nuevoNivel} permite hasta {limite}. Pausa o elimina el excedente antes de continuar."
+            );
+        }
     }
 
     public async Task RegistrarPagoAsync(

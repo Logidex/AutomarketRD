@@ -9,8 +9,8 @@ export default function EditarVehiculo() {
   const {
     formData, kilometraje, setKilometraje, accesoriosTexto, setAccesoriosTexto,
     mostrarTransmisionPersonalizada, transmisionPersonalizada, setTransmisionPersonalizada,
-    archivos, fotosGuardadas, handleChange, handleImageChange, 
-    handleEliminarArchivo, handleEliminarFotoGuardada, guardar
+    archivos, fotosGuardadas, handleChange, handleImageChange,
+    handleEliminarArchivo, handleEliminarFotoGuardada, guardar, submitting
   } = useFormularioVehiculo(true);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -54,9 +54,10 @@ export default function EditarVehiculo() {
         <div className="flex justify-end gap-4 border-t border-gray-100 pt-6">
           <button
             type="submit"
-            className="rounded-md bg-blue-600 px-6 py-2.5 font-medium text-white transition-colors hover:bg-blue-700"
+            disabled={submitting}
+            className="rounded-md bg-blue-600 px-6 py-2.5 font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-400"
           >
-            Actualizar vehículo
+            {submitting ? "Guardando..." : "Actualizar vehículo"}
           </button>
         </div>
       </form>

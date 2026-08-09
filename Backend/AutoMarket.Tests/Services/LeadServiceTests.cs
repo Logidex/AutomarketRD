@@ -6,6 +6,7 @@ using AutoMarket.Application.DTOs;
 using AutoMarket.Core.Interfaces;
 using AutoMarket.Core.Entities;
 using AutoMarket.Core.Entities.Enums;
+using AutoMarket.Core.Exceptions;
 using System.Reflection;
 
 namespace AutoMarket.Tests.Services;
@@ -61,6 +62,7 @@ public class LeadServiceTests
         typeof(Anuncio).GetProperty("UsuarioId")?.SetValue(anuncio, usuarioId);
         typeof(Anuncio).GetProperty("Marca")?.SetValue(anuncio, marca);
         typeof(Anuncio).GetProperty("Modelo")?.SetValue(anuncio, modelo);
+        typeof(Anuncio).GetProperty("Estado")?.SetValue(anuncio, "Publicado");
 
         return anuncio;
     }
@@ -83,6 +85,27 @@ public class LeadServiceTests
 
         Assert.Equal("El vehículo al que intentas contactar no existe o ya fue vendido.", excepcion.Message);
         _mockLeadRepo.Verify(r => r.AgregarAsync(It.IsAny<Lead>()), Times.Never);
+    }
+
+    // =========================================================================
+    // PRUEBA 02: Falla si el vehículo ya no está publicado
+    // =========================================================================
+    [Fact]
+    public async Task CrearLeadAsync_AnuncioNoPublicado_DebeLanzarBusinessRuleException()
+    {
+        // Arrange
+        var dto = new LeadCreateDto { AnuncioId = 2, NombreContacto = "Juan", Mensaje = "Hola", Canal = CanalContacto.Formulario };
+        var anuncioBorrador = CrearAnuncioSimulado(id: 2, usuarioId: 5, marca: "Honda", modelo: "Civic");
+        typeof(Anuncio).GetProperty("Estado")?.SetValue(anuncioBorrador, "Borrador");
+
+        _mockAnuncioRepo.Setup(r => r.ObtenerPorIdAsync(2)).ReturnsAsync(anuncioBorrador);
+
+        // Act & Assert
+        var excepcion = await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            _servicio.CrearLeadAsync(dto));
+
+        Assert.Equal("Este vehículo ya no está disponible para contactos.", excepcion.Message);
+        _mockLeadRepo.Verify(l => l.AgregarAsync(It.IsAny<Lead>()), Times.Never);
     }
 
     // =========================================================================

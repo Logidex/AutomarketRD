@@ -6,8 +6,8 @@ export default function CrearAnuncio() {
   const {
     formData, kilometraje, setKilometraje, accesoriosTexto, setAccesoriosTexto,
     mostrarTransmisionPersonalizada, transmisionPersonalizada, setTransmisionPersonalizada,
-    archivos, fotosGuardadas, handleChange, handleImageChange, 
-    handleEliminarArchivo, handleEliminarFotoGuardada, guardar
+    archivos, fotosGuardadas, handleChange, handleImageChange,
+    handleEliminarArchivo, handleEliminarFotoGuardada, guardar, submitting
   } = useFormularioVehiculo(false);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -43,8 +43,12 @@ export default function CrearAnuncio() {
           onEliminarArchivo={handleEliminarArchivo}
           onEliminarFotoGuardada={handleEliminarFotoGuardada}
         />
-        <button type="submit" className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition-colors">
-          Publicar Anuncio
+        <button
+          type="submit"
+          disabled={submitting}
+          className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition-colors disabled:cursor-not-allowed disabled:bg-blue-400"
+        >
+          {submitting ? "Guardando..." : "Publicar Anuncio"}
         </button>
       </form>
     </div>

@@ -152,8 +152,6 @@ try
         });
     });
 
-    builder.Services.AddAuthorization();
-
     // =======================================================
     // CONFIGURACIÓN DE HEALTH CHECKS (Monitoreo de Salud)
     // =======================================================
@@ -176,11 +174,17 @@ try
         dbContext.Database.Migrate();
     }
 
-    // Luego seedear
-    DatabaseSeeder.SeedAsync(app.Services).Wait();
+    // Luego seedear (solo Desarrollo, o si se fuerza con Seeder:Enabled=true)
+    if (app.Environment.IsDevelopment() || app.Configuration.GetValue<bool>("Seeder:Enabled"))
+    {
+        DatabaseSeeder.SeedAsync(app.Services).Wait();
+    }
 
-    app.MapOpenApi();
-    app.MapScalarApiReference();
+    if (app.Environment.IsDevelopment())
+    {
+        app.MapOpenApi();
+        app.MapScalarApiReference();
+    }
 
     app.UseCors(frontendPolicy);
 

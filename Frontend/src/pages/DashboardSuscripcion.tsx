@@ -83,6 +83,8 @@ export default function DashboardSuscripcion() {
   };
 
   const handlePago = async (plan: PlanCatalogo) => {
+    if (procesando !== null) return;
+
     if (precioCiclo(plan) <= 0) {
       await Swal.fire({
         icon: "info",
@@ -238,11 +240,12 @@ export default function DashboardSuscripcion() {
               key={c}
               type="button"
               onClick={() => setCiclo(c)}
+              disabled={procesando !== null}
               className={`rounded-lg px-5 py-2 text-sm font-semibold transition-colors ${
                 ciclo === c
                   ? "bg-blue-500 text-white"
                   : "text-gray-500 hover:text-gray-800"
-              }`}
+              } disabled:cursor-not-allowed`}
             >
               {c === "Mensual" ? "Mensual" : c === "Trimestral" ? "Trimestral" : "Anual"}
             </button>
@@ -273,8 +276,8 @@ export default function DashboardSuscripcion() {
                 <button
                   type="button"
                   onClick={() => handlePago(plan)}
-                  disabled={procesando === plan.nivel}
-                  className="w-full rounded-lg bg-blue-500 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-blue-300"
+                  disabled={procesando !== null}
+                  className="w-full rounded-lg bg-blue-500 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-blue-300 disabled:hover:bg-blue-300"
                 >
                   {procesando === plan.nivel ? "Redirigiendo..." : etiquetaBoton(plan)}
                 </button>
