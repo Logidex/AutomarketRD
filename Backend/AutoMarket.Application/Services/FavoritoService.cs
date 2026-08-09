@@ -22,6 +22,9 @@ public class FavoritoService : IFavoritoService
         if (anuncio == null) 
             throw new KeyNotFoundException("El anuncio no existe.");
 
+        if (anuncio.Estado != "Publicado")
+            throw new KeyNotFoundException("El vehículo no está disponible para guardar en favoritos.");
+
         var existente = await _favoritoRepository.ObtenerAsync(usuarioId, anuncioId);
         if (existente != null) 
             throw new InvalidOperationException("El vehículo ya está en tus favoritos.");

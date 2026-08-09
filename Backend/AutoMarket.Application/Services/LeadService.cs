@@ -1,4 +1,5 @@
 using AutoMarket.Application.DTOs;
+using AutoMarket.Application.DTOs.Lead;
 using AutoMarket.Core.Entities;
 using AutoMarket.Core.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -88,9 +89,34 @@ public class LeadService : ILeadService
         return await _leadRepository.ObtenerPorAnuncioIdAsync(anuncioId);
     }
 
-    public async Task<IReadOnlyCollection<Lead>> ObtenerLeadsPorDealerAsync(int dealerId)
+    public async Task<IReadOnlyCollection<LeadDealerDto>> ObtenerLeadsPorDealerAsync(int dealerId)
     {
-        return await _leadRepository.ObtenerPorUsuarioIdAsync(dealerId);
+        var leads = await _leadRepository.ObtenerPorUsuarioIdAsync(dealerId);
+
+        return leads
+            .Select(l => new LeadDealerDto
+            {
+                Id = l.Id,
+                AnuncioId = l.AnuncioId,
+                Anuncio = l.Anuncio == null
+                    ? null
+                    : new LeadAnuncioResumenDto
+                    {
+                        Id = l.Anuncio.Id,
+                        NombreAnuncio = l.Anuncio.NombreAnuncio,
+                        Marca = l.Anuncio.Marca,
+                        Modelo = l.Anuncio.Modelo,
+                        Anio = l.Anuncio.Anio
+                    },
+                NombreContacto = l.NombreContacto,
+                EmailContacto = l.EmailContacto,
+                TelefonoContacto = l.TelefonoContacto,
+                Mensaje = l.Mensaje,
+                Canal = l.Canal.ToString(),
+                FechaCreacionUtc = l.FechaCreacionUtc,
+                Leido = l.Leido
+            })
+            .ToList();
     }
 
     public async Task<bool> MarcarLeidoAsync(int leadId, int usuarioId)

@@ -279,6 +279,55 @@ public class AnuncioService : IAnuncioService
             throw new UnauthorizedAccessException("Acceso denegado: No tienes permiso para publicar un anuncio que no te pertenece.");
         }
 
+        // El límite del plan se aplica también al publicar: evita saltarse el cupo
+        // acumulando borradores. Solo cuentan los anuncios activos en la vitrina;
+        // si este anuncio ya está pausado (ya cuenta), se excluye para no ocupar doble cupo.
+        int cantidadActiva = await _repository.ContarAnunciosPorUsuarioAsync(usuarioId);
+        if (anuncio.Estado == "Publicado" || anuncio.Estado == "Pausado")
+            cantidadActiva--;
+
+        var usuario = await _usuarioRepository.ObtenerDealerConPerfilPorIdAsync(usuarioId);
+
+        bool esVendedorParticular =
+            usuario != null &&
+            string.Equals(usuario.Rol, "Vendedor", StringComparison.OrdinalIgnoreCase);
+
+        if (esVendedorParticular)
+        {
+            if (cantidadActiva >= 1)
+            {
+                throw new BusinessRuleException(
+                    "Has alcanzado el límite de 1 anuncio gratuito. " +
+                    "Mejora tu cuenta a Dealer para publicar más inventario."
+                );
+            }
+        }
+        else
+        {
+            var suscripcion = usuario?.PerfilDealer?.Suscripcion;
+
+            if (suscripcion == null)
+            {
+                throw new BusinessRuleException(
+                    "Tu cuenta Dealer no tiene una suscripción activa configurada."
+                );
+            }
+
+            if (suscripcion.FechaVencimientoUtc <= DateTime.UtcNow)
+            {
+                throw new BusinessRuleException(
+                    "Tu suscripción Dealer está vencida. Renuevala para seguir publicando."
+                );
+            }
+
+            if (!suscripcion.PermiteNuevosAnuncios(cantidadActiva))
+            {
+                throw new BusinessRuleException(
+                    "Has alcanzado el límite de anuncios permitidos por tu plan."
+                );
+            }
+        }
+
         anuncio.Publicar();
 
         await _repository.ActualizarAsync(anuncio);

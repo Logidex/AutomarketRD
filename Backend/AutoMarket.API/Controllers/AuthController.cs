@@ -36,7 +36,7 @@ public class AuthController : ControllerBase
 
         if (!resultado.Exito)
         {
-            return BadRequest(resultado.Mensaje);
+            return BadRequest(new { mensaje = resultado.Mensaje });
         }
 
         return Ok(resultado);

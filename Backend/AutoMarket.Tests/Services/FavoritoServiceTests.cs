@@ -48,6 +48,12 @@ public class FavoritoServiceTests
         );
     }
 
+    private static void PublicarAnuncio(Anuncio anuncio)
+    {
+        anuncio.AgregarFotos(new List<string> { "f1", "f2", "f3", "f4", "f5" });
+        anuncio.Publicar();
+    }
+
     [Fact]
     public async Task AgregarFavoritoAsync_CuandoAnuncioNoExiste_DebeLanzarKeyNotFoundException()
     {
@@ -67,6 +73,7 @@ public class FavoritoServiceTests
     public async Task AgregarFavoritoAsync_CuandoYaExiste_DebeLanzarInvalidOperationException()
     {
         var anuncio = CrearAnuncioSimulado(10, "Toyota", "Corolla", 2022, 18500m);
+        PublicarAnuncio(anuncio);
 
         _mockAnuncioRepository
             .Setup(r => r.ObtenerPorIdAsync(10))
@@ -87,6 +94,7 @@ public class FavoritoServiceTests
     public async Task AgregarFavoritoAsync_CuandoEsValido_DebeAgregarFavorito()
     {
         var anuncio = CrearAnuncioSimulado(10, "Toyota", "Corolla", 2022, 18500m);
+        PublicarAnuncio(anuncio);
 
         _mockAnuncioRepository
             .Setup(r => r.ObtenerPorIdAsync(10))

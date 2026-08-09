@@ -131,7 +131,13 @@ public class AuthControllerTests
         var resultado = await _controller.Login(dto);
 
         var badRequest = Assert.IsType<BadRequestObjectResult>(resultado);
-        Assert.Equal("Credenciales incorrectas.", badRequest.Value);
+
+        var propMensaje = badRequest.Value
+            ?.GetType()
+            .GetProperty("mensaje")
+            ?.GetValue(badRequest.Value, null)
+            ?.ToString();
+        Assert.Equal("Credenciales incorrectas.", propMensaje);
 
         _mockAuthService.Verify(s => s.LoginAsync(dto), Times.Once);
     }

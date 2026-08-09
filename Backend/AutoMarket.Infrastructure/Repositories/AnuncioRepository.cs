@@ -256,9 +256,12 @@ public class AnuncioRepository : IAnuncioRepository
     public async Task<int> ContarAnunciosPorUsuarioAsync(
         int usuarioId)
     {
+        // El límite del plan aplica a la vitrina activa (publicado + pausado).
+        // Borradores, vendidos y eliminados no ocupan cupo.
         return await _context.Anuncios
             .CountAsync(a =>
-                a.UsuarioId == usuarioId
+                a.UsuarioId == usuarioId &&
+                (a.Estado == "Publicado" || a.Estado == "Pausado")
             );
     }
 
@@ -279,7 +282,7 @@ public class AnuncioRepository : IAnuncioRepository
         IEnumerable<int> ids)
     {
         return await _context.Anuncios
-            .Where(a => ids.Contains(a.Id))
+            .Where(a => ids.Contains(a.Id) && a.Estado == "Publicado")
             .ToListAsync();
     }
 

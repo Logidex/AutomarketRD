@@ -315,12 +315,44 @@ public class AnuncioServiceTests
 
         _mockRepo.Setup(r => r.ObtenerPorIdAsync(idAnuncio)).ReturnsAsync(anuncioEnBD);
 
+        _mockUsuarioRepo
+            .Setup(r => r.ObtenerDealerConPerfilPorIdAsync(idDueño))
+            .ReturnsAsync(CrearUsuarioDealerConSuscripcion(idDueño, PlanNivel.Pro, CicloFacturacion.Mensual, EstadoSuscripcion.Activa));
+
         // 2. ACT
         var resultado = await _servicio.PublicarAnuncioAsync(idAnuncio, idDueño);
 
         // 3. ASSERT
         Assert.True(resultado);
         _mockRepo.Verify(r => r.ActualizarAsync(It.Is<Anuncio>(a => a.Estado == "Publicado")), Times.Once);
+    }
+
+    // =========================================================================
+    // PRUEBA 17b: Publicar - Fallo por límite del plan alcanzado
+    // =========================================================================
+    [Fact]
+    public async Task PublicarAnuncioAsync_SinCupoEnElPlan_DebeLanzarBusinessRuleException()
+    {
+        // 1. ARRANGE
+        var idAnuncio = 5;
+        var idDueño = 1;
+
+        var anuncioEnBD = new Anuncio(idDueño, "Honda", "Civic", "", "Sedan", "1.8L", "Delantera", "Rojo", "Gris", 2022, 1200000, 15000, "Automática", "Gasolina", new List<string>(), "Santiago", "Casi nuevo");
+        anuncioEnBD.AgregarFotos(new List<string> { "url1.jpg", "url2.jpg", "url3.jpg", "url4.jpg", "url5.jpg" });
+
+        var usuario = CrearUsuarioDealerConSuscripcion(idDueño, PlanNivel.Gratis, CicloFacturacion.Mensual, EstadoSuscripcion.Activa);
+
+        // Un anuncio ya publicado ocupa el único cupo del plan Gratis
+        _mockRepo.Setup(r => r.ObtenerPorIdAsync(idAnuncio)).ReturnsAsync(anuncioEnBD);
+        _mockRepo.Setup(r => r.ContarAnunciosPorUsuarioAsync(idDueño)).ReturnsAsync(1);
+        _mockUsuarioRepo.Setup(r => r.ObtenerDealerConPerfilPorIdAsync(idDueño)).ReturnsAsync(usuario);
+
+        // 2 & 3. ACT & ASSERT
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            _servicio.PublicarAnuncioAsync(idAnuncio, idDueño)
+        );
+
+        _mockRepo.Verify(r => r.ActualizarAsync(It.IsAny<Anuncio>()), Times.Never);
     }
 
     // =========================================================================

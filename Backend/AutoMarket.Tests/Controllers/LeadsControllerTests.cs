@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using AutoMarket.Application.DTOs;
+using AutoMarket.Application.DTOs.Lead;
 using AutoMarket.Core.Interfaces;
 using AutoMarket.Core.Entities;
 using AutoMarket.Core.Entities.Enums;
@@ -195,7 +196,7 @@ public class LeadsControllerTests
         int dealerIdLogueado = 5;
         SimularUsuarioAutenticado(dealerIdLogueado.ToString());
 
-        var listaSimulada = new List<Lead>();
+        var listaSimulada = new List<LeadDealerDto>();
         _mockLeadService.Setup(s => s.ObtenerLeadsPorDealerAsync(dealerIdLogueado))
             .ReturnsAsync(listaSimulada);
 

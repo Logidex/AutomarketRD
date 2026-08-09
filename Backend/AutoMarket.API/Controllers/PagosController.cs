@@ -195,6 +195,16 @@ public class PagosController : ControllerBase
                 return Ok();
             }
 
+            // Sin id de evento no es posible aplicar idempotencia: se descarta
+            // para no arriesgar un cobro duplicado.
+            if (string.IsNullOrWhiteSpace(eventId))
+            {
+                _logger.LogWarning(
+                    "Webhook PayPal sin EventId; evento descartado para evitar cobros duplicados.");
+
+                return Ok();
+            }
+
             if (!root.TryGetProperty("resource", out var resource))
             {
                 _logger.LogWarning("Webhook PayPal sin resource. EventId {EventId}", eventId);
