@@ -4,6 +4,8 @@ import Swal from "sweetalert2";
 import { planesService, type PlanCatalogo } from "../services/planes.service";
 import { pagosService } from "../services/pagos.service";
 import { authService } from "../services/auth.service";
+import { ROLES } from "../constants/roles";
+import { formatearRD$, precioCicloDe } from "../utils/formato";
 import logo from "../assets/AutoMarketRD_Logo.svg";
 
 type Ciclo = "Mensual" | "Trimestral" | "Anual";
@@ -23,22 +25,15 @@ export default function Precios() {
       .catch(() => setPlanes([]));
   }, []);
 
-  const precioCiclo = (plan: PlanCatalogo) => {
-    if (ciclo === "Trimestral") return plan.precioTrimestral;
-    if (ciclo === "Anual") return plan.precioAnual;
-    return plan.precioMensual;
-  };
+  const precioCiclo = (plan: PlanCatalogo) => precioCicloDe(plan, ciclo);
 
-  const precioEtiqueta = (plan: PlanCatalogo) => {
-    const precio = precioCiclo(plan);
-    return precio === 0 ? "Gratis" : `RD$ ${precio.toLocaleString("es-DO")}`;
-  };
+  const precioEtiqueta = (plan: PlanCatalogo) => formatearRD$(precioCiclo(plan));
 
   // Reglas visuales: solo el Gratis se resalta, los demás son opciones.
   const handleComprar = async (plan: PlanCatalogo) => {
     const usuario = authService.getCurrentUser();
 
-    if (!usuario || usuario.rol !== "Dealer") {
+    if (!usuario || usuario.rol !== ROLES.DEALER) {
       await Swal.fire({
         icon: "info",
         title: "Inicia sesión como Dealer",

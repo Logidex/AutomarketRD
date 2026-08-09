@@ -1,7 +1,7 @@
+using AutoMarket.API.Extensions;
 using AutoMarket.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace AutoMarket.API.Controllers;
 
@@ -17,17 +17,12 @@ public class FavoritosController : ControllerBase
         _favoritoService = favoritoService;
     }
 
-    private int ObtenerUsuarioId()
-    {
-        return int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-    }
-
     [HttpPost("{anuncioId:int}")]
     public async Task<IActionResult> AgregarFavorito(int anuncioId)
     {
         try
         {
-            var usuarioId = ObtenerUsuarioId();
+            var usuarioId = User.ObtenerUsuarioId();
             await _favoritoService.AgregarFavoritoAsync(usuarioId, anuncioId);
             return Ok(new { exito = true, mensaje = "Vehículo agregado a favoritos ❤️" });
         }
@@ -46,7 +41,7 @@ public class FavoritosController : ControllerBase
     {
         try
         {
-            var usuarioId = ObtenerUsuarioId();
+            var usuarioId = User.ObtenerUsuarioId();
             await _favoritoService.QuitarFavoritoAsync(usuarioId, anuncioId);
             return Ok(new { exito = true, mensaje = "Vehículo removido de favoritos 💔" });
         }
@@ -59,7 +54,7 @@ public class FavoritosController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> ObtenerMisFavoritos()
     {
-        var usuarioId = ObtenerUsuarioId();
+        var usuarioId = User.ObtenerUsuarioId();
         var resultado = await _favoritoService.ObtenerFavoritosAsync(usuarioId);
         return Ok(resultado);
     }

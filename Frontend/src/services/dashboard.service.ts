@@ -1,4 +1,3 @@
-// services/dashboard.service.ts
 import api from "./api";
 
 export interface DashboardResumen {
@@ -20,7 +19,6 @@ export interface DashboardResumen {
 }
 
 export const dashboardService = {
-  // services/dashboard.service.ts
   async obtenerResumen(): Promise<DashboardResumen> {
     const response = await api.get<DashboardResumen>(
       "/api/dealers/me/dashboard-resumen",

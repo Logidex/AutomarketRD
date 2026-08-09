@@ -5,6 +5,7 @@ import {
 } from 'react-router-dom';
 
 import { authService } from '../services/auth.service';
+import { ROLES } from '../constants/roles';
 
 interface ProtectedRouteProps {
   allowedRoles?: string[];
@@ -45,12 +46,12 @@ export default function ProtectedRoute({
   }
 
   // Vendedor: por ahora va a una pantalla temporal
-  if (rolActual === 'vendedor') {
+  if (rolActual === ROLES.VENDEDOR.toLowerCase()) {
     return <Navigate to="/vendedor" replace />;
   }
 
   // Comprador: va al inicio público
-  if (rolActual === 'comprador') {
+  if (rolActual === ROLES.COMPRADOR.toLowerCase()) {
     return <Navigate to="/" replace />;
   }
 

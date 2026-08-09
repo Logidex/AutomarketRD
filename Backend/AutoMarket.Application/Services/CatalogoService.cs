@@ -1,5 +1,6 @@
 using AutoMarket.Application.DTOs.Anuncio;
 using AutoMarket.Application.DTOs;
+using AutoMarket.Application.Helpers;
 using AutoMarket.Application.Interfaces;
 using AutoMarket.Core.Interfaces;
 
@@ -32,7 +33,7 @@ public class CatalogoService : ICatalogoService
             Anio = a.Anio,
             Precio = a.Precio,
             Kilometraje = a.Kilometraje,
-            FotoPrincipal = a.Fotos != null && a.Fotos.Any() ? a.Fotos.First() : null
+            FotoPrincipal = AnuncioFotos.ObtenerPrincipal(a.Fotos)
         }).ToList();
 
         // 4. Empaquetamos todo en nuestra caja maestra

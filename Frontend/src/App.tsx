@@ -10,6 +10,7 @@ import PagoCancelado from './pages/PagoCancelado';
 // Componentes de estructura
 import ProtectedRoute from './components/ProtectedRoute';
 import DashboardLayout from './components/layout/DashboardLayout';
+import { ROLES } from './constants/roles';
 
 // Páginas del dashboard de Dealers
 import DashboardIndex from './pages/DashboardIndex';
@@ -63,7 +64,7 @@ function App() {
       {/* DASHBOARD EXCLUSIVO PARA DEALERS */}
       <Route
         element={
-          <ProtectedRoute allowedRoles={['Dealer']} />
+          <ProtectedRoute allowedRoles={[ROLES.DEALER]} />
         }
       >
         <Route path="/dashboard" element={<DashboardLayout />}>

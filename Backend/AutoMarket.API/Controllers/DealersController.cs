@@ -1,4 +1,5 @@
-using System.Security.Claims;
+using AutoMarket.API.Constants;
+using AutoMarket.API.Extensions;
 using AutoMarket.Application.DTOs.Usuario;
 using AutoMarket.Application.Interfaces;
 using AutoMarket.Core.Exceptions;
@@ -44,12 +45,12 @@ public class DealersController : ControllerBase
     }
 
     [HttpPut("me")]
-    [Authorize(Roles = "Dealer")]
+    [Authorize(Roles = Roles.Dealer)]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> ActualizarMiPerfil(
         [FromForm] PerfilDealerUpdateDto dto)
     {
-        var dealerId = ObtenerUsuarioIdDelToken();
+        var dealerId = User.ObtenerUsuarioIdOpcional();
 
         if (dealerId is null)
         {
@@ -84,10 +85,10 @@ public class DealersController : ControllerBase
     }
 
     [HttpGet("me/dashboard-resumen")]
-    [Authorize(Roles = "Dealer")]
+    [Authorize(Roles = Roles.Dealer)]
     public async Task<IActionResult> ObtenerDashboardResumen()
     {
-        var dealerId = ObtenerUsuarioIdDelToken();
+        var dealerId = User.ObtenerUsuarioIdOpcional();
 
         if (dealerId is null)
             return Unauthorized(new { mensaje = "Token inválido o usuario no identificado." });
@@ -97,10 +98,10 @@ public class DealersController : ControllerBase
     }
 
     [HttpGet("me/suscripcion")]
-    [Authorize(Roles = "Dealer")]
+    [Authorize(Roles = Roles.Dealer)]
     public async Task<IActionResult> ObtenerMiSuscripcion()
     {
-        var dealerId = ObtenerUsuarioIdDelToken();
+        var dealerId = User.ObtenerUsuarioIdOpcional();
 
         if (dealerId is null)
             return Unauthorized(new { mensaje = "Token inválido o usuario no identificado." });
@@ -114,10 +115,10 @@ public class DealersController : ControllerBase
     }
 
     [HttpGet("me/suscripcion/pagos")]
-    [Authorize(Roles = "Dealer")]
+    [Authorize(Roles = Roles.Dealer)]
     public async Task<IActionResult> ObtenerHistorialPagos()
     {
-        var dealerId = ObtenerUsuarioIdDelToken();
+        var dealerId = User.ObtenerUsuarioIdOpcional();
 
         if (dealerId is null)
             return Unauthorized(new { mensaje = "Token inválido o usuario no identificado." });
@@ -128,10 +129,10 @@ public class DealersController : ControllerBase
     }
 
     [HttpPost("me/suscripcion/cancelar")]
-    [Authorize(Roles = "Dealer")]
+    [Authorize(Roles = Roles.Dealer)]
     public async Task<IActionResult> CancelarMiSuscripcion()
     {
-        var dealerId = ObtenerUsuarioIdDelToken();
+        var dealerId = User.ObtenerUsuarioIdOpcional();
 
         if (dealerId is null)
             return Unauthorized(new { mensaje = "Token inválido o usuario no identificado." });
@@ -153,14 +154,5 @@ public class DealersController : ControllerBase
         {
             return BadRequest(new { mensaje = ex.Message });
         }
-    }
-
-    private int? ObtenerUsuarioIdDelToken()
-    {
-        var idClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-        return int.TryParse(idClaim, out var usuarioId)
-            ? usuarioId
-            : null;
     }
 }

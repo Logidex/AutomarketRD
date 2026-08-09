@@ -1,3 +1,4 @@
+using AutoMarket.API.Extensions;
 using AutoMarket.Application.DTOs.Paypal;
 using AutoMarket.Application.Interfaces;
 using AutoMarket.Core.Entities.Enums;
@@ -41,15 +42,10 @@ public class PagosController : ControllerBase
     [HttpPost("generar-link")]
     public async Task<IActionResult> GenerarLinkDePago([FromBody] CrearOrdenDto request)
     {
+        var usuarioId = User.ObtenerUsuarioId();
+
         try
         {
-            var usuarioIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if (!int.TryParse(usuarioIdClaim, out var usuarioId))
-            {
-                return Unauthorized(new { mensaje = "Token inválido." });
-            }
-
             var dealer = await _usuarioRepository.ObtenerDealerConPerfilPorIdAsync(usuarioId);
 
             if (dealer is null || dealer.PerfilDealer is null)

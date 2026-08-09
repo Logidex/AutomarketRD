@@ -5,6 +5,7 @@ import { FaCar, FaPlusCircle, FaChartPie, FaSignOutAlt, FaEnvelope, FaStore, FaC
 
 import { authService } from "../../services/auth.service";
 import { suscripcionService, type SuscripcionDealer } from "../../services/suscripcion.service";
+import { nombrePlan as nombrePlanUtil } from "../../constants/planes";
 import logo from "../../assets/AutoMarketRD_Logo.svg";
 
 export default function DashboardLayout() {
@@ -175,7 +176,7 @@ function PlanBadge({ suscripcion }: { suscripcion: SuscripcionDealer | null }) {
     );
   }
 
-  const nombrePlan = nombrePlanKey(suscripcion.nivel);
+  const nombrePlan = nombrePlanUtil(suscripcion.nivel);
   const esCancelada = suscripcion.estado === "Cancelada";
   const vencida = !esCancelada && suscripcion.diasRestantes <= 0;
 
@@ -195,14 +196,4 @@ function PlanBadge({ suscripcion }: { suscripcion: SuscripcionDealer | null }) {
       {vencida && <span className="ml-1 opacity-70">vencida</span>}
     </Link>
   );
-}
-
-function nombrePlanKey(nivel: string): string {
-  const mapa: Record<string, string> = {
-    Gratis: "Gratis",
-    Basico: "Básico",
-    Pro: "Pro",
-    Elite: "Elite",
-  };
-  return mapa[nivel] ?? nivel;
 }

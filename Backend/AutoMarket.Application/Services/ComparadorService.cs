@@ -1,4 +1,5 @@
 using AutoMarket.Application.DTOs.Anuncio;
+using AutoMarket.Application.Helpers;
 using AutoMarket.Application.Interfaces;
 using AutoMarket.Core.Interfaces;
 
@@ -41,7 +42,7 @@ public class ComparadorService : IComparadorService
             Transmision = a.Transmision,
             Combustible = a.Combustible,
             ColorExterior = a.ColorExterior,
-            FotoPrincipal = a.Fotos != null && a.Fotos.Any() ? a.Fotos.First() : null
+            FotoPrincipal = AnuncioFotos.ObtenerPrincipal(a.Fotos)
         }).ToList();
     }
 }

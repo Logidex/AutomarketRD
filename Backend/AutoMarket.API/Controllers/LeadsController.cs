@@ -1,8 +1,8 @@
 using AutoMarket.Application.DTOs;
+using AutoMarket.API.Extensions;
 using AutoMarket.Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 using Microsoft.AspNetCore.RateLimiting;
 
 namespace AutoMarket.API.Controllers;
@@ -18,10 +18,6 @@ public class LeadsController : ControllerBase
         _leadService = leadService;
     }
 
-    // =========================================================================
-    // ENDPOINT 1: Crear un nuevo Lead (Público)
-    // POST: api/leads
-    // =========================================================================
     [HttpPost]
     [AllowAnonymous]
     [EnableRateLimiting("PoliticaLeads")]
@@ -37,20 +33,11 @@ public class LeadsController : ControllerBase
         return Ok(new { mensaje = "Tu mensaje ha sido enviado exitosamente al vendedor." });
     }
 
-    // =========================================================================
-    // ENDPOINT 2: Ver Leads por Anuncio (Protegido)
-    // GET: api/leads/anuncio/{anuncioId}
-    // =========================================================================
     [HttpGet("anuncio/{anuncioId}")]
-    [Authorize] // 👈 Solo el dueño del anuncio puede ver sus leads
+    [Authorize]
     public async Task<IActionResult> ObtenerPorAnuncio(int anuncioId)
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int usuarioId))
-        {
-            return Unauthorized(new { mensaje = "Usuario no válido o sesión expirada." });
-        }
+        var usuarioId = User.ObtenerUsuarioId();
 
         try
         {
@@ -67,39 +54,21 @@ public class LeadsController : ControllerBase
         }
     }
 
-    // =========================================================================
-    // ENDPOINT 3: Dashboard del Dealer - Ver todos sus Leads (Protegido)
-    // GET: api/leads/mis-leads
-    // =========================================================================
     [HttpGet("mis-leads")]
-    [Authorize] // 👈 Requisito para el panel privado del Dealer
+    [Authorize]
     public async Task<IActionResult> ObtenerMisLeads()
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        
-        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int dealerId))
-        {
-            return Unauthorized(new { mensaje = "Usuario no válido o sesión expirada." });
-        }
+        var dealerId = User.ObtenerUsuarioId();
 
         var leads = await _leadService.ObtenerLeadsPorDealerAsync(dealerId);
         return Ok(leads);
     }
 
-    // =========================================================================
-    // ENDPOINT 4: Marcar un Lead como Leído (Protegido)
-    // PATCH: api/leads/{id}/leido
-    // =========================================================================
     [HttpPatch("{id:int}/leido")]
     [Authorize]
     public async Task<IActionResult> MarcarLeido(int id)
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int dealerId))
-        {
-            return Unauthorized(new { mensaje = "Usuario no válido o sesión expirada." });
-        }
+        var dealerId = User.ObtenerUsuarioId();
 
         try
         {

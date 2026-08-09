@@ -103,7 +103,7 @@ export default function AnuncioCard({
                 <span>{ubicacion}</span>
                 <span>•</span>
                 <span className="font-semibold text-blue-600">
-                  RD$ {precio.toLocaleString()}
+                  RD$ {precio.toLocaleString("es-DO")}
                 </span>
               </div>
             </div>

@@ -181,46 +181,7 @@ public class AnuncioService : IAnuncioService
             await _repository.ObtenerTodosLosAnuncios();
 
         return entidades
-            .Select(e => new AnuncioListadoDto
-            {
-                Id = e.Id,
-                UsuarioId = e.UsuarioId,
-                NombreAnuncio = e.NombreAnuncio,
-
-                Marca = e.Marca,
-                Modelo = e.Modelo,
-                Version = e.Version,
-
-                TipoVehiculo = e.TipoVehiculo,
-                Motor = e.Motor,
-                Traccion = e.Traccion,
-
-                ColorExterior = e.ColorExterior,
-                ColorInterior = e.ColorInterior,
-
-                Anio = e.Anio,
-                Precio = e.Precio,
-                Kilometraje = e.Kilometraje,
-
-                Transmision = e.Transmision,
-                Combustible = e.Combustible,
-
-                Ubicacion = e.Ubicacion,
-                Estado = e.Estado,
-                Vistas = e.Vistas,
-
-                Fotos = e.Fotos
-                    .Take(1)
-                    .ToList(),
-
-                BadgeSuscripcion =
-                    e.Usuario?
-                        .PerfilDealer?
-                        .Suscripcion?
-                        .Nivel
-                        .ToString()
-                    ?? "Gratis"
-            })
+            .Select(e => MapearListado(e, soloPrimeraFoto: true))
             .ToList();
     }
 
@@ -432,51 +393,8 @@ public class AnuncioService : IAnuncioService
             totalRegistros
         ) = await _repository.BuscarPaginadoAsync(filtro);
 
-        var anunciosDto = anuncios
-            .Select(a => new AnuncioListadoDto
-            {
-                Id = a.Id,
-                UsuarioId = a.UsuarioId,
-                NombreAnuncio = a.NombreAnuncio,
-
-                Marca = a.Marca,
-                Modelo = a.Modelo,
-                Version = a.Version,
-
-                TipoVehiculo = a.TipoVehiculo,
-                Motor = a.Motor,
-                Traccion = a.Traccion,
-
-                ColorExterior = a.ColorExterior,
-                ColorInterior = a.ColorInterior,
-
-                Anio = a.Anio,
-                Precio = a.Precio,
-                Kilometraje = a.Kilometraje,
-
-                Transmision = a.Transmision,
-                Combustible = a.Combustible,
-
-                Ubicacion = a.Ubicacion,
-                Estado = a.Estado,
-                Vistas = a.Vistas,
-
-                Fotos =
-                    a.Fotos != null && a.Fotos.Any()
-                        ? a.Fotos.ToList()
-                        : new List<string>
-                        {
-                        "url_imagen_por_defecto.jpg"
-                        },
-
-                BadgeSuscripcion =
-                    a.Usuario?
-                        .PerfilDealer?
-                        .Suscripcion?
-                        .Nivel
-                        .ToString()
-                    ?? "Gratis"
-            })
+var anunciosDto = anuncios
+            .Select(a => MapearListado(a, soloPrimeraFoto: false))
             .ToList();
 
         return new PagedResult<AnuncioListadoDto>(
@@ -535,5 +453,39 @@ public class AnuncioService : IAnuncioService
         await _repository.GuardarCambiosAsync();
 
         return true;
+    }
+
+    private static AnuncioListadoDto MapearListado(Anuncio anuncio, bool soloPrimeraFoto)
+    {
+        var fotos = soloPrimeraFoto
+            ? anuncio.Fotos.Take(1).ToList()
+            : anuncio.Fotos != null && anuncio.Fotos.Any()
+                ? anuncio.Fotos.ToList()
+                : new List<string> { "url_imagen_por_defecto.jpg" };
+
+        return new AnuncioListadoDto
+        {
+            Id = anuncio.Id,
+            UsuarioId = anuncio.UsuarioId,
+            NombreAnuncio = anuncio.NombreAnuncio,
+            Marca = anuncio.Marca,
+            Modelo = anuncio.Modelo,
+            Version = anuncio.Version,
+            TipoVehiculo = anuncio.TipoVehiculo,
+            Motor = anuncio.Motor,
+            Traccion = anuncio.Traccion,
+            ColorExterior = anuncio.ColorExterior,
+            ColorInterior = anuncio.ColorInterior,
+            Anio = anuncio.Anio,
+            Precio = anuncio.Precio,
+            Kilometraje = anuncio.Kilometraje,
+            Transmision = anuncio.Transmision,
+            Combustible = anuncio.Combustible,
+            Ubicacion = anuncio.Ubicacion,
+            Estado = anuncio.Estado,
+            Vistas = anuncio.Vistas,
+            Fotos = fotos,
+            BadgeSuscripcion = anuncio.Usuario?.PerfilDealer?.Suscripcion?.Nivel.ToString() ?? "Gratis"
+        };
     }
 }

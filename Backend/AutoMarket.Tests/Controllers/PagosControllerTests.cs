@@ -133,18 +133,16 @@ public class PagosControllerTests
     // =========================================================================
 
     [Fact]
-    public async Task GenerarLinkDePago_TokenInvalido_DebeRetornarUnauthorized()
+    public async Task GenerarLinkDePago_TokenInvalido_LanzaExcepcionNoAutorizado()
     {
         // Arrange
         SimularUsuarioAutenticado("abc");
         var dto = CrearOrdenProMensual();
 
-        // Act
-        var resultado = await _controller.GenerarLinkDePago(dto);
-
-        // Assert
-        var unauthorized = Assert.IsType<UnauthorizedObjectResult>(resultado);
-        Assert.Equal(401, unauthorized.StatusCode);
+        // Act & Assert
+        // ObtenerUsuarioId() lanza UnauthorizedAccessException (el middleware la convierte a 401).
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(
+            async () => await _controller.GenerarLinkDePago(dto));
     }
 
     [Fact]

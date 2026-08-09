@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { dashboardService, type DashboardResumen } from '../services/dashboard.service';
+import { nombrePlan } from '../constants/planes';
 import Swal from 'sweetalert2';
 import Spinner from '../components/Spinner';
 
@@ -96,7 +97,7 @@ export default function DashboardIndex() {
           <div className="space-y-2">
             <div className="flex justify-between">
               <span className="text-gray-600">Plan actual:</span>
-              <span className="font-bold text-gray-900">{resumen.planActual ?? 'N/A'}</span>
+              <span className="font-bold text-gray-900">{nombrePlan(resumen.planActual)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Días restantes:</span>

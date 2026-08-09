@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
+using AutoMarket.API.Constants;
+using AutoMarket.API.Extensions;
 using AutoMarket.Application.DTOs;
 using AutoMarket.Application.Services;
 using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
 using AutoMarket.Application.Interfaces;
 
 namespace AutoMarket.API.Controllers;
@@ -22,10 +23,10 @@ public class AnunciosController : ControllerBase
     // 1. CREAR: Necesitamos saber quién lo crea
     // ==========================================
     [HttpPost]
-    [Authorize(Roles = "Dealer,Vendedor")]
+    [Authorize(Roles = Roles.DealerVendedor)]
     public async Task<IActionResult> CrearAnuncio([FromBody] AnuncioCreateDto dto)
     {
-        dto.UsuarioId = ObtenerUsuarioIdDelToken();
+        dto.UsuarioId = User.ObtenerUsuarioId();
 
         // Capturamos el ID recién creado
         int nuevoId = await _anuncioService.CrearAnuncioAsync(dto);
@@ -62,10 +63,10 @@ public class AnunciosController : ControllerBase
     // 3. ACTUALIZAR: Protegido y validando propiedad
     // ==========================================
     [HttpPut("{id}")]
-    [Authorize(Roles = "Dealer,Vendedor")]
+    [Authorize(Roles = Roles.DealerVendedor)]
     public async Task<IActionResult> ActualizarAnuncio(int id, [FromBody] AnuncioUpdateDto updateDto)
     {
-        int usuarioId = ObtenerUsuarioIdDelToken();
+        int usuarioId = User.ObtenerUsuarioId();
 
         // Le pasamos al servicio: "El usuario X quiere actualizar el anuncio Y"
         var resultado = await _anuncioService.ActualizarAsync(id, usuarioId, updateDto);
@@ -80,10 +81,10 @@ public class AnunciosController : ControllerBase
     // 4. PUBLICAR: Añadimos Authorize
     // ==========================================
     [HttpPatch("{id}/publicar")]
-    [Authorize(Roles = "Dealer,Vendedor")]
+    [Authorize(Roles = Roles.DealerVendedor)]
     public async Task<IActionResult> Publicar(int id)
     {
-        int usuarioId = ObtenerUsuarioIdDelToken();
+        int usuarioId = User.ObtenerUsuarioId();
 
         // El servicio debe verificar que este usuarioId es el dueño del anuncio 'id'
         var publicado = await _anuncioService.PublicarAnuncioAsync(id, usuarioId);
@@ -97,7 +98,7 @@ public class AnunciosController : ControllerBase
     // 5. SUBIR IMÁGENES: Validación estricta
     // ==========================================
     [HttpPost("{id}/imagenes")]
-    [Authorize(Roles = "Dealer,Vendedor")]
+    [Authorize(Roles = Roles.DealerVendedor)]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> SubirImagenes(int id, [FromForm] List<IFormFile> imagenes)
     {
@@ -107,7 +108,7 @@ public class AnunciosController : ControllerBase
         if (imagenes.Count > 10)
             return BadRequest(new { error = "No puedes subir más de 10 imágenes en una sola petición." });
 
-        int usuarioId = ObtenerUsuarioIdDelToken();
+        int usuarioId = User.ObtenerUsuarioId();
 
         var dto = new AnuncioImagenUploadDto
         {
@@ -126,25 +127,10 @@ public class AnunciosController : ControllerBase
         catch (Exception ex) { return BadRequest(new { error = ex.Message }); }
     }
 
-    // ==========================================
-    // MÉTODO AUXILIAR PRIVADO
-    // ==========================================
-    private int ObtenerUsuarioIdDelToken()
-    {
-        var claimId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-        if (string.IsNullOrEmpty(claimId) || !int.TryParse(claimId, out int usuarioId))
-        {
-            throw new UnauthorizedAccessException("Token inválido o usuario no identificado.");
-        }
-
-        return usuarioId;
-    }
-
     private int? ObtenerUsuarioIdSiAutenticado()
     {
         return User.Identity?.IsAuthenticated == true
-            ? ObtenerUsuarioIdDelToken()
+            ? User.ObtenerUsuarioId()
             : null;
     }
 
@@ -172,13 +158,13 @@ public class AnunciosController : ControllerBase
     }
 
     [HttpPatch("{id}/estado")]
-    [Authorize(Roles = "Dealer,Vendedor")]
+    [Authorize(Roles = Roles.DealerVendedor)]
     public async Task<IActionResult> CambiarEstado(int id, [FromBody] AnuncioEstadoDto dto)
     {
         if (string.IsNullOrWhiteSpace(dto.Estado))
             return BadRequest(new { mensaje = "El estado es obligatorio." });
 
-        int usuarioId = ObtenerUsuarioIdDelToken();
+        int usuarioId = User.ObtenerUsuarioId();
 
         var cambiado = await _anuncioService.CambiarEstadoAsync(id, usuarioId, dto.Estado);
 
@@ -192,13 +178,13 @@ public class AnunciosController : ControllerBase
     // 6. ELIMINAR IMAGEN: Seguridad y limpieza
     // ==========================================
     [HttpDelete("{id}/imagenes")]
-    [Authorize(Roles = "Dealer,Vendedor")]
+    [Authorize(Roles = Roles.DealerVendedor)]
     public async Task<IActionResult> EliminarImagen(int id, [FromBody] EliminarImagenDto dto)
     {
         if (string.IsNullOrWhiteSpace(dto.UrlImagen))
             return BadRequest(new { error = "La URL de la imagen es obligatoria." });
 
-        int usuarioId = ObtenerUsuarioIdDelToken();
+        int usuarioId = User.ObtenerUsuarioId();
 
         try
         {
@@ -229,10 +215,10 @@ public class AnunciosController : ControllerBase
     // 7. ELIMINAR ANUNCIO COMPLETO
     // ==========================================
     [HttpDelete("{id}")]
-    [Authorize(Roles = "Dealer,Vendedor")]
+    [Authorize(Roles = Roles.DealerVendedor)]
     public async Task<IActionResult> EliminarAnuncio(int id)
     {
-        int usuarioId = ObtenerUsuarioIdDelToken();
+        int usuarioId = User.ObtenerUsuarioId();
 
         try
         {

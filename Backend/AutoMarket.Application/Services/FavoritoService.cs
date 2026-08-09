@@ -1,4 +1,5 @@
 using AutoMarket.Application.DTOs.Favorito;
+using AutoMarket.Application.Helpers;
 using AutoMarket.Application.Interfaces;
 using AutoMarket.Core.Entities;
 using AutoMarket.Core.Interfaces;
@@ -54,7 +55,7 @@ public class FavoritoService : IFavoritoService
             Modelo = a.Modelo,
             Anio = a.Anio,
             Precio = a.Precio,
-            FotoPrincipal = a.Fotos != null && a.Fotos.Any() ? a.Fotos.First() : null
+            FotoPrincipal = AnuncioFotos.ObtenerPrincipal(a.Fotos)
         }).ToList();
     }
 }

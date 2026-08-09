@@ -6,6 +6,8 @@ import { pagosService } from "../services/pagos.service";
 import { suscripcionService, type SuscripcionDealer, type PagoSuscripcion } from "../services/suscripcion.service";
 import { dashboardService } from "../services/dashboard.service";
 import Spinner from "../components/Spinner";
+import { formatearRD$, precioCicloDe } from "../utils/formato";
+import { nombrePlan } from "../constants/planes";
 
 type Ciclo = "Mensual" | "Trimestral" | "Anual";
 
@@ -58,11 +60,7 @@ export default function DashboardSuscripcion() {
     cargarDatos();
   }, []);
 
-  const precioCiclo = (plan: PlanCatalogo) => {
-    if (ciclo === "Trimestral") return plan.precioTrimestral;
-    if (ciclo === "Anual") return plan.precioAnual;
-    return plan.precioMensual;
-  };
+  const precioCiclo = (plan: PlanCatalogo) => precioCicloDe(plan, ciclo);
 
   const estadoEscogido = (plan: PlanCatalogo) => {
     const esActual =
@@ -262,7 +260,7 @@ export default function DashboardSuscripcion() {
               <h3 className="text-lg font-semibold text-gray-900">{plan.nombre}</h3>
               <p className="mt-1 mb-4 text-sm text-gray-500">{plan.descripcion}</p>
               <div className="text-3xl font-bold text-gray-900 mb-1">
-                {precioCiclo(plan) === 0 ? "Gratis" : `RD$ ${precioCiclo(plan).toLocaleString("es-DO")}`}
+                {formatearRD$(precioCiclo(plan))}
               </div>
               <p className="text-xs text-gray-500 mb-6">
                 {plan.limiteAnuncios} anuncios
@@ -338,16 +336,6 @@ export default function DashboardSuscripcion() {
       </div>
     </div>
   );
-}
-
-function nombrePlan(nivel: string): string {
-  const mapa: Record<string, string> = {
-    Gratis: "Gratis",
-    Basico: "Básico",
-    Pro: "Pro",
-    Elite: "Elite",
-  };
-  return mapa[nivel] ?? nivel;
 }
 
 function estadoPagoLabel(estado: string): string {

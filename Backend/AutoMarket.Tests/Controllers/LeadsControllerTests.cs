@@ -147,7 +147,7 @@ public class LeadsControllerTests
     // PRUEBA 05: GET ObtenerPorAnuncio - Sin Identidad en Token
     // =========================================================================
     [Fact]
-    public async Task ObtenerPorAnuncio_SinIdentidadEnToken_DebeRetornarUnauthorized()
+    public async Task ObtenerPorAnuncio_SinIdentidadEnToken_DebioLanzarExcepcionNoAutorizado()
     {
         // Arrange
         _controller.ControllerContext = new ControllerContext
@@ -155,18 +155,18 @@ public class LeadsControllerTests
             HttpContext = new DefaultHttpContext()
         };
 
-        // Act
-        var resultado = await _controller.ObtenerPorAnuncio(10);
-
-        // Assert
-        Assert.IsType<UnauthorizedObjectResult>(resultado);
+        // Act & Assert
+        // El helper ClaimsPrincipalExtensions.ObtenerUsuarioId() lanza UnauthorizedAccessException,
+        // que el middleware global convierte en HTTP 401 en el pipeline real.
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(
+            async () => await _controller.ObtenerPorAnuncio(10));
     }
 
     // =========================================================================
     // PRUEBA 06: GET ObtenerMisLeads - Falla (Sin Token / Token Inválido)
     // =========================================================================
     [Fact]
-    public async Task ObtenerMisLeads_SinIdentidadEnToken_DebeRetornarUnauthorized()
+    public async Task ObtenerMisLeads_Sin_IdentidadEnToken_DebeLanzarExcepcionNoAutorizado()
     {
         // Arrange
         // NO llamamos al helper SimularUsuarioAutenticado, por lo que User será nulo/vacío
@@ -175,15 +175,9 @@ public class LeadsControllerTests
             HttpContext = new DefaultHttpContext() 
         };
 
-        // Act
-        var resultado = await _controller.ObtenerMisLeads();
-
-        // Assert
-        var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(resultado);
-        
-        var value = unauthorizedResult.Value;
-        var propMensaje = value?.GetType().GetProperty("mensaje")?.GetValue(value, null);
-        Assert.Equal("Usuario no válido o sesión expirada.", propMensaje);
+        // Act & Assert
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(
+            async () => await _controller.ObtenerMisLeads());
     }
 
     // =========================================================================

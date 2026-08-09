@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import Swal from "sweetalert2";
 import { authService } from "../services/auth.service";
 import { planesService, type PlanCatalogo } from "../services/planes.service";
+import { formatearRD$ } from "../utils/formato";
 import logo from "../assets/AutoMarketRD_Logo.svg";
 
 export default function Registro() {
@@ -35,8 +36,7 @@ export default function Registro() {
       });
   }, []);
 
-  const formatPrecio = (cantidad: number) =>
-    cantidad === 0 ? "Gratis" : `RD$ ${cantidad.toLocaleString("es-DO")}`;
+  const formatPrecio = formatearRD$;
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>

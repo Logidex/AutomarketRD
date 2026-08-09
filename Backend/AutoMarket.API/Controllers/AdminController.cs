@@ -1,3 +1,4 @@
+using AutoMarket.API.Constants;
 using AutoMarket.Application.DTOs.Admin;
 using AutoMarket.Application.DTOs.Planes;
 using AutoMarket.Application.Interfaces;
@@ -11,7 +12,7 @@ namespace AutoMarket.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = Roles.Admin)]
 public class AdminController : ControllerBase
 {
     private readonly IDashboardService _dashboardService;
