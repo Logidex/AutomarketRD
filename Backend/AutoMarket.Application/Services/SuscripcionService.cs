@@ -92,6 +92,50 @@ public class SuscripcionService : ISuscripcionService
         await _repository.ActualizarAsync(suscripcionExistente);
     }
 
+    public async Task RegistrarPagoAsync(
+        int perfilDealerId,
+        PlanNivel nivel,
+        CicloFacturacion ciclo,
+        decimal monto,
+        string moneda,
+        string? orderIdPayPal,
+        string? eventoIdPayPal,
+        string? referencia)
+    {
+        var pago = new PagoSuscripcion(
+            perfilDealerId,
+            nivel,
+            ciclo,
+            monto,
+            moneda,
+            orderIdPayPal,
+            eventoIdPayPal,
+            referencia);
+
+        await _repository.AgregarPagoAsync(pago);
+    }
+
+    public async Task<IReadOnlyList<PagoSuscripcionDto>> ObtenerHistorialPagosAsync(int perfilDealerId)
+    {
+        var pagos = await _repository.ObtenerHistorialPagosAsync(perfilDealerId);
+
+        return pagos
+            .Select(p => new PagoSuscripcionDto
+            {
+                Id = p.Id,
+                PerfilDealerId = p.PerfilDealerId,
+                Nivel = p.Nivel,
+                Ciclo = p.Ciclo,
+                Estado = p.Estado,
+                Monto = p.Monto,
+                Moneda = p.Moneda,
+                OrdenIdPayPal = p.OrderIdPayPal,
+                Referencia = p.Referencia,
+                FechaUtc = p.FechaUtc
+            })
+            .ToList();
+    }
+
     public async Task<SuscripcionDealerDto?> ObtenerSuscripcionAsync(int perfilDealerId)
     {
         var suscripcion = await _repository.ObtenerPorDealerIdAsync(perfilDealerId);
@@ -126,6 +170,11 @@ public class SuscripcionService : ISuscripcionService
         suscripcion.Cancelar();
 
         await _repository.ActualizarAsync(suscripcion);
+    }
+
+    public async Task<bool> ExistePagoPorEventoAsync(string eventoId)
+    {
+        return await _repository.ExistePagoPorEventoAsync(eventoId);
     }
 
     private static DateTime CalcularNuevaVigenciaDesdePago(SuscripcionDealer suscripcion, CicloFacturacion ciclo)

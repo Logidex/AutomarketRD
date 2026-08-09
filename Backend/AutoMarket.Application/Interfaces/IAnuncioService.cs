@@ -9,8 +9,8 @@ namespace AutoMarket.Application.Interfaces
         // 1. Crear
         Task<int> CrearAnuncioAsync(AnuncioCreateDto dto);
 
-        // 2. Obtener por ID
-        Task<AnuncioDto?> ObtenerAnuncioPorIdAsync(int id);
+        // 2. Obtener por ID (opcionalmente autenticado: solo el dueño ve anuncios no publicados)
+        Task<AnuncioDto?> ObtenerAnuncioPorIdAsync(int id, int? usuarioId = null);
 
         // 3. Obtener todos (vitrina)
         Task<IReadOnlyCollection<AnuncioListadoDto>> ObtenerTodosLosAnuncios();

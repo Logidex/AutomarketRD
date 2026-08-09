@@ -212,4 +212,56 @@ public class SuscripcionDealerTests
         Assert.Equal("nuevaFechaVencimiento", excepcion.ParamName);
         Assert.Contains("debe ser en el futuro", excepcion.Message);
     }
+
+    // =========================================================================
+    // PRUEBA 11: MarcarRecordatorioEnviado - Registra la fecha
+    // =========================================================================
+    [Fact]
+    public void MarcarRecordatorioEnviado_DebeRegistrarFecha()
+    {
+        // Arrange
+        var suscripcion = new SuscripcionDealer(2, PlanNivel.Pro, CicloFacturacion.Mensual);
+        Assert.Null(suscripcion.FechaRecordatorioEnviadoUtc);
+
+        // Act
+        suscripcion.MarcarRecordatorioEnviado();
+
+        // Assert
+        Assert.NotNull(suscripcion.FechaRecordatorioEnviadoUtc);
+    }
+
+    // =========================================================================
+    // PRUEBA 12: RenovarManualmente reinicia el recordatorio
+    // =========================================================================
+    [Fact]
+    public void RenovarManualmente_DebeReiniciarElRecordatorio()
+    {
+        // Arrange
+        var suscripcion = new SuscripcionDealer(2, PlanNivel.Basico, CicloFacturacion.Mensual);
+        suscripcion.MarcarRecordatorioEnviado();
+        var nuevaFecha = DateTime.UtcNow.AddMonths(2);
+
+        // Act
+        suscripcion.RenovarManualmente(nuevaFecha);
+
+        // Assert
+        Assert.Null(suscripcion.FechaRecordatorioEnviadoUtc);
+    }
+
+    // =========================================================================
+    // PRUEBA 13: CambiarPlan reinicia el recordatorio
+    // =========================================================================
+    [Fact]
+    public void CambiarPlan_DebeReiniciarElRecordatorio()
+    {
+        // Arrange
+        var suscripcion = new SuscripcionDealer(2, PlanNivel.Basico, CicloFacturacion.Mensual);
+        suscripcion.MarcarRecordatorioEnviado();
+
+        // Act
+        suscripcion.CambiarPlan(PlanNivel.Pro, CicloFacturacion.Trimestral);
+
+        // Assert
+        Assert.Null(suscripcion.FechaRecordatorioEnviadoUtc);
+    }
 }

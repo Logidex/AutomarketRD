@@ -113,6 +113,20 @@ public class DealersController : ControllerBase
         return Ok(suscripcion);
     }
 
+    [HttpGet("me/suscripcion/pagos")]
+    [Authorize(Roles = "Dealer")]
+    public async Task<IActionResult> ObtenerHistorialPagos()
+    {
+        var dealerId = ObtenerUsuarioIdDelToken();
+
+        if (dealerId is null)
+            return Unauthorized(new { mensaje = "Token inválido o usuario no identificado." });
+
+        var pagos = await _suscripcionService.ObtenerHistorialPagosAsync(dealerId.Value);
+
+        return Ok(pagos);
+    }
+
     [HttpPost("me/suscripcion/cancelar")]
     [Authorize(Roles = "Dealer")]
     public async Task<IActionResult> CancelarMiSuscripcion()

@@ -135,6 +135,21 @@ try
         });
 
         options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+        // Política de protección contra fuerza bruta en el login
+        options.AddPolicy("PoliticaLogin", context =>
+        {
+            var ip = context.Connection.RemoteIpAddress?.ToString() ?? "desconocido";
+
+            return RateLimitPartition.GetFixedWindowLimiter(ip, _ =>
+                new FixedWindowRateLimiterOptions
+                {
+                    AutoReplenishment = true,
+                    PermitLimit = 5,
+                    Window = TimeSpan.FromMinutes(15),
+                    QueueLimit = 0
+                });
+        });
     });
 
     builder.Services.AddAuthorization();

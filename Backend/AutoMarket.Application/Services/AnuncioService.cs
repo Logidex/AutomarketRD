@@ -122,7 +122,7 @@ public class AnuncioService : IAnuncioService
     }
 
     public async Task<AnuncioDto?> ObtenerAnuncioPorIdAsync(
-    int id)
+    int id, int? usuarioId = null)
     {
         var anuncio =
             await _repository.ObtenerPorIdAsync(id);
@@ -130,6 +130,14 @@ public class AnuncioService : IAnuncioService
         if (anuncio == null)
         {
             return null;
+        }
+
+        // Solo los anuncios publicados son visibles públicamente.
+        // El resto (borradores, pausados, vendidos) solo los ve su dueño.
+        if (anuncio.Estado != "Publicado")
+        {
+            if (usuarioId != anuncio.UsuarioId)
+                return null;
         }
 
         return new AnuncioDto

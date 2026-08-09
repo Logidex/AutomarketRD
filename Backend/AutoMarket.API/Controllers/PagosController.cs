@@ -224,6 +224,22 @@ public class PagosController : ControllerBase
 
             var firstPurchaseUnit = purchaseUnits[0];
 
+            var monto = 0m;
+            var moneda = "USD";
+
+            if (firstPurchaseUnit.TryGetProperty("amount", out var amountEl))
+            {
+                if (amountEl.TryGetProperty("value", out var valorEl))
+                {
+                    decimal.TryParse(valorEl.GetString(), NumberStyles.Any, CultureInfo.InvariantCulture, out monto);
+                }
+
+                if (amountEl.TryGetProperty("currency_code", out var monedaEl))
+                {
+                    moneda = monedaEl.GetString() ?? "USD";
+                }
+            }
+
             var referenceId = firstPurchaseUnit.TryGetProperty("reference_id", out var referenceIdProp)
                 ? referenceIdProp.GetString()
                 : null;
@@ -265,6 +281,67 @@ public class PagosController : ControllerBase
                 return Ok();
             }
 
+            // El dealer debe existir para poder aplicar el pago
+            var dealer = await _usuarioRepository.ObtenerDealerConPerfilPorIdAsync(dealerId);
+
+            if (dealer is null || dealer.PerfilDealer is null)
+            {
+                _logger.LogWarning(
+                    "Webhook PayPal con dealer inexistente. EventId {EventId}, OrderId {OrderId}, DealerId {DealerId}",
+                    eventId, orderId, dealerId);
+
+                return Ok();
+            }
+
+            // Idempotencia: si este evento ya fue procesado, se ignora (PayPal puede reenviarlo)
+            if (await _suscripcionService.ExistePagoPorEventoAsync(eventId ?? string.Empty))
+            {
+                _logger.LogInformation(
+                    "Webhook PayPal duplicado ignorado. EventId {EventId}, OrderId {OrderId}",
+                    eventId, orderId);
+
+                return Ok();
+            }
+
+            // Validación de monto: el pago debe coincidir con el precio del plan en el catálogo
+            var planWebhook = await _planCatalogoService.ObtenerPlanPorNivelAsync(planEnum);
+
+            if (planWebhook is null)
+            {
+                _logger.LogWarning(
+                    "Webhook PayPal para plan no disponible. EventId {EventId}, OrderId {OrderId}, Plan {Plan}",
+                    eventId, orderId, planEnum);
+
+                return Ok();
+            }
+
+            var precioEsperadoRd = cicloEnum switch
+            {
+                CicloFacturacion.Mensual => planWebhook.PrecioMensual,
+                CicloFacturacion.Trimestral => planWebhook.PrecioTrimestral,
+                CicloFacturacion.Anual => planWebhook.PrecioAnual,
+                _ => 0m
+            };
+
+            var tasaStr = _configuration["Pago:TasaCambioRD_USD"];
+            var tasa = decimal.TryParse(tasaStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var tasaParseada)
+                ? tasaParseada
+                : 0.017m;
+
+            if (tasa <= 0m)
+                tasa = 0.017m;
+
+            var montoEsperadoUsd = Math.Round(precioEsperadoRd * tasa, 2);
+
+            if (precioEsperadoRd <= 0m || Math.Abs(monto - montoEsperadoUsd) > 0.01m)
+            {
+                _logger.LogWarning(
+                    "Webhook PayPal con monto que no coincide con el plan. EventId {EventId}, OrderId {OrderId}, DealerId {DealerId}, Esperado {MontoEsperadoUsd}, Recibido {Monto}",
+                    eventId, orderId, dealerId, montoEsperadoUsd, monto);
+
+                return Ok();
+            }
+
             var cobroExitoso = await _payPalService.CapturarOrdenAsync(orderId);
 
             _logger.LogInformation(
@@ -281,6 +358,25 @@ public class PagosController : ControllerBase
             }
 
             await _suscripcionService.ProcesarPagoSuscripcionAsync(dealerId, planEnum, cicloEnum);
+
+            try
+            {
+                await _suscripcionService.RegistrarPagoAsync(
+                    dealerId,
+                    planEnum,
+                    cicloEnum,
+                    monto,
+                    moneda,
+                    orderId,
+                    eventId,
+                    referenceId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "No se pudo registrar el historial del pago. OrderId {OrderId}, DealerId {DealerId}",
+                    orderId, dealerId);
+            }
 
             _logger.LogInformation(
                 "Pago PayPal procesado correctamente. EventId {EventId}, OrderId {OrderId}, DealerId {DealerId}, Plan {Plan}, Ciclo {Ciclo}",

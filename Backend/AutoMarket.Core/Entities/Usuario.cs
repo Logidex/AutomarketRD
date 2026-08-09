@@ -121,4 +121,12 @@ public class Usuario
         IsActivo = true;
     }
 
+    public void CambiarPassword(string nuevoPasswordHash)
+    {
+        if (string.IsNullOrWhiteSpace(nuevoPasswordHash))
+            throw new ArgumentException("La contraseña es obligatoria.", nameof(nuevoPasswordHash));
+
+        PasswordHash = nuevoPasswordHash;
+    }
+
 }

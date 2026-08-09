@@ -42,11 +42,29 @@ public class LeadsController : ControllerBase
     // GET: api/leads/anuncio/{anuncioId}
     // =========================================================================
     [HttpGet("anuncio/{anuncioId}")]
-    [Authorize] // 👈 Solo usuarios logueados (Dealers/Vendedores)
+    [Authorize] // 👈 Solo el dueño del anuncio puede ver sus leads
     public async Task<IActionResult> ObtenerPorAnuncio(int anuncioId)
     {
-        var leads = await _leadService.ObtenerLeadsPorAnuncioAsync(anuncioId);
-        return Ok(leads);
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int usuarioId))
+        {
+            return Unauthorized(new { mensaje = "Usuario no válido o sesión expirada." });
+        }
+
+        try
+        {
+            var leads = await _leadService.ObtenerLeadsPorAnuncioAsync(anuncioId, usuarioId);
+            return Ok(leads);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { mensaje = ex.Message });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(403, new { mensaje = ex.Message });
+        }
     }
 
     // =========================================================================

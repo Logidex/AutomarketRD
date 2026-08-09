@@ -31,4 +31,24 @@ public class SuscripcionRepository : ISuscripcionRepository
         _context.SuscripcionDealers.Update(suscripcion);
         await _context.SaveChangesAsync();
     }
+
+    public async Task AgregarPagoAsync(PagoSuscripcion pago)
+    {
+        await _context.PagosSuscripcion.AddAsync(pago);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<IReadOnlyList<PagoSuscripcion>> ObtenerHistorialPagosAsync(int perfilDealerId)
+    {
+        return await _context.PagosSuscripcion
+            .Where(p => p.PerfilDealerId == perfilDealerId)
+            .OrderByDescending(p => p.FechaUtc)
+            .ToListAsync();
+    }
+
+    public async Task<bool> ExistePagoPorEventoAsync(string eventoId)
+    {
+        return await _context.PagosSuscripcion
+            .AnyAsync(p => p.EventoIdPayPal == eventoId);
+    }
 }

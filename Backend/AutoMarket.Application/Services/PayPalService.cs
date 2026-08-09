@@ -167,9 +167,6 @@ public class PayPalService : IPayPalService
 
         var requestBody = Encoding.UTF8.GetString(stream.ToArray());
 
-        Console.WriteLine("=== VERIFY WEBHOOK REQUEST ===");
-        Console.WriteLine(requestBody);
-
         var request = new HttpRequestMessage(
             HttpMethod.Post,
             $"{_baseUrl}/v1/notifications/verify-webhook-signature");
@@ -179,9 +176,6 @@ public class PayPalService : IPayPalService
 
         var response = await _httpClient.SendAsync(request);
         var responseBody = await response.Content.ReadAsStringAsync();
-
-        Console.WriteLine("=== VERIFY WEBHOOK RESPONSE ===");
-        Console.WriteLine(responseBody);
 
         response.EnsureSuccessStatusCode();
 

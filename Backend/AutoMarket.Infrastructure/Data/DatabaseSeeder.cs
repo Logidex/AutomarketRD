@@ -1,6 +1,7 @@
 using AutoMarket.Core.Entities;
 using AutoMarket.Core.Entities.Enums;
 using AutoMarket.Core.Interfaces;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using BCrypt.Net;
 
@@ -13,19 +14,31 @@ public static class DatabaseSeeder
         // Creamos un "scope" para poder pedirle servicios al contenedor de inyección de dependencias
         using var scope = serviceProvider.CreateScope();
         var usuarioRepository = scope.ServiceProvider.GetRequiredService<IUsuarioRepository>();
+        var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
 
-        // 1. Definir las credenciales de tu Admin Supremo
-        var adminEmail = "admin@automarket.do";
-        
-        // 2. Verificar si ya existe para no duplicarlo cada vez que inicies la API
+        await SeedAdminAsync(usuarioRepository, config);
+        await SeedPlanesCatalogoAsync(scope.ServiceProvider);
+    }
+
+    private static async Task SeedAdminAsync(IUsuarioRepository usuarioRepository, IConfiguration config)
+    {
+        // Las credenciales del admin se leen de configuración (variables de entorno:
+        // Admin__Email y Admin__Password). Así nunca quedan hardcodeadas en el código.
+        var adminEmail = config["Admin:Email"] ?? "admin@automarket.do";
+        var adminPassword = config["Admin:Password"];
+
+        if (string.IsNullOrWhiteSpace(adminPassword))
+        {
+            Console.WriteLine("[Seeder] Usuario admin inicial omitido: configura Admin__Password (Admin:Password) para crearlo.");
+            return;
+        }
+
         var adminExiste = await usuarioRepository.ExisteEmailAsync(adminEmail);
 
         if (!adminExiste)
         {
-            // 3. Hashear la contraseña
-            var passwordHash = BCrypt.Net.BCrypt.HashPassword("***REDACTED***");
+            var passwordHash = BCrypt.Net.BCrypt.HashPassword(adminPassword);
 
-            // 4. Utilizar tu método de dominio blindado (Separando nombre y apellido)
             var adminUser = Usuario.CrearAdministradorInterno(
                 nombre: "Administrador",
                 apellido: "Supremo",
@@ -33,12 +46,26 @@ public static class DatabaseSeeder
                 passwordHash: passwordHash
             );
 
-            // 5. Guardar en la base de datos
             await usuarioRepository.CrearUsuarioAsync(adminUser);
             await usuarioRepository.GuardarCambiosAsync();
+
+            Console.WriteLine("[Seeder] Usuario admin inicial creado desde configuración.");
+            return;
         }
 
-        await SeedPlanesCatalogoAsync(scope.ServiceProvider);
+        // Rotación: si Admin__RotatePassword=="true" y hay contraseña configurada,
+        // reemplazamos el password hash del admin existente. Sirve para invalidar
+        // contraseñas hardcodeadas que hayan quedado en entornos antiguos.
+        var rotarPassword = string.Equals(config["Admin:RotatePassword"], "true", StringComparison.OrdinalIgnoreCase);
+        if (rotarPassword && !string.IsNullOrWhiteSpace(adminPassword))
+        {
+            var nuevoHash = BCrypt.Net.BCrypt.HashPassword(adminPassword);
+            var actualizado = await usuarioRepository.ActualizarContrasenaAsync(adminEmail, nuevoHash);
+
+            Console.WriteLine(actualizado
+                ? "[Seeder] Contraseña del admin rotada desde configuración."
+                : "[Seeder] No se encontró el admin para rotar su contraseña.");
+        }
     }
 
     private static async Task SeedPlanesCatalogoAsync(IServiceProvider serviceProvider)

@@ -75,8 +75,16 @@ public class LeadService : ILeadService
         }
     }
 
-    public async Task<IReadOnlyCollection<Lead>> ObtenerLeadsPorAnuncioAsync(int anuncioId)
+    public async Task<IReadOnlyCollection<Lead>> ObtenerLeadsPorAnuncioAsync(int anuncioId, int usuarioId)
     {
+        var anuncio = await _anuncioRepository.ObtenerPorIdAsync(anuncioId);
+
+        if (anuncio is null)
+            throw new KeyNotFoundException("El anuncio no existe o ya fue eliminado.");
+
+        if (anuncio.UsuarioId != usuarioId)
+            throw new UnauthorizedAccessException("Acceso denegado: Este anuncio no pertenece a tu inventario.");
+
         return await _leadRepository.ObtenerPorAnuncioIdAsync(anuncioId);
     }
 

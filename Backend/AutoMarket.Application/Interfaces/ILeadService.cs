@@ -9,7 +9,7 @@ public interface ILeadService
     Task CrearLeadAsync(LeadCreateDto dto);
 
     // Métodos de consulta para el Dashboard del Dealer
-    Task<IReadOnlyCollection<Lead>> ObtenerLeadsPorAnuncioAsync(int anuncioId);
+    Task<IReadOnlyCollection<Lead>> ObtenerLeadsPorAnuncioAsync(int anuncioId, int usuarioId);
     Task<IReadOnlyCollection<Lead>> ObtenerLeadsPorDealerAsync(int dealerId);
 
     // Marcar un lead como leído (el dealer lo atendió)

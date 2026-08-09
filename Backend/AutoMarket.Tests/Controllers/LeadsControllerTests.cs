@@ -91,16 +91,20 @@ public class LeadsControllerTests
     }
 
     // =========================================================================
-    // PRUEBA 03: GET ObtenerPorAnuncio - Éxito
+    // PRUEBA 03: GET ObtenerPorAnuncio - Éxito (dueño del anuncio)
     // =========================================================================
     [Fact]
-    public async Task ObtenerPorAnuncio_DebeRetornarOkConLista()
+    public async Task ObtenerPorAnuncio_DueñoDelAnuncio_DebeRetornarOkConLista()
     {
         // Arrange
         int anuncioId = 10;
+        int usuarioLogueado = 5;
+        SimularUsuarioAutenticado(usuarioLogueado.ToString());
+
         var listaSimulada = new List<Lead>(); // Lista vacía para fines de estructura
-        
-        _mockLeadService.Setup(s => s.ObtenerLeadsPorAnuncioAsync(anuncioId))
+
+        _mockLeadService
+            .Setup(s => s.ObtenerLeadsPorAnuncioAsync(anuncioId, usuarioLogueado))
             .ReturnsAsync(listaSimulada);
 
         // Act
@@ -109,10 +113,56 @@ public class LeadsControllerTests
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(resultado);
         Assert.Equal(listaSimulada, okResult.Value);
+
+        _mockLeadService.Verify(
+            s => s.ObtenerLeadsPorAnuncioAsync(anuncioId, usuarioLogueado),
+            Times.Once);
     }
 
     // =========================================================================
-    // PRUEBA 04: GET ObtenerMisLeads - Falla (Sin Token / Token Inválido)
+    // PRUEBA 04: GET ObtenerPorAnuncio - Falla si el usuario NO es dueño
+    // =========================================================================
+    [Fact]
+    public async Task ObtenerPorAnuncio_NoEsDueño_DebeRetornarForbidden()
+    {
+        // Arrange
+        int anuncioId = 10;
+        int usuarioLogueado = 5;
+        SimularUsuarioAutenticado(usuarioLogueado.ToString());
+
+        _mockLeadService
+            .Setup(s => s.ObtenerLeadsPorAnuncioAsync(anuncioId, usuarioLogueado))
+            .ThrowsAsync(new UnauthorizedAccessException("Acceso denegado"));
+
+        // Act
+        var resultado = await _controller.ObtenerPorAnuncio(anuncioId);
+
+        // Assert
+        var statusResult = Assert.IsType<ObjectResult>(resultado);
+        Assert.Equal(StatusCodes.Status403Forbidden, statusResult.StatusCode);
+    }
+
+    // =========================================================================
+    // PRUEBA 05: GET ObtenerPorAnuncio - Sin Identidad en Token
+    // =========================================================================
+    [Fact]
+    public async Task ObtenerPorAnuncio_SinIdentidadEnToken_DebeRetornarUnauthorized()
+    {
+        // Arrange
+        _controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext()
+        };
+
+        // Act
+        var resultado = await _controller.ObtenerPorAnuncio(10);
+
+        // Assert
+        Assert.IsType<UnauthorizedObjectResult>(resultado);
+    }
+
+    // =========================================================================
+    // PRUEBA 06: GET ObtenerMisLeads - Falla (Sin Token / Token Inválido)
     // =========================================================================
     [Fact]
     public async Task ObtenerMisLeads_SinIdentidadEnToken_DebeRetornarUnauthorized()
@@ -136,7 +186,7 @@ public class LeadsControllerTests
     }
 
     // =========================================================================
-    // PRUEBA 05: GET ObtenerMisLeads - Éxito (Extrae ID del JWT)
+    // PRUEBA 07: GET ObtenerMisLeads - Éxito (Extrae ID del JWT)
     // =========================================================================
     [Fact]
     public async Task ObtenerMisLeads_ConTokenValido_DebeExtraerIdYRetornarOk()

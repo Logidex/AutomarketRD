@@ -41,7 +41,9 @@ public class AnunciosController : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<IActionResult> ObtenerPorId(int id)
     {
-        var anuncioDto = await _anuncioService.ObtenerAnuncioPorIdAsync(id);
+        var usuarioId = ObtenerUsuarioIdSiAutenticado();
+
+        var anuncioDto = await _anuncioService.ObtenerAnuncioPorIdAsync(id, usuarioId);
 
         if (anuncioDto == null)
             return NotFound(new { mensaje = $"El vehículo con ID {id} no fue encontrado." });
@@ -139,12 +141,29 @@ public class AnunciosController : ControllerBase
         return usuarioId;
     }
 
+    private int? ObtenerUsuarioIdSiAutenticado()
+    {
+        return User.Identity?.IsAuthenticated == true
+            ? ObtenerUsuarioIdDelToken()
+            : null;
+    }
+
     // =========================================================================
     // GET: api/anuncios/buscar
     // =========================================================================
     [HttpGet("buscar")]
     public async Task<IActionResult> BuscarAnuncios([FromQuery] AnuncioSearchDto dto)
     {
+        // El filtro por UsuarioId busca anuncios privados (incluidos borradores),
+        // así que solo se permite si el usuario autenticado es el dueño de ese inventario.
+        if (dto.UsuarioId.HasValue)
+        {
+            var usuarioSesion = ObtenerUsuarioIdSiAutenticado();
+
+            if (usuarioSesion != dto.UsuarioId)
+                dto.UsuarioId = null;
+        }
+
         // El servicio procesa los filtros y nos devuelve el resultado paginado
         var resultado = await _anuncioService.BuscarAnunciosAsync(dto);
 

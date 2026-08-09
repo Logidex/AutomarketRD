@@ -477,4 +477,93 @@ public class SuscripcionServiceTests
         Assert.Equal((int)PlanNivel.Elite, resultado.LimiteAnuncios);
         Assert.True(resultado.Activa);
     }
+
+    // =========================================================================
+    // PRUEBA 20: Registrar Pago - Éxito guarda todos los datos
+    // =========================================================================
+    [Fact]
+    public async Task RegistrarPagoAsync_DatosValidos_DebeGuardarPagoEnRepositorio()
+    {
+        // Arrange
+        int perfilId = 40;
+
+        // Act
+        await _servicio.RegistrarPagoAsync(
+            perfilId,
+            PlanNivel.Elite,
+            CicloFacturacion.Anual,
+            120m,
+            "usd",
+            "ORDER-123",
+            "EVENTO-1",
+            "DEALER-40-PLAN-Elite-CICLO-Anual");
+
+        // Assert
+        _mockRepo.Verify(r => r.AgregarPagoAsync(It.Is<PagoSuscripcion>(p =>
+            p.PerfilDealerId == perfilId &&
+            p.Nivel == PlanNivel.Elite &&
+            p.Ciclo == CicloFacturacion.Anual &&
+            p.Monto == 120m &&
+            p.Moneda == "USD" &&
+            p.OrderIdPayPal == "ORDER-123" &&
+            p.EventoIdPayPal == "EVENTO-1" &&
+            p.Estado == EstadoPago.Completado)), Times.Once);
+    }
+
+    // =========================================================================
+    // PRUEBA 21: Registrar Pago - Fallo si el monto no es positivo
+    // =========================================================================
+    [Fact]
+    public async Task RegistrarPagoAsync_MontoInvalido_DebeLanzarArgumentException()
+    {
+        // Arrange, Act & Assert
+        var excepcion = await Assert.ThrowsAsync<ArgumentException>(() =>
+            _servicio.RegistrarPagoAsync(
+                40,
+                PlanNivel.Basico,
+                CicloFacturacion.Mensual,
+                0m,
+                "USD",
+                null,
+                null,
+                null));
+
+        Assert.Equal("monto", excepcion.ParamName);
+        _mockRepo.Verify(r => r.AgregarPagoAsync(It.IsAny<PagoSuscripcion>()), Times.Never);
+    }
+
+    // =========================================================================
+    // PRUEBA 22: Obtener Historial de Pagos - Mapea el DTO correctamente
+    // =========================================================================
+    [Fact]
+    public async Task ObtenerHistorialPagosAsync_DebeRetornarDtoMapeado()
+    {
+        // Arrange
+        int perfilId = 41;
+        var pago = new PagoSuscripcion(
+            perfilId,
+            PlanNivel.Pro,
+            CicloFacturacion.Trimestral,
+            50m,
+            "USD",
+            "ORDER-77",
+            null,
+            "DEALER-41-PLAN-Pro-CICLO-Trimestral");
+
+        _mockRepo.Setup(r => r.ObtenerHistorialPagosAsync(perfilId))
+            .ReturnsAsync(new[] { pago });
+
+        // Act
+        var resultado = await _servicio.ObtenerHistorialPagosAsync(perfilId);
+
+        // Assert
+        var dto = Assert.Single(resultado);
+        Assert.Equal(perfilId, dto.PerfilDealerId);
+        Assert.Equal(PlanNivel.Pro, dto.Nivel);
+        Assert.Equal(CicloFacturacion.Trimestral, dto.Ciclo);
+        Assert.Equal(EstadoPago.Completado, dto.Estado);
+        Assert.Equal(50m, dto.Monto);
+        Assert.Equal("USD", dto.Moneda);
+        Assert.Equal("ORDER-77", dto.OrdenIdPayPal);
+    }
 }

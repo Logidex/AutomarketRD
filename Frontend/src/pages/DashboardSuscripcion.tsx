@@ -3,7 +3,7 @@ import Swal from "sweetalert2";
 import { FaCreditCard } from "react-icons/fa";
 import { planesService, type PlanCatalogo } from "../services/planes.service";
 import { pagosService } from "../services/pagos.service";
-import { suscripcionService, type SuscripcionDealer } from "../services/suscripcion.service";
+import { suscripcionService, type SuscripcionDealer, type PagoSuscripcion } from "../services/suscripcion.service";
 
 type Ciclo = "Mensual" | "Trimestral" | "Anual";
 
@@ -12,6 +12,7 @@ const CICLOS: Ciclo[] = ["Mensual", "Trimestral", "Anual"];
 export default function DashboardSuscripcion() {
   const [suscripcion, setSuscripcion] = useState<SuscripcionDealer | null>(null);
   const [planes, setPlanes] = useState<PlanCatalogo[]>([]);
+  const [pagos, setPagos] = useState<PagoSuscripcion[]>([]);
   const [ciclo, setCiclo] = useState<Ciclo>("Mensual");
   const [cargando, setCargando] = useState(true);
   const [procesando, setProcesando] = useState<string | null>(null);
@@ -33,9 +34,15 @@ export default function DashboardSuscripcion() {
         setPlanes(await planesService.obtenerCatalogo());
       } catch {
         setPlanes([]);
-      } finally {
-        setCargando(false);
       }
+
+      try {
+        setPagos(await suscripcionService.obtenerHistorialPagos());
+      } catch {
+        setPagos([]);
+      }
+
+      setCargando(false);
     }
 
     cargarDatos();
@@ -270,6 +277,56 @@ export default function DashboardSuscripcion() {
       ) : (
         <p className="text-center text-gray-500">Los planes están disponibles próximamente.</p>
       )}
+
+      {/* Historial de pagos */}
+      <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+        <h2 className="mb-4 text-lg font-semibold text-gray-900">Historial de pagos</h2>
+        {pagos.length === 0 ? (
+          <p className="text-sm text-gray-500">
+            Aún no tienes pagos registrados. Cuando realices tu primera compra o renovación, aparecerá aquí.
+          </p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b border-gray-200 text-xs uppercase text-gray-500">
+                  <th className="py-2 pr-4">Fecha</th>
+                  <th className="py-2 pr-4">Plan</th>
+                  <th className="py-2 pr-4">Ciclo</th>
+                  <th className="py-2 pr-4">Total</th>
+                  <th className="py-2 pr-4">Estado</th>
+                  <th className="py-2">Orden PayPal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pagos.map((pago) => (
+                  <tr key={pago.id} className="border-b border-gray-100 last:border-0">
+                    <td className="py-3 pr-4 text-gray-700">
+                      {new Date(pago.fechaUtc).toLocaleDateString("es-DO", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </td>
+                    <td className="py-3 pr-4 font-semibold text-gray-900">{nombrePlan(pago.nivel)}</td>
+                    <td className="py-3 pr-4 capitalize text-gray-700">{pago.ciclo}</td>
+                    <td className="py-3 pr-4 text-gray-700">
+                      {pago.moneda} ${pago.monto.toFixed(2)}
+                    </td>
+                    <td className="py-3 pr-4">
+                      <span className={estadoPagoClass(pago.estado)}>{estadoPagoLabel(pago.estado)}</span>
+                    </td>
+                    <td className="py-3 text-gray-700">{pago.ordenIdPayPal ?? "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        <p className="mt-4 text-xs text-gray-400">
+          Te avisamos por correo cuando tu plan esté por vencer, para que lo renueves a tiempo.
+        </p>
+      </div>
     </div>
   );
 }
@@ -282,6 +339,21 @@ function nombrePlan(nivel: string): string {
     Elite: "Elite",
   };
   return mapa[nivel] ?? nivel;
+}
+
+function estadoPagoLabel(estado: string): string {
+  const mapa: Record<string, string> = {
+    Completado: "Completado",
+    Fallido: "Fallido",
+    Reembolsado: "Reembolsado",
+  };
+  return mapa[estado] ?? estado;
+}
+
+function estadoPagoClass(estado: string): string {
+  if (estado === "Completado") return "rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700";
+  if (estado === "Fallido") return "rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700";
+  return "rounded-full bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-600";
 }
 
 function SoporteCard() {

@@ -40,7 +40,6 @@ public class UsuarioRepository : IUsuarioRepository
     public async Task<Usuario?> ObtenerPorIdAsync(int id)
     {
         var usuarioEncontrado = await _context.Usuarios
-                                              .AsNoTracking()
                                               .FirstOrDefaultAsync(u => u.UsuarioId == id);
         return usuarioEncontrado;
     }
@@ -66,5 +65,18 @@ public class UsuarioRepository : IUsuarioRepository
         return await _context.Usuarios
             .OrderByDescending(u => u.CreatedAt)
             .ToListAsync();
+    }
+
+    public async Task<bool> ActualizarContrasenaAsync(string email, string nuevoPasswordHash)
+    {
+        var usuario = await _context.Usuarios
+            .FirstOrDefaultAsync(u => u.Email == email.ToLowerInvariant());
+
+        if (usuario == null)
+            return false;
+
+        usuario.CambiarPassword(nuevoPasswordHash);
+        await _context.SaveChangesAsync();
+        return true;
     }
 }

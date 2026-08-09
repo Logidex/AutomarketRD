@@ -1,5 +1,8 @@
+using AutoMarket.Core.Entities.Enums;
+using AutoMarket.Core.Interfaces;
 using AutoMarket.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -34,6 +37,15 @@ public class SuscripcionMonitorService : BackgroundService
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Fallo crítico al procesar la degradación masiva de suscripciones.");
+            }
+
+            try
+            {
+                await EnviarRecordatoriosDeRenovacionAsync(stoppingToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Fallo crítico al enviar recordatorios de renovación.");
             }
 
             // Para entorno de desarrollo, puedes cambiar esto a TimeSpan.FromMinutes(1) para probarlo rápido.
@@ -98,5 +110,115 @@ public class SuscripcionMonitorService : BackgroundService
         }
 
         _logger.LogInformation("Barrido finalizado con éxito. Total de vehículos retirados de la vitrina pública: {Total}", totalAnunciosPausados);
+    }
+
+    private async Task EnviarRecordatoriosDeRenovacionAsync(CancellationToken stoppingToken)
+    {
+        using var scope = _serviceProvider.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var emailSender = scope.ServiceProvider.GetRequiredService<IEmailSenderService>();
+        var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+
+        var diasAntes = configuration.GetValue<int?>("Recordatorios:DiasAntesRenovacion") ?? 7;
+
+        if (diasAntes <= 0)
+        {
+            _logger.LogInformation("Recordatorios de renovación desactivados (config inválida).");
+            return;
+        }
+
+        var ahora = DateTime.UtcNow;
+        var fechaLimite = ahora.AddDays(diasAntes);
+
+        _logger.LogInformation(
+            "Buscando suscripciones que vencen dentro de los próximos {Dias} días para enviar recordatorio.",
+            diasAntes);
+
+        var porVencer = await dbContext.SuscripcionDealers
+            .Include(s => s.PerfilDealer)
+                .ThenInclude(p => p.Usuario)
+            .Where(s => s.Estado == EstadoSuscripcion.Activa &&
+                        s.FechaVencimientoUtc > ahora &&
+                        s.FechaVencimientoUtc <= fechaLimite &&
+                        s.FechaRecordatorioEnviadoUtc == null)
+            .ToListAsync(stoppingToken);
+
+        if (porVencer.Count == 0)
+        {
+            _logger.LogInformation("Barrido de recordatorios completado. Ninguna suscripción requiere recordatorio hoy.");
+            return;
+        }
+
+        var frontendUrl = configuration["App:FrontendUrl"];
+        var rutaRenovar = string.IsNullOrWhiteSpace(frontendUrl)
+            ? "/dashboard/suscripcion"
+            : $"{frontendUrl.TrimEnd('/')}/dashboard/suscripcion";
+
+        var enviados = 0;
+
+        foreach (var suscripcion in porVencer)
+        {
+            var email = suscripcion.PerfilDealer?.Usuario?.Email;
+
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                _logger.LogWarning(
+                    "No se pudo enviar recordatorio: suscripción {SuscripcionId} sin correo asociado.",
+                    suscripcion.Id);
+                continue;
+            }
+
+            try
+            {
+                var diasRestantes = Math.Max(0, (int)Math.Ceiling((suscripcion.FechaVencimientoUtc - ahora).TotalDays));
+                var nombrePlan = NombrePlan(suscripcion.Nivel);
+                var fechaVencimiento = suscripcion.FechaVencimientoUtc.ToString("dd/MM/yyyy");
+
+                var asunto = $"Tu suscripción {nombrePlan} de AutoMarket RD vence pronto";
+
+                var cuerpoHtml = $@"
+                    <h2 style='color:#1e3a8a;'>Tu suscripción está por vencer</h2>
+                    <p>Hola <strong>{suscripcion.PerfilDealer?.Usuario?.Nombre}</strong>,</p>
+                    <p>Tu suscripción <strong>{nombrePlan}</strong> vence el <strong>{fechaVencimiento}</strong>
+                    (quedan {diasRestantes} día(s)).</p>
+                    <p>Renueva a tiempo para que tus anuncios sigan visibles en la vitrina
+                    sin ninguna interrupción.</p>
+                    <p>
+                        <a href='{rutaRenovar}' style='background-color:#3b82f6;color:#ffffff;
+                        padding:12px 24px;text-decoration:none;border-radius:8px;'>Renovar ahora</a>
+                    </p>
+                    <hr/>
+                    <p style='color:#6b7280;font-size:12px;'>AutoMarket RD · no responda a este correo.</p>";
+
+                await emailSender.EnviarCorreoAsync(email, asunto, cuerpoHtml);
+
+                suscripcion.MarcarRecordatorioEnviado();
+                await dbContext.SaveChangesAsync();
+
+                enviados++;
+                _logger.LogInformation(
+                    "Recordatorio de renovación enviado. SuscripcionId {SuscripcionId}, Email {Email}",
+                    suscripcion.Id, email);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "Error enviando recordatorio de renovación. SuscripcionId {SuscripcionId}",
+                    suscripcion.Id);
+            }
+        }
+
+        _logger.LogInformation("Recordatorios de renovación enviados hoy: {Total}", enviados);
+    }
+
+    private static string NombrePlan(PlanNivel nivel)
+    {
+        return nivel switch
+        {
+            PlanNivel.Basico => "Básico",
+            PlanNivel.Pro => "Pro",
+            PlanNivel.Elite => "Elite",
+            _ => nivel.ToString()
+        };
     }
 }

@@ -11,5 +11,6 @@ public interface IUsuarioRepository
     Task<Usuario?> ObtenerDealerConPerfilPorIdAsync(int usuarioId);
     Task GuardarCambiosAsync();
     Task<IEnumerable<Usuario>> ObtenerTodosAsync();
+    Task<bool> ActualizarContrasenaAsync(string email, string nuevoPasswordHash);
 
 }

@@ -117,18 +117,12 @@ public class AdminController : ControllerBase
         if (anuncio == null)
             return NotFound(new { mensaje = "Anuncio no encontrado." });
 
-        // 👇 TRAMPA DE DEBUG 1: Ver cuántas fotos está leyendo EF Core
-        Console.WriteLine($"\n[DEBUG S3] -> El anuncio {id} tiene {anuncio.Fotos.Count} fotos registradas.");
-
         if (anuncio.Fotos != null && anuncio.Fotos.Any())
         {
             foreach (var urlFoto in anuncio.Fotos)
             {
-                // 1. Extraemos solo el nombre del archivo (todo lo que está después del último '/')
-                var nombreArchivo = urlFoto.Split('/').Last();
-
-                // 2. Le enviamos solo el nombre a AWS S3
-                await _almacenadorArchivos.EliminarArchivoAsync(nombreArchivo);
+                // Eliminamos el objeto en S3 usando la URL pública completa
+                await _almacenadorArchivos.EliminarArchivoAsync(urlFoto);
             }
         }
 

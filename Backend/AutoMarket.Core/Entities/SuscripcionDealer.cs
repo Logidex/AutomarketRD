@@ -16,6 +16,7 @@ public class SuscripcionDealer
 
     public DateTime FechaInicioUtc { get; private set; }
     public DateTime FechaVencimientoUtc { get; private set; }
+    public DateTime? FechaRecordatorioEnviadoUtc { get; private set; }
 
     private SuscripcionDealer() { }
 
@@ -54,6 +55,7 @@ public class SuscripcionDealer
         Estado = EstadoSuscripcion.Activa;
         FechaInicioUtc = DateTime.UtcNow;
         FechaVencimientoUtc = CalcularFechaVencimiento(nuevoCiclo);
+        FechaRecordatorioEnviadoUtc = null;
     }
 
     public void RenovarManualmente(DateTime nuevaFechaVencimiento)
@@ -67,6 +69,7 @@ public class SuscripcionDealer
 
         FechaVencimientoUtc = nuevaFechaVencimiento;
         Estado = EstadoSuscripcion.Activa;
+        FechaRecordatorioEnviadoUtc = null;
     }
 
     /// <summary>Marca la suscripción como cancelada.</summary>
@@ -92,6 +95,13 @@ public class SuscripcionDealer
         Estado = EstadoSuscripcion.Activa;
         FechaInicioUtc = DateTime.UtcNow;
         FechaVencimientoUtc = CalcularFechaVencimiento(nuevoCiclo);
+        FechaRecordatorioEnviadoUtc = null;
+    }
+
+    /// <summary>Registra que ya se envió el recordatorio del vencimiento actual.</summary>
+    public void MarcarRecordatorioEnviado()
+    {
+        FechaRecordatorioEnviadoUtc = DateTime.UtcNow;
     }
 
     private static DateTime CalcularFechaVencimiento(CicloFacturacion ciclo)

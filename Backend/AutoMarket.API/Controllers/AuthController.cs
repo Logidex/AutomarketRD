@@ -2,6 +2,7 @@ using AutoMarket.Application.DTOs;
 using AutoMarket.Application.DTOs.Usuario;
 using AutoMarket.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -28,18 +29,10 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
+    [EnableRateLimiting("PoliticaLogin")]
     public async Task<IActionResult> Login([FromBody] LoginDto dto)
     {
         var resultado = await _authService.LoginAsync(dto);
-
-        Console.WriteLine(
-            $"Response: Exito={resultado.Exito}, " +
-            $"Mensaje={resultado.Mensaje}, " +
-            $"Token={resultado.Token?.Substring(
-                0,
-                Math.Min(10, resultado.Token.Length)
-            )}..."
-        );
 
         if (!resultado.Exito)
         {

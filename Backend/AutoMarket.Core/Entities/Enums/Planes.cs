@@ -21,3 +21,10 @@ public enum EstadoSuscripcion
     Vencida = 2,
     Cancelada = 3
 }
+
+public enum EstadoPago
+{
+    Completado = 1,
+    Fallido = 2,
+    Reembolsado = 3
+}

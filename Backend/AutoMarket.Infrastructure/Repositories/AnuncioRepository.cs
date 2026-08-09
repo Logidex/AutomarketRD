@@ -22,7 +22,6 @@ public class AnuncioRepository : IAnuncioRepository
     public async Task<Anuncio?> ObtenerPorIdAsync(int id)
     {
         return await _context.Anuncios
-            .AsNoTracking()
             .FirstOrDefaultAsync(a => a.Id == id);
     }
 
@@ -45,10 +44,6 @@ public class AnuncioRepository : IAnuncioRepository
 
     public async Task ActualizarAsync(Anuncio anuncio)
     {
-        var entry = _context.Entry(anuncio);
-
-        entry.Property("_fotos").IsModified = true;
-
         _context.Anuncios.Update(anuncio);
 
         await _context.SaveChangesAsync();

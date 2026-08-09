@@ -459,7 +459,8 @@ public class PagosControllerTests
             "id": "ord-999",
             "purchase_units": [
               {
-                "reference_id": "DEALER-15-PLAN-PRO-CICLO-MENSUAL"
+                "reference_id": "DEALER-15-PLAN-PRO-CICLO-MENSUAL",
+                "amount": { "currency_code": "USD", "value": "30.00" }
               }
             ]
           }
@@ -481,6 +482,17 @@ public class PagosControllerTests
             .Setup(s => s.CapturarOrdenAsync("ord-999"))
             .ReturnsAsync(true);
 
+        _mockUsuarioRepository
+            .Setup(r => r.ObtenerDealerConPerfilPorIdAsync(15))
+            .ReturnsAsync(CrearUsuarioConPerfilDealer(15));
+
+        ConfigurarPlanCatalogoPro();
+
+        // 3000 RD$ * 0.01 = 30.00 USD
+        _mockSuscripcionService
+            .Setup(s => s.ExistePagoPorEventoAsync("evt-1"))
+            .ReturnsAsync(false);
+
         // Act
         var resultado = await _controller.PayPalWebhook();
 
@@ -490,5 +502,111 @@ public class PagosControllerTests
         _mockSuscripcionService.Verify(s =>
             s.ProcesarPagoSuscripcionAsync(15, PlanNivel.Pro, CicloFacturacion.Mensual),
             Times.Once);
+        _mockSuscripcionService.Verify(s =>
+            s.RegistrarPagoAsync(15, PlanNivel.Pro, CicloFacturacion.Mensual, 30.00m, "USD", "ord-999", "evt-1", "DEALER-15-PLAN-PRO-CICLO-MENSUAL"),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task PayPalWebhook_EventoYaProcesado_DebeIgnorarse()
+    {
+        // Arrange
+        var json = """
+        {
+          "id": "evt-1",
+          "event_type": "CHECKOUT.ORDER.APPROVED",
+          "resource": {
+            "id": "ord-999",
+            "purchase_units": [
+              {
+                "reference_id": "DEALER-15-PLAN-PRO-CICLO-MENSUAL",
+                "amount": { "currency_code": "USD", "value": "30.00" }
+              }
+            ]
+          }
+        }
+        """;
+
+        ConfigurarWebhook(json,
+            ("PAYPAL-TRANSMISSION-ID", "1"),
+            ("PAYPAL-TRANSMISSION-TIME", "2"),
+            ("PAYPAL-TRANSMISSION-SIG", "3"),
+            ("PAYPAL-CERT-URL", "4"),
+            ("PAYPAL-AUTH-ALGO", "5"));
+
+        _mockPayPalService
+            .Setup(s => s.VerificarFirmaWebhookAsync(json, "1", "2", "3", "4", "5"))
+            .ReturnsAsync(true);
+
+        _mockUsuarioRepository
+            .Setup(r => r.ObtenerDealerConPerfilPorIdAsync(15))
+            .ReturnsAsync(CrearUsuarioConPerfilDealer(15));
+
+        ConfigurarPlanCatalogoPro();
+
+        _mockSuscripcionService
+            .Setup(s => s.ExistePagoPorEventoAsync("evt-1"))
+            .ReturnsAsync(true);
+
+        // Act
+        var resultado = await _controller.PayPalWebhook();
+
+        // Assert
+        Assert.IsType<OkResult>(resultado);
+        _mockPayPalService.Verify(s => s.CapturarOrdenAsync(It.IsAny<string>()), Times.Never);
+        _mockSuscripcionService.Verify(s =>
+            s.ProcesarPagoSuscripcionAsync(It.IsAny<int>(), It.IsAny<PlanNivel>(), It.IsAny<CicloFacturacion>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task PayPalWebhook_MontoNoCoincide_DebeNoProcesar()
+    {
+        var json = """
+        {
+          "id": "evt-2",
+          "event_type": "CHECKOUT.ORDER.APPROVED",
+          "resource": {
+            "id": "ord-998",
+            "purchase_units": [
+              {
+                "reference_id": "DEALER-15-PLAN-PRO-CICLO-MENSUAL",
+                "amount": { "currency_code": "USD", "value": "1.00" }
+              }
+            ]
+          }
+        }
+        """;
+
+        ConfigurarWebhook(json,
+            ("PAYPAL-TRANSMISSION-ID", "1"),
+            ("PAYPAL-TRANSMISSION-TIME", "2"),
+            ("PAYPAL-TRANSMISSION-SIG", "3"),
+            ("PAYPAL-CERT-URL", "4"),
+            ("PAYPAL-AUTH-ALGO", "5"));
+
+        _mockPayPalService
+            .Setup(s => s.VerificarFirmaWebhookAsync(json, "1", "2", "3", "4", "5"))
+            .ReturnsAsync(true);
+
+        _mockUsuarioRepository
+            .Setup(r => r.ObtenerDealerConPerfilPorIdAsync(15))
+            .ReturnsAsync(CrearUsuarioConPerfilDealer(15));
+
+        ConfigurarPlanCatalogoPro();
+
+        _mockSuscripcionService
+            .Setup(s => s.ExistePagoPorEventoAsync("evt-2"))
+            .ReturnsAsync(false);
+
+        // Act
+        var resultado = await _controller.PayPalWebhook();
+
+        // Assert
+        Assert.IsType<OkResult>(resultado);
+        _mockPayPalService.Verify(s => s.CapturarOrdenAsync(It.IsAny<string>()), Times.Never);
+        _mockSuscripcionService.Verify(s =>
+            s.ProcesarPagoSuscripcionAsync(It.IsAny<int>(), It.IsAny<PlanNivel>(), It.IsAny<CicloFacturacion>()),
+            Times.Never);
     }
 }

@@ -71,8 +71,8 @@ public class AnuncioServiceTests
         Assert.Null(resultado);
     }
 
-    // =========================================================================
-    // PRUEBA 10: Obtener Por Id - Éxito al mapear el DTO
+// =========================================================================
+    // PRUEBA 10: Obtener Por Id - Éxito al mapear el DTO (el dueño ve su borrador)
     // =========================================================================
     [Fact]
     public async Task ObtenerAnuncioPorIdAsync_Encontrado_DebeRetornarDto()
@@ -83,14 +83,52 @@ public class AnuncioServiceTests
 
         _mockRepo.Setup(r => r.ObtenerPorIdAsync(idReal)).ReturnsAsync(anuncioEnBD);
 
-        // 2. ACT
-        var resultado = await _servicio.ObtenerAnuncioPorIdAsync(idReal);
+        // 2. ACT (El usuario autenticado es el dueño del anuncio -> puede ver su borrador)
+        var resultado = await _servicio.ObtenerAnuncioPorIdAsync(idReal, usuarioId: 1);
 
         // 3. ASSERT
         Assert.NotNull(resultado);
         Assert.Equal("Honda", resultado.Marca);
         Assert.Equal("Civic", resultado.Modelo);
         Assert.Equal(2022, resultado.Anio);
+    }
+
+    // =========================================================================
+    // PRUEBA 10b: Obtener Por Id - No publicado + No es el dueño -> null (404)
+    // =========================================================================
+    [Fact]
+    public async Task ObtenerAnuncioPorIdAsync_BorradorDeOtroUsuario_DebeRetornarNull()
+    {
+        // 1. ARRANGE
+        var idReal = 5;
+        var anuncioEnBD = new Anuncio(1, "Honda", "Civic", "", "Sedan", "1.8L", "Delantera", "Rojo", "Gris", 2022, 1200000, 15000, "Automática", "Gasolina", new List<string> { "Sunroof" }, "Santiago", "Casi nuevo");
+
+        _mockRepo.Setup(r => r.ObtenerPorIdAsync(idReal)).ReturnsAsync(anuncioEnBD);
+
+        // 2. ACT (Un usuario autenticado cualquiera, que NO es el dueño)
+        var resultado = await _servicio.ObtenerAnuncioPorIdAsync(idReal, usuarioId: 99);
+
+        // 3. ASSERT
+        Assert.Null(resultado);
+    }
+
+    // =========================================================================
+    // PRUEBA 10c: Obtener Por Id - Público sin sesión NO ve borradores de nadie
+    // =========================================================================
+    [Fact]
+    public async Task ObtenerAnuncioPorIdAsync_SinSesionYNoPublicado_DebeRetornarNull()
+    {
+        // 1. ARRANGE
+        var idBorrador = 7;
+        var anuncioBorrador = new Anuncio(3, "Toyota", "Corolla", "", "Sedan", "1.8L", "Delantera", "Blanco", "Negro", 2021, 900000, 20000, "Automática", "Gasolina", new List<string>(), "SDQ", "Nuevo");
+
+        _mockRepo.Setup(r => r.ObtenerPorIdAsync(idBorrador)).ReturnsAsync(anuncioBorrador);
+
+        // 2. ACT (Sin token, visitante anónimo)
+        var resultado = await _servicio.ObtenerAnuncioPorIdAsync(idBorrador);
+
+        // 3. ASSERT
+        Assert.Null(resultado);
     }
 
     // =========================================================================

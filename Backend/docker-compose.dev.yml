@@ -46,6 +46,9 @@ services:
       PayPal__CancelUrl: ${PAYPAL_CANCEL_URL}
       PayPal__WebhookId: ${PAYPAL_WEBHOOK_ID}
       Cors__AllowedOrigins: ${CORS_ALLOWED_ORIGINS}
+      Admin__Email: ${ADMIN_EMAIL}
+      Admin__Password: ${ADMIN_PASSWORD}
+      Admin__RotatePassword: ${ADMIN_ROTATE_PASSWORD:-false}
 
     ports:
       - "8080:8080"  # Expuesto para desarrollo

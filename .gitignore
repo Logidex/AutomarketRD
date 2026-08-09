@@ -24,6 +24,10 @@ logs/
 **/coveragereport/
 **/graphify-out/
 
+# Dump y sesiones de análisis (nunca versionar)
+Codigo.txt
+session-*.md
+
 # OS
 .DS_Store
 Thumbs.db

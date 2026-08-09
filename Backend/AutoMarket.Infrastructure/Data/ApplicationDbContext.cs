@@ -17,6 +17,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Lead> Leads { get; set; }
     public DbSet<UsuarioFavorito> Favoritos { get; set; }
     public DbSet<PlanCatalogo> PlanesCatalogo { get; set; }
+    public DbSet<PagoSuscripcion> PagosSuscripcion { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -329,6 +330,56 @@ public class ApplicationDbContext : DbContext
             b.HasIndex(p => p.Nivel)
                 .IsUnique()
                 .HasDatabaseName("IX_PlanesCatalogo_Nivel");
+        });
+
+        // ==========================================
+        // CONFIGURACIÓN: PAGOS DE SUSCRIPCIÓN
+        // ==========================================
+        modelBuilder.Entity<PagoSuscripcion>(b =>
+        {
+            b.HasKey(p => p.Id);
+
+            b.Property(p => p.Nivel)
+                .IsRequired()
+                .HasColumnType("integer");
+
+            b.Property(p => p.Ciclo)
+                .IsRequired()
+                .HasColumnType("integer");
+
+            b.Property(p => p.Estado)
+                .IsRequired()
+                .HasColumnType("integer");
+
+            b.Property(p => p.Monto)
+                .HasPrecision(18, 2);
+
+            b.Property(p => p.Moneda)
+                .IsRequired()
+                .HasMaxLength(10);
+
+            b.Property(p => p.OrderIdPayPal)
+                .HasMaxLength(64);
+
+            b.Property(p => p.EventoIdPayPal)
+                .HasMaxLength(64);
+
+            b.Property(p => p.Referencia)
+                .HasMaxLength(255);
+
+            b.Property(p => p.FechaUtc)
+                .IsRequired()
+                .HasColumnType("timestamp with time zone");
+
+            b.HasOne(p => p.PerfilDealer)
+                .WithMany()
+                .HasForeignKey(p => p.PerfilDealerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            b.HasIndex(p => p.PerfilDealerId)
+                .HasDatabaseName("IX_PagosSuscripcion_PerfilDealerId");
+
+            b.HasIndex(p => p.FechaUtc);
         });
     }
 }

@@ -46,6 +46,9 @@ services:
       PayPal__CancelUrl: ${PAYPAL_CANCEL_URL}
       PayPal__WebhookId: ${PAYPAL_WEBHOOK_ID}
       Cors__AllowedOrigins: ${CORS_ALLOWED_ORIGINS_PROD}  # ← Solo tu dominio real
+      Admin__Email: ${ADMIN_EMAIL_PROD}
+      Admin__Password: ${ADMIN_PASSWORD_PROD}  # ← Contraseña de admin solo para prod
+      Admin__RotatePassword: ${ADMIN_ROTATE_PASSWORD_PROD:-false}
 
     # En producción, solo exponemos el puerto 80 (Nginx o acceso directo)
     ports:
