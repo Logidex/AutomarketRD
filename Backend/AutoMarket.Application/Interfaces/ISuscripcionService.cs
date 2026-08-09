@@ -22,4 +22,5 @@ public interface ISuscripcionService
     Task<SuscripcionDealerDto?> ObtenerSuscripcionAsync(int perfilDealerId);
     Task CancelarSuscripcionAsync(int perfilDealerId);
     Task<bool> ExistePagoPorEventoAsync(string eventoId);
+    Task<bool> ExistePagoPorOrdenAsync(string orderId);
 }

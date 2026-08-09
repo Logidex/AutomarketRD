@@ -177,6 +177,11 @@ public class SuscripcionService : ISuscripcionService
         return await _repository.ExistePagoPorEventoAsync(eventoId);
     }
 
+    public async Task<bool> ExistePagoPorOrdenAsync(string orderId)
+    {
+        return await _repository.ExistePagoPorOrdenAsync(orderId);
+    }
+
     private static DateTime CalcularNuevaVigenciaDesdePago(SuscripcionDealer suscripcion, CicloFacturacion ciclo)
     {
         var ahora = DateTime.UtcNow;

@@ -2,7 +2,9 @@ using System.Globalization;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using AutoMarket.Application.DTOs.Paypal;
 using AutoMarket.Application.Interfaces;
+using AutoMarket.Core.Entities.Enums;
 using Microsoft.Extensions.Configuration;
 
 namespace AutoMarket.Application.Services;
@@ -117,6 +119,75 @@ public class PayPalService : IPayPalService
         }
 
         throw new Exception("No se encontró el link de aprobación de pago en la respuesta de PayPal.");
+    }
+
+    public async Task<DetalleOrdenPayPalDto> ObtenerDetalleOrdenAsync(string idOrden)
+    {
+        var token = await ObtenerTokenDeAccesoAsync();
+
+        var request = new HttpRequestMessage(HttpMethod.Get, $"{_baseUrl}/v2/checkout/orders/{idOrden}");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await _httpClient.SendAsync(request);
+        response.EnsureSuccessStatusCode();
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var document = JsonDocument.Parse(json);
+        var root = document.RootElement;
+
+        var detalle = new DetalleOrdenPayPalDto
+        {
+            OrderId = root.TryGetProperty("id", out var idProp)
+                ? idProp.GetString() ?? idOrden
+                : idOrden,
+            Status = root.TryGetProperty("status", out var statusProp)
+                ? statusProp.GetString() ?? string.Empty
+                : string.Empty
+        };
+
+        if (root.TryGetProperty("purchase_units", out var purchaseUnits) &&
+            purchaseUnits.ValueKind == JsonValueKind.Array &&
+            purchaseUnits.GetArrayLength() > 0)
+        {
+            var purchaseUnit = purchaseUnits[0];
+
+            detalle.ReferenceId = purchaseUnit.TryGetProperty("reference_id", out var referenceProp)
+                ? referenceProp.GetString()
+                : null;
+
+            if (purchaseUnit.TryGetProperty("amount", out var amountEl))
+            {
+                if (amountEl.TryGetProperty("value", out var valorEl))
+                {
+                    decimal.TryParse(valorEl.GetString(), NumberStyles.Any, CultureInfo.InvariantCulture, out var monto);
+                    detalle.Monto = monto;
+                }
+
+                detalle.Moneda = amountEl.TryGetProperty("currency_code", out var monedaEl)
+                    ? monedaEl.GetString() ?? "USD"
+                    : "USD";
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(detalle.ReferenceId))
+        {
+            var partes = detalle.ReferenceId.Split('-');
+
+            if (partes.Length == 6 &&
+                string.Equals(partes[0], "DEALER", StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(partes[2], "PLAN", StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(partes[4], "CICLO", StringComparison.OrdinalIgnoreCase) &&
+                int.TryParse(partes[1], out var dealerId) &&
+                Enum.TryParse<PlanNivel>(partes[3], true, out var plan) &&
+                Enum.TryParse<CicloFacturacion>(partes[5], true, out var ciclo))
+            {
+                detalle.PerfilDealerId = dealerId;
+                detalle.Nivel = plan;
+                detalle.Ciclo = ciclo;
+            }
+        }
+
+        return detalle;
     }
 
     public async Task<bool> CapturarOrdenAsync(string idOrden)

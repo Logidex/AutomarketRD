@@ -119,6 +119,150 @@ public class PagosController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Confirma y activa la suscripción al regresar de PayPal.
+    /// Cubre los casos en que el webhook no llega (p. ej. desarrollo local sin URL pública).
+    /// </summary>
+    [Authorize]
+    [HttpPost("confirmar-pago")]
+    public async Task<IActionResult> ConfirmarPago([FromBody] ConfirmarPagoDto dto)
+    {
+        var usuarioId = User.ObtenerUsuarioId();
+
+        try
+        {
+            if (string.IsNullOrWhiteSpace(dto.OrderId))
+            {
+                return BadRequest(new { mensaje = "Falta el identificador de la orden de PayPal." });
+            }
+
+            var dealer = await _usuarioRepository.ObtenerDealerConPerfilPorIdAsync(usuarioId);
+
+            if (dealer is null || dealer.PerfilDealer is null)
+            {
+                return BadRequest(new { mensaje = "El usuario autenticado no tiene perfil de dealer." });
+            }
+
+            var perfilDealerId = dealer.PerfilDealer.UsuarioId;
+
+            var detalle = await _payPalService.ObtenerDetalleOrdenAsync(dto.OrderId);
+
+            // La orden debe pertenecer al dealer autenticado
+            if (detalle.PerfilDealerId is null || detalle.PerfilDealerId != perfilDealerId)
+            {
+                return BadRequest(new { mensaje = "La orden de PayPal no corresponde a este usuario." });
+            }
+
+            if (detalle.Nivel is null || detalle.Ciclo is null)
+            {
+                return BadRequest(new { mensaje = "La orden de PayPal no contiene un plan válido." });
+            }
+
+            var planNivel = detalle.Nivel.Value;
+            var ciclo = detalle.Ciclo.Value;
+
+            // Si la orden ya fue capturada (p. ej. por el webhook) se continúa de forma idempotente
+            if (string.Equals(detalle.Status, "APPROVED", StringComparison.OrdinalIgnoreCase))
+            {
+                var capturado = await _payPalService.CapturarOrdenAsync(dto.OrderId);
+
+                if (!capturado)
+                {
+                    _logger.LogWarning(
+                        "No fue posible capturar la orden de PayPal al confirmar. OrderId {OrderId}, DealerId {DealerId}",
+                        dto.OrderId, perfilDealerId);
+
+                    return StatusCode(409, new { mensaje = "No fue posible confirmar el pago. Inténtalo nuevamente." });
+                }
+            }
+            else if (!string.Equals(detalle.Status, "COMPLETED", StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogWarning(
+                    "Orden de PayPal no aprobada al confirmar. OrderId {OrderId}, Status {Status}",
+                    dto.OrderId, detalle.Status);
+
+                return BadRequest(new { mensaje = "La orden de PayPal no está aprobada." });
+            }
+
+            // Validación de monto: debe coincidir con el precio del plan en el catálogo
+            var plan = await _planCatalogoService.ObtenerPlanPorNivelAsync(planNivel);
+
+            if (plan is null)
+            {
+                return BadRequest(new { mensaje = "El plan seleccionado no está disponible en este momento." });
+            }
+
+            var precioEsperadoRd = ciclo switch
+            {
+                CicloFacturacion.Mensual => plan.PrecioMensual,
+                CicloFacturacion.Trimestral => plan.PrecioTrimestral,
+                CicloFacturacion.Anual => plan.PrecioAnual,
+                _ => 0m
+            };
+
+            var tasaStr = _configuration["Pago:TasaCambioRD_USD"];
+            var tasa = decimal.TryParse(tasaStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var tasaParseada)
+                ? tasaParseada
+                : 0.017m;
+
+            if (tasa <= 0m)
+                tasa = 0.017m;
+
+            var montoEsperadoUsd = Math.Round(precioEsperadoRd * tasa, 2);
+
+            if (precioEsperadoRd <= 0m || Math.Abs(detalle.Monto - montoEsperadoUsd) > 0.01m)
+            {
+                _logger.LogWarning(
+                    "Confirmación con monto que no coincide con el plan. OrderId {OrderId}, DealerId {DealerId}, Esperado {MontoEsperadoUsd}, Recibido {Monto}",
+                    dto.OrderId, perfilDealerId, montoEsperadoUsd, detalle.Monto);
+
+                return BadRequest(new { mensaje = "El monto del pago no coincide con el plan seleccionado." });
+            }
+
+            // Idempotencia: si esta orden ya fue procesada (webhook o reintento), se ignora
+            if (await _suscripcionService.ExistePagoPorOrdenAsync(dto.OrderId))
+            {
+                _logger.LogInformation(
+                    "Confirmación de pago duplicada ignorada. OrderId {OrderId}",
+                    dto.OrderId);
+
+                return Ok(new { exito = true, yaProcesado = true });
+            }
+
+            await _suscripcionService.ProcesarPagoSuscripcionAsync(perfilDealerId, planNivel, ciclo);
+
+            try
+            {
+                await _suscripcionService.RegistrarPagoAsync(
+                    perfilDealerId,
+                    planNivel,
+                    ciclo,
+                    detalle.Monto,
+                    detalle.Moneda,
+                    dto.OrderId,
+                    null,
+                    detalle.ReferenceId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "No se pudo registrar el historial del pago al confirmar. OrderId {OrderId}, DealerId {DealerId}",
+                    dto.OrderId, perfilDealerId);
+            }
+
+            _logger.LogInformation(
+                "Pago PayPal confirmado y suscripción activada. OrderId {OrderId}, DealerId {DealerId}, Plan {Plan}, Ciclo {Ciclo}",
+                dto.OrderId, perfilDealerId, planNivel, ciclo);
+
+            return Ok(new { exito = true });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error confirmando el pago de PayPal para el usuario autenticado.");
+            return StatusCode(500, new { mensaje = "Ocurrió un error al confirmar el pago." });
+        }
+    }
+
     [AllowAnonymous]
     [HttpPost("webhook")]
     public async Task<IActionResult> PayPalWebhook()

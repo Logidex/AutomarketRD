@@ -51,4 +51,10 @@ public class SuscripcionRepository : ISuscripcionRepository
         return await _context.PagosSuscripcion
             .AnyAsync(p => p.EventoIdPayPal == eventoId);
     }
+
+    public async Task<bool> ExistePagoPorOrdenAsync(string orderId)
+    {
+        return await _context.PagosSuscripcion
+            .AnyAsync(p => p.OrderIdPayPal == orderId);
+    }
 }

@@ -17,4 +17,8 @@ export const pagosService = {
     );
     return response.data;
   },
+
+  async confirmarPago(orderId: string): Promise<void> {
+    await api.post('/api/pagos/confirmar-pago', { orderId });
+  },
 };
