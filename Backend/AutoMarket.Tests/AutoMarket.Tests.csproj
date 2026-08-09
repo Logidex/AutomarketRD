@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.9" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageReference Include="Moq" Version="4.20.72" />
     <PackageReference Include="xunit" Version="2.9.3" />
@@ -23,6 +24,7 @@
     <ProjectReference Include="..\AutoMarket.Application\AutoMarket.Application.csproj" />
     <ProjectReference Include="..\AutoMarket.Core\AutoMarket.Core.csproj" />
     <ProjectReference Include="..\AutoMarket.API\AutoMarket.API.csproj" />
+    <ProjectReference Include="..\AutoMarket.Infrastructure\AutoMarket.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
