@@ -4,6 +4,8 @@ import { FaCreditCard } from "react-icons/fa";
 import { planesService, type PlanCatalogo } from "../services/planes.service";
 import { pagosService } from "../services/pagos.service";
 import { suscripcionService, type SuscripcionDealer, type PagoSuscripcion } from "../services/suscripcion.service";
+import { dashboardService } from "../services/dashboard.service";
+import Spinner from "../components/Spinner";
 
 type Ciclo = "Mensual" | "Trimestral" | "Anual";
 
@@ -16,6 +18,7 @@ export default function DashboardSuscripcion() {
   const [ciclo, setCiclo] = useState<Ciclo>("Mensual");
   const [cargando, setCargando] = useState(true);
   const [procesando, setProcesando] = useState<string | null>(null);
+  const [anunciosActivos, setAnunciosActivos] = useState<number | null>(null);
 
   const cargarSuscripcion = async () => {
     try {
@@ -40,6 +43,13 @@ export default function DashboardSuscripcion() {
         setPagos(await suscripcionService.obtenerHistorialPagos());
       } catch {
         setPagos([]);
+      }
+
+      try {
+        const resumen = await dashboardService.obtenerResumen();
+        setAnunciosActivos(resumen.anunciosActivos ?? 0);
+      } catch {
+        setAnunciosActivos(null);
       }
 
       setCargando(false);
@@ -136,11 +146,7 @@ export default function DashboardSuscripcion() {
   const planesPago = planes.filter((p) => p.nivel !== "Gratis");
 
   if (cargando) {
-    return (
-      <div className="p-6">
-        <div className="text-gray-500">Cargando tu suscripción...</div>
-      </div>
-    );
+    return <Spinner />;
   }
 
   const esActiva =
@@ -167,7 +173,10 @@ export default function DashboardSuscripcion() {
               </p>
               {suscripcion && (
                 <p className="text-sm text-gray-500">
-                  {suscripcion.limiteAnuncios} anuncios ·{" "}
+                  {anunciosActivos !== null
+                    ? `${anunciosActivos} de ${suscripcion.limiteAnuncios} anuncios en uso`
+                    : `${suscripcion.limiteAnuncios} anuncios en tu plan`}{" "}
+                  ·{" "}
                   {suscripcion.estado === "Activa"
                     ? `${suscripcion.diasRestantes} días restantes`
                     : suscripcion.estado === "Cancelada"

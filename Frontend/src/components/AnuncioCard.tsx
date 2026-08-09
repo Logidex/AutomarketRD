@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { FaTrash } from "react-icons/fa";
+import { FaTrash, FaEye } from "react-icons/fa";
 import type { AnuncioListado } from "../types/anuncio.types";
 
 interface AnuncioCardProps {
@@ -76,15 +76,20 @@ export default function AnuncioCard({
             alt={nombreAnuncio}
             className="h-56 w-full object-cover lg:h-full lg:min-h-[240px]"
           />
-          <div className="absolute left-3 top-3">
-            <span
-              className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${getEstadoStyle(
-                estadoNormalizado,
-              )}`}
-            >
-              {estadoNormalizado || "Sin estado"}
-            </span>
-          </div>
+            <div className="absolute left-3 top-3">
+              <span
+                className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${getEstadoStyle(
+                  estadoNormalizado,
+                )}`}
+              >
+                {estadoNormalizado || "Sin estado"}
+              </span>
+            </div>
+            <div className="absolute right-3 top-3">
+              <span className="inline-flex items-center gap-1 rounded-full bg-black/60 px-2.5 py-1 text-xs font-semibold text-white">
+                <FaEye /> {anuncio.vistas ?? 0}
+              </span>
+            </div>
         </div>
 
         <div className="flex-1 p-4 sm:p-5">

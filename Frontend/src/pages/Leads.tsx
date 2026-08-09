@@ -9,6 +9,7 @@ import {
 } from "react-icons/fa";
 import { leadService } from "../services/lead.service";
 import type { LeadDealer } from "../types/lead.types";
+import Spinner from "../components/Spinner";
 
 export default function Leads() {
   const [leads, setLeads] = useState<LeadDealer[]>([]);
@@ -71,7 +72,7 @@ export default function Leads() {
       </div>
 
       {cargando ? (
-        <p className="text-gray-500">Cargando leads...</p>
+        <Spinner />
       ) : leads.length === 0 ? (
         <div className="flex min-h-[300px] flex-col items-center justify-center rounded-2xl border border-gray-200 bg-white px-6 text-center shadow-sm">
           <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-50">

@@ -21,6 +21,7 @@ public class DashboardResumenDto
     // Nuevos: suscripción
     public string PlanActual { get; set; } = "N/A";
     public int DiasRestantesSuscripcion { get; set; }
+    public int LimiteAnuncios { get; set; }
 
     // Nuevos: anuncios más vistos
     public List<AnuncioMasVistoDto> AnunciosMasVistos { get; set; } = new();

@@ -30,6 +30,8 @@ export interface AnuncioListado {
   // Borrador, Publicado, Vendido, Pausado, etc.
   estado: string;
 
+  vistas: number;
+
   fotos: string[];
 }
 

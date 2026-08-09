@@ -207,6 +207,7 @@ public class AnuncioService : IAnuncioService
 
                 Ubicacion = e.Ubicacion,
                 Estado = e.Estado,
+                Vistas = e.Vistas,
 
                 Fotos = e.Fotos
                     .Take(1)
@@ -458,6 +459,7 @@ public class AnuncioService : IAnuncioService
 
                 Ubicacion = a.Ubicacion,
                 Estado = a.Estado,
+                Vistas = a.Vistas,
 
                 Fotos =
                     a.Fotos != null && a.Fotos.Any()

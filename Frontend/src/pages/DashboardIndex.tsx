@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { dashboardService, type DashboardResumen } from '../services/dashboard.service';
 import Swal from 'sweetalert2';
+import Spinner from '../components/Spinner';
 
 export default function DashboardIndex() {
   const [resumen, setResumen] = useState<DashboardResumen | null>(null);
@@ -28,11 +29,7 @@ export default function DashboardIndex() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="p-6">
-        <div className="text-gray-500">Cargando métricas...</div>
-      </div>
-    );
+    return <Spinner />;
   }
 
   if (!resumen) {
@@ -50,7 +47,7 @@ export default function DashboardIndex() {
         planActual={resumen.planActual}
         diasRestantes={resumen.diasRestantesSuscripcion}
         anunciosActivos={resumen.anunciosActivos ?? 0}
-        totalAnuncios={resumen.totalAnuncios ?? 0}
+        limiteAnuncios={resumen.limiteAnuncios ?? 0}
       />
 
       {/* Fila 1: Métricas principales */}
@@ -166,30 +163,64 @@ function PlanBanner({
   planActual,
   diasRestantes,
   anunciosActivos,
-  totalAnuncios,
+  limiteAnuncios,
 }: {
   planActual: string | null | undefined;
   diasRestantes: number | null | undefined;
   anunciosActivos: number;
-  totalAnuncios: number;
+  limiteAnuncios: number;
 }) {
-  const esPlanGratis = planActual === "Gratis";
   const sinPlan = !planActual || planActual === "N/A";
 
-  if (!esPlanGratis && !sinPlan) return null;
+  if (sinPlan) {
+    return (
+      <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4">
+        <span className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-amber-400 text-sm font-bold text-white">
+          !
+        </span>
+        <div>
+          <p className="font-semibold text-amber-900">Plan no configurado</p>
+          <p className="text-sm text-amber-800">
+            Aún no tienes un plan configurado. Contacta a soporte para activar tu suscripción.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
-  const mensaje = sinPlan
-    ? "Aún no tienes un plan configurado. Contacta a soporte para activar tu suscripción."
-    : `Estás en el Plan Gratis (${anunciosActivos}/${totalAnuncios} anuncios activos) y vence en ${diasRestantes ?? 0} días.`;
+  const disponibles = Math.max(0, (limiteAnuncios ?? 0) - anunciosActivos);
+  const usarRojo = disponibles === 0;
+
+  const mensaje = usarRojo
+    ? `Alcanzaste el límite de tu plan (${limiteAnuncios} anuncios). Cambia de plan para seguir publicando.`
+    : `Usando ${anunciosActivos} de ${limiteAnuncios} anuncios del plan (${disponibles} disponibles) · vence en ${diasRestantes ?? 0} días.`;
 
   return (
-    <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4">
-      <span className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-amber-400 text-sm font-bold text-white">
+    <div
+      className={`flex items-start gap-3 rounded-lg border p-4 ${
+        usarRojo ? "border-red-200 bg-red-50" : "border-blue-200 bg-blue-50"
+      }`}
+    >
+      <span
+        className={`mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold text-white ${
+          usarRojo ? "bg-red-500" : "bg-blue-500"
+        }`}
+      >
         !
       </span>
       <div>
-        <p className="font-semibold text-amber-900">Plan {planActual || "no configurado"}</p>
-        <p className="text-sm text-amber-800">{mensaje}</p>
+        <p
+          className={`font-semibold ${
+            usarRojo ? "text-red-700" : "text-blue-900"
+          }`}
+        >
+          Plan {planActual}
+        </p>
+        <p
+          className={`text-sm ${usarRojo ? "text-red-600" : "text-blue-800"}`}
+        >
+          {mensaje}
+        </p>
       </div>
     </div>
   );

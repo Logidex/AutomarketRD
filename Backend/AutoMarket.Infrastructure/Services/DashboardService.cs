@@ -67,7 +67,7 @@ public class DashboardService : IDashboardService
         var totalAnuncios = await anunciosDealer.CountAsync();
 
         var anunciosActivos = await anunciosDealer
-            .CountAsync(a => a.Estado == "Publicado");
+            .CountAsync(a => a.Estado == "Publicado" || a.Estado == "Pausado");
         var anunciosBorrador = await anunciosDealer
             .CountAsync(a => a.Estado == "Borrador");
         var anunciosVendidos = await anunciosDealer
@@ -88,10 +88,12 @@ public class DashboardService : IDashboardService
 
         string planActual = "N/A";
         int diasRestantes = 0;
+        int limiteAnuncios = 0;
 
         if (perfilDealer?.Suscripcion != null)
         {
             planActual = perfilDealer.Suscripcion.Nivel.ToString();
+            limiteAnuncios = perfilDealer.Suscripcion.LimiteAnuncios;
             diasRestantes = Math.Max(
                 0,
                 (perfilDealer.Suscripcion.FechaVencimientoUtc.Date - DateTime.UtcNow.Date).Days
@@ -122,6 +124,7 @@ public class DashboardService : IDashboardService
             LeadsNoLeidos = leadsNoLeidos,
             PlanActual = planActual,
             DiasRestantesSuscripcion = diasRestantes,
+            LimiteAnuncios = limiteAnuncios,
             AnunciosMasVistos = anunciosMasVistos
         };
     }

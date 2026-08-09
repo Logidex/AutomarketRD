@@ -14,6 +14,7 @@ import {
 } from "../services/perfilDealer.service";
 import { getUserIdFromToken } from "../utils/jwt.util";
 import { useLoading } from "../context/LoadingContext";
+import Spinner from "../components/Spinner";
 
 const CAMPOS_VACIOS = {
   nombreAgencia: "",
@@ -171,9 +172,7 @@ export default function MiPerfil() {
   }
 
   if (cargando) {
-    return (
-      <div className="p-6 text-gray-500">Cargando perfil...</div>
-    );
+    return <Spinner />;
   }
 
   if (!perfilExiste && !modoEdicion) {

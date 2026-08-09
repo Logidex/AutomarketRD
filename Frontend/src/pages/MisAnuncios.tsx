@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import AnuncioCard from "../components/AnuncioCard";
+import Spinner from "../components/Spinner";
 import { anuncioService } from "../services/anuncio.service";
+import { dashboardService, type DashboardResumen } from "../services/dashboard.service";
 import type { AnuncioListado } from "../types/anuncio.types";
 import { getUserIdFromToken } from "../utils/jwt.util";
 import { Link } from "react-router-dom";
@@ -9,6 +11,7 @@ import { FaCar, FaPlusCircle } from "react-icons/fa";
 
 export default function MisAnuncios() {
   const [anuncios, setAnuncios] = useState<AnuncioListado[]>([]);
+  const [resumen, setResumen] = useState<DashboardResumen | null>(null);
   const [cargando, setCargando] = useState(true);
   const usuarioId = getUserIdFromToken();
 
@@ -28,6 +31,12 @@ export default function MisAnuncios() {
           icon: "error",
           confirmButtonColor: "#ef4444",
         });
+      }
+
+      try {
+        setResumen(await dashboardService.obtenerResumen());
+      } catch {
+        // El banner de uso del plan es opcional; no bloquea la lista.
       } finally {
         setCargando(false);
       }
@@ -45,11 +54,7 @@ export default function MisAnuncios() {
   }
 
   if (cargando) {
-    return (
-      <div className="mx-auto max-w-6xl p-6">
-        <p className="text-gray-500">Cargando anuncios...</p>
-      </div>
-    );
+    return <Spinner />;
   }
 
   const handlePublicar = async (id: number) => {
@@ -72,7 +77,7 @@ export default function MisAnuncios() {
       console.error(error);
       Swal.fire({
         title: "Error",
-        text: "No se pudo publicar el anuncio.",
+        text: error instanceof Error ? error.message : "No se pudo publicar el anuncio.",
         icon: "error",
         confirmButtonColor: "#ef4444",
       });
@@ -112,7 +117,7 @@ export default function MisAnuncios() {
       console.error(error);
       Swal.fire({
         title: "Error",
-        text: "No se pudo cambiar el estado del anuncio.",
+        text: error instanceof Error ? error.message : "No se pudo cambiar el estado del anuncio.",
         icon: "error",
         confirmButtonColor: "#ef4444",
       });
@@ -148,12 +153,16 @@ export default function MisAnuncios() {
       console.error(error);
       Swal.fire({
         title: "Error",
-        text: "No se pudo eliminar el anuncio.",
+        text: error instanceof Error ? error.message : "No se pudo eliminar el anuncio.",
         icon: "error",
         confirmButtonColor: "#ef4444",
       });
     }
   };
+
+  const activosEnVitrina = resumen?.anunciosActivos ?? 0;
+  const limitePlan = resumen?.limiteAnuncios ?? 0;
+  const disponibles = Math.max(0, limitePlan - activosEnVitrina);
 
   return (
     <div className="mx-auto max-w-6xl p-6">
@@ -170,6 +179,53 @@ export default function MisAnuncios() {
           </Link>
         )}
       </div>
+
+      {resumen && limitePlan > 0 && (
+        <div
+          className={`mb-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border p-4 ${
+            disponibles === 0 ? "border-red-200 bg-red-50" : "border-gray-200 bg-white"
+          }`}
+        >
+          <div className="min-w-0">
+            <p
+              className={`text-sm font-semibold ${
+                disponibles === 0 ? "text-red-700" : "text-gray-800"
+              }`}
+            >
+              Uso del plan {resumen.planActual}
+            </p>
+            <p
+              className={`text-sm ${
+                disponibles === 0 ? "text-red-600" : "text-gray-500"
+              }`}
+            >
+              {disponibles === 0
+                ? `Alcanzaste el límite de tu plan (${limitePlan} anuncios). Cambia de plan para seguir publicando.`
+                : `Estás usando ${activosEnVitrina} de ${limitePlan} anuncios de tu plan (${disponibles} disponibles).`}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-semibold text-gray-500">
+              {activosEnVitrina}/{limitePlan}
+            </span>
+            <div className="h-2 w-40 overflow-hidden rounded-full bg-gray-200">
+              <div
+                className={`h-full rounded-full ${
+                  disponibles === 0
+                    ? "bg-red-500"
+                    : disponibles === 1
+                      ? "bg-amber-500"
+                      : "bg-blue-500"
+                }`}
+                style={{
+                  width: `${Math.min(100, (activosEnVitrina / limitePlan) * 100)}%`,
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {anuncios.length === 0 ? (
         <div className="flex min-h-[420px] flex-col items-center justify-center rounded-2xl border border-gray-200 bg-white px-6 text-center shadow-sm">
