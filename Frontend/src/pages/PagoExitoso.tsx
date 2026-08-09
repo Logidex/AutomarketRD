@@ -8,16 +8,13 @@ type Estado = "procesando" | "exito" | "error";
 
 export default function PagoExitoso() {
   const [params] = useSearchParams();
-  const [estado, setEstado] = useState<Estado>("procesando");
-  const [mensajeError, setMensajeError] = useState<string>("");
 
   const orderId = params.get("token");
+  const [estado, setEstado] = useState<Estado>(orderId ? "procesando" : "exito");
+  const [mensajeError, setMensajeError] = useState<string>("");
 
   useEffect(() => {
-    if (!orderId) {
-      setEstado("exito");
-      return;
-    }
+    if (!orderId) return;
 
     let activo = true;
 
