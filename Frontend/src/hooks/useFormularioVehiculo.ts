@@ -5,7 +5,10 @@ import { anuncioService } from '../services/anuncio.service';
 import type { AnuncioCreateRequestDto } from '../types/anuncio.types';
 import { useLoading } from '../context/LoadingContext';
 
-export const useFormularioVehiculo = (isEditMode: boolean = false) => {
+export const useFormularioVehiculo = (
+  isEditMode: boolean = false,
+  destino: string = "/dashboard/mis-anuncios",
+) => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { setLoading } = useLoading();
@@ -57,14 +60,14 @@ export const useFormularioVehiculo = (isEditMode: boolean = false) => {
           }
         } catch {
           Swal.fire("Error", "No se cargaron los datos", "error");
-          navigate("/dashboard/mis-anuncios");
+          navigate(destino);
         } finally {
           setLoading(false);
         }
       };
       cargarAnuncio();
     }
-  }, [id, isEditMode, navigate, setLoading]);
+  }, [id, isEditMode, navigate, setLoading, destino]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -136,7 +139,7 @@ export const useFormularioVehiculo = (isEditMode: boolean = false) => {
         if (archivos.length > 0) await anuncioService.subirImagenes(response.id, archivos);
         Swal.fire("Éxito", "Creado correctamente", "success");
       }
-      navigate("/dashboard/mis-anuncios");
+      navigate(destino);
     } catch (err) {
       console.error(err);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

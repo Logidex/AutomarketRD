@@ -21,6 +21,13 @@ import Leads from './pages/Leads';
 import MiPerfil from './pages/MiPerfil';
 import DashboardSuscripcion from './pages/DashboardSuscripcion';
 
+// Páginas del área de Vendedor
+import MiVehiculoVendedor from './pages/vendedor/MiVehiculoVendedor';
+import PublicarVehiculoVendedor from './pages/vendedor/PublicarVehiculoVendedor';
+import EditarVehiculoVendedor from './pages/vendedor/EditarVehiculoVendedor';
+import InteresadosVendedor from './pages/vendedor/InteresadosVendedor';
+import VendedorLayout from './components/layout/VendedorLayout';
+
 function App() {
   return (
     <Routes>
@@ -45,21 +52,26 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/registro" element={<Registro />} />
 
-      {/* RUTA TEMPORAL PARA VENDEDORES */}
+      {/* ÁREA DE VENDEDOR (UNA CUENTA = UN ANUNCIO) */}
       <Route
-        path="/vendedor"
         element={
-          <div className="p-8">
-            <h1 className="text-3xl font-bold">
-              Interfaz de Vendedor
-            </h1>
-
-            <p className="mt-2 text-gray-600">
-              Esta sección estará disponible próximamente.
-            </p>
-          </div>
+          <ProtectedRoute allowedRoles={[ROLES.VENDEDOR]} />
         }
-      />
+      >
+        <Route path="/vendedor" element={<VendedorLayout />}>
+          {/* /vendedor */}
+          <Route index element={<MiVehiculoVendedor />} />
+
+          {/* /vendedor/publicar */}
+          <Route path="publicar" element={<PublicarVehiculoVendedor />} />
+
+          {/* /vendedor/editar-anuncio/:id */}
+          <Route path="editar-anuncio/:id" element={<EditarVehiculoVendedor />} />
+
+          {/* /vendedor/interesados */}
+          <Route path="interesados" element={<InteresadosVendedor />} />
+        </Route>
+      </Route>
 
       {/* DASHBOARD EXCLUSIVO PARA DEALERS */}
       <Route
