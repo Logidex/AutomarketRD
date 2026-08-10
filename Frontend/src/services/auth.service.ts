@@ -46,6 +46,17 @@ export const authService = {
     localStorage.removeItem('user');
   },
 
+  // Actualiza solo las partes editadas del usuario guardado (nombre, correo, etc.)
+  actualizarUsuario(patch: Partial<UsuarioAuth>) {
+    const usuario = this.getCurrentUser();
+    if (!usuario) return;
+
+    localStorage.setItem(
+      'user',
+      JSON.stringify({ ...usuario, ...patch })
+    );
+  },
+
   isAuthenticated(): boolean {
     return !!localStorage.getItem('token');
   },

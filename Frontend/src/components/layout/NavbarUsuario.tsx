@@ -6,6 +6,7 @@ import {
   FaHistory,
   FaSignOutAlt,
   FaUser,
+  FaUserEdit,
 } from "react-icons/fa";
 import { authService } from "../../services/auth.service";
 import { ROLES } from "../../constants/roles";
@@ -141,6 +142,16 @@ export default function NavbarUsuario() {
           >
             <FaHistory className="text-[#9aa1b1]" />
             Recientes
+          </Link>
+
+          <Link
+            to="/perfil/editar"
+            role="menuitem"
+            onClick={() => setMenuAbierto(false)}
+            className="flex items-center gap-3 px-4 py-3 text-sm text-gray-200 transition-colors hover:bg-white/5"
+          >
+            <FaUserEdit className="text-[#9aa1b1]" />
+            Editar Perfil
           </Link>
 
           <button
