@@ -254,63 +254,116 @@ export default function VendedorPublico() {
                   </div>
                 </section>
               ) : (
-                /* DEALER: perfil de agencia */
-                <section className="rounded-2xl border border-white/10 bg-gradient-to-br from-[#13161d] to-[#0c101b] p-6 sm:p-8">
-                  <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
-                    <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white/5">
-                      {perfil?.logoUrl ? (
-                        <img
-                          src={perfil.logoUrl}
-                          alt={perfil.nombreAgencia}
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <FaStore className="text-3xl text-blue-400" />
-                      )}
+                /* DEALER: perfil de agencia premium */
+                <section className="relative overflow-hidden rounded-2xl border border-blue-500/30 bg-gradient-to-br from-[#0d1b2e] via-[#13161d] to-[#0c101b] p-6 sm:p-8">
+                  <div className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-blue-500/10 blur-3xl" />
+                  <div className="pointer-events-none absolute -bottom-24 -left-16 h-52 w-52 rounded-full bg-blue-500/5 blur-3xl" />
+
+                  <div className="relative">
+                    <span className="inline-flex items-center gap-2 rounded-full bg-blue-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-blue-300">
+                      <FaStore className="text-sm" />
+                      Agencia de vehículos
+                    </span>
+
+                    <div className="mt-6 flex flex-col gap-6 sm:flex-row sm:items-center">
+                      <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-2 border-blue-500/30 bg-white/5 shadow-lg shadow-blue-500/10">
+                        {perfil?.logoUrl ? (
+                          <img
+                            src={perfil.logoUrl}
+                            alt={perfil.nombreAgencia}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <FaStore className="text-4xl text-blue-400" />
+                        )}
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        <h1 className="truncate text-2xl font-extrabold sm:text-3xl">
+                          {perfil?.nombreAgencia}
+                        </h1>
+                        <p className="mt-1 text-sm text-[#9aa1b1]">
+                          Agencia de venta de vehículos en AutoMarket RD.
+                        </p>
+
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {perfil?.ubicacion && (
+                            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-gray-200">
+                              <FaMapMarkerAlt className="text-blue-400" />
+                              {perfil.ubicacion}
+                            </span>
+                          )}
+                          {perfil?.horarios && (
+                            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-gray-200">
+                              <FaClock className="text-blue-400" />
+                              {perfil.horarios}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {renderBotonesContacto()}
                     </div>
 
-                    <div className="min-w-0 flex-1">
-                      <h1 className="truncate text-2xl font-bold sm:text-3xl">
-                        {perfil?.nombreAgencia}
-                      </h1>
-                      {perfil?.ubicacion && (
-                        <p className="mt-1 flex items-center gap-2 text-sm text-[#9aa1b1]">
-                          <FaMapMarkerAlt className="text-gray-500" />
-                          {perfil.ubicacion}
+                    <div className="mt-6 grid grid-cols-1 gap-3 rounded-xl border border-blue-500/20 bg-blue-500/5 p-4 sm:grid-cols-3">
+                      <div>
+                        <p className="text-[11px] uppercase tracking-wide text-[#9aa1b1]">
+                          Vehículos publicados
                         </p>
-                      )}
-                      {perfil?.horarios && (
-                        <p className="mt-1 flex items-center gap-2 text-sm text-[#9aa1b1]">
-                          <FaClock className="text-gray-500" />
-                          {perfil.horarios}
+                        <p className="mt-1 text-xl font-bold text-blue-400">
+                          {anuncios.length}
                         </p>
-                      )}
+                      </div>
+                      <div>
+                        <p className="text-[11px] uppercase tracking-wide text-[#9aa1b1]">
+                          Ubicación
+                        </p>
+                        <p className="mt-1 truncate text-sm font-semibold text-gray-200">
+                          {perfil?.ubicacion || "—"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-[11px] uppercase tracking-wide text-[#9aa1b1]">
+                          Horarios
+                        </p>
+                        <p className="mt-1 truncate text-sm font-semibold text-gray-200">
+                          {perfil?.horarios || "—"}
+                        </p>
+                      </div>
                     </div>
 
-                    {renderBotonesContacto()}
+                    {perfil?.descripcion && (
+                      <div className="mt-6 rounded-xl border border-white/10 bg-white/5 p-4">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-[#9aa1b1]">
+                          Sobre la agencia
+                        </p>
+                        <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-[#c3c9d4]">
+                          {perfil.descripcion}
+                        </p>
+                      </div>
+                    )}
                   </div>
-
-                  {perfil?.descripcion && (
-                    <p className="mt-6 whitespace-pre-line border-t border-white/10 pt-6 text-sm leading-relaxed text-[#c3c9d4]">
-                      {perfil.descripcion}
-                    </p>
-                  )}
                 </section>
               )}
 
               {/* INVENTARIO */}
               <section className="mt-10">
-                <h2 className="text-xl font-bold">
-                  {esParticular ? "Su vehículo en venta" : "Vehículos en venta"}
-                  <span className="ml-2 text-sm font-normal text-[#9aa1b1]">
-                    ({anuncios.length})
-                  </span>
-                </h2>
-                {esParticular && (
-                  <p className="mt-1 text-sm text-[#9aa1b1]">
-                    Los vendedores particulares publican un solo vehículo.
-                  </p>
-                )}
+                <div className="flex items-center gap-3">
+                  {!esParticular && (
+                    <span className="h-6 w-1 rounded-full bg-gradient-to-b from-blue-400 to-blue-600" />
+                  )}
+                  <h2 className="text-xl font-bold">
+                    {esParticular ? "Su vehículo en venta" : "Inventario de la agencia"}
+                    <span className="ml-2 text-sm font-normal text-[#9aa1b1]">
+                      ({anuncios.length})
+                    </span>
+                  </h2>
+                </div>
+                <p className="mt-1 text-sm text-[#9aa1b1]">
+                  {esParticular
+                    ? "Los vendedores particulares publican un solo vehículo."
+                    : "Todos los vehículos disponibles de esta agencia."}
+                </p>
 
                 {anuncios.length === 0 ? (
                   <div className="mt-6 rounded-2xl border border-white/10 bg-[#13161d] p-16 text-center">
