@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { FaHeart, FaSignOutAlt, FaUserCircle } from "react-icons/fa";
+import { FaHeart, FaHistory, FaSignOutAlt, FaUserCircle } from "react-icons/fa";
 import { authService } from "../services/auth.service";
 
 export default function MiCuenta() {
@@ -40,11 +40,8 @@ export default function MiCuenta() {
         <div className="mt-8 flex flex-col gap-3 rounded-2xl border border-white/10 bg-[#13161d] p-6 text-sm text-[#9aa1b1]">
           <p>
             Tu actividad del comprador: <strong className="text-gray-200">favoritos</strong>,
-            <strong className="text-gray-200"> búsquedas recientes</strong> y la opción
-            de <strong className="text-gray-200">editar tus datos</strong>.
-          </p>
-          <p className="text-xs text-[#6b7280]">
-            Proximamente: historial de búsquedas y edición de tu usuario.
+            <strong className="text-gray-200"> vehículos recientes</strong> y, próximamente, la
+            opción de <strong className="text-gray-200">editar tus datos</strong>.
           </p>
 
           <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -55,13 +52,13 @@ export default function MiCuenta() {
               <FaHeart className="text-red-400" />
               Mis Favoritos
             </Link>
-            <button
-              type="button"
-              title="Próximamente"
-              className="flex cursor-not-allowed items-center justify-center gap-2 rounded-lg border border-white/10 px-5 py-3 font-semibold text-[#6b7280]"
+            <Link
+              to="/perfil/historial"
+              className="flex items-center justify-center gap-2 rounded-lg bg-white/5 px-5 py-3 font-semibold text-white transition-colors hover:bg-blue-500"
             >
-              Mi Historial
-            </button>
+              <FaHistory className="text-blue-400" />
+              Vehículos Recientes
+            </Link>
           </div>
         </div>
 

@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   FaChevronDown,
   FaHeart,
+  FaHistory,
   FaSignOutAlt,
   FaUser,
 } from "react-icons/fa";
@@ -130,6 +131,16 @@ export default function NavbarUsuario() {
           >
             <FaHeart className="text-[#9aa1b1]" />
             Mis Favoritos
+          </Link>
+
+          <Link
+            to="/perfil/historial"
+            role="menuitem"
+            onClick={() => setMenuAbierto(false)}
+            className="flex items-center gap-3 px-4 py-3 text-sm text-gray-200 transition-colors hover:bg-white/5"
+          >
+            <FaHistory className="text-[#9aa1b1]" />
+            Recientes
           </Link>
 
           <button

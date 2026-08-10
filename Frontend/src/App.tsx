@@ -23,6 +23,7 @@ import Leads from './pages/Leads';
 import MiPerfil from './pages/MiPerfil';
 import MiCuenta from './pages/MiCuenta';
 import Favoritos from './pages/Favoritos';
+import Historial from './pages/Historial';
 import DashboardSuscripcion from './pages/DashboardSuscripcion';
 
 // Páginas del área de Vendedor
@@ -60,6 +61,7 @@ function App() {
       >
         <Route path="/perfil" element={<MiCuenta />} />
         <Route path="/perfil/favoritos" element={<Favoritos />} />
+        <Route path="/perfil/historial" element={<Historial />} />
       </Route>
 
       {/* ÁREA DE VENDEDOR (UNA CUENTA = UN ANUNCIO) */}

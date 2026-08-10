@@ -17,6 +17,7 @@ import {
 import { anuncioService } from "../services/anuncio.service";
 import { leadService } from "../services/lead.service";
 import { favoritoService } from "../services/favorito.service";
+import { historialService } from "../services/historial.service";
 import { authService } from "../services/auth.service";
 import type { AnuncioDetalle } from "../types/anuncio.types";
 import logo from "../assets/AutoMarketRD_Logo.svg";
@@ -232,6 +233,9 @@ export default function DetalleAnuncio() {
         if (activo) setEsFavorito(lista.some((f) => f.id === anuncio.id));
       })
       .catch(() => {});
+
+    // Registra la visita en el historial del comprador (sin bloquear la página)
+    historialService.registrarVista(anuncio.id).catch(() => {});
 
     return () => {
       activo = false;
