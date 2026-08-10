@@ -104,6 +104,8 @@ export default function DetalleAnuncio() {
   const esPropietario =
     usuario != null && anuncio != null && usuario.usuarioId === anuncio.usuarioId;
 
+  const esVendedorParticular = anuncio?.esVendedorParticular === true;
+
   const fotoPrincipal =
     anuncio != null && anuncio.fotos && anuncio.fotos.length > 0
       ? anuncio.fotos[fotoActiva]
@@ -165,7 +167,9 @@ export default function DetalleAnuncio() {
       await Swal.fire({
         icon: "success",
         title: "Mensaje enviado",
-        text: "El vendedor recibió tu mensaje y te contactará pronto.",
+        text: esVendedorParticular
+          ? "El vendedor recibió tu mensaje y te contactará pronto."
+          : "La agencia recibió tu mensaje y te contactará pronto.",
         confirmButtonColor: "#3b82f6",
       });
 
@@ -563,19 +567,33 @@ export default function DetalleAnuncio() {
                 </div>
               ) : (
                 <div className="rounded-2xl border border-white/10 bg-[#13161d] p-6">
-                  <h2 className="text-lg font-bold">Contactar vendedor</h2>
+                  <h2 className="text-lg font-bold">
+                    {esVendedorParticular ? "Contactar vendedor" : "Contactar agencia"}
+                  </h2>
                   {anuncio.nombreVendedor && (
                     <p className="mt-1 text-sm font-medium text-[#c3c9d4]">
                       {anuncio.nombreVendedor}
                     </p>
                   )}
 
+                  <span
+                    className={`mt-2 inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                      esVendedorParticular
+                        ? "bg-violet-500/15 text-violet-300"
+                        : "bg-blue-500/15 text-blue-300"
+                    }`}
+                  >
+                    {esVendedorParticular ? "Vendedor particular" : "Dealer (agencia)"}
+                  </span>
+
                   <Link
                     to={`/vendedor/${anuncio.usuarioId}`}
                     className="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-blue-400 transition-colors hover:text-blue-300"
                   >
                     <FaStore />
-                    Ver perfil del vendedor
+                    {esVendedorParticular
+                      ? "Ver perfil del vendedor"
+                      : "Ver perfil de la agencia"}
                   </Link>
 
                   <div className="mt-5 grid grid-cols-1 gap-3">
@@ -684,8 +702,9 @@ export default function DetalleAnuncio() {
                   )}
 
                   <div className="mt-5 border-t border-white/10 pt-4 text-center text-[10px] text-[#6b7280]">
-                    Al contactar, el vendedor recibirá tus datos para responderte
-                    directamente.
+                    {esVendedorParticular
+                      ? "Al contactar, el vendedor recibirá tus datos para responderte directamente."
+                      : "Al contactar, la agencia recibirá tus datos para responderte directamente."}
                   </div>
                 </div>
               )}

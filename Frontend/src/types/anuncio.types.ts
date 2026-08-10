@@ -104,4 +104,7 @@ export interface AnuncioDetalle {
   // Datos de contacto del vendedor, expuestos solo en el detalle público.
   nombreVendedor?: string;
   whatsAppContacto?: string;
+
+  // true si es cuenta Vendedor (particular); false si es Dealer (agencia).
+  esVendedorParticular: boolean;
 }

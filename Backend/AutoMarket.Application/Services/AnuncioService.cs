@@ -204,7 +204,11 @@ public class AnuncioService : IAnuncioService
             Fotos = anuncio.Fotos.ToList(),
 
             NombreVendedor = nombreVendedor,
-            WhatsAppContacto = whatsAppContacto
+            WhatsAppContacto = whatsAppContacto,
+
+            EsVendedorParticular =
+                vendedor != null &&
+                string.Equals(vendedor.Rol, "Vendedor", StringComparison.OrdinalIgnoreCase)
         };
     }
 

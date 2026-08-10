@@ -37,4 +37,8 @@ public class AnuncioDto
     // Datos de contacto del vendedor, expuestos solo en el detalle público.
     public string? NombreVendedor { get; set; }
     public string? WhatsAppContacto { get; set; }
+
+    // true si el dueño del anuncio es cuenta Vendedor (particular);
+    // false si es un Dealer (agencia).
+    public bool EsVendedorParticular { get; set; }
 }

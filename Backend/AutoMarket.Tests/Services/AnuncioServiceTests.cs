@@ -132,6 +132,69 @@ public class AnuncioServiceTests
     }
 
     // =========================================================================
+    // PRUEBA 10d: Obtener Por Id - Vendedor particular marca EsVendedorParticular
+    // =========================================================================
+    [Fact]
+    public async Task ObtenerAnuncioPorIdAsync_VendedorParticular_DebeMarcarEsVendedorParticular()
+    {
+        // ARRANGE
+        var idReal = 6;
+        var anuncio = new Anuncio(6, "Ford", "Mustang", "", "Deportivo", "5.0L", "Trasera", "Rojo", "Negro", 2020, 1500000, 30000, "Automática", "Gasolina", new List<string>(), "Santo Domingo", "Único dueño");
+
+        _mockRepo.Setup(r => r.ObtenerPorIdAsync(idReal)).ReturnsAsync(anuncio);
+
+        var vendedor = new Usuario(
+            nombre: "Juan",
+            apellido: "Perez",
+            email: "jperez@gmail.com",
+            passwordHash: "hash",
+            telefonoPersonal: "8290001234",
+            rol: "Vendedor",
+            emailConfirmado: true
+        );
+
+        typeof(Usuario).GetProperty("UsuarioId")?.SetValue(vendedor, 6);
+
+        _mockUsuarioRepo
+            .Setup(r => r.ObtenerDealerConPerfilPorIdAsync(6))
+            .ReturnsAsync(vendedor);
+
+        // ACT (el dueño ve su anuncio sin importar el estado)
+        var resultado = await _servicio.ObtenerAnuncioPorIdAsync(idReal, usuarioId: 6);
+
+        // ASSERT
+        Assert.NotNull(resultado);
+        Assert.Equal("Juan Perez", resultado.NombreVendedor);
+        Assert.True(resultado.EsVendedorParticular);
+    }
+
+    // =========================================================================
+    // PRUEBA 10e: Obtener Por Id - Dealer (agencia) NO es vendedor particular
+    // =========================================================================
+    [Fact]
+    public async Task ObtenerAnuncioPorIdAsync_Dealer_DebeMarcarEsVendedorParticularFalso()
+    {
+        // ARRANGE
+        var idReal = 5;
+        var anuncio = new Anuncio(5, "Honda", "Civic", "", "Sedan", "1.8L", "Delantera", "Blanco", "Negro", 2022, 1200000, 15000, "Automática", "Gasolina", new List<string>(), "Santiago", "Casi nuevo");
+
+        _mockRepo.Setup(r => r.ObtenerPorIdAsync(idReal)).ReturnsAsync(anuncio);
+
+        var dealer = CrearUsuarioDealerSinSuscripcion(5);
+
+        _mockUsuarioRepo
+            .Setup(r => r.ObtenerDealerConPerfilPorIdAsync(5))
+            .ReturnsAsync(dealer);
+
+        // ACT
+        var resultado = await _servicio.ObtenerAnuncioPorIdAsync(idReal, usuarioId: 5);
+
+        // ASSERT
+        Assert.NotNull(resultado);
+        Assert.False(resultado.EsVendedorParticular);
+    }
+
+    // =========================================================================
     // PRUEBA 11: Crear Anuncio - Éxito al instanciar y guardar
     // =========================================================================
     [Fact]
