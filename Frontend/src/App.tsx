@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 // Páginas públicas
 import Home from './pages/Home';
 import DetalleAnuncio from './pages/DetalleAnuncio';
+import VendedorPublico from './pages/VendedorPublico';
 import Login from './pages/Login';
 import Registro from './pages/Registro';
 import Precios from './pages/Precios';
@@ -42,6 +43,9 @@ function App() {
 
       {/* DETALLE PÚBLICO DE UN VEHÍCULO */}
       <Route path="/anuncio/:id" element={<DetalleAnuncio />} />
+
+      {/* PERFIL PÚBLICO DE UN VENDEDOR */}
+      <Route path="/vendedor/:id" element={<VendedorPublico />} />
 
       {/* PRECIOS PÚBLICOS */}
       <Route path="/precios" element={<Precios />} />

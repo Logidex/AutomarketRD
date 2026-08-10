@@ -12,6 +12,7 @@ export interface AnuncioBusquedaDto {
   combustible?: string;
   precioMinimo?: number;
   precioMaximo?: number;
+  vendedorId?: number;
   paginaActual: number;
   cantidadAnuncios: number;
 }
@@ -32,6 +33,8 @@ export const catalogoService = {
       params.set("PrecioMinimo", String(dto.precioMinimo));
     if (dto.precioMaximo != null)
       params.set("PrecioMaximo", String(dto.precioMaximo));
+    if (dto.vendedorId != null)
+      params.set("VendedorId", String(dto.vendedorId));
 
     params.set("PaginaActual", String(dto.paginaActual));
     params.set("CantidadAnuncios", String(dto.cantidadAnuncios));

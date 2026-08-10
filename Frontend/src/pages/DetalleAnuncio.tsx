@@ -10,6 +10,7 @@ import {
   FaMapMarkerAlt,
   FaPaperPlane,
   FaRegHeart,
+  FaStore,
   FaTachometerAlt,
   FaUsers,
   FaWhatsapp,
@@ -568,6 +569,14 @@ export default function DetalleAnuncio() {
                       {anuncio.nombreVendedor}
                     </p>
                   )}
+
+                  <Link
+                    to={`/vendedor/${anuncio.usuarioId}`}
+                    className="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-blue-400 transition-colors hover:text-blue-300"
+                  >
+                    <FaStore />
+                    Ver perfil del vendedor
+                  </Link>
 
                   <div className="mt-5 grid grid-cols-1 gap-3">
                     {anuncio.whatsAppContacto && (
