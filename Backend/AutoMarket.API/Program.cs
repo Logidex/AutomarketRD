@@ -64,8 +64,10 @@ try
     builder.Services.AddScoped<IFavoritoService, FavoritoService>();
     builder.Services.AddScoped<IComparadorService, ComparadorService>();
     builder.Services.AddScoped<ICatalogoService, CatalogoService>();
+    builder.Services.AddScoped<IHistorialVistaService, HistorialVistaService>();
     builder.Services.AddHttpClient<IPayPalService, PayPalService>();
     builder.Services.AddScoped<IFavoritoRepository, FavoritoRepository>();
+    builder.Services.AddScoped<IHistorialVistaRepository, HistorialVistaRepository>();
     builder.Services.AddScoped<ISuscripcionService, SuscripcionService>();
     builder.Services.AddScoped<IPlanCatalogoRepository, PlanCatalogoRepository>();
     builder.Services.AddScoped<IPlanCatalogoService, PlanCatalogoService>();

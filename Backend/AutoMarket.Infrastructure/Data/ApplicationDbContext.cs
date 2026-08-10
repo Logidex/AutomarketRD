@@ -16,6 +16,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<SuscripcionDealer> SuscripcionDealers { get; set; }
     public DbSet<Lead> Leads { get; set; }
     public DbSet<UsuarioFavorito> Favoritos { get; set; }
+    public DbSet<HistorialVista> HistorialVistas { get; set; }
     public DbSet<PlanCatalogo> PlanesCatalogo { get; set; }
     public DbSet<PagoSuscripcion> PagosSuscripcion { get; set; }
 
@@ -295,6 +296,24 @@ public class ApplicationDbContext : DbContext
             .WithMany()
             .HasForeignKey(f => f.AnuncioId)
             .OnDelete(DeleteBehavior.Cascade); // Si el dealer borra el anuncio, desaparece de los favoritos
+
+        // ==========================================
+        // CONFIGURACIÓN DE HISTORIAL DE VISTAS (Comprador)
+        // ==========================================
+        modelBuilder.Entity<HistorialVista>()
+            .HasKey(h => new { h.UsuarioId, h.AnuncioId }); // Llave compuesta para evitar duplicados
+
+        modelBuilder.Entity<HistorialVista>()
+            .HasOne(h => h.Usuario)
+            .WithMany()
+            .HasForeignKey(h => h.UsuarioId)
+            .OnDelete(DeleteBehavior.Cascade); // Si borran al usuario, se borra su historial
+
+        modelBuilder.Entity<HistorialVista>()
+            .HasOne(h => h.Anuncio)
+            .WithMany()
+            .HasForeignKey(h => h.AnuncioId)
+            .OnDelete(DeleteBehavior.Cascade); // Si el dealer borra el anuncio, desaparece del historial
 
         // ==========================================
         // CONFIGURACIÓN: CATÁLOGO DE PLANES
