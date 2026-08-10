@@ -576,25 +576,27 @@ export default function DetalleAnuncio() {
                     </p>
                   )}
 
-                  <span
-                    className={`mt-2 inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                      esVendedorParticular
-                        ? "bg-violet-500/15 text-violet-300"
-                        : "bg-blue-500/15 text-blue-300"
-                    }`}
-                  >
-                    {esVendedorParticular ? "Vendedor particular" : "Dealer (agencia)"}
-                  </span>
+                  <div className="mt-2 flex flex-col items-start gap-1.5">
+                    <span
+                      className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                        esVendedorParticular
+                          ? "bg-violet-500/15 text-violet-300"
+                          : "bg-blue-500/15 text-blue-300"
+                      }`}
+                    >
+                      {esVendedorParticular ? "Vendedor particular" : "Dealer (agencia)"}
+                    </span>
 
-                  <Link
-                    to={`/vendedor/${anuncio.usuarioId}`}
-                    className="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-blue-400 transition-colors hover:text-blue-300"
-                  >
-                    <FaStore />
-                    {esVendedorParticular
-                      ? "Ver perfil del vendedor"
-                      : "Ver perfil de la agencia"}
-                  </Link>
+                    <Link
+                      to={`/vendedor/${anuncio.usuarioId}`}
+                      className="inline-flex items-center gap-2 text-sm font-semibold text-blue-400 transition-colors hover:text-blue-300"
+                    >
+                      <FaStore />
+                      {esVendedorParticular
+                        ? "Ver perfil del vendedor"
+                        : "Ver perfil de la agencia"}
+                    </Link>
+                  </div>
 
                   <div className="mt-5 grid grid-cols-1 gap-3">
                     {anuncio.whatsAppContacto && (
