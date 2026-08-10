@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Swal from "sweetalert2";
+import { FaArrowLeft } from "react-icons/fa";
 import { authService } from "../services/auth.service";
 import logo from "../assets/AutoMarketRD_Logo.svg";
 
@@ -133,6 +134,14 @@ export default function Login() {
 
         {/* Columna Derecha - Formulario */}
         <div className="md:flex-[1.2] bg-white p-12 flex flex-col justify-center">
+          <Link
+            to="/"
+            className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-gray-500 transition-colors hover:text-blue-500"
+          >
+            <FaArrowLeft />
+            Volver al inicio
+          </Link>
+
           <h2 className="text-2xl font-semibold mb-6 text-gray-800">
             Iniciar Sesión
           </h2>
