@@ -6,14 +6,17 @@ import {
   FaCalendarAlt,
   FaCar,
   FaEnvelope,
+  FaHeart,
   FaMapMarkerAlt,
   FaPaperPlane,
+  FaRegHeart,
   FaTachometerAlt,
   FaUsers,
   FaWhatsapp,
 } from "react-icons/fa";
 import { anuncioService } from "../services/anuncio.service";
 import { leadService } from "../services/lead.service";
+import { favoritoService } from "../services/favorito.service";
 import { authService } from "../services/auth.service";
 import type { AnuncioDetalle } from "../types/anuncio.types";
 import logo from "../assets/AutoMarketRD_Logo.svg";
@@ -35,6 +38,9 @@ export default function DetalleAnuncio() {
   const [anuncio, setAnuncio] = useState<AnuncioDetalle | null>(null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
+
+  const [esFavorito, setEsFavorito] = useState(false);
+  const [cargandoFavorito, setCargandoFavorito] = useState(false);
 
   const [fotoActiva, setFotoActiva] = useState(0);
   const [fotoAmpliada, setFotoAmpliada] = useState(false);
@@ -213,6 +219,48 @@ export default function DetalleAnuncio() {
   })();
 
   const esVehiculoNuevo = anuncio != null && anuncio.kilometraje <= 100;
+
+  // Estado de favorito: solo aplica a compradores autenticados que no sean dueños
+  useEffect(() => {
+    if (!authService.isAuthenticated() || anuncio == null || esPropietario)
+      return;
+
+    let activo = true;
+    favoritoService
+      .obtenerMisFavoritos()
+      .then((lista) => {
+        if (activo) setEsFavorito(lista.some((f) => f.id === anuncio.id));
+      })
+      .catch(() => {});
+
+    return () => {
+      activo = false;
+    };
+  }, [anuncio, esPropietario]);
+
+  const toggleFavorito = async () => {
+    if (!authService.isAuthenticated()) {
+      navigate("/login");
+      return;
+    }
+
+    if (anuncio == null || cargandoFavorito) return;
+
+    setCargandoFavorito(true);
+    try {
+      if (esFavorito) {
+        await favoritoService.quitar(anuncio.id);
+        setEsFavorito(false);
+      } else {
+        await favoritoService.agregar(anuncio.id);
+        setEsFavorito(true);
+      }
+    } catch {
+      // El interceptor de api.ts ya expone el mensaje del backend en error.message.
+    } finally {
+      setCargandoFavorito(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#0c101b] text-white">
@@ -418,6 +466,32 @@ export default function DetalleAnuncio() {
                 <p className="mt-4 text-3xl font-bold text-blue-500">
                   RD$ {anuncio.precio.toLocaleString("es-DO")}
                 </p>
+
+                {!esPropietario && (
+                  <button
+                    type="button"
+                    onClick={toggleFavorito}
+                    disabled={cargandoFavorito}
+                    aria-pressed={esFavorito}
+                    className={`mt-4 flex w-full items-center justify-center gap-2 rounded-lg border px-5 py-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                      esFavorito
+                        ? "border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20"
+                        : "border-white/10 bg-white/5 text-[#9aa1b1] hover:border-red-500/40 hover:text-red-400"
+                    }`}
+                  >
+                    {esFavorito ? (
+                      <>
+                        <FaHeart className="text-red-500" />
+                        En tus favoritos
+                      </>
+                    ) : (
+                      <>
+                        <FaRegHeart />
+                        Guardar en favoritos
+                      </>
+                    )}
+                  </button>
+                )}
 
                 <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
                   <div className="flex items-center gap-2 text-[#c3c9d4]">
