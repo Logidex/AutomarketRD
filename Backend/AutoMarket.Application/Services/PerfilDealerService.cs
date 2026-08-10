@@ -50,10 +50,21 @@ public class PerfilDealerService : IPerfilDealerService
 
         var perfil = dealer.PerfilDealer;
 
+        // Validación explícita de los campos obligatorios antes de tocar la entidad.
+        // Evita que un valor null llegue a ActualizarPerfil (que espera string no-null).
+        if (string.IsNullOrWhiteSpace(dto.NombreAgencia))
+            throw new ArgumentException("El nombre de la agencia es obligatorio.", nameof(dto.NombreAgencia));
+
+        if (string.IsNullOrWhiteSpace(dto.Ubicacion))
+            throw new ArgumentException("La ubicación es obligatoria.", nameof(dto.Ubicacion));
+
+        if (string.IsNullOrWhiteSpace(dto.TelefonoAgencia))
+            throw new ArgumentException("El teléfono es obligatorio.", nameof(dto.TelefonoAgencia));
+
         perfil.ActualizarPerfil(
-            nombreAgencia: dto.NombreAgencia,
-            ubicacion: dto.Ubicacion,
-            telefonoAgencia: dto.TelefonoAgencia,
+            nombreAgencia: dto.NombreAgencia.Trim(),
+            ubicacion: dto.Ubicacion.Trim(),
+            telefonoAgencia: dto.TelefonoAgencia.Trim(),
             horarios: dto.Horarios,
             descripcion: dto.Descripcion,
             whatsApp: dto.WhatsApp

@@ -117,10 +117,23 @@ try
     {
         options.AddPolicy(frontendPolicy, policy =>
         {
-            policy.WithOrigins(allowedOrigins)
-                  .AllowAnyHeader()
-                  .AllowAnyMethod()
-                  .AllowCredentials();
+            // En desarrollo permitimos cualquier origen: cubre túneles
+            // tipo VS Code Dev Tunnels con subdominios dinámicos
+            // (ej. https://xxxx-5173.use2.devtunnels.ms). El frontend
+            // autentica con token JWT por header, no por cookies.
+            if (builder.Environment.IsDevelopment())
+            {
+                policy.AllowAnyOrigin()
+                      .AllowAnyHeader()
+                      .AllowAnyMethod();
+            }
+            else if (allowedOrigins.Length > 0)
+            {
+                policy.WithOrigins(allowedOrigins)
+                      .AllowAnyHeader()
+                      .AllowAnyMethod()
+                      .AllowCredentials();
+            }
         });
     });
 
