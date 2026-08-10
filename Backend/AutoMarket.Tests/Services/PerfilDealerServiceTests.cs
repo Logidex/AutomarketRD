@@ -53,6 +53,7 @@ public class PerfilDealerServiceTests
         Assert.Equal("Juan Perez", resultado.NombreAgencia);
         Assert.Equal("8290001234", resultado.TelefonoAgencia);
         Assert.Equal(string.Empty, resultado.Ubicacion);
+        Assert.True(resultado.EsVendedorParticular);
     }
 
     [Fact]

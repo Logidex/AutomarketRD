@@ -108,7 +108,8 @@ public class PerfilDealerService : IPerfilDealerService
             Ubicacion = perfil.Ubicacion,
             TelefonoAgencia = perfil.TelefonoAgencia,
             Descripcion = perfil.Descripcion ?? string.Empty,
-            WhatsApp = perfil.WhatsApp
+            WhatsApp = perfil.WhatsApp,
+            EsVendedorParticular = false
         };
     }
 
@@ -129,7 +130,8 @@ public class PerfilDealerService : IPerfilDealerService
             Ubicacion = string.Empty,
             TelefonoAgencia = vendedor.TelefonoPersonal ?? string.Empty,
             Descripcion = string.Empty,
-            WhatsApp = null
+            WhatsApp = null,
+            EsVendedorParticular = true
         };
     }
 

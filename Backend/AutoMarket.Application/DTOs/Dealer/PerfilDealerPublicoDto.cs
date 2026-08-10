@@ -10,5 +10,9 @@ namespace AutoMarket.Application.DTOs.Usuario
         public string TelefonoAgencia { get; set; } = null!;
         public string Descripcion { get; set; } = null!;
         public string? WhatsApp { get; set; }
+
+        // true si es una cuenta Vendedor (particular, un solo anuncio),
+        // false si es un Dealer con perfil de agencia.
+        public bool EsVendedorParticular { get; set; }
     }
 }
