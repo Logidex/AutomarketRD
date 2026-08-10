@@ -7,6 +7,7 @@ import { authService } from "../services/auth.service";
 import { ROLES } from "../constants/roles";
 import { formatearRD$, precioCicloDe } from "../utils/formato";
 import logo from "../assets/AutoMarketRD_Logo.svg";
+import NavbarUsuario from "../components/layout/NavbarUsuario";
 
 type Ciclo = "Mensual" | "Trimestral" | "Anual";
 
@@ -91,12 +92,7 @@ export default function Precios() {
           <Link to="/" className="text-[#9aa1b1] hover:text-white transition-colors">
             Inicio
           </Link>
-          <Link
-            to={authService.isAuthenticated() ? "/dashboard" : "/login"}
-            className="rounded-lg bg-blue-500 px-5 py-2 font-semibold text-white hover:bg-blue-600 transition-colors"
-          >
-            {authService.isAuthenticated() ? "Mi Panel" : "Iniciar Sesión"}
-          </Link>
+          <NavbarUsuario />
         </nav>
       </header>
 

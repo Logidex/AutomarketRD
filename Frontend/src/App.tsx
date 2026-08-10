@@ -21,6 +21,7 @@ import PublicarVehiculo from './pages/CrearAnuncio';
 import EditarVehiculo from './pages/EditarVehiculo';
 import Leads from './pages/Leads';
 import MiPerfil from './pages/MiPerfil';
+import MiCuenta from './pages/MiCuenta';
 import DashboardSuscripcion from './pages/DashboardSuscripcion';
 
 // Páginas del área de Vendedor
@@ -49,6 +50,15 @@ function App() {
       {/* AUTENTICACIÓN */}
       <Route path="/login" element={<Login />} />
       <Route path="/registro" element={<Registro />} />
+
+      {/* CUENTA DE COMPRADOR (INICIO DE SU ACTIVIDAD) */}
+      <Route
+        element={
+          <ProtectedRoute allowedRoles={[ROLES.COMPRADOR]} />
+        }
+      >
+        <Route path="/perfil" element={<MiCuenta />} />
+      </Route>
 
       {/* ÁREA DE VENDEDOR (UNA CUENTA = UN ANUNCIO) */}
       <Route

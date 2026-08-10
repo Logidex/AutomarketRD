@@ -17,6 +17,7 @@ import { leadService } from "../services/lead.service";
 import { authService } from "../services/auth.service";
 import type { AnuncioDetalle } from "../types/anuncio.types";
 import logo from "../assets/AutoMarketRD_Logo.svg";
+import NavbarUsuario from "../components/layout/NavbarUsuario";
 import {
   TIPOS_VEHICULO,
   TRANSMISIONES,
@@ -232,12 +233,7 @@ export default function DetalleAnuncio() {
           >
             Precios
           </Link>
-          <Link
-            to={authService.isAuthenticated() ? "/dashboard" : "/login"}
-            className="rounded-lg bg-blue-500 px-5 py-2 font-semibold text-white transition-colors hover:bg-blue-600"
-          >
-            {authService.isAuthenticated() ? "Mi Panel" : "Iniciar Sesión"}
-          </Link>
+          <NavbarUsuario />
         </nav>
       </header>
 

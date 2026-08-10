@@ -8,9 +8,9 @@ import {
   FaTachometerAlt,
 } from "react-icons/fa";
 import { catalogoService } from "../services/catalogo.service";
-import { authService } from "../services/auth.service";
 import type { AnuncioListado } from "../types/anuncio.types";
 import logo from "../assets/AutoMarketRD_Logo.svg";
+import NavbarUsuario from "../components/layout/NavbarUsuario";
 import {
   TIPOS_VEHICULO,
   TRANSMISIONES,
@@ -153,12 +153,7 @@ export default function Home() {
           >
             Precios
           </Link>
-          <Link
-            to={authService.isAuthenticated() ? "/dashboard" : "/login"}
-            className="rounded-lg bg-blue-500 px-5 py-2 font-semibold text-white transition-colors hover:bg-blue-600"
-          >
-            {authService.isAuthenticated() ? "Mi Panel" : "Iniciar Sesión"}
-          </Link>
+          <NavbarUsuario />
         </nav>
       </header>
 
