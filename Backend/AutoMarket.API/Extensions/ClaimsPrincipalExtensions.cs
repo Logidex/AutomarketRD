@@ -18,7 +18,7 @@ public static class ClaimsPrincipalExtensions
 
     public static int? ObtenerUsuarioIdOpcional(this ClaimsPrincipal user)
     {
-        var valor = user.FindFirstValue(ClaimTypes.NameIdentifier);
+        var valor = user?.FindFirstValue(ClaimTypes.NameIdentifier);
 
         return int.TryParse(valor, out var usuarioId)
             ? usuarioId

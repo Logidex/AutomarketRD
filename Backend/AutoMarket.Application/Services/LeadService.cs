@@ -29,7 +29,7 @@ public class LeadService : ILeadService
         _logger = logger;
     }
 
-    public async Task CrearLeadAsync(LeadCreateDto dto)
+    public async Task CrearLeadAsync(LeadCreateDto dto, int? usuarioIdRemitente = null)
     {
         var anuncio = await _anuncioRepository.ObtenerPorIdAsync(dto.AnuncioId);
         
@@ -44,6 +44,8 @@ public class LeadService : ILeadService
         
         if (vendedor == null)
             throw new InvalidOperationException("No se encontró el propietario de este anuncio.");
+
+        ValidarAutocontacto(dto, anuncio, vendedor, usuarioIdRemitente);
 
         var lead = new Lead(
             anuncioId: dto.AnuncioId,
@@ -80,6 +82,33 @@ public class LeadService : ILeadService
             _logger.LogError(ex, "Error enviando correo SMTP al dealer {DealerId}", vendedor.UsuarioId);
         }
     }
+
+    private static void ValidarAutocontacto(LeadCreateDto dto, Anuncio anuncio, Usuario vendedor, int? usuarioIdRemitente)
+    {
+        // Regla 1: si el remitente está autenticado y es el dueño del anuncio, no puede auto-generarse un lead.
+        if (usuarioIdRemitente is int usuarioId && usuarioId == anuncio.UsuarioId)
+            throw new BusinessRuleException("No puedes crear un contacto sobre tu propio vehículo.");
+
+        // Regla 2: si se ingresa el correo o teléfono del propio anunciante, es un auto-contacto
+        // (por ejemplo, el dueño probando el formulario sin haber iniciado sesión).
+        var emailPropietario = (vendedor.Email ?? string.Empty).Trim().ToLowerInvariant();
+        var emailIngresado = (dto.EmailContacto ?? string.Empty).Trim().ToLowerInvariant();
+
+        var telefonosPropietario = new[] { vendedor.TelefonoPersonal, vendedor.PerfilDealer?.TelefonoAgencia, vendedor.PerfilDealer?.WhatsApp }
+            .Where(t => !string.IsNullOrWhiteSpace(t))
+            .Select(SoloDigitos)
+            .ToHashSet();
+
+        bool esAutoContacto =
+            (emailIngresado.Length > 0 && emailIngresado == emailPropietario) ||
+            (!string.IsNullOrWhiteSpace(dto.TelefonoContacto) && telefonosPropietario.Contains(SoloDigitos(dto.TelefonoContacto)));
+
+        if (esAutoContacto)
+            throw new BusinessRuleException("No puedes crear un contacto sobre tu propio vehículo.");
+    }
+
+    private static string SoloDigitos(string? valor)
+        => string.Concat((valor ?? string.Empty).Where(char.IsDigit));
 
     public async Task<IReadOnlyCollection<Lead>> ObtenerLeadsPorAnuncioAsync(int anuncioId, int usuarioId)
     {

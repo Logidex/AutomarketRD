@@ -172,6 +172,90 @@ public class LeadServiceTests
     }
 
     // =========================================================================
+    // PRUEBA 03b: El dueño autenticado no puede auto-generarse un lead
+    // =========================================================================
+    [Fact]
+    public async Task CrearLeadAsync_PropietarioAutenticado_DebeLanzarBusinessRuleException()
+    {
+        // Arrange
+        var dto = new LeadCreateDto
+        {
+            AnuncioId = 1,
+            NombreContacto = "Dealer Mismo",
+            EmailContacto = "otro-correo@test.com",
+            Mensaje = "Probar",
+            Canal = CanalContacto.Formulario
+        };
+        var anuncio = CrearAnuncioSimulado(id: 1, usuarioId: 10, marca: "Toyota", modelo: "Corolla");
+        var vendedor = CrearUsuarioSimulado(usuarioId: 10, email: "vendedor@auto.com");
+
+        _mockAnuncioRepo.Setup(r => r.ObtenerPorIdAsync(1)).ReturnsAsync(anuncio);
+        _mockUsuarioRepo.Setup(r => r.ObtenerDealerConPerfilPorIdAsync(10)).ReturnsAsync(vendedor);
+
+        // Act & Assert
+        var excepcion = await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            _servicio.CrearLeadAsync(dto, usuarioIdRemitente: 10));
+
+        Assert.Equal("No puedes crear un contacto sobre tu propio vehículo.", excepcion.Message);
+        _mockLeadRepo.Verify(r => r.AgregarAsync(It.IsAny<Lead>()), Times.Never);
+    }
+
+    // =========================================================================
+    // PRUEBA 03c: Auto-contacto por email del anunciante (dueño sin login)
+    // =========================================================================
+    [Fact]
+    public async Task CrearLeadAsync_EmailCoincideConPropietario_DebeLanzarBusinessRuleException()
+    {
+        // Arrange
+        var dto = new LeadCreateDto
+        {
+            AnuncioId = 1,
+            NombreContacto = "Dealer Sin Login",
+            EmailContacto = "  VENDEDOR@AUTO.COM  ",
+            Mensaje = "Probar",
+            Canal = CanalContacto.Formulario
+        };
+        var anuncio = CrearAnuncioSimulado(id: 1, usuarioId: 10, marca: "Honda", modelo: "Civic");
+        var vendedor = CrearUsuarioSimulado(usuarioId: 10, email: "vendedor@auto.com");
+
+        _mockAnuncioRepo.Setup(r => r.ObtenerPorIdAsync(1)).ReturnsAsync(anuncio);
+        _mockUsuarioRepo.Setup(r => r.ObtenerDealerConPerfilPorIdAsync(10)).ReturnsAsync(vendedor);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<BusinessRuleException>(() => _servicio.CrearLeadAsync(dto));
+
+        _mockLeadRepo.Verify(r => r.AgregarAsync(It.IsAny<Lead>()), Times.Never);
+    }
+
+    // =========================================================================
+    // PRUEBA 03d: Auto-contacto por teléfono del anunciante (con o sin formato)
+    // =========================================================================
+    [Fact]
+    public async Task CrearLeadAsync_TelefonoCoincideConPropietario_DebeLanzarBusinessRuleException()
+    {
+        // Arrange
+        var dto = new LeadCreateDto
+        {
+            AnuncioId = 1,
+            NombreContacto = "Dealer Sin Login",
+            EmailContacto = "cliente-real@test.com",
+            TelefonoContacto = "809-000-0000",
+            Mensaje = "Probar",
+            Canal = CanalContacto.WhatsApp
+        };
+        var anuncio = CrearAnuncioSimulado(id: 1, usuarioId: 10, marca: "Ford", modelo: "Escape");
+        var vendedor = CrearUsuarioSimulado(usuarioId: 10, email: "vendedor@auto.com");
+
+        _mockAnuncioRepo.Setup(r => r.ObtenerPorIdAsync(1)).ReturnsAsync(anuncio);
+        _mockUsuarioRepo.Setup(r => r.ObtenerDealerConPerfilPorIdAsync(10)).ReturnsAsync(vendedor);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<BusinessRuleException>(() => _servicio.CrearLeadAsync(dto));
+
+        _mockLeadRepo.Verify(r => r.AgregarAsync(It.IsAny<Lead>()), Times.Never);
+    }
+
+    // =========================================================================
     // PRUEBA 04: Resiliencia - Si el correo falla, el Lead DEBE guardarse igual
     // =========================================================================
     [Fact]

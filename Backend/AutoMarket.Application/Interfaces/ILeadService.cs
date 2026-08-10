@@ -7,7 +7,8 @@ namespace AutoMarket.Core.Interfaces;
 public interface ILeadService
 {
     // Método principal para el comprador
-    Task CrearLeadAsync(LeadCreateDto dto);
+    // usuarioIdRemitente: identidad autenticada del que envía (null si es anónimo).
+    Task CrearLeadAsync(LeadCreateDto dto, int? usuarioIdRemitente = null);
 
     // Métodos de consulta para el Dashboard del Dealer
     Task<IReadOnlyCollection<Lead>> ObtenerLeadsPorAnuncioAsync(int anuncioId, int usuarioId);

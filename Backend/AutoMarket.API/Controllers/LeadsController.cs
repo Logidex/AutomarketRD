@@ -28,7 +28,7 @@ public class LeadsController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        await _leadService.CrearLeadAsync(dto);
+        await _leadService.CrearLeadAsync(dto, User.ObtenerUsuarioIdOpcional());
         
         return Ok(new { mensaje = "Tu mensaje ha sido enviado exitosamente al vendedor." });
     }
