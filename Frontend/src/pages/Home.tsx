@@ -11,29 +11,14 @@ import { catalogoService } from "../services/catalogo.service";
 import { authService } from "../services/auth.service";
 import type { AnuncioListado } from "../types/anuncio.types";
 import logo from "../assets/AutoMarketRD_Logo.svg";
+import {
+  TIPOS_VEHICULO,
+  TRANSMISIONES,
+  COMBUSTIBLES,
+  etiquetaDe,
+} from "../constants/vehiculo.opciones";
 
 const TAMANO_PAGINA = 12;
-
-const TIPOS_VEHICULO = [
-  "Sedán",
-  "SUV",
-  "Pickup",
-  "Hatchback",
-  "Coupé",
-  "Convertible",
-  "Van",
-  "Camioneta",
-  "Otro",
-];
-
-const TRANSMISIONES = ["Automática", "Manual"];
-
-const COMBUSTIBLES = [
-  "Gasolina",
-  "Diésel",
-  "Híbrido",
-  "Eléctrico",
-];
 
 interface Filtros {
   marca: string;
@@ -157,7 +142,7 @@ export default function Home() {
           <img
             src={logo}
             alt="AutoMarket RD"
-            className="h-12 w-auto object-contain"
+            className="h-20 w-auto object-contain"
           />
         </Link>
 
@@ -189,7 +174,7 @@ export default function Home() {
             el vehículo que buscas y contacta al vendedor directamente.
           </p>
 
-          <form onSubmit={aplicarBusqueda} className="mx-auto mt-10 max-w-4xl">
+          <form onSubmit={aplicarBusqueda} className="mx-auto mt-10 max-w-5xl">
             <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-[#13161d] p-4 sm:flex-row">
               <div className="relative flex-1">
                 <FaSearch className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
@@ -222,9 +207,9 @@ export default function Home() {
                 className="rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm text-gray-200 transition-colors focus:border-blue-500 focus:outline-none"
               >
                 <option value="">Tipo de vehículo</option>
-                {TIPOS_VEHICULO.map((tipo) => (
-                  <option key={tipo} value={tipo}>
-                    {tipo}
+                {TIPOS_VEHICULO.map((opcion) => (
+                  <option key={opcion.valor} value={opcion.valor}>
+                    {opcion.etiqueta}
                   </option>
                 ))}
               </select>
@@ -237,9 +222,9 @@ export default function Home() {
                 className="rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm text-gray-200 transition-colors focus:border-blue-500 focus:outline-none"
               >
                 <option value="">Transmisión</option>
-                {TRANSMISIONES.map((transmision) => (
-                  <option key={transmision} value={transmision}>
-                    {transmision}
+                {TRANSMISIONES.map((opcion) => (
+                  <option key={opcion.valor} value={opcion.valor}>
+                    {opcion.etiqueta}
                   </option>
                 ))}
               </select>
@@ -252,17 +237,18 @@ export default function Home() {
                 className="rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm text-gray-200 transition-colors focus:border-blue-500 focus:outline-none"
               >
                 <option value="">Combustible</option>
-                {COMBUSTIBLES.map((combustible) => (
-                  <option key={combustible} value={combustible}>
-                    {combustible}
+                {COMBUSTIBLES.map((opcion) => (
+                  <option key={opcion.valor} value={opcion.valor}>
+                    {opcion.etiqueta}
                   </option>
                 ))}
               </select>
 
               <div className="flex items-center gap-2">
                 <input
-                  type="number"
-                  min={0}
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   value={filtros.precioMinimo}
                   onChange={(e) =>
                     setFiltros({ ...filtros, precioMinimo: e.target.value })
@@ -272,8 +258,9 @@ export default function Home() {
                 />
                 <span className="text-gray-500">-</span>
                 <input
-                  type="number"
-                  min={0}
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   value={filtros.precioMaximo}
                   onChange={(e) =>
                     setFiltros({ ...filtros, precioMaximo: e.target.value })
@@ -391,17 +378,17 @@ export default function Home() {
                   <div className="mt-4 flex flex-wrap gap-2">
                     {anuncio.tipoVehiculo && (
                       <span className="rounded-full bg-blue-500/10 px-3 py-1 text-xs font-medium text-blue-400">
-                        {anuncio.tipoVehiculo}
+                        {etiquetaDe(anuncio.tipoVehiculo, TIPOS_VEHICULO)}
                       </span>
                     )}
                     {anuncio.combustible && (
                       <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-gray-300">
-                        {anuncio.combustible}
+                        {etiquetaDe(anuncio.combustible, COMBUSTIBLES)}
                       </span>
                     )}
                     {anuncio.transmision && (
                       <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-gray-300">
-                        {anuncio.transmision}
+                        {etiquetaDe(anuncio.transmision, TRANSMISIONES)}
                       </span>
                     )}
                   </div>

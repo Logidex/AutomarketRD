@@ -145,6 +145,27 @@ public class AnuncioService : IAnuncioService
                 return null;
         }
 
+        var vendedor =
+            await _usuarioRepository
+                .ObtenerDealerConPerfilPorIdAsync(
+                    anuncio.UsuarioId
+                );
+
+        string? nombreVendedor = null;
+        string? whatsAppContacto = null;
+
+        if (vendedor != null)
+        {
+            nombreVendedor =
+                vendedor.PerfilDealer?.NombreAgencia ??
+                $"{vendedor.Nombre} {vendedor.Apellido}".Trim();
+
+            whatsAppContacto =
+                vendedor.PerfilDealer?.WhatsApp ??
+                vendedor.PerfilDealer?.TelefonoAgencia ??
+                vendedor.TelefonoPersonal;
+        }
+
         return new AnuncioDto
         {
             Id = anuncio.Id,
@@ -174,7 +195,10 @@ public class AnuncioService : IAnuncioService
             Descripcion = anuncio.Descripcion,
 
             Estado = anuncio.Estado,
-            Fotos = anuncio.Fotos.ToList()
+            Fotos = anuncio.Fotos.ToList(),
+
+            NombreVendedor = nombreVendedor,
+            WhatsAppContacto = whatsAppContacto
         };
     }
 

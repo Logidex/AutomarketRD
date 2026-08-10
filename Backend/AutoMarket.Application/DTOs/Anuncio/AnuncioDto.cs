@@ -33,4 +33,8 @@ public class AnuncioDto
     public string Estado { get; set; } = string.Empty;
 
     public List<string> Fotos { get; set; } = new();
+
+    // Datos de contacto del vendedor, expuestos solo en el detalle público.
+    public string? NombreVendedor { get; set; }
+    public string? WhatsAppContacto { get; set; }
 }

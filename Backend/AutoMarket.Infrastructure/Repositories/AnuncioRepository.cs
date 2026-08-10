@@ -1,3 +1,4 @@
+using AutoMarket.Application.Helpers;
 using AutoMarket.Core.Entities;
 using AutoMarket.Core.Interfaces;
 using AutoMarket.Infrastructure.Data;
@@ -86,110 +87,121 @@ public class AnuncioRepository : IAnuncioRepository
 
         if (!string.IsNullOrWhiteSpace(filtro.Marca))
         {
+            var termino = NormalizadorTexto.Normalizar(filtro.Marca);
             query = query.Where(a =>
                 EF.Functions.ILike(
                     a.Marca,
-                    $"%{filtro.Marca}%"
+                    $"%{termino}%"
                 )
             );
         }
 
         if (!string.IsNullOrWhiteSpace(filtro.Modelo))
         {
+            var termino = NormalizadorTexto.Normalizar(filtro.Modelo);
             query = query.Where(a =>
                 EF.Functions.ILike(
                     a.Modelo,
-                    $"%{filtro.Modelo}%"
+                    $"%{termino}%"
                 )
             );
         }
 
         if (!string.IsNullOrWhiteSpace(filtro.Version))
         {
+            var termino = NormalizadorTexto.Normalizar(filtro.Version);
             query = query.Where(a =>
                 EF.Functions.ILike(
                     a.Version,
-                    $"%{filtro.Version}%"
+                    $"%{termino}%"
                 )
             );
         }
 
         if (!string.IsNullOrWhiteSpace(filtro.TipoVehiculo))
         {
+            var termino = NormalizadorTexto.Normalizar(filtro.TipoVehiculo);
             query = query.Where(a =>
                 EF.Functions.ILike(
                     a.TipoVehiculo,
-                    $"%{filtro.TipoVehiculo}%"
+                    $"%{termino}%"
                 )
             );
         }
 
         if (!string.IsNullOrWhiteSpace(filtro.Motor))
         {
+            var termino = NormalizadorTexto.Normalizar(filtro.Motor);
             query = query.Where(a =>
                 EF.Functions.ILike(
                     a.Motor,
-                    $"%{filtro.Motor}%"
+                    $"%{termino}%"
                 )
             );
         }
 
         if (!string.IsNullOrWhiteSpace(filtro.Traccion))
         {
+            var termino = NormalizadorTexto.Normalizar(filtro.Traccion);
             query = query.Where(a =>
                 EF.Functions.ILike(
                     a.Traccion,
-                    $"%{filtro.Traccion}%"
+                    $"%{termino}%"
                 )
             );
         }
 
         if (!string.IsNullOrWhiteSpace(filtro.ColorExterior))
         {
+            var termino = NormalizadorTexto.Normalizar(filtro.ColorExterior);
             query = query.Where(a =>
                 EF.Functions.ILike(
                     a.ColorExterior,
-                    $"%{filtro.ColorExterior}%"
+                    $"%{termino}%"
                 )
             );
         }
 
         if (!string.IsNullOrWhiteSpace(filtro.ColorInterior))
         {
+            var termino = NormalizadorTexto.Normalizar(filtro.ColorInterior);
             query = query.Where(a =>
                 EF.Functions.ILike(
                     a.ColorInterior,
-                    $"%{filtro.ColorInterior}%"
+                    $"%{termino}%"
                 )
             );
         }
 
         if (!string.IsNullOrWhiteSpace(filtro.Transmision))
         {
+            var termino = NormalizadorTexto.Normalizar(filtro.Transmision);
             query = query.Where(a =>
                 EF.Functions.ILike(
                     a.Transmision,
-                    $"%{filtro.Transmision}%"
+                    $"%{termino}%"
                 )
             );
         }
 
         if (!string.IsNullOrWhiteSpace(filtro.Combustible))
         {
+            var termino = NormalizadorTexto.Normalizar(filtro.Combustible);
             query = query.Where(a =>
                 EF.Functions.ILike(
                     a.Combustible,
-                    $"%{filtro.Combustible}%"
+                    $"%{termino}%"
                 )
             );
         }
 
         if (!string.IsNullOrWhiteSpace(filtro.Ubicacion))
         {
+            var termino = NormalizadorTexto.Normalizar(filtro.Ubicacion);
             query = query.Where(a =>
                 EF.Functions.ILike(
                     a.Ubicacion,
-                    $"%{filtro.Ubicacion}%"
+                    $"%{termino}%"
                 )
             );
         }

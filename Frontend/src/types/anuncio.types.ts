@@ -80,6 +80,8 @@ export type AnuncioCreateRequestDto = Omit<
 
 export interface AnuncioDetalle {
   id: number;
+  usuarioId: number;
+  nombreAnuncio: string;
   marca: string;
   modelo: string;
   version: string;
@@ -97,4 +99,9 @@ export interface AnuncioDetalle {
   descripcion: string;
   accesorios: string[];
   fotos: string[];
+  estado: string;
+
+  // Datos de contacto del vendedor, expuestos solo en el detalle público.
+  nombreVendedor?: string;
+  whatsAppContacto?: string;
 }
