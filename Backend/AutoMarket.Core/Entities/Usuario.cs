@@ -111,6 +111,59 @@ public class Usuario
 
     public bool IsActivo { get; private set; } = true;
 
+    // ==========================================
+    // CAMBIO DE CORREO EN DOS PASOS (confirmación)
+    // ==========================================
+    public string? EmailPendiente { get; private set; }
+    public string? CodigoConfirmacionHash { get; private set; }
+    public DateTime? CodigoConfirmacionExpiracionUtc { get; private set; }
+
+    public void ActualizarDatos(string nombre, string apellido, string? telefonoPersonal)
+    {
+        if (string.IsNullOrWhiteSpace(nombre))
+            throw new ArgumentException("El nombre es obligatorio.", nameof(nombre));
+
+        if (string.IsNullOrWhiteSpace(apellido))
+            throw new ArgumentException("El apellido es obligatorio.", nameof(apellido));
+
+        Nombre = nombre.Trim();
+        Apellido = apellido.Trim();
+        TelefonoPersonal = string.IsNullOrWhiteSpace(telefonoPersonal)
+            ? null
+            : telefonoPersonal.Trim();
+    }
+
+    public void EstablecerCambioEmail(string nuevoEmail, string codigoHash, DateTime expiracionUtc)
+    {
+        if (string.IsNullOrWhiteSpace(nuevoEmail))
+            throw new ArgumentException("El correo electrónico es obligatorio.", nameof(nuevoEmail));
+
+        EmailPendiente = nuevoEmail.ToLowerInvariant().Trim();
+        CodigoConfirmacionHash = codigoHash;
+        CodigoConfirmacionExpiracionUtc = expiracionUtc;
+    }
+
+    public bool AplicarCambioEmailSiValido(string codigoHash, DateTime ahoraUtc)
+    {
+        if (string.IsNullOrEmpty(EmailPendiente) ||
+            string.IsNullOrEmpty(CodigoConfirmacionHash) ||
+            CodigoConfirmacionExpiracionUtc is not DateTime expiracion)
+            return false;
+
+        if (ahoraUtc > expiracion)
+            return false;
+
+        if (!string.Equals(CodigoConfirmacionHash, codigoHash, StringComparison.Ordinal))
+            return false;
+
+        Email = EmailPendiente;
+        EmailConfirmado = true;
+        EmailPendiente = null;
+        CodigoConfirmacionHash = null;
+        CodigoConfirmacionExpiracionUtc = null;
+        return true;
+    }
+
     public void Suspender()
     {
         IsActivo = false;

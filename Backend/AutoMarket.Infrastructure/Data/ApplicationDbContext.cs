@@ -177,6 +177,7 @@ public class ApplicationDbContext : DbContext
             b.Property(u => u.Nombre).HasMaxLength(100);
             b.Property(u => u.Apellido).HasMaxLength(100);
             b.Property(u => u.Email).HasMaxLength(150);
+            b.Property(u => u.EmailPendiente).HasMaxLength(150);
 
             // Email Unico
             b.HasIndex(u => u.Email).IsUnique();

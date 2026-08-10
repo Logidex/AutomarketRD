@@ -68,6 +68,7 @@ try
     builder.Services.AddHttpClient<IPayPalService, PayPalService>();
     builder.Services.AddScoped<IFavoritoRepository, FavoritoRepository>();
     builder.Services.AddScoped<IHistorialVistaRepository, HistorialVistaRepository>();
+    builder.Services.AddScoped<IUsuarioCuentaService, UsuarioCuentaService>();
     builder.Services.AddScoped<ISuscripcionService, SuscripcionService>();
     builder.Services.AddScoped<IPlanCatalogoRepository, PlanCatalogoRepository>();
     builder.Services.AddScoped<IPlanCatalogoService, PlanCatalogoService>();
