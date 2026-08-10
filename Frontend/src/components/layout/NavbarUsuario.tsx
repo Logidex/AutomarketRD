@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   FaChevronDown,
+  FaHeart,
   FaSignOutAlt,
   FaUser,
 } from "react-icons/fa";
@@ -99,15 +100,6 @@ export default function NavbarUsuario() {
         <FaChevronDown className="text-xs text-[#9aa1b1]" />
       </button>
 
-      <button
-        type="button"
-        onClick={handleLogout}
-        title="Cerrar sesión"
-        className="rounded-full p-2 text-[#9aa1b1] transition-colors hover:bg-white/10 hover:text-white"
-      >
-        <FaSignOutAlt />
-      </button>
-
       {menuAbierto && (
         <div
           role="menu"
@@ -128,6 +120,16 @@ export default function NavbarUsuario() {
           >
             <FaUser className="text-[#9aa1b1]" />
             Mi Perfil
+          </Link>
+
+          <Link
+            to="/perfil/favoritos"
+            role="menuitem"
+            onClick={() => setMenuAbierto(false)}
+            className="flex items-center gap-3 px-4 py-3 text-sm text-gray-200 transition-colors hover:bg-white/5"
+          >
+            <FaHeart className="text-[#9aa1b1]" />
+            Mis Favoritos
           </Link>
 
           <button
