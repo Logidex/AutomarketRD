@@ -25,6 +25,62 @@ public class PerfilDealerServiceTests
     }
 
     [Fact]
+    public async Task ObtenerPerfilPublicoAsync_VendedorSinPerfilDealer_DebeRetornarPerfilBasico()
+    {
+        // Arrange: usuario rol Vendedor sin PerfilDealer (cuenta individual)
+        var vendedor = new Usuario(
+            nombre: "Juan",
+            apellido: "Perez",
+            email: "jperez@gmail.com",
+            passwordHash: "hash-de-prueba",
+            telefonoPersonal: "8290001234",
+            rol: "Vendedor",
+            emailConfirmado: true
+        );
+
+        typeof(Usuario).GetProperty("UsuarioId")?.SetValue(vendedor, 4);
+
+        _usuarioRepositoryMock
+            .Setup(r => r.ObtenerDealerConPerfilPorIdAsync(4))
+            .ReturnsAsync(vendedor);
+
+        // Act
+        var resultado = await _service.ObtenerPerfilPublicoAsync(4);
+
+        // Assert
+        Assert.NotNull(resultado);
+        Assert.Equal(4, resultado.Id);
+        Assert.Equal("Juan Perez", resultado.NombreAgencia);
+        Assert.Equal("8290001234", resultado.TelefonoAgencia);
+        Assert.Equal(string.Empty, resultado.Ubicacion);
+    }
+
+    [Fact]
+    public async Task ObtenerPerfilPublicoAsync_CompradorSinPerfilDealer_DebeRetornarNull()
+    {
+        // Arrange: comprador no tiene página pública de vendedor
+        var comprador = new Usuario(
+            nombre: "Ana",
+            apellido: "Lopez",
+            email: "ana@test.com",
+            passwordHash: "hash-de-prueba",
+            telefonoPersonal: null,
+            rol: "Comprador",
+            emailConfirmado: true
+        );
+
+        _usuarioRepositoryMock
+            .Setup(r => r.ObtenerDealerConPerfilPorIdAsync(2))
+            .ReturnsAsync(comprador);
+
+        // Act
+        var resultado = await _service.ObtenerPerfilPublicoAsync(2);
+
+        // Assert
+        Assert.Null(resultado);
+    }
+
+    [Fact]
     public async Task ActualizarMiPerfilAsync_DealerExistenteSinLogo_ActualizaPerfilYGuardaCambios()
     {
         // Arrange

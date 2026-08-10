@@ -20,13 +20,22 @@ public class PerfilDealerService : IPerfilDealerService
 
     public async Task<PerfilDealerPublicoDto?> ObtenerPerfilPublicoAsync(int dealerId)
     {
-        var dealer = await _usuarioRepository
+        var usuario = await _usuarioRepository
             .ObtenerDealerConPerfilPorIdAsync(dealerId);
 
-        if (dealer is null || dealer.PerfilDealer is null)
+        if (usuario is null)
             return null;
 
-        return MapearPerfilPublico(dealer);
+        // Dealer: usa los datos de su PerfilDealer.
+        if (usuario.PerfilDealer != null)
+            return MapearPerfilPublico(usuario);
+
+        // Vendedor (cuenta individual, sin PerfilDealer): página pública básica.
+        if (string.Equals(usuario.Rol, "Vendedor", StringComparison.OrdinalIgnoreCase))
+            return MapearVendedorPublico(usuario);
+
+        // Otros roles (comprador/admin) no tienen página pública de vendedor.
+        return null;
     }
 
     public async Task<PerfilDealerPublicoDto?> ActualizarMiPerfilAsync(
@@ -100,6 +109,27 @@ public class PerfilDealerService : IPerfilDealerService
             TelefonoAgencia = perfil.TelefonoAgencia,
             Descripcion = perfil.Descripcion ?? string.Empty,
             WhatsApp = perfil.WhatsApp
+        };
+    }
+
+    private static PerfilDealerPublicoDto MapearVendedorPublico(
+        AutoMarket.Core.Entities.Usuario vendedor)
+    {
+        var nombreCompleto =
+            $"{vendedor.Nombre} {vendedor.Apellido}".Trim();
+
+        return new PerfilDealerPublicoDto
+        {
+            Id = vendedor.UsuarioId,
+            NombreAgencia = string.IsNullOrWhiteSpace(nombreCompleto)
+                ? "Vendedor"
+                : nombreCompleto,
+            LogoUrl = null,
+            Horarios = null,
+            Ubicacion = string.Empty,
+            TelefonoAgencia = vendedor.TelefonoPersonal ?? string.Empty,
+            Descripcion = string.Empty,
+            WhatsApp = null
         };
     }
 
