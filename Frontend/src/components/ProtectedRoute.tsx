@@ -50,6 +50,11 @@ export default function ProtectedRoute({
     return <Navigate to="/vendedor" replace />;
   }
 
+  // Admin: va al panel de administración
+  if (rolActual === ROLES.ADMIN.toLowerCase()) {
+    return <Navigate to="/admin" replace />;
+  }
+
   // Comprador: va al inicio público
   if (rolActual === ROLES.COMPRADOR.toLowerCase()) {
     return <Navigate to="/" replace />;

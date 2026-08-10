@@ -13,6 +13,7 @@ import PagoCancelado from './pages/PagoCancelado';
 // Componentes de estructura
 import ProtectedRoute from './components/ProtectedRoute';
 import DashboardLayout from './components/layout/DashboardLayout';
+import AdminLayout from './components/layout/AdminLayout';
 import { ROLES } from './constants/roles';
 
 // Páginas del dashboard de Dealers
@@ -27,6 +28,12 @@ import Favoritos from './pages/Favoritos';
 import Historial from './pages/Historial';
 import EditarCuenta from './pages/EditarCuenta';
 import DashboardSuscripcion from './pages/DashboardSuscripcion';
+
+// Páginas del panel de administración
+import AdminIndex from './pages/admin/AdminIndex';
+import AdminUsuarios from './pages/admin/AdminUsuarios';
+import AdminAnuncios from './pages/admin/AdminAnuncios';
+import AdminPlanes from './pages/admin/AdminPlanes';
 
 // Páginas del área de Vendedor
 import MiVehiculoVendedor from './pages/vendedor/MiVehiculoVendedor';
@@ -138,6 +145,27 @@ function App() {
             path="suscripcion"
             element={<DashboardSuscripcion />}
           />
+        </Route>
+      </Route>
+
+      {/* PANEL DE ADMINISTRACIÓN */}
+      <Route
+        element={
+          <ProtectedRoute allowedRoles={[ROLES.ADMIN]} />
+        }
+      >
+        <Route path="/admin" element={<AdminLayout />}>
+          {/* /admin */}
+          <Route index element={<AdminIndex />} />
+
+          {/* /admin/usuarios */}
+          <Route path="usuarios" element={<AdminUsuarios />} />
+
+          {/* /admin/anuncios */}
+          <Route path="anuncios" element={<AdminAnuncios />} />
+
+          {/* /admin/planes */}
+          <Route path="planes" element={<AdminPlanes />} />
         </Route>
       </Route>
 

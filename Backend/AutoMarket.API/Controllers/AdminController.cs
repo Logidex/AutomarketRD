@@ -70,6 +70,31 @@ public class AdminController : ControllerBase
         });
     }
 
+    [HttpPatch("usuarios/{id:int}/reactivar")]
+    public async Task<IActionResult> ReactivarUsuario(int id)
+    {
+        var usuario = await _usuarioRepository.ObtenerPorIdAsync(id);
+
+        if (usuario == null)
+            return NotFound(new { mensaje = "Usuario no encontrado." });
+
+        if (usuario.Rol == "Admin")
+            return BadRequest(new { mensaje = "No puedes modificar a otro administrador." });
+
+        if (usuario.IsActivo)
+            return BadRequest(new { mensaje = "El usuario ya se encuentra activo." });
+
+        usuario.Reactivar();
+
+        await _usuarioRepository.GuardarCambiosAsync();
+
+        return Ok(new
+        {
+            exito = true,
+            mensaje = $"El usuario {usuario.Email} ha sido reactivado exitosamente."
+        });
+    }
+
     [HttpGet("usuarios")]
     public async Task<IActionResult> ListarUsuarios()
     {

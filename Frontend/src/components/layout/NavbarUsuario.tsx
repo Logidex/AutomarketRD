@@ -82,6 +82,18 @@ export default function NavbarUsuario() {
     );
   }
 
+  // Admin: acceso directo al panel de administración
+  if (usuario?.rol === ROLES.ADMIN) {
+    return (
+      <Link
+        to="/admin"
+        className="rounded-lg bg-violet-600 px-5 py-2 font-semibold text-white transition-colors hover:bg-violet-700"
+      >
+        Panel Admin
+      </Link>
+    );
+  }
+
   // Comprador: avatar + nombre (menú desplegable) + logout directo
   return (
     <div ref={contenedorRef} className="relative flex items-center gap-2">

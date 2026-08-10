@@ -70,6 +70,14 @@ export default function Login() {
         return;
       }
 
+      if (rol === "admin") {
+        navigate("/admin", {
+          replace: true,
+        });
+
+        return;
+      }
+
       // Si el rol no está definido o no es reconocido
       authService.logout();
 
