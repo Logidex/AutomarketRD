@@ -409,6 +409,7 @@ public class AnuncioService : IAnuncioService
         var filtro = new AnuncioQueryFilter
         {
             UsuarioId = dto.UsuarioId,
+            VendedorId = dto.VendedorId,
 
             Marca = dto.Marca,
             Modelo = dto.Modelo,

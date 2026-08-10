@@ -4,6 +4,9 @@ namespace AutoMarket.Application.DTOs
     {
         public int? UsuarioId { get; set; }
 
+        // Filtro público por vendedor: devuelve solo sus anuncios Publicado.
+        public int? VendedorId { get; set; }
+
         public string? Marca { get; set; }
         public string? Modelo { get; set; }
         public string? Version { get; set; }

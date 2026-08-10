@@ -691,6 +691,40 @@ public class AnuncioServiceTests
         );
     }
 
+    // =========================================================================
+    // BuscarAnunciosAsync: el filtro VendedorId se pasa al repositorio tal cual
+    // (filtro público, no se nulifica).
+    // =========================================================================
+    [Fact]
+    public async Task BuscarAnunciosAsync_VendedorId_DebePasarseAlRepositorio()
+    {
+        // ARRANGE
+        var anuncios = new List<Anuncio>
+        {
+            new Anuncio(1, "Toyota", "Corolla", "", "Sedan", "1.8L", "Delantera", "Blanco", "Negro", 2015, 600000, 80000, "Automática", "Gasolina", new List<string> { "Ninguno" }, "Santo Domingo", "Excelente estado")
+        };
+
+        var dto = new AnuncioSearchDto
+        {
+            VendedorId = 42,
+            PaginaActual = 1,
+            CantidadAnuncios = 12
+        };
+
+        _mockRepo
+            .Setup(r => r.BuscarPaginadoAsync(It.IsAny<AnuncioQueryFilter>()))
+            .ReturnsAsync((anuncios, 1));
+
+        // ACT
+        await _servicio.BuscarAnunciosAsync(dto);
+
+        // ASSERT
+        _mockRepo.Verify(
+            r => r.BuscarPaginadoAsync(It.Is<AnuncioQueryFilter>(f =>
+                f.VendedorId == 42)),
+            Times.Once);
+    }
+
     private Usuario CrearUsuarioDealerSinSuscripcion(int id)
     {
         var usuario = new Usuario(

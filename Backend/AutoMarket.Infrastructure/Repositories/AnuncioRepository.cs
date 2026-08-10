@@ -67,7 +67,10 @@ public class AnuncioRepository : IAnuncioRepository
          * Si UsuarioId está presente, se utiliza para consultar
          * los anuncios privados del usuario, incluyendo borradores.
          *
-         * Si no está presente, solamente se muestran anuncios publicados.
+         * VendedorId es un filtro público: devuelve únicamente los anuncios
+         * Publicado de ese vendedor, para la página pública del vendedor.
+         *
+         * Si ninguno está presente, solamente se muestran anuncios publicados.
          */
         if (
             filtro.UsuarioId.HasValue &&
@@ -76,6 +79,17 @@ public class AnuncioRepository : IAnuncioRepository
         {
             query = query.Where(a =>
                 a.UsuarioId == filtro.UsuarioId.Value
+            );
+        }
+        else if (
+            filtro.VendedorId.HasValue &&
+            filtro.VendedorId.Value > 0
+        )
+        {
+            var vendedorId = filtro.VendedorId.Value;
+            query = query.Where(a =>
+                a.UsuarioId == vendedorId &&
+                a.Estado == "Publicado"
             );
         }
         else
