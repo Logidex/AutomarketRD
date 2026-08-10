@@ -147,10 +147,12 @@ export default function VendedorPublico() {
                     <h1 className="truncate text-2xl font-bold sm:text-3xl">
                       {perfil?.nombreAgencia}
                     </h1>
-                    <p className="mt-1 flex items-center gap-2 text-sm text-[#9aa1b1]">
-                      <FaMapMarkerAlt className="text-gray-500" />
-                      {perfil?.ubicacion}
-                    </p>
+                    {perfil?.ubicacion && (
+                      <p className="mt-1 flex items-center gap-2 text-sm text-[#9aa1b1]">
+                        <FaMapMarkerAlt className="text-gray-500" />
+                        {perfil.ubicacion}
+                      </p>
+                    )}
                     {perfil?.horarios && (
                       <p className="mt-1 flex items-center gap-2 text-sm text-[#9aa1b1]">
                         <FaClock className="text-gray-500" />
