@@ -1,4 +1,5 @@
 using AutoMarket.Application.DTOs;
+using AutoMarket.Application.Helpers;
 using AutoMarket.Application.Interfaces;
 using AutoMarket.Core.Entities;
 using AutoMarket.Core.Entities.Enums;
@@ -27,6 +28,11 @@ public class AnuncioService : IAnuncioService
     {
         "Publicado", "Borrador", "Pausado", "Vendido"
     };
+
+    // Los campos que participan en la búsqueda pública se guardan sin acentos
+    // (NormalizadorTexto) para que el ILike del repositorio compare en igualdad.
+    private static string NormalizarBusqueda(string? valor) =>
+        NormalizadorTexto.Normalizar(valor);
 
     public async Task<int> CrearAnuncioAsync(
     AnuncioCreateDto dto)
@@ -102,21 +108,21 @@ public class AnuncioService : IAnuncioService
 
         var nuevoAnuncio = new Anuncio(
             usuarioId: dto.UsuarioId,
-            marca: dto.Marca,
-            modelo: dto.Modelo,
-            version: dto.Version,
-            tipoVehiculo: dto.TipoVehiculo,
-            motor: dto.Motor,
-            traccion: dto.Traccion,
-            colorExterior: dto.ColorExterior,
-            colorInterior: dto.ColorInterior,
+            marca: NormalizarBusqueda(dto.Marca),
+            modelo: NormalizarBusqueda(dto.Modelo),
+            version: NormalizarBusqueda(dto.Version),
+            tipoVehiculo: NormalizarBusqueda(dto.TipoVehiculo),
+            motor: NormalizarBusqueda(dto.Motor),
+            traccion: NormalizarBusqueda(dto.Traccion),
+            colorExterior: NormalizarBusqueda(dto.ColorExterior),
+            colorInterior: NormalizarBusqueda(dto.ColorInterior),
             anio: dto.Anio,
             precio: dto.Precio,
             kilometraje: dto.Kilometraje,
-            transmision: dto.Transmision,
-            combustible: dto.Combustible,
+            transmision: NormalizarBusqueda(dto.Transmision),
+            combustible: NormalizarBusqueda(dto.Combustible),
             accesorios: dto.Accesorios,
-            ubicacion: dto.Ubicacion,
+            ubicacion: NormalizarBusqueda(dto.Ubicacion),
             descripcion: dto.Descripcion
         );
 
@@ -235,21 +241,21 @@ public class AnuncioService : IAnuncioService
         }
 
         anuncio.ActualizarInfo(
-            marca: updateAnuncio.Marca,
-            modelo: updateAnuncio.Modelo,
-            version: updateAnuncio.Version,
-            tipoVehiculo: updateAnuncio.TipoVehiculo,
-            motor: updateAnuncio.Motor,
-            traccion: updateAnuncio.Traccion,
-            colorExterior: updateAnuncio.ColorExterior,
-            colorInterior: updateAnuncio.ColorInterior,
+            marca: NormalizarBusqueda(updateAnuncio.Marca),
+            modelo: NormalizarBusqueda(updateAnuncio.Modelo),
+            version: NormalizarBusqueda(updateAnuncio.Version),
+            tipoVehiculo: NormalizarBusqueda(updateAnuncio.TipoVehiculo),
+            motor: NormalizarBusqueda(updateAnuncio.Motor),
+            traccion: NormalizarBusqueda(updateAnuncio.Traccion),
+            colorExterior: NormalizarBusqueda(updateAnuncio.ColorExterior),
+            colorInterior: NormalizarBusqueda(updateAnuncio.ColorInterior),
             anio: updateAnuncio.Anio,
             precio: updateAnuncio.Precio,
             kilometraje: updateAnuncio.Kilometraje,
-            transmision: updateAnuncio.Transmision,
-            combustible: updateAnuncio.Combustible,
+            transmision: NormalizarBusqueda(updateAnuncio.Transmision),
+            combustible: NormalizarBusqueda(updateAnuncio.Combustible),
             accesorios: updateAnuncio.Accesorios,
-            ubicacion: updateAnuncio.Ubicacion,
+            ubicacion: NormalizarBusqueda(updateAnuncio.Ubicacion),
             descripcion: updateAnuncio.Descripcion
 );
 

@@ -176,6 +176,48 @@ public class AnuncioServiceTests
     }
 
     // =========================================================================
+    // PRUEBA 11b: Crear Anuncio - Normaliza acentos en campos de búsqueda
+    // =========================================================================
+    [Fact]
+    public async Task CrearAnuncioAsync_NormalizaAcentosEnCamposDeBusqueda()
+    {
+        // 1. ARRANGE
+        var dto = new AnuncioCreateDto
+        {
+            UsuarioId = 11,
+            Marca = "Renault",
+            Modelo = "Clío",
+            TipoVehiculo = "Sedán",
+            Motor = "1.2L",
+            Traccion = "Delantera",
+            ColorExterior = "Gris",
+            ColorInterior = "Negro",
+            Anio = 2021,
+            Precio = 900000,
+            Kilometraje = 30000,
+            Transmision = "Automática",
+            Combustible = "Diésel",
+            Accesorios = new List<string>(),
+            Ubicacion = "Santo Domingo Oeste",
+            Descripcion = "Vehículo en buenas condiciones"
+        };
+
+        var usuarioValido = CrearUsuarioSimulado(11, esDealer: false);
+        _mockUsuarioRepo.Setup(r => r.ObtenerDealerConPerfilPorIdAsync(11)).ReturnsAsync(usuarioValido);
+
+        // 2. ACT
+        await _servicio.CrearAnuncioAsync(dto);
+
+        // 3. ASSERT: se guardan sin acentos para que el ILike de la búsqueda coincida
+        _mockRepo.Verify(r => r.AgregarAsync(It.Is<Anuncio>(a =>
+            a.Modelo == "Clio" &&
+            a.TipoVehiculo == "Sedan" &&
+            a.Transmision == "Automatica" &&
+            a.Combustible == "Diesel"
+        )), Times.Once);
+    }
+
+    // =========================================================================
     // PRUEBA 12: Actualizar - Fallo por no encontrado
     // =========================================================================
     [Fact]
