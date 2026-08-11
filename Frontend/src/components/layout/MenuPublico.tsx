@@ -116,6 +116,14 @@ export default function MenuPublico() {
         Directorio
       </Link>
 
+      {/* COMPARADOR */}
+      <Link
+        to="/comparador"
+        className="text-[#9aa1b1] transition-colors hover:text-white"
+      >
+        Comparar
+      </Link>
+
       <Link
         to="/precios"
         className="text-[#9aa1b1] transition-colors hover:text-white"

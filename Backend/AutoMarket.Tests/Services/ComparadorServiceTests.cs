@@ -141,6 +141,14 @@ public class ComparadorServiceTests
         Assert.Equal("Automática", item.Transmision);
         Assert.Equal("Gasolina", item.Combustible);
         Assert.Equal("Gris", item.ColorExterior);
+        Assert.Equal("Sedan", item.TipoVehiculo);
+        Assert.Equal("1.8L", item.Motor);
+        Assert.Equal("Delantera", item.Traccion);
+        Assert.Equal("Negro", item.ColorInterior);
+        Assert.Equal("Usado", item.Condicion);
+        Assert.Equal("Santo Domingo", item.Ubicacion);
+        Assert.False(item.EnOferta);
+        Assert.Null(item.PrecioAnterior);
     }
 
     [Fact]

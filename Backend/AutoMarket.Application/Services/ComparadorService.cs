@@ -36,12 +36,21 @@ public class ComparadorService : IComparadorService
             Id = a.Id,
             Marca = a.Marca,
             Modelo = a.Modelo,
+            Version = a.Version,
+            TipoVehiculo = a.TipoVehiculo,
             Anio = a.Anio,
             Precio = a.Precio,
+            PrecioAnterior = a.PrecioAnterior,
+            EnOferta = a.EnOferta,
             Kilometraje = a.Kilometraje,
+            Condicion = a.Condicion,
             Transmision = a.Transmision,
             Combustible = a.Combustible,
+            Motor = a.Motor,
+            Traccion = a.Traccion,
             ColorExterior = a.ColorExterior,
+            ColorInterior = a.ColorInterior,
+            Ubicacion = a.Ubicacion,
             FotoPrincipal = AnuncioFotos.ObtenerPrincipal(a.Fotos)
         }).ToList();
     }

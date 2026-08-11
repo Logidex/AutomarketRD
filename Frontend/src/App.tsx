@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 // Páginas públicas
 import Home from './pages/Home';
 import Vehiculos from './pages/Vehiculos';
+import Comparador from './pages/Comparador';
 import DetalleAnuncio from './pages/DetalleAnuncio';
 import VendedorPublico from './pages/VendedorPublico';
 import Login from './pages/Login';
@@ -51,6 +52,9 @@ function App() {
 
       {/* TODOS LOS VEHÍCULOS CON FILTROS DETALLADOS */}
       <Route path="/vehiculos" element={<Vehiculos />} />
+
+      {/* COMPARADOR DE VEHÍCULOS */}
+      <Route path="/comparador" element={<Comparador />} />
 
       {/* DETALLE PÚBLICO DE UN VEHÍCULO */}
       <Route path="/anuncio/:id" element={<DetalleAnuncio />} />

@@ -3,8 +3,10 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import {
   FaArrowLeft,
+  FaBalanceScale,
   FaCalendarAlt,
   FaCar,
+  FaCheckCircle,
   FaEnvelope,
   FaHeart,
   FaMapMarkerAlt,
@@ -20,6 +22,7 @@ import { leadService } from "../services/lead.service";
 import { favoritoService } from "../services/favorito.service";
 import { historialService } from "../services/historial.service";
 import { authService } from "../services/auth.service";
+import { useComparador } from "../context/ComparadorContext";
 import type { AnuncioDetalle } from "../types/anuncio.types";
 import logo from "../assets/AutoMarketRD_Logo.svg";
 import MenuPublico from "../components/layout/MenuPublico";
@@ -43,6 +46,8 @@ export default function DetalleAnuncio() {
 
   const [esFavorito, setEsFavorito] = useState(false);
   const [cargandoFavorito, setCargandoFavorito] = useState(false);
+
+  const { esSeleccionado, toggle: toggleComparar } = useComparador();
 
   const [fotoActiva, setFotoActiva] = useState(0);
   const [fotoAmpliada, setFotoAmpliada] = useState(false);
@@ -225,6 +230,11 @@ export default function DetalleAnuncio() {
   })();
 
   const esVehiculoNuevo = anuncio != null && anuncio.kilometraje <= 100;
+
+  const esOferta =
+    anuncio != null &&
+    anuncio.precioAnterior != null &&
+    anuncio.precioAnterior > anuncio.precio;
 
   // Estado de favorito: solo aplica a compradores autenticados que no sean dueños
   useEffect(() => {
@@ -457,9 +467,13 @@ export default function DetalleAnuncio() {
                       {anuncio.version || "—"}
                     </p>
                   </div>
-                  {esVehiculoNuevo && (
+                  {esVehiculoNuevo ? (
                     <span className="rounded-full bg-green-500/10 px-3 py-1 text-xs font-semibold text-green-400">
                       Nuevo
+                    </span>
+                  ) : (
+                    <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-gray-300">
+                      Usado
                     </span>
                   )}
                 </div>
@@ -467,6 +481,15 @@ export default function DetalleAnuncio() {
                 <p className="mt-4 text-3xl font-bold text-blue-500">
                   RD$ {anuncio.precio.toLocaleString("es-DO")}
                 </p>
+
+                {esOferta && anuncio.precioAnterior != null && (
+                  <p className="mt-1 text-sm text-[#9aa1b1]">
+                    <span className="mr-2 line-through">
+                      RD$ {anuncio.precioAnterior.toLocaleString("es-DO")}
+                    </span>
+                    <span className="font-semibold text-green-400">Oferta</span>
+                  </p>
+                )}
 
                 {!esPropietario && (
                   <button
@@ -489,6 +512,31 @@ export default function DetalleAnuncio() {
                       <>
                         <FaRegHeart />
                         Guardar en favoritos
+                      </>
+                    )}
+                  </button>
+                )}
+
+                {!esPropietario && (
+                  <button
+                    type="button"
+                    onClick={() => toggleComparar(anuncio.id)}
+                    aria-pressed={esSeleccionado(anuncio.id)}
+                    className={`mt-3 flex w-full items-center justify-center gap-2 rounded-lg border px-5 py-2.5 text-sm font-semibold transition-colors ${
+                      esSeleccionado(anuncio.id)
+                        ? "border-blue-500/50 bg-blue-500/15 text-blue-400"
+                        : "border-white/10 bg-white/5 text-[#9aa1b1] hover:border-blue-500/40 hover:text-blue-400"
+                    }`}
+                  >
+                    {esSeleccionado(anuncio.id) ? (
+                      <>
+                        <FaCheckCircle className="text-blue-400" />
+                        En comparación · Quitar
+                      </>
+                    ) : (
+                      <>
+                        <FaBalanceScale />
+                        Agregar a comparar
                       </>
                     )}
                   </button>

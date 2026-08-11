@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
+  FaBalanceScale,
   FaCar,
   FaCalendarAlt,
   FaMapMarkerAlt,
@@ -9,6 +10,7 @@ import {
 } from "react-icons/fa";
 import { catalogoService } from "../services/catalogo.service";
 import type { AnuncioListado } from "../types/anuncio.types";
+import { useComparador } from "../context/ComparadorContext";
 import logo from "../assets/AutoMarketRD_Logo.svg";
 import MenuPublico from "../components/layout/MenuPublico";
 import {
@@ -84,6 +86,21 @@ export default function Vehiculos() {
   const [filtros, setFiltros] = useState<Filtros>(FILTROS_INICIALES);
 
   const [filtrosAplicados, setFiltrosAplicados] = useState<Filtros>(FILTROS_INICIALES);
+
+  // Selección para el comparador (compartida y persistida en localStorage)
+  const {
+    seleccionados,
+    esSeleccionado,
+    toggle: toggleComparar,
+    limpiar: limpiarSeleccion,
+    maxVehiculos,
+  } = useComparador();
+
+  const irAComparador = () => {
+    if (seleccionados.length < 2) return;
+    const qs = seleccionados.map((id) => `ids=${id}`).join("&");
+    navigate(`/comparador?${qs}`);
+  };
 
   const cargar = useCallback(
     async (paginaActual: number, aplicados: Filtros) => {
@@ -463,45 +480,52 @@ export default function Vehiculos() {
         ) : (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {anuncios.map((anuncio) => (
-              <button
+              <div
                 key={anuncio.id}
-                type="button"
-                onClick={() => navigate(`/anuncio/${anuncio.id}`)}
-                className="group flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#13161d] text-left transition-all hover:border-blue-500/40 hover:shadow-lg"
+                className={`group relative flex flex-col overflow-hidden rounded-2xl border text-left transition-all hover:shadow-lg ${
+                  esSeleccionado(anuncio.id)
+                    ? "border-blue-500 bg-[#16202e]"
+                    : "border-white/10 bg-[#13161d] hover:border-blue-500/40"
+                }`}
               >
-                <div className="relative aspect-[16/10] overflow-hidden">
-                  <img
-                    src={fotoPrincipal(anuncio)}
-                    alt={`${anuncio.marca} ${anuncio.modelo}`}
-                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                </div>
-
-                <div className="flex flex-1 flex-col p-5">
-                  <div className="flex items-start justify-between gap-3">
-                    <h3 className="truncate text-lg font-bold">
-                      {anuncio.marca} {anuncio.modelo}
-                      <span className="ml-2 text-sm font-normal text-gray-400">
-                        {anuncio.version}
-                      </span>
-                    </h3>
-                    <span className="shrink-0 rounded-full bg-green-500/10 px-3 py-1 text-xs font-semibold text-green-400">
-                      {anuncio.anio}
-                    </span>
+                <button
+                  type="button"
+                  onClick={() => navigate(`/anuncio/${anuncio.id}`)}
+                  className="flex flex-col text-left"
+                >
+                  <div className="relative aspect-[16/10] overflow-hidden">
+                    <img
+                      src={fotoPrincipal(anuncio)}
+                      alt={`${anuncio.marca} ${anuncio.modelo}`}
+                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
                   </div>
 
-                  <p className="mt-2 text-xl font-bold text-blue-500">
-                    RD$ {anuncio.precio.toLocaleString("es-DO")}
-                  </p>
-
-                  {anuncio.enOferta && anuncio.precioAnterior != null && (
-                    <p className="text-sm text-[#9aa1b1]">
-                      <span className="mr-2 line-through">
-                        RD$ {anuncio.precioAnterior.toLocaleString("es-DO")}
+                  <div className="flex flex-1 flex-col p-5">
+                    <div className="flex items-start justify-between gap-3">
+                      <h3 className="truncate text-lg font-bold">
+                        {anuncio.marca} {anuncio.modelo}
+                        <span className="ml-2 text-sm font-normal text-gray-400">
+                          {anuncio.version}
+                        </span>
+                      </h3>
+                      <span className="shrink-0 rounded-full bg-green-500/10 px-3 py-1 text-xs font-semibold text-green-400">
+                        {anuncio.anio}
                       </span>
-                      <span className="font-semibold text-green-400">Oferta</span>
+                    </div>
+
+                    <p className="mt-2 text-xl font-bold text-blue-500">
+                      RD$ {anuncio.precio.toLocaleString("es-DO")}
                     </p>
-                  )}
+
+                    {anuncio.enOferta && anuncio.precioAnterior != null && (
+                      <p className="text-sm text-[#9aa1b1]">
+                        <span className="mr-2 line-through">
+                          RD$ {anuncio.precioAnterior.toLocaleString("es-DO")}
+                        </span>
+                        <span className="font-semibold text-green-400">Oferta</span>
+                      </p>
+                    )}
 
                   <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 border-t border-white/10 pt-4 text-xs text-[#9aa1b1]">
                     <span className="inline-flex items-center gap-1.5">
@@ -549,7 +573,27 @@ export default function Vehiculos() {
                     )}
                   </div>
                 </div>
-              </button>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleComparar(anuncio.id);
+                  }}
+                  className={`mt-0 border-t px-5 py-3 text-left text-sm font-medium transition-colors ${
+                    esSeleccionado(anuncio.id)
+                      ? "border-blue-500/40 bg-blue-500/10 text-blue-400"
+                      : "border-white/10 text-[#9aa1b1] hover:text-white"
+                  }`}
+                >
+                  {esSeleccionado(anuncio.id) ? (
+                    <>Quitar de comparar</>
+                  ) : (
+                    <>+ Agregar a comparar</>
+                  )}
+                </button>
+              </div>
             ))}
           </div>
         )}
@@ -602,6 +646,59 @@ export default function Vehiculos() {
           </div>
         )}
       </main>
+
+      {/* ESPACIO PARA QUE EL FOOTER NO QUEDE DETRÁS DE LA BARRA FLOTANTE */}
+      <div className="h-20" />
+
+      {/* BARRA FLOTANTE DE COMPARACIÓN */}
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-blue-500/40 bg-[#0d1117]/95 px-6 py-4 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 sm:px-8">
+          <div className="flex flex-wrap items-center gap-2 text-sm text-[#9aa1b1]">
+            {seleccionados.length === 0 ? (
+              <span className="inline-flex items-center gap-2">
+                <FaBalanceScale className="text-blue-500" />
+                Selecciona 2 o más vehículos para compararlos
+              </span>
+            ) : (
+              <>
+                <span className="font-semibold text-white">
+                  {seleccionados.length} seleccionado{seleccionados.length !== 1 && "s"}
+                </span>
+                {seleccionados.length >= maxVehiculos && (
+                  <span className="text-xs text-amber-400">
+                    Máximo {maxVehiculos} vehículos
+                  </span>
+                )}
+              </>
+            )}
+            {seleccionados.length > 0 && (
+              <button
+                type="button"
+                onClick={limpiarSeleccion}
+                className="text-xs text-[#9aa1b1] underline-offset-2 transition-colors hover:text-white hover:underline"
+              >
+                Limpiar
+              </button>
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={irAComparador}
+            disabled={seleccionados.length < 2}
+            className={`inline-flex items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-semibold transition-colors ${
+              seleccionados.length < 2
+                ? "cursor-not-allowed bg-blue-500/40 text-white/60"
+                : "bg-blue-500 text-white hover:bg-blue-600"
+            }`}
+          >
+            <FaBalanceScale />
+            {seleccionados.length < 2
+              ? `Faltan ${2 - seleccionados.length}`
+              : `Comparar (${seleccionados.length})`}
+          </button>
+        </div>
+      </div>
 
       {/* FOOTER */}
       <footer className="border-t border-white/10 py-8">
