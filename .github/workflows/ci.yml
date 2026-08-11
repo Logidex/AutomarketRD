@@ -2,12 +2,16 @@ name: CI
 
 on:
   push:
-    branches: [master]
+    branches: [main, develop]
   pull_request:
-    branches: [master]
+    branches: [main, develop]
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  NODE_VERSION: '20'
 
 jobs:
-  build-backend:
+  backend:
     name: Backend (build + tests)
     runs-on: ubuntu-latest
     defaults:
@@ -17,10 +21,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup .NET 10
+      - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "10.0.x"
+          dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Restore
         run: dotnet restore AutoMarketRD.sln
@@ -29,9 +33,16 @@ jobs:
         run: dotnet build AutoMarketRD.sln --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test AutoMarketRD.sln --configuration Release --no-restore --no-build
+        run: dotnet test AutoMarketRD.sln --configuration Release --no-restore --no-build --collect:"XPlat Code Coverage" --results-directory coverage
 
-  build-frontend:
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage
+          path: Backend/**/coverage/
+          retention-days: 7
+
+  frontend:
     name: Frontend (lint + build)
     runs-on: ubuntu-latest
     defaults:
@@ -44,7 +55,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: ${{ env.NODE_VERSION }}
           cache: npm
           cache-dependency-path: Frontend/package-lock.json
 
@@ -56,3 +67,10 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: Frontend/dist/
+          retention-days: 7
