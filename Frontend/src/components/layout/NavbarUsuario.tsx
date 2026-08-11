@@ -50,12 +50,20 @@ export default function NavbarUsuario() {
 
   if (!autenticado) {
     return (
-      <Link
-        to="/login"
-        className="rounded-lg bg-blue-500 px-5 py-2 font-semibold text-white transition-colors hover:bg-blue-600"
-      >
-        Iniciar Sesión
-      </Link>
+      <div className="flex items-center gap-3">
+        <Link
+          to="/registro"
+          className="rounded-lg border border-white/15 px-5 py-2 font-semibold text-white transition-colors hover:border-blue-500/50 hover:bg-white/10"
+        >
+          Registrarse
+        </Link>
+        <Link
+          to="/login"
+          className="rounded-lg bg-blue-500 px-5 py-2 font-semibold text-white transition-colors hover:bg-blue-600"
+        >
+          Iniciar Sesión
+        </Link>
+      </div>
     );
   }
 

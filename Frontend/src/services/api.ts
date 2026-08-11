@@ -1,7 +1,31 @@
 import axios from 'axios';
 
+// Resuelve la URL base de la API en tres pasos:
+//  1) Si el frontend se sirve desde un túnel de VS Code (Dev Tunnels),
+//     deriva la API del mismo túnel cambiando el puerto -5173 por -8080.
+//  2) Si existe VITE_API_URL, lo usa (entornos compilados/despliegues).
+//  3) Fallback a localhost para desarrollo puro en la misma máquina.
+function resolverBaseURL(): string {
+  const envUrl = import.meta.env.VITE_API_URL as string | undefined;
+
+  if (typeof window !== "undefined") {
+    const hostname = window.location.hostname;
+
+    // Ej. "bhb991zw-5173.use2.devtunnels.ms" → api de "bhb991zw-8080.use2.devtunnels.ms"
+    if (hostname.endsWith(".devtunnels.ms")) {
+      const tunnelAPI = hostname.replace(
+        /-\d+\.(.*devtunnels\.ms)$/,
+        "-8080.$1"
+      );
+      return `https://${tunnelAPI}`;
+    }
+  }
+
+  return envUrl ?? "http://localhost:8080";
+}
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ?? 'http://localhost:8080',
+  baseURL: resolverBaseURL(),
   headers: {
     'Content-Type': 'application/json',
   },
