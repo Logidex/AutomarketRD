@@ -15,6 +15,7 @@ public class AnuncioUpdateDto
 
     public int Anio { get; set; }
     public decimal Precio { get; set; }
+    public decimal? PrecioAnterior { get; set; }
     public int Kilometraje { get; set; }
 
     public string Transmision { get; set; } = string.Empty;

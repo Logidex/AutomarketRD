@@ -22,7 +22,7 @@ import { historialService } from "../services/historial.service";
 import { authService } from "../services/auth.service";
 import type { AnuncioDetalle } from "../types/anuncio.types";
 import logo from "../assets/AutoMarketRD_Logo.svg";
-import NavbarUsuario from "../components/layout/NavbarUsuario";
+import MenuPublico from "../components/layout/MenuPublico";
 import {
   TIPOS_VEHICULO,
   TRANSMISIONES,
@@ -283,15 +283,7 @@ export default function DetalleAnuncio() {
           />
         </Link>
 
-        <nav className="flex items-center gap-6 text-sm font-medium">
-          <Link
-            to="/precios"
-            className="text-[#9aa1b1] transition-colors hover:text-white"
-          >
-            Precios
-          </Link>
-          <NavbarUsuario />
-        </nav>
+        <MenuPublico />
       </header>
 
       <main className="mx-auto max-w-6xl px-6 py-8 sm:px-8">

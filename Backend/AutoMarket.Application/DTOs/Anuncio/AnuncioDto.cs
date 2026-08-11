@@ -20,7 +20,12 @@ public class AnuncioDto
 
     public int Anio { get; set; }
     public decimal Precio { get; set; }
+    public decimal? PrecioAnterior { get; set; }
     public int Kilometraje { get; set; }
+
+    public string Condicion { get; set; } = "Usado";
+
+    public bool EnOferta { get; set; }
 
     public string Transmision { get; set; } = string.Empty;
     public string Combustible { get; set; } = string.Empty;

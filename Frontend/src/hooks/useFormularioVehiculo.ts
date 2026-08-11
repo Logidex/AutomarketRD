@@ -30,7 +30,7 @@ export const useFormularioVehiculo = (
   const [formData, setFormData] = useState({
     marca: "", modelo: "", version: "", tipoVehiculo: "", motor: "",
     traccion: "", colorExterior: "", colorInterior: "",
-    anio: new Date().getFullYear(), precio: 0, kilometraje: 0,
+    anio: new Date().getFullYear(), precio: 0, precioAnterior: 0, kilometraje: 0,
     transmision: "", combustible: "", ubicacion: "", descripcion: "",
   });
 
@@ -44,7 +44,9 @@ export const useFormularioVehiculo = (
             marca: datos.marca, modelo: datos.modelo, version: datos.version,
             tipoVehiculo: datos.tipoVehiculo, motor: datos.motor, traccion: datos.traccion,
             colorExterior: datos.colorExterior, colorInterior: datos.colorInterior,
-            anio: datos.anio, precio: datos.precio, kilometraje: datos.kilometraje,
+            anio: datos.anio, precio: datos.precio,
+            precioAnterior: datos.precioAnterior ?? 0,
+            kilometraje: datos.kilometraje,
             transmision: datos.transmision, combustible: datos.combustible,
             ubicacion: datos.ubicacion, descripcion: datos.descripcion,
           });
@@ -75,7 +77,7 @@ export const useFormularioVehiculo = (
       setMostrarTransmisionPersonalizada(value === "Otra");
       if (value !== "Otra") setTransmisionPersonalizada("");
     }
-    setFormData((prev) => ({ ...prev, [name]: (name === "anio" || name === "precio") ? Number(value) : value }));
+    setFormData((prev) => ({ ...prev, [name]: (name === "anio" || name === "precio" || name === "precioAnterior") ? Number(value) : value }));
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {

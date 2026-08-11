@@ -13,6 +13,7 @@ export interface FormularioVehiculoData {
   colorInterior: string;
   anio: number;
   precio: number;
+  precioAnterior: number;
   kilometraje: number | string;
   transmision: string;
   combustible: string;
@@ -117,6 +118,24 @@ export default function FormularioVehiculo({
             placeholder="0"
             className="w-full rounded-md border border-gray-300 p-2.5 focus:border-blue-500 focus:ring-blue-500"
           />
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Precio anterior (opcional)
+          </label>
+          <input
+            type="number"
+            name="precioAnterior"
+            min="0"
+            value={formData.precioAnterior === 0 ? '' : formData.precioAnterior}
+            onChange={onChange}
+            placeholder="Dejar vacío si no está en oferta"
+            className="w-full rounded-md border border-gray-300 p-2.5 focus:border-blue-500 focus:ring-blue-500"
+          />
+          <p className="mt-1 text-xs text-gray-500">
+            Si es mayor que el precio actual, el vehículo se muestra como "En oferta".
+          </p>
         </div>
 
         <div>

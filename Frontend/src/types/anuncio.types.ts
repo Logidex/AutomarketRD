@@ -17,7 +17,11 @@ export interface AnuncioListado {
 
   anio: number;
   precio: number;
+  precioAnterior?: number | null;
   kilometraje: number;
+
+  condicion: string;
+  enOferta: boolean;
 
   transmision: string;
   combustible: string;
@@ -58,6 +62,7 @@ export interface AnuncioCreateDto {
 
   anio: number;
   precio: number;
+  precioAnterior?: number | null;
   kilometraje: number;
 
   transmision: string;
@@ -92,6 +97,7 @@ export interface AnuncioDetalle {
   colorInterior: string;
   anio: number;
   precio: number;
+  precioAnterior?: number | null;
   kilometraje: number;
   transmision: string;
   combustible: string;

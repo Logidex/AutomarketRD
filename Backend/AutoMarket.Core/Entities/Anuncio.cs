@@ -23,6 +23,16 @@ public class Anuncio
     public string Traccion { get; private set; } = null!;
     public bool PublicarAlGuardar { get; private set; }
 
+    // Condición del vehículo: "Nuevo" o "Usado". Se deriva del kilometraje
+    // (un vehículo con 100 km o menos se considera nuevo).
+    public string Condicion { get; private set; } = "Usado";
+
+    // Precio anterior (precio de lista). Si existe y es mayor que Precio,
+    // el vehículo se considera "en oferta".
+    public decimal? PrecioAnterior { get; private set; }
+
+    public bool EnOferta => PrecioAnterior.HasValue && PrecioAnterior.Value > Precio;
+
 
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
@@ -164,6 +174,7 @@ public class Anuncio
         Ubicacion = ubicacion;
         Descripcion = descripcion;
 
+        Condicion = kilometraje <= 100 ? "Nuevo" : "Usado";
         Estado = "Borrador";
         CreatedAt = DateTime.UtcNow;
     }
@@ -216,7 +227,8 @@ public class Anuncio
     string combustible,
     List<string> accesorios,
     string ubicacion,
-    string descripcion)
+    string descripcion,
+    decimal? precioAnterior = null)
     {
         if (string.IsNullOrWhiteSpace(descripcion))
         {
@@ -345,6 +357,9 @@ public class Anuncio
         Precio = precio;
         Kilometraje = kilometraje;
 
+        Condicion = kilometraje <= 100 ? "Nuevo" : "Usado";
+        PrecioAnterior = precioAnterior;
+
         Transmision = transmision.Trim();
         Combustible = combustible.Trim();
 
@@ -372,9 +387,13 @@ public class Anuncio
     {
         Estado = nuevoEstado;
     }
-
     public void RegistrarVista()
     {
         Vistas++;
+    }
+
+    public void FijarOferta(decimal? precioAnterior)
+    {
+        PrecioAnterior = precioAnterior;
     }
 }

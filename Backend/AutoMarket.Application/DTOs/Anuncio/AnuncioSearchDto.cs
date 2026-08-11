@@ -22,6 +22,12 @@ namespace AutoMarket.Application.DTOs
         public string? Combustible { get; set; }
         public string? Ubicacion { get; set; }
 
+        // "Nuevo" | "Usado" | null (todos)
+        public string? Condicion { get; set; }
+
+        // true => solo anuncios con precio anterior mayor al actual (ofertas)
+        public bool? EnOferta { get; set; }
+
         public int? AnioDesde { get; set; }
         public int? AnioHasta { get; set; }
 

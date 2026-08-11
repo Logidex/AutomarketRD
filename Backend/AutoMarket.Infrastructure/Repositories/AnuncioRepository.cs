@@ -220,6 +220,22 @@ public class AnuncioRepository : IAnuncioRepository
             );
         }
 
+        if (!string.IsNullOrWhiteSpace(filtro.Condicion))
+        {
+            var condicion = NormalizadorTexto.Normalizar(filtro.Condicion);
+            query = query.Where(a =>
+                EF.Functions.ILike(a.Condicion, condicion)
+            );
+        }
+
+        if (filtro.EnOferta == true)
+        {
+            query = query.Where(a =>
+                a.PrecioAnterior.HasValue &&
+                a.PrecioAnterior.Value > a.Precio
+            );
+        }
+
         if (filtro.PrecioMinimo.HasValue)
         {
             query = query.Where(a =>

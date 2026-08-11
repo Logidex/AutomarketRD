@@ -10,8 +10,14 @@ export interface AnuncioBusquedaDto {
   tipoVehiculo?: string;
   transmision?: string;
   combustible?: string;
+  ubicacion?: string;
+  condicion?: string;
+  enOferta?: boolean;
   precioMinimo?: number;
   precioMaximo?: number;
+  anioDesde?: number;
+  anioHasta?: number;
+  kilometrajeMaximo?: number;
   vendedorId?: number;
   paginaActual: number;
   cantidadAnuncios: number;
@@ -29,10 +35,20 @@ export const catalogoService = {
       params.set("Transmision", dto.transmision.trim());
     if (dto.combustible?.trim())
       params.set("Combustible", dto.combustible.trim());
+    if (dto.ubicacion?.trim())
+      params.set("Ubicacion", dto.ubicacion.trim());
+    if (dto.condicion?.trim())
+      params.set("Condicion", dto.condicion.trim());
+    if (dto.enOferta != null)
+      params.set("EnOferta", String(dto.enOferta));
     if (dto.precioMinimo != null)
       params.set("PrecioMinimo", String(dto.precioMinimo));
     if (dto.precioMaximo != null)
       params.set("PrecioMaximo", String(dto.precioMaximo));
+    if (dto.anioDesde != null) params.set("AnioDesde", String(dto.anioDesde));
+    if (dto.anioHasta != null) params.set("AnioHasta", String(dto.anioHasta));
+    if (dto.kilometrajeMaximo != null)
+      params.set("KilometrajeMaximo", String(dto.kilometrajeMaximo));
     if (dto.vendedorId != null)
       params.set("VendedorId", String(dto.vendedorId));
 

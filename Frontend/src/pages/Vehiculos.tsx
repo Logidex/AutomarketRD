@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   FaCar,
   FaCalendarAlt,
@@ -19,26 +19,62 @@ import {
 } from "../constants/vehiculo.opciones";
 
 const TAMANO_PAGINA = 12;
+const ANIO_ACTUAL = new Date().getFullYear();
 
 interface Filtros {
   marca: string;
+  modelo: string;
   tipoVehiculo: string;
   transmision: string;
   combustible: string;
+  ubicacion: string;
+  condicion: string;
+  enOferta: string;
+  anioDesde: string;
+  anioHasta: string;
   precioMinimo: string;
   precioMaximo: string;
+  kilometrajeMaximo: string;
 }
 
 const FILTROS_INICIALES: Filtros = {
   marca: "",
+  modelo: "",
   tipoVehiculo: "",
   transmision: "",
   combustible: "",
+  ubicacion: "",
+  condicion: "",
+  enOferta: "",
+  anioDesde: "",
+  anioHasta: "",
   precioMinimo: "",
   precioMaximo: "",
+  kilometrajeMaximo: "",
 };
 
-export default function Home() {
+function filtrosDesdeParams(params: URLSearchParams): Filtros {
+  return {
+    marca: params.get("marca") ?? "",
+    modelo: params.get("modelo") ?? "",
+    tipoVehiculo: params.get("tipo") ?? "",
+    transmision: params.get("transmision") ?? "",
+    combustible: params.get("combustible") ?? "",
+    ubicacion: params.get("ubicacion") ?? "",
+    condicion: params.get("condicion") ?? "",
+    enOferta: params.get("enOferta") ?? "",
+    anioDesde: params.get("anioDesde") ?? "",
+    anioHasta: params.get("anioHasta") ?? "",
+    precioMinimo: params.get("precioMinimo") ?? "",
+    precioMaximo: params.get("precioMaximo") ?? "",
+    kilometrajeMaximo: params.get("kmMax") ?? "",
+  };
+}
+
+export default function Vehiculos() {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+
   const [anuncios, setAnuncios] = useState<AnuncioListado[]>([]);
   const [pagina, setPagina] = useState(1);
   const [totalRegistros, setTotalRegistros] = useState(0);
@@ -46,25 +82,35 @@ export default function Home() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
   const [filtros, setFiltros] = useState<Filtros>(FILTROS_INICIALES);
-  const [filtrosAplicados, setFiltrosAplicados] =
-    useState<Filtros>(FILTROS_INICIALES);
-  const [aplicando, setAplicando] = useState(false);
 
-  const navigate = useNavigate();
+  const [filtrosAplicados, setFiltrosAplicados] = useState<Filtros>(FILTROS_INICIALES);
 
   const cargar = useCallback(
     async (paginaActual: number, aplicados: Filtros) => {
       try {
         const resultado = await catalogoService.buscar({
           marca: aplicados.marca || undefined,
+          modelo: aplicados.modelo || undefined,
           tipoVehiculo: aplicados.tipoVehiculo || undefined,
           transmision: aplicados.transmision || undefined,
           combustible: aplicados.combustible || undefined,
+          ubicacion: aplicados.ubicacion || undefined,
+          condicion: aplicados.condicion || undefined,
+          enOferta: aplicados.enOferta ? true : undefined,
+          anioDesde: aplicados.anioDesde
+            ? Number(aplicados.anioDesde)
+            : undefined,
+          anioHasta: aplicados.anioHasta
+            ? Number(aplicados.anioHasta)
+            : undefined,
           precioMinimo: aplicados.precioMinimo
             ? Number(aplicados.precioMinimo)
             : undefined,
           precioMaximo: aplicados.precioMaximo
             ? Number(aplicados.precioMaximo)
+            : undefined,
+          kilometrajeMaximo: aplicados.kilometrajeMaximo
+            ? Number(aplicados.kilometrajeMaximo)
             : undefined,
           paginaActual,
           cantidadAnuncios: TAMANO_PAGINA,
@@ -95,11 +141,15 @@ export default function Home() {
         );
       } finally {
         setCargando(false);
-        setAplicando(false);
       }
     },
     [],
   );
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setFiltros(filtrosDesdeParams(searchParams));
+  }, [searchParams]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -108,24 +158,40 @@ export default function Home() {
 
   const aplicarBusqueda = (e: React.FormEvent) => {
     e.preventDefault();
-    setAplicando(true);
-    setCargando(true);
+    const aplicados = { ...filtros };
+    const params = new URLSearchParams();
+    if (aplicados.marca) params.set("marca", aplicados.marca);
+    if (aplicados.modelo) params.set("modelo", aplicados.modelo);
+    if (aplicados.tipoVehiculo) params.set("tipo", aplicados.tipoVehiculo);
+    if (aplicados.transmision) params.set("transmision", aplicados.transmision);
+    if (aplicados.combustible) params.set("combustible", aplicados.combustible);
+    if (aplicados.ubicacion) params.set("ubicacion", aplicados.ubicacion);
+    if (aplicados.condicion) params.set("condicion", aplicados.condicion);
+    if (aplicados.enOferta) params.set("enOferta", "true");
+    if (aplicados.anioDesde) params.set("anioDesde", aplicados.anioDesde);
+    if (aplicados.anioHasta) params.set("anioHasta", aplicados.anioHasta);
+    if (aplicados.precioMinimo) params.set("precioMinimo", aplicados.precioMinimo);
+    if (aplicados.precioMaximo) params.set("precioMaximo", aplicados.precioMaximo);
+    if (aplicados.kilometrajeMaximo) params.set("kmMax", aplicados.kilometrajeMaximo);
+
+    const qs = params.toString();
+    navigate(qs ? `/vehiculos?${qs}` : "/vehiculos");
+    setFiltrosAplicados(aplicados);
     setPagina(1);
-    setFiltrosAplicados({ ...filtros });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const limpiarFiltros = () => {
+    navigate("/vehiculos");
     setFiltros(FILTROS_INICIALES);
     setFiltrosAplicados({ ...FILTROS_INICIALES });
-    setAplicando(true);
-    setCargando(true);
     setPagina(1);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const irAPagina = (p: number) => {
     if (p < 1 || p > totalPaginas || p === pagina) return;
     window.scrollTo({ top: 0, behavior: "smooth" });
-    setCargando(true);
     setPagina(p);
   };
 
@@ -149,21 +215,25 @@ export default function Home() {
         <MenuPublico />
       </header>
 
-      {/* HERO + BÚSQUEDA */}
+      {/* CABECERA + FILTROS */}
       <section className="border-b border-white/10 bg-gradient-to-b from-[#11161f] to-[#0c101b]">
-        <div className="mx-auto max-w-6xl px-6 py-14 text-center sm:px-8">
-          <h1 className="text-4xl font-bold sm:text-5xl">
-            Compra y vende vehículos
-            <span className="block text-blue-500">en República Dominicana</span>
+        <div className="mx-auto max-w-6xl px-6 py-10 sm:px-8">
+          <h1 className="text-3xl font-bold">
+            Todos los vehículos
+            {totalRegistros > 0 && (
+              <span className="ml-2 text-base font-normal text-[#9aa1b1]">
+                ({totalRegistros})
+              </span>
+            )}
           </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-[#9aa1b1]">
-            Explora el inventario de agencias y vendedores particulares. Encuentra
-            el vehículo que buscas y contacta al vendedor directamente.
+          <p className="mt-2 text-sm text-[#9aa1b1]">
+            Filtra por marca, modelo, año, precio, kilometraje y más para
+            encontrar tu próximo vehículo.
           </p>
 
-          <form onSubmit={aplicarBusqueda} className="mx-auto mt-10 max-w-5xl">
-            <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-[#13161d] p-4 sm:flex-row">
-              <div className="relative flex-1">
+          <form onSubmit={aplicarBusqueda} className="mt-8">
+            <div className="grid grid-cols-1 gap-3 rounded-2xl border border-white/10 bg-[#13161d] p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <div className="relative">
                 <FaSearch className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
                 <input
                   type="text"
@@ -171,27 +241,50 @@ export default function Home() {
                   onChange={(e) =>
                     setFiltros({ ...filtros, marca: e.target.value })
                   }
-                  placeholder="Buscar por marca o modelo..."
+                  placeholder="Marca (ej. Toyota)"
                   className="w-full rounded-xl border border-white/10 bg-[#0c101b] py-3 pl-12 pr-4 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
                 />
               </div>
 
-              <button
-                type="submit"
-                disabled={aplicando || cargando}
-                className="rounded-xl bg-blue-500 px-8 py-3 text-sm font-semibold transition-colors hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed"
-              >
-                {aplicando ? "Buscando..." : "Buscar"}
-              </button>
-            </div>
+              <input
+                type="text"
+                value={filtros.modelo}
+                onChange={(e) =>
+                  setFiltros({ ...filtros, modelo: e.target.value })
+                }
+                placeholder="Modelo"
+                className="w-full rounded-xl border border-white/10 bg-[#0c101b] px-4 py-3 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
+              />
 
-            <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+              <select
+                value={filtros.condicion}
+                onChange={(e) =>
+                  setFiltros({ ...filtros, condicion: e.target.value })
+                }
+                className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm text-gray-200 transition-colors focus:border-blue-500 focus:outline-none"
+              >
+                <option value="">Condición</option>
+                <option value="Nuevo">Nuevo</option>
+                <option value="Usado">Usado</option>
+              </select>
+
+              <select
+                value={filtros.enOferta}
+                onChange={(e) =>
+                  setFiltros({ ...filtros, enOferta: e.target.value })
+                }
+                className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm text-gray-200 transition-colors focus:border-blue-500 focus:outline-none"
+              >
+                <option value="">Ofertas</option>
+                <option value="true">En oferta</option>
+              </select>
+
               <select
                 value={filtros.tipoVehiculo}
                 onChange={(e) =>
                   setFiltros({ ...filtros, tipoVehiculo: e.target.value })
                 }
-                className="rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm text-gray-200 transition-colors focus:border-blue-500 focus:outline-none"
+                className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm text-gray-200 transition-colors focus:border-blue-500 focus:outline-none"
               >
                 <option value="">Tipo de vehículo</option>
                 {TIPOS_VEHICULO.map((opcion) => (
@@ -206,7 +299,7 @@ export default function Home() {
                 onChange={(e) =>
                   setFiltros({ ...filtros, transmision: e.target.value })
                 }
-                className="rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm text-gray-200 transition-colors focus:border-blue-500 focus:outline-none"
+                className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm text-gray-200 transition-colors focus:border-blue-500 focus:outline-none"
               >
                 <option value="">Transmisión</option>
                 {TRANSMISIONES.map((opcion) => (
@@ -221,7 +314,7 @@ export default function Home() {
                 onChange={(e) =>
                   setFiltros({ ...filtros, combustible: e.target.value })
                 }
-                className="rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm text-gray-200 transition-colors focus:border-blue-500 focus:outline-none"
+                className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm text-gray-200 transition-colors focus:border-blue-500 focus:outline-none"
               >
                 <option value="">Combustible</option>
                 {COMBUSTIBLES.map((opcion) => (
@@ -230,6 +323,54 @@ export default function Home() {
                   </option>
                 ))}
               </select>
+
+              <input
+                type="text"
+                value={filtros.ubicacion}
+                onChange={(e) =>
+                  setFiltros({ ...filtros, ubicacion: e.target.value })
+                }
+                placeholder="Ubicación (ej. Santo Domingo)"
+                className="w-full rounded-xl border border-white/10 bg-[#0c101b] px-4 py-3 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
+              />
+
+              <div className="flex items-center gap-2">
+                <select
+                  value={filtros.anioDesde}
+                  onChange={(e) =>
+                    setFiltros({ ...filtros, anioDesde: e.target.value })
+                  }
+                  className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm text-gray-200 transition-colors focus:border-blue-500 focus:outline-none"
+                >
+                  <option value="">Año desde</option>
+                  {Array.from(
+                    { length: ANIO_ACTUAL - 1969 },
+                    (_, i) => ANIO_ACTUAL - i,
+                  ).map((anio) => (
+                    <option key={anio} value={anio}>
+                      {anio}
+                    </option>
+                  ))}
+                </select>
+                <span className="text-gray-500">-</span>
+                <select
+                  value={filtros.anioHasta}
+                  onChange={(e) =>
+                    setFiltros({ ...filtros, anioHasta: e.target.value })
+                  }
+                  className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm text-gray-200 transition-colors focus:border-blue-500 focus:outline-none"
+                >
+                  <option value="">Año hasta</option>
+                  {Array.from(
+                    { length: ANIO_ACTUAL - 1969 },
+                    (_, i) => ANIO_ACTUAL - i,
+                  ).map((anio) => (
+                    <option key={anio} value={anio}>
+                      {anio}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
               <div className="flex items-center gap-2">
                 <input
@@ -256,6 +397,34 @@ export default function Home() {
                   className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
                 />
               </div>
+
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={filtros.kilometrajeMaximo}
+                onChange={(e) =>
+                  setFiltros({ ...filtros, kilometrajeMaximo: e.target.value })
+                }
+                placeholder="Kilometraje máx. (km)"
+                className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
+              />
+            </div>
+
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <button
+                type="submit"
+                className="rounded-xl bg-blue-500 px-8 py-3 text-sm font-semibold transition-colors hover:bg-blue-600"
+              >
+                Buscar
+              </button>
+              <button
+                type="button"
+                onClick={limpiarFiltros}
+                className="rounded-xl border border-white/10 px-6 py-3 text-sm font-medium text-[#9aa1b1] transition-colors hover:border-white/30 hover:text-white"
+              >
+                Limpiar filtros
+              </button>
             </div>
           </form>
         </div>
@@ -263,26 +432,6 @@ export default function Home() {
 
       {/* VITRINA */}
       <main className="mx-auto max-w-6xl px-6 py-10 sm:px-8">
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-xl font-bold">
-            Vehículos disponibles
-            {totalRegistros > 0 && (
-              <span className="ml-2 text-sm font-normal text-[#9aa1b1]">
-                ({totalRegistros})
-              </span>
-            )}
-          </h2>
-
-          <button
-            type="button"
-            onClick={limpiarFiltros}
-            disabled={cargando}
-            className="rounded-lg border border-white/10 px-4 py-2 text-sm font-medium text-[#9aa1b1] transition-colors hover:border-white/30 hover:text-white disabled:opacity-50"
-          >
-            Limpiar filtros
-          </button>
-        </div>
-
         {cargando ? (
           <div className="flex items-center justify-center py-24">
             <div className="h-10 w-10 animate-spin rounded-full border-2 border-white/10 border-t-blue-500" />
@@ -345,7 +494,27 @@ export default function Home() {
                     RD$ {anuncio.precio.toLocaleString("es-DO")}
                   </p>
 
+                  {anuncio.enOferta && anuncio.precioAnterior != null && (
+                    <p className="text-sm text-[#9aa1b1]">
+                      <span className="mr-2 line-through">
+                        RD$ {anuncio.precioAnterior.toLocaleString("es-DO")}
+                      </span>
+                      <span className="font-semibold text-green-400">Oferta</span>
+                    </p>
+                  )}
+
                   <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 border-t border-white/10 pt-4 text-xs text-[#9aa1b1]">
+                    <span className="inline-flex items-center gap-1.5">
+                      {anuncio.condicion === "Nuevo" ? (
+                        <span className="rounded-full bg-blue-500/10 px-3 py-1 text-xs font-semibold text-blue-400">
+                          Nuevo
+                        </span>
+                      ) : (
+                        <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-gray-300">
+                          Usado
+                        </span>
+                      )}
+                    </span>
                     <span className="inline-flex items-center gap-1.5">
                       <FaTachometerAlt className="text-gray-500" />
                       {anuncio.kilometraje.toLocaleString("es-DO")} km
@@ -385,7 +554,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* PAGINACIÓN */}
         {!cargando && !error && totalPaginas > 1 && (
           <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
             <button

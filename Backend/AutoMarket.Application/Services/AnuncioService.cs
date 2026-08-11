@@ -126,6 +126,11 @@ public class AnuncioService : IAnuncioService
             descripcion: dto.Descripcion
         );
 
+        if (dto.PrecioAnterior.HasValue)
+        {
+            nuevoAnuncio.FijarOferta(dto.PrecioAnterior);
+        }
+
         await _repository.AgregarAsync(nuevoAnuncio);
         await _repository.GuardarCambiosAsync();
 
@@ -191,7 +196,11 @@ public class AnuncioService : IAnuncioService
 
             Anio = anuncio.Anio,
             Precio = anuncio.Precio,
+            PrecioAnterior = anuncio.PrecioAnterior,
             Kilometraje = anuncio.Kilometraje,
+
+            Condicion = anuncio.Condicion,
+            EnOferta = anuncio.EnOferta,
 
             Transmision = anuncio.Transmision,
             Combustible = anuncio.Combustible,
@@ -260,7 +269,8 @@ public class AnuncioService : IAnuncioService
             combustible: NormalizarBusqueda(updateAnuncio.Combustible),
             accesorios: updateAnuncio.Accesorios,
             ubicacion: NormalizarBusqueda(updateAnuncio.Ubicacion),
-            descripcion: updateAnuncio.Descripcion
+            descripcion: updateAnuncio.Descripcion,
+            precioAnterior: updateAnuncio.PrecioAnterior
 );
 
         await _repository.ActualizarAsync(anuncio);
@@ -430,6 +440,9 @@ public class AnuncioService : IAnuncioService
             Combustible = dto.Combustible,
             Ubicacion = dto.Ubicacion,
 
+            Condicion = dto.Condicion,
+            EnOferta = dto.EnOferta,
+
             AnioDesde = dto.AnioDesde,
             AnioHasta = dto.AnioHasta,
 
@@ -557,7 +570,12 @@ var anunciosDto = anuncios
             ColorInterior = anuncio.ColorInterior,
             Anio = anuncio.Anio,
             Precio = anuncio.Precio,
+            PrecioAnterior = anuncio.PrecioAnterior,
             Kilometraje = anuncio.Kilometraje,
+
+            Condicion = anuncio.Condicion,
+            EnOferta = anuncio.EnOferta,
+
             Transmision = anuncio.Transmision,
             Combustible = anuncio.Combustible,
             Ubicacion = anuncio.Ubicacion,

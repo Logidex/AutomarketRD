@@ -7,7 +7,7 @@ import { authService } from "../services/auth.service";
 import { ROLES } from "../constants/roles";
 import { formatearRD$, precioCicloDe } from "../utils/formato";
 import logo from "../assets/AutoMarketRD_Logo.svg";
-import NavbarUsuario from "../components/layout/NavbarUsuario";
+import MenuPublico from "../components/layout/MenuPublico";
 
 type Ciclo = "Mensual" | "Trimestral" | "Anual";
 
@@ -88,12 +88,7 @@ export default function Precios() {
           <span className="text-xl font-bold">Precios</span>
         </div>
 
-        <nav className="flex items-center gap-6 text-sm font-medium">
-          <Link to="/" className="text-[#9aa1b1] hover:text-white transition-colors">
-            Inicio
-          </Link>
-          <NavbarUsuario />
-        </nav>
+        <MenuPublico />
       </header>
 
       <main className="mx-auto max-w-5xl px-8 py-16">

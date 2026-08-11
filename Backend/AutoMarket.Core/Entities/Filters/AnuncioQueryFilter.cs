@@ -22,6 +22,9 @@ namespace AutoMarket.Core.Entities
         public string? Combustible { get; set; }
         public string? Ubicacion { get; set; }
 
+        public string? Condicion { get; set; }
+        public bool? EnOferta { get; set; }
+
         public int? AnioDesde { get; set; }
         public int? AnioHasta { get; set; }
 

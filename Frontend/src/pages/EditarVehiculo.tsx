@@ -19,6 +19,7 @@ export default function EditarVehiculo() {
     const payload = {
       ...formData,
       kilometraje: Number(kilometraje),
+      precioAnterior: formData.precioAnterior || null,
       transmision: mostrarTransmisionPersonalizada ? transmisionPersonalizada : formData.transmision,
       accesorios: accesoriosTexto.split(",").map(a => a.trim()).filter(a => a)
     };
