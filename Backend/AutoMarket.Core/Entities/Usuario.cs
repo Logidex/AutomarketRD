@@ -91,6 +91,48 @@ public class Usuario
         PerfilDealer = perfil;
     }
 
+    // ==========================================
+    // ASCENSO DE ROL (Comprador → Vendedor/Dealer, Vendedor → Dealer)
+    // El rol solo puede crecer, nunca degradarse.
+    // ==========================================
+    public void ConvertirAVendedor()
+    {
+        if (Rol == "Dealer")
+            throw new InvalidOperationException("Una cuenta Dealer ya tiene privilegios mayores y no puede convertirse en Vendedor.");
+
+        if (Rol == "Vendedor")
+            throw new InvalidOperationException("Tu cuenta ya es de tipo Vendedor.");
+
+        Rol = "Vendedor";
+    }
+
+    // Cambio de rol EXCLUSIVO del administrador: permite mover la cuenta a
+    // cualquier rol básico sin re-crear el perfil comercial (que gestiona el servicio).
+    public void FijarRolAdmin(string nuevoRol)
+    {
+        if (nuevoRol != "Vendedor" && nuevoRol != "Dealer" && nuevoRol != "Comprador")
+            throw new ArgumentException($"El rol '{nuevoRol}' no es válido para esta operación.");
+
+        if (nuevoRol == "Dealer")
+            throw new InvalidOperationException("La promoción a Dealer requiere el perfil comercial; usa ConvertirADealer.");
+
+        Rol = nuevoRol;
+    }
+
+    public void QuitarPerfilDealer()
+    {
+        PerfilDealer = null;
+    }
+
+    public void ConvertirADealer(string nombreAgencia, string agenciaRNC, string ubicacion, string telefonoAgencia)
+    {
+        if (Rol == "Dealer")
+            throw new InvalidOperationException("Tu cuenta ya es de tipo Dealer.");
+
+        Rol = "Dealer";
+        CrearPerfilDealer(nombreAgencia, agenciaRNC, ubicacion, telefonoAgencia);
+    }
+
     public void CrearPerfilDealer(string nombreAgencia, string agenciaRNC, string ubicacion, string telefonoAgencia, string? descripcion = null, string? whatsApp = null)
     {
         if (Rol != "Dealer")
@@ -117,6 +159,42 @@ public class Usuario
     public string? EmailPendiente { get; private set; }
     public string? CodigoConfirmacionHash { get; private set; }
     public DateTime? CodigoConfirmacionExpiracionUtc { get; private set; }
+
+    // ==========================================
+    // CAMBIO DE CONTRASEÑA EN DOS PASOS (confirmación)
+    // ==========================================
+    public string? PasswordPendienteHash { get; private set; }
+    public string? CodigoPasswordHash { get; private set; }
+    public DateTime? CodigoPasswordExpiracionUtc { get; private set; }
+
+    // ==========================================
+    // RECUPERACIÓN DE CONTRASEÑA (olvidada)
+    // ==========================================
+    public string? CodigoRecuperacionHash { get; private set; }
+    public DateTime? CodigoRecuperacionExpiracionUtc { get; private set; }
+
+    public void EstablecerCodigoRecuperacion(string codigoHash, DateTime expiracionUtc)
+    {
+        CodigoRecuperacionHash = codigoHash;
+        CodigoRecuperacionExpiracionUtc = expiracionUtc;
+    }
+
+    public bool AplicarCodigoRecuperacionSiValido(string codigoHash, DateTime ahoraUtc)
+    {
+        if (string.IsNullOrEmpty(CodigoRecuperacionHash) ||
+            CodigoRecuperacionExpiracionUtc is not DateTime expiracion)
+            return false;
+
+        if (ahoraUtc > expiracion)
+            return false;
+
+        if (!string.Equals(CodigoRecuperacionHash, codigoHash, StringComparison.Ordinal))
+            return false;
+
+        CodigoRecuperacionHash = null;
+        CodigoRecuperacionExpiracionUtc = null;
+        return true;
+    }
 
     public void ActualizarDatos(string nombre, string apellido, string? telefonoPersonal)
     {
@@ -161,6 +239,36 @@ public class Usuario
         EmailPendiente = null;
         CodigoConfirmacionHash = null;
         CodigoConfirmacionExpiracionUtc = null;
+        return true;
+    }
+
+    public void EstablecerCambioPassword(string nuevoPasswordHash, string codigoHash, DateTime expiracionUtc)
+    {
+        if (string.IsNullOrWhiteSpace(nuevoPasswordHash))
+            throw new ArgumentException("La contraseña es obligatoria.", nameof(nuevoPasswordHash));
+
+        PasswordPendienteHash = nuevoPasswordHash;
+        CodigoPasswordHash = codigoHash;
+        CodigoPasswordExpiracionUtc = expiracionUtc;
+    }
+
+    public bool AplicarCambioPasswordSiValido(string codigoHash, DateTime ahoraUtc)
+    {
+        if (string.IsNullOrEmpty(PasswordPendienteHash) ||
+            string.IsNullOrEmpty(CodigoPasswordHash) ||
+            CodigoPasswordExpiracionUtc is not DateTime expiracion)
+            return false;
+
+        if (ahoraUtc > expiracion)
+            return false;
+
+        if (!string.Equals(CodigoPasswordHash, codigoHash, StringComparison.Ordinal))
+            return false;
+
+        PasswordHash = PasswordPendienteHash;
+        PasswordPendienteHash = null;
+        CodigoPasswordHash = null;
+        CodigoPasswordExpiracionUtc = null;
         return true;
     }
 

@@ -1,8 +1,20 @@
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
+import { FaReply } from "react-icons/fa";
 import { leadService } from "../../services/lead.service";
 import type { LeadDealer } from "../../types/lead.types";
 import { formatearFecha } from "../../utils/fecha";
+
+const construirMailtoRespuesta = (lead: LeadDealer): string => {
+  const vehiculo = lead.anuncio
+    ? `${lead.anuncio.marca} ${lead.anuncio.modelo} (${lead.anuncio.anio})`
+    : "tu vehículo";
+
+  const asunto = `Re: Tu mensaje sobre ${vehiculo}`;
+  const cuerpo = `Hola ${lead.nombreContacto},\n\nGracias por tu interés en ${vehiculo}. Te escribo para responder tu consulta.\n\nSaludos,`;
+
+  return `mailto:${encodeURIComponent(lead.emailContacto)}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
+};
 
 export default function InteresadosVendedor() {
   const [leads, setLeads] = useState<LeadDealer[]>([]);
@@ -37,6 +49,7 @@ export default function InteresadosVendedor() {
     try {
       await leadService.marcarLeido(id);
       setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, leido: true } : l)));
+      window.dispatchEvent(new Event("leads:cambiado"));
     } catch {
       Swal.fire({
         title: "Error",
@@ -151,6 +164,15 @@ export default function InteresadosVendedor() {
                   </p>
                 )}
               </div>
+
+              {lead.emailContacto && (
+                <a
+                  href={construirMailtoRespuesta(lead)}
+                  className="mt-4 inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700"
+                >
+                  <FaReply /> Responder por correo
+                </a>
+              )}
             </li>
           ))}
         </ul>

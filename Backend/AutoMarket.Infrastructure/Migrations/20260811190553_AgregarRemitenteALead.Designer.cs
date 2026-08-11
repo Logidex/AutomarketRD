@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using AutoMarket.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AutoMarket.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260811190553_AgregarRemitenteALead")]
+    partial class AgregarRemitenteALead
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -417,18 +420,6 @@ namespace AutoMarket.Infrastructure.Migrations
                     b.Property<string>("CodigoConfirmacionHash")
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("CodigoPasswordExpiracionUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CodigoPasswordHash")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("CodigoRecuperacionExpiracionUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CodigoRecuperacionHash")
-                        .HasColumnType("text");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -454,9 +445,6 @@ namespace AutoMarket.Infrastructure.Migrations
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("PasswordPendienteHash")
                         .HasColumnType("text");
 
                     b.Property<string>("Rol")

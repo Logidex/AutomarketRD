@@ -18,3 +18,17 @@ export interface LeadDealer {
   fechaCreacionUtc: string;
   leido: boolean;
 }
+
+export interface LeadContactoUsuario {
+  id: number;
+  anuncioId: number;
+  marca: string;
+  modelo: string;
+  anio: number;
+  fotoPrincipal?: string;
+  nombreVendedor?: string;
+  esVendedorParticular: boolean;
+  mensaje: string;
+  canal: string;
+  fechaCreacionUtc: string;
+}

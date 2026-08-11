@@ -1,6 +1,14 @@
 import { Link, useNavigate } from "react-router-dom";
-import { FaHeart, FaHistory, FaSignOutAlt, FaUserCircle, FaUserEdit } from "react-icons/fa";
+import {
+  FaEnvelope,
+  FaHeart,
+  FaHistory,
+  FaSignOutAlt,
+  FaUserCircle,
+  FaUserEdit,
+} from "react-icons/fa";
 import { authService } from "../services/auth.service";
+import AscenderRol from "../components/AscenderRol";
 
 export default function MiCuenta() {
   const navigate = useNavigate();
@@ -40,7 +48,8 @@ export default function MiCuenta() {
         <div className="mt-8 flex flex-col gap-3 rounded-2xl border border-white/10 bg-[#13161d] p-6 text-sm text-[#9aa1b1]">
           <p>
             Tu actividad del comprador: <strong className="text-gray-200">favoritos</strong>,
-            <strong className="text-gray-200"> vehículos recientes</strong> y la actualización
+            <strong className="text-gray-200"> vehículos recientes</strong>, los{" "}
+            <strong className="text-gray-200">vehículos que contactaste</strong> y la actualización
             de tus <strong className="text-gray-200">datos de cuenta</strong>.
           </p>
 
@@ -60,6 +69,13 @@ export default function MiCuenta() {
               Vehículos Recientes
             </Link>
             <Link
+              to="/perfil/contactados"
+              className="flex items-center justify-center gap-2 rounded-lg bg-white/5 px-5 py-3 font-semibold text-white transition-colors hover:bg-blue-500"
+            >
+              <FaEnvelope className="text-green-400" />
+              Contactos enviados
+            </Link>
+            <Link
               to="/perfil/editar"
               className="flex items-center justify-center gap-2 rounded-lg bg-white/5 px-5 py-3 font-semibold text-white transition-colors hover:bg-blue-500 sm:col-span-2"
             >
@@ -67,6 +83,10 @@ export default function MiCuenta() {
               Editar mis datos
             </Link>
           </div>
+        </div>
+
+        <div className="mt-8 flex flex-col gap-3 rounded-2xl border border-white/10 bg-[#13161d] p-6 text-sm text-[#9aa1b1]">
+          <AscenderRol />
         </div>
 
         <button

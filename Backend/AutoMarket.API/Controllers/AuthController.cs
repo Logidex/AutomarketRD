@@ -1,6 +1,7 @@
 using AutoMarket.Application.DTOs;
 using AutoMarket.Application.DTOs.Usuario;
 using AutoMarket.Application.Interfaces;
+using AutoMarket.Core.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
@@ -40,6 +41,43 @@ public class AuthController : ControllerBase
         }
 
         return Ok(resultado);
+    }
+
+    // Envía un código de recuperación al correo del usuario.
+    // Responde igual si el correo existe o no, para no revelar cuentas registradas.
+    [HttpPost("recuperar-password")]
+    [EnableRateLimiting("PoliticaLogin")]
+    public async Task<IActionResult> SolicitarRecuperacion([FromBody] SolicitarRecuperacionDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.Email))
+            return BadRequest(new { mensaje = "El correo es obligatorio." });
+
+        await _authService.SolicitarRecuperacionAsync(dto.Email);
+
+        return Ok(new { exito = true, mensaje = "Si el correo está registrado, recibirás un código para restablecer tu contraseña." });
+    }
+
+    // Valida el código y aplica la nueva contraseña.
+    [HttpPost("restablecer-password")]
+    [EnableRateLimiting("PoliticaLogin")]
+    public async Task<IActionResult> RestablecerPassword([FromBody] RestablecerPasswordDto dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        try
+        {
+            await _authService.RestablecerPasswordAsync(dto);
+            return Ok(new { exito = true, mensaje = "Tu contraseña fue restablecida. Ya puedes iniciar sesión." });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return BadRequest(new { mensaje = ex.Message });
+        }
+        catch (BusinessRuleException ex)
+        {
+            return BadRequest(new { mensaje = ex.Message });
+        }
     }
 
     [HttpGet("test-error")]

@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Swal from "sweetalert2";
-import { FaArrowLeft } from "react-icons/fa";
+import { FaArrowLeft, FaEye, FaEyeSlash } from "react-icons/fa";
 import { authService } from "../services/auth.service";
 import logo from "../assets/AutoMarketRD_Logo.svg";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [mostrarPassword, setMostrarPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
@@ -165,14 +166,24 @@ export default function Login() {
               <label className="block text-sm font-medium text-gray-600 mb-2">
                 Contraseña
               </label>
+            <div className="relative">
               <input
-                type="password"
+                type={mostrarPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full px-4 py-3 bg-[#f7f9fc] border border-[#e1e7f0] rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full px-4 py-3 pr-12 bg-[#f7f9fc] border border-[#e1e7f0] rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
                 required
               />
+              <button
+                type="button"
+                onClick={() => setMostrarPassword((v) => !v)}
+                aria-label={mostrarPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition-colors hover:text-blue-500"
+              >
+                {mostrarPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
             </div>
 
             <button
@@ -183,6 +194,15 @@ export default function Login() {
               {loading ? "Iniciando..." : "Iniciar Sesión"}
             </button>
           </form>
+
+          <div className="mt-4 text-center">
+            <Link
+              to="/recuperar-password"
+              className="text-sm text-gray-500 transition-colors hover:text-blue-500"
+            >
+              ¿Olvidaste tu contraseña?
+            </Link>
+          </div>
 
           <p className="text-center text-sm text-gray-500 mt-6">
             ¿No tienes cuenta?{" "}

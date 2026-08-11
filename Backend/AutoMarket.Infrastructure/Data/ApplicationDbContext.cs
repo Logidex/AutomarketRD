@@ -254,6 +254,10 @@ public class ApplicationDbContext : DbContext
 
             entity.HasKey(l => l.Id);
 
+            // Remitente autenticado (null si el contacto fue anónimo)
+            entity.Property(l => l.UsuarioIdRemitente)
+                .IsRequired(false);
+
             // Restricciones de longitud para optimizar la base de datos
             entity.Property(l => l.NombreContacto)
                 .IsRequired()

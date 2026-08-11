@@ -8,4 +8,6 @@ public interface IAuthService
 {
     Task<(bool Exito, string Mensaje)> RegistrarUsuarioAsync(RegistroDto dto);
     Task<LoginResultDto> LoginAsync(LoginDto dto);
+    Task SolicitarRecuperacionAsync(string email);
+    Task RestablecerPasswordAsync(RestablecerPasswordDto dto);
 }

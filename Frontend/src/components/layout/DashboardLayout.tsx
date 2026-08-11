@@ -1,12 +1,13 @@
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 
-import { FaCar, FaPlusCircle, FaChartPie, FaSignOutAlt, FaEnvelope, FaStore, FaCreditCard } from "react-icons/fa";
+import { FaCar, FaHome, FaPlusCircle, FaChartPie, FaSignOutAlt, FaEnvelope, FaStore, FaCreditCard } from "react-icons/fa";
 
 import { authService } from "../../services/auth.service";
 import { suscripcionService, type SuscripcionDealer } from "../../services/suscripcion.service";
 import { nombrePlan as nombrePlanUtil } from "../../constants/planes";
 import logo from "../../assets/AutoMarketRD_Logo.svg";
+import CampanaNotificaciones from "./CampanaNotificaciones";
 
 export default function DashboardLayout() {
   const navigate = useNavigate();
@@ -113,6 +114,17 @@ export default function DashboardLayout() {
           })}
         </nav>
 
+        {/* BOTÓN VOLVER AL INICIO */}
+        <div className="border-t border-white/5 p-4">
+          <Link
+            to="/"
+            className="flex w-full items-center justify-center rounded-lg px-4 py-3 font-medium text-[#8a94a6] transition-colors hover:bg-white/5 hover:text-white"
+          >
+            <FaHome className="mr-3" />
+            Volver al inicio
+          </Link>
+        </div>
+
         {/* BOTÓN CERRAR SESIÓN */}
         <div className="border-t border-white/5 p-4">
           <button
@@ -136,6 +148,9 @@ export default function DashboardLayout() {
 
           {/* INFORMACIÓN DEL USUARIO */}
           <div className="flex items-center gap-3">
+            {/* NOTIFICACIONES DE LEADS */}
+            <CampanaNotificaciones rutaLeads="/dashboard/leads" tema="claro" />
+
             {/* INDICADOR DE PLAN */}
             <PlanBadge suscripcion={suscripcion} />
 

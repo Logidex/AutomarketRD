@@ -22,6 +22,7 @@ import { leadService } from "../services/lead.service";
 import { favoritoService } from "../services/favorito.service";
 import { historialService } from "../services/historial.service";
 import { authService } from "../services/auth.service";
+import { usuarioService } from "../services/usuario.service";
 import { useComparador } from "../context/ComparadorContext";
 import type { AnuncioDetalle } from "../types/anuncio.types";
 import logo from "../assets/AutoMarketRD_Logo.svg";
@@ -109,6 +110,40 @@ export default function DetalleAnuncio() {
   const esPropietario =
     usuario != null && anuncio != null && usuario.usuarioId === anuncio.usuarioId;
 
+  const usuarioIdLogueado = usuario?.usuarioId;
+  const nombreCompletoUsuario = usuario
+    ? [usuario.nombre, usuario.apellido].filter(Boolean).join(" ").trim()
+    : "";
+  const emailUsuario = usuario?.email ?? "";
+
+  // Si el visitante inició sesión, se precargan sus datos de contacto
+  // para que solo tenga que escribir el mensaje.
+  useEffect(() => {
+    if (!usuarioIdLogueado) return;
+
+    let activo = true;
+
+    async function precargarContacto() {
+      try {
+        const cuenta = await usuarioService.obtenerCuenta();
+        if (!activo) return;
+        setNombre(nombreCompletoUsuario || cuenta.nombre || "");
+        setEmail(cuenta.email ?? emailUsuario ?? "");
+        setTelefono(cuenta.telefonoPersonal ?? "");
+      } catch {
+        if (!activo) return;
+        setNombre(nombreCompletoUsuario || "");
+        setEmail(emailUsuario ?? "");
+      }
+    }
+
+    precargarContacto();
+
+    return () => {
+      activo = false;
+    };
+  }, [usuarioIdLogueado, nombreCompletoUsuario, emailUsuario]);
+
   const esVendedorParticular = anuncio?.esVendedorParticular === true;
 
   const fotoPrincipal =
@@ -193,13 +228,30 @@ export default function DetalleAnuncio() {
     }
   };
 
-  const handleWhatsApp = () => {
+  const handleWhatsApp = async () => {
     if (anuncio == null || !anuncio.whatsAppContacto) return;
 
     const numero = anuncio.whatsAppContacto.replace(/[^\d]/g, "");
     if (!numero) return;
 
     const texto = `Hola, me interesa tu ${anuncio.marca} ${anuncio.modelo} (${anuncio.anio}). ¿Sigue disponible?`;
+
+    // Si el visitante inició sesión, registramos el contacto en su historial
+    // (canal WhatsApp) antes de abrir la conversación.
+    if (usuario && !esPropietario) {
+      try {
+        await leadService.crearLead({
+          anuncioId: anuncio.id,
+          nombreContacto: nombreCompletoUsuario || nombre || "Interesado",
+          emailContacto: email || undefined,
+          telefonoContacto: telefono || undefined,
+          mensaje: texto,
+          canal: "WhatsApp",
+        });
+      } catch {
+        // Abrir WhatsApp no debe bloquearse aunque falle el registro del lead.
+      }
+    }
 
     window.open(
       `https://wa.me/${numero}?text=${encodeURIComponent(texto)}`,
@@ -656,6 +708,11 @@ export default function DetalleAnuncio() {
                         onClick={() => {
                           setMostrarFormulario(true);
                           setError("");
+                          if (!mensaje.trim()) {
+                            setMensaje(
+                              `Hola, me interesa tu ${anuncio.marca} ${anuncio.modelo} (${anuncio.anio}). ¿Sigue disponible?`
+                            );
+                          }
                         }}
                         className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-500 px-6 py-3 text-sm font-semibold transition-colors hover:bg-blue-600"
                       >
@@ -667,6 +724,16 @@ export default function DetalleAnuncio() {
 
                   {mostrarFormulario && (
                     <form onSubmit={handleEnviar} className="mt-5 space-y-4">
+                    {usuario ? (
+                      <div className="rounded-lg border border-white/10 bg-[#0c101b] px-3 py-2.5 text-xs text-[#9aa1b1]">
+                        Enviarás este mensaje con los datos de tu cuenta:{" "}
+                        <span className="font-medium text-[#c3c9d4]">
+                          {nombre} · {email}
+                          {telefono ? ` · ${telefono}` : ""}
+                        </span>
+                      </div>
+                    ) : (
+                      <>
                     <div>
                       <label className="mb-1 block text-xs font-medium text-[#9aa1b1]">
                         Nombre *
@@ -710,6 +777,8 @@ export default function DetalleAnuncio() {
                         />
                       </div>
                     </div>
+                      </>
+                    )}
 
                     <div>
                       <label className="mb-1 block text-xs font-medium text-[#9aa1b1]">

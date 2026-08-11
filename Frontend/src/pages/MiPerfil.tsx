@@ -15,6 +15,8 @@ import {
 import { getUserIdFromToken } from "../utils/jwt.util";
 import { useLoading } from "../context/LoadingContext";
 import Spinner from "../components/Spinner";
+import SeccionCambiarCorreo from "../components/SeccionCambiarCorreo";
+import SeccionCambiarPassword from "../components/SeccionCambiarPassword";
 
 const CAMPOS_VACIOS = {
   nombreAgencia: "",
@@ -412,6 +414,16 @@ export default function MiPerfil() {
           </div>
         )}
       </form>
+
+      {/* SECCIÓN DE CUENTA: CAMBIO DE CORREO */}
+      <div className="mt-6">
+        <SeccionCambiarCorreo />
+      </div>
+
+      {/* SECCIÓN DE CUENTA: CAMBIO DE CONTRASEÑA */}
+      <div className="mt-6">
+        <SeccionCambiarPassword />
+      </div>
     </div>
   );
 }

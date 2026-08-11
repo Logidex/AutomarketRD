@@ -55,6 +55,12 @@ api.interceptors.response.use(
       }
     }
 
+    // Límite de peticiones alcanzado (rate limiting): el backend responde 429 sin cuerpo
+    if (error.response?.status === 429) {
+      error.message =
+        'Has hecho demasiadas solicitudes. Espera unos minutos e inténtalo de nuevo.';
+    }
+
     // Si el backend respondió con un error (4xx, 5xx)
     if (error.response) {
       const data = error.response.data;

@@ -64,6 +64,38 @@ public class LeadsController : ControllerBase
         return Ok(leads);
     }
 
+    // Historial del comprador: vehículos que contactó
+    [HttpGet("mis-contactos")]
+    [Authorize]
+    public async Task<IActionResult> ObtenerMisContactos()
+    {
+        var usuarioId = User.ObtenerUsuarioId();
+
+        var contactos = await _leadService.ObtenerMisContactosAsync(usuarioId);
+        return Ok(contactos);
+    }
+
+    // Resumen para el campanario del dealer/vendedor: no leídos + últimos
+    [HttpGet("resumen-no-leidos")]
+    [Authorize]
+    public async Task<IActionResult> ObtenerResumenNoLeidos()
+    {
+        var usuarioId = User.ObtenerUsuarioId();
+
+        var resumen = await _leadService.ObtenerResumenNoLeidosAsync(usuarioId);
+        return Ok(resumen);
+    }
+
+    [HttpPatch("marcar-todos-leido")]
+    [Authorize]
+    public async Task<IActionResult> MarcarTodosLeido()
+    {
+        var dealerId = User.ObtenerUsuarioId();
+
+        var cantidad = await _leadService.MarcarTodosLeidosAsync(dealerId);
+        return Ok(new { mensaje = "Leads marcados como leídos.", cantidad });
+    }
+
     [HttpPatch("{id:int}/leido")]
     [Authorize]
     public async Task<IActionResult> MarcarLeido(int id)

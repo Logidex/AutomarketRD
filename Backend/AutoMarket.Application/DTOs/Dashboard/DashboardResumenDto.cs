@@ -43,3 +43,17 @@ public class CambiarPlanAdminDto
 {
     public PlanNivel NuevoNivel { get; set; }
 }
+
+public class CambiarRolAdminDto
+{
+    // Valores: "Comprador", "Vendedor" o "Dealer"
+    public string NuevoRol { get; set; } = null!;
+
+    // ==========================================
+    // CAMPOS EXCLUSIVOS PARA ASCENDER A DEALER
+    // ==========================================
+    public string? NombreAgencia { get; set; }
+    public string? AgenciaRNC { get; set; }
+    public string? UbicacionAgencia { get; set; }
+    public string? TelefonoAgencia { get; set; }
+}

@@ -14,8 +14,13 @@ export const authService = {
       data
     );
 
-    const authData = response.data;
+    this.guardarSesion(response.data);
 
+    return response.data;
+  },
+
+  // Guarda token + usuario en localStorage (usado en login y ascenso de rol)
+  guardarSesion(authData: AuthResponse) {
     if (authData.token) {
       localStorage.setItem('token', authData.token);
     }
@@ -26,8 +31,6 @@ export const authService = {
         JSON.stringify(authData.usuario)
       );
     }
-
-    return authData;
   },
 
   async register(
@@ -38,6 +41,26 @@ export const authService = {
       mensaje: string;
     }>('/api/auth/registrar', data);
 
+    return response.data;
+  },
+
+  async solicitarRecuperacion(email: string): Promise<{ mensaje: string }> {
+    const response = await api.post<{ mensaje: string }>(
+      '/api/auth/recuperar-password',
+      { email }
+    );
+    return response.data;
+  },
+
+  async restablecerPassword(datos: {
+    email: string;
+    codigo: string;
+    nuevaPassword: string;
+  }): Promise<{ mensaje: string }> {
+    const response = await api.post<{ mensaje: string }>(
+      '/api/auth/restablecer-password',
+      datos
+    );
     return response.data;
   },
 

@@ -3,14 +3,24 @@ import Swal from "sweetalert2";
 import {
   FaEnvelopeOpenText,
   FaEnvelope,
-  FaCheckCircle,
   FaPhoneAlt,
-  FaCar,
+  FaReply,
 } from "react-icons/fa";
 import { leadService } from "../services/lead.service";
 import type { LeadDealer } from "../types/lead.types";
 import Spinner from "../components/Spinner";
 import { formatearFecha } from "../utils/fecha";
+
+const construirMailtoRespuesta = (lead: LeadDealer): string => {
+  const vehiculo = lead.anuncio
+    ? `${lead.anuncio.marca} ${lead.anuncio.modelo} (${lead.anuncio.anio})`
+    : "tu vehículo";
+
+  const asunto = `Re: Tu mensaje sobre ${vehiculo}`;
+  const cuerpo = `Hola ${lead.nombreContacto},\n\nGracias por tu interés en ${vehiculo}. Te escribo para responder tu consulta.\n\nSaludos,`;
+
+  return `mailto:${encodeURIComponent(lead.emailContacto)}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
+};
 
 export default function Leads() {
   const [leads, setLeads] = useState<LeadDealer[]>([]);
@@ -22,6 +32,16 @@ export default function Leads() {
         setCargando(true);
         const data = await leadService.obtenerMisLeads();
         setLeads(data);
+
+        // Al abrir el panel se marcan todos como leídos automáticamente:
+        // evita que el dealer tenga que marcar mensaje por mensaje.
+        leadService
+          .marcarTodosLeidos()
+          .then(() => {
+            setLeads((prev) => prev.map((lead) => ({ ...lead, leido: true })));
+            window.dispatchEvent(new Event("leads:cambiado"));
+          })
+          .catch(() => {});
       } catch (error) {
         console.error(error);
         Swal.fire({
@@ -37,23 +57,6 @@ export default function Leads() {
 
     fetchLeads();
   }, []);
-
-  const handleMarcarLeido = async (id: number) => {
-    try {
-      await leadService.marcarLeido(id);
-      setLeads((prev) =>
-        prev.map((lead) => (lead.id === id ? { ...lead, leido: true } : lead)),
-      );
-    } catch (error) {
-      console.error(error);
-      Swal.fire({
-        title: "Error",
-        text: "No se pudo marcar el lead como leído.",
-        icon: "error",
-        confirmButtonColor: "#ef4444",
-      });
-    }
-  };
 
   const noLeidos = leads.filter((lead) => !lead.leido).length;
 
@@ -110,13 +113,6 @@ export default function Leads() {
                     )}
                   </div>
 
-                  {lead.anuncio && (
-                    <p className="mt-1 flex items-center gap-1.5 text-sm font-medium text-gray-600">
-                      <FaCar className="text-gray-400" />
-                      {lead.anuncio.nombreAnuncio}
-                    </p>
-                  )}
-
                   <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-gray-700">
                     {lead.mensaje}
                   </p>
@@ -139,17 +135,16 @@ export default function Leads() {
                       {formatearFecha(lead.fechaCreacionUtc, true)}
                     </span>
                   </div>
-                </div>
 
-                {!lead.leido && (
-                  <button
-                    onClick={() => handleMarcarLeido(lead.id)}
-                    className="flex items-center gap-1.5 rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-green-700"
-                  >
-                    <FaCheckCircle />
-                    Marcar leído
-                  </button>
-                )}
+                  {lead.emailContacto && (
+                    <a
+                      href={construirMailtoRespuesta(lead)}
+                      className="mt-4 inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700"
+                    >
+                      <FaReply /> Responder por correo
+                    </a>
+                  )}
+                </div>
               </div>
             </li>
           ))}

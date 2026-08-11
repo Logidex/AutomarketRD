@@ -21,6 +21,7 @@ public class AdminController : ControllerBase
     private readonly IAlmacenadorArchivos _almacenadorArchivos;
     private readonly ISuscripcionService _suscripcionService;
     private readonly IPlanCatalogoService _planCatalogoService;
+    private readonly IUsuarioCuentaService _usuarioCuentaService;
 
     public AdminController(
         IDashboardService dashboardService,
@@ -28,7 +29,8 @@ public class AdminController : ControllerBase
         IAnuncioRepository anuncioRepository,
         IAlmacenadorArchivos almacenadorArchivos,
         ISuscripcionService suscripcionService,
-        IPlanCatalogoService planCatalogoService)
+        IPlanCatalogoService planCatalogoService,
+        IUsuarioCuentaService usuarioCuentaService)
     {
         _dashboardService = dashboardService;
         _usuarioRepository = usuarioRepository;
@@ -36,6 +38,7 @@ public class AdminController : ControllerBase
         _almacenadorArchivos = almacenadorArchivos;
         _suscripcionService = suscripcionService;
         _planCatalogoService = planCatalogoService;
+        _usuarioCuentaService = usuarioCuentaService;
     }
 
     [HttpGet("dashboard/resumen")]
@@ -112,6 +115,27 @@ public class AdminController : ControllerBase
         });
 
         return Ok(resultado);
+    }
+
+    [HttpPut("usuarios/{id:int}/rol")]
+    public async Task<IActionResult> CambiarRol(int id, [FromBody] CambiarRolAdminDto dto)
+    {
+        var usuario = await _usuarioRepository.ObtenerPorIdAsync(id);
+
+        if (usuario == null)
+            return NotFound(new { mensaje = "Usuario no encontrado." });
+
+        if (usuario.Rol == "Admin")
+            return BadRequest(new { mensaje = "No puedes modificar el rol de otro administrador." });
+
+        var cuenta = await _usuarioCuentaService.CambiarRolAdminAsync(id, dto);
+
+        return Ok(new
+        {
+            exito = true,
+            mensaje = $"El rol de {cuenta.Email} ahora es {cuenta.Rol}.",
+            usuario = cuenta
+        });
     }
 
     // ==========================================

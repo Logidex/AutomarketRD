@@ -38,8 +38,10 @@ public class UsuarioController : ControllerBase
         return Ok(cuenta);
     }
 
-    [HttpPost("cambiar-password")]
-    public async Task<IActionResult> CambiarPassword([FromBody] CambiarPasswordDto dto)
+    // Asciende el rol de la cuenta (Comprador → Vendedor/Dealer, Vendedor → Dealer).
+    // Devuelve la sesión actualizada (nuevo token con el nuevo rol).
+    [HttpPost("ascender-rol")]
+    public async Task<IActionResult> AscenderRol([FromBody] AscenderRolDto dto)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
@@ -47,12 +49,48 @@ public class UsuarioController : ControllerBase
         try
         {
             var usuarioId = User.ObtenerUsuarioId();
-            await _cuentaService.CambiarPasswordAsync(usuarioId, dto);
-            return Ok(new { exito = true, mensaje = "Contraseña actualizada correctamente." });
+            var sesion = await _cuentaService.AscenderRolAsync(usuarioId, dto);
+            return Ok(sesion);
+        }
+        catch (BusinessRuleException ex)
+        {
+            return BadRequest(new { mensaje = ex.Message });
+        }
+    }
+
+    [HttpPost("cambiar-password")]
+    public async Task<IActionResult> SolicitarCambioPassword([FromBody] SolicitarCambioPasswordDto dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        try
+        {
+            var usuarioId = User.ObtenerUsuarioId();
+            await _cuentaService.SolicitarCambioPasswordAsync(usuarioId, dto);
+            return Ok(new { exito = true, mensaje = "Te enviamos un código a tu correo. Revisa tu bandeja de entrada." });
         }
         catch (UnauthorizedAccessException ex)
         {
             return BadRequest(new { mensaje = ex.Message });
+        }
+        catch (BusinessRuleException ex)
+        {
+            return BadRequest(new { mensaje = ex.Message });
+        }
+    }
+
+    [HttpPost("confirmar-password")]
+    public async Task<IActionResult> ConfirmarCambioPassword([FromBody] ConfirmarPasswordDto dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        try
+        {
+            var usuarioId = User.ObtenerUsuarioId();
+            await _cuentaService.ConfirmarCambioPasswordAsync(usuarioId, dto);
+            return Ok(new { exito = true, mensaje = "Tu contraseña fue actualizada correctamente." });
         }
         catch (BusinessRuleException ex)
         {

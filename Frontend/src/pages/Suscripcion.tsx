@@ -1,23 +1,19 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
+import { FaPaypal } from "react-icons/fa";
 import { planesService, type PlanCatalogo } from "../services/planes.service";
-import { pagosService } from "../services/pagos.service";
 import { authService } from "../services/auth.service";
 import { ROLES } from "../constants/roles";
-import { formatearRD$, precioCicloDe } from "../utils/formato";
-import { FaPaypal } from "react-icons/fa";
+import { formatearRD$, precioCicloDe, type Ciclo } from "../utils/formato";
 import logo from "../assets/AutoMarketRD_Logo.svg";
 import MenuPublico from "../components/layout/MenuPublico";
 
-type Ciclo = "Mensual" | "Trimestral" | "Anual";
-
 const CICLOS: Ciclo[] = ["Mensual", "Trimestral", "Anual"];
 
-export default function Precios() {
+export default function Suscripcion() {
   const [planes, setPlanes] = useState<PlanCatalogo[]>([]);
   const [ciclo, setCiclo] = useState<Ciclo>("Mensual");
-  const [comprandoPlan, setComprandoPlan] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,54 +23,38 @@ export default function Precios() {
       .catch(() => setPlanes([]));
   }, []);
 
+  const planesPago = planes.filter((p) => p.nivel !== "Gratis");
+  const planGratis = planes.find((p) => p.nivel === "Gratis");
+
   const precioCiclo = (plan: PlanCatalogo) => precioCicloDe(plan, ciclo);
 
-  const precioEtiqueta = (plan: PlanCatalogo) => formatearRD$(precioCiclo(plan));
-
-  // Reglas visuales: solo el Gratis se resalta, los demás son opciones.
-  const handleComprar = async (plan: PlanCatalogo) => {
+  const handleElegir = (plan: PlanCatalogo) => {
     const usuario = authService.getCurrentUser();
 
     if (!usuario || usuario.rol !== ROLES.DEALER) {
-      await Swal.fire({
+      Swal.fire({
         icon: "info",
         title: "Inicia sesión como Dealer",
-        text: "Para comprar un plan debes iniciar sesión con una cuenta de Dealer.",
+        text: "Para elegir un plan debes iniciar sesión con una cuenta de Dealer.",
         confirmButtonColor: "#3b82f6",
-      });
-      navigate("/login");
+      }).then(() => navigate("/login"));
       return;
     }
 
     if (precioCiclo(plan) <= 0) {
-      await Swal.fire({
+      Swal.fire({
         icon: "info",
         title: "Plan Gratis",
-        text: "El plan Gratis se asigna directamente al registrarte.",
+        text: "Ya tienes el plan Gratis asignado a tu cuenta.",
         confirmButtonColor: "#3b82f6",
       });
       return;
     }
 
-    setComprandoPlan(plan.nivel);
-
-    try {
-      const { url } = await pagosService.generarLinkPago(plan.nivel, ciclo);
-      window.location.assign(url);
-    } catch (err) {
-      await Swal.fire({
-        icon: "error",
-        title: "Error al iniciar el pago",
-        text: err instanceof Error ? err.message : "Inténtalo nuevamente.",
-        confirmButtonColor: "#3b82f6",
-      });
-    } finally {
-      setComprandoPlan(null);
-    }
+    navigate(
+      `/checkout?plan=${encodeURIComponent(plan.nivel)}&ciclo=${encodeURIComponent(ciclo)}`
+    );
   };
-
-  const planesPago = planes.filter((p) => p.nivel !== "Gratis");
-  const planGratis = planes.find((p) => p.nivel === "Gratis");
 
   return (
     <div className="min-h-screen bg-[#0c101b] text-white">
@@ -86,7 +66,7 @@ export default function Precios() {
             alt="AutoMarket RD"
             className="h-12 w-auto object-contain"
           />
-          <span className="text-xl font-bold">Precios</span>
+          <span className="text-xl font-bold">Suscripción</span>
         </div>
 
         <MenuPublico />
@@ -95,10 +75,11 @@ export default function Precios() {
       <main className="mx-auto max-w-5xl px-8 py-16">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-3">
-            Planes para tu agencia
+            Elige tu suscripción
           </h1>
           <p className="text-[#9aa1b1]">
-            Publica, gestiona y vende más con los planes de AutoMarket RD.
+            Tu cuenta ya está activa con el plan Gratis. Elige el plan que mejor
+            se adapte a tu agencia y empieza a vender más.
           </p>
         </div>
 
@@ -130,14 +111,14 @@ export default function Precios() {
                 {planGratis?.nombre ?? "Plan Gratis"}
               </h3>
               <span className="rounded-full bg-green-500/10 px-2 py-0.5 text-xs font-bold text-green-400">
-                Gratis
+                Tu plan actual
               </span>
             </div>
             <p className="text-sm text-[#9aa1b1] mb-4">
               {planGratis?.descripcion ?? "Para probar la plataforma."}
             </p>
             <div className="text-3xl font-bold mb-1">
-              {planGratis ? precioEtiqueta(planGratis) : "Gratis"}
+              {planGratis ? formatearRD$(precioCiclo(planGratis)) : "Gratis"}
             </div>
             <p className="text-xs text-[#9aa1b1] mb-6">
               {planGratis
@@ -145,12 +126,13 @@ export default function Precios() {
                 : "1 anuncio"}
             </p>
             <div className="mt-auto">
-              <Link
-                to="/registro"
+              <button
+                type="button"
+                onClick={() => navigate("/dashboard")}
                 className="block w-full rounded-lg border border-white/20 py-2.5 text-center text-sm font-semibold hover:border-white transition-colors"
               >
-                Registrarme
-              </Link>
+                Ir a mi panel
+              </button>
             </div>
           </div>
 
@@ -162,26 +144,23 @@ export default function Precios() {
                 className="rounded-2xl border border-white/10 bg-[#13161d] p-6 flex flex-col transition-colors hover:border-blue-500/40"
               >
                 <h3 className="text-lg font-semibold mb-2">{plan.nombre}</h3>
-                <p className="text-sm text-[#9aa1b1] mb-4">
-                  {plan.descripcion}
-                </p>
+                <p className="text-sm text-[#9aa1b1] mb-4">{plan.descripcion}</p>
                 <div className="text-3xl font-bold mb-1">
-                  {precioEtiqueta(plan)}
+                  {formatearRD$(precioCiclo(plan))}
                 </div>
                 <p className="text-xs text-[#9aa1b1] mb-6">
                   {plan.limiteAnuncios} anuncios
-                  {ciclo === "Mensual" && plan.descuentoTrimestralPorcentaje > 0 && (
+                  {ciclo === "Mensual" && plan.descuentoAnualPorcentaje > 0 && (
                     <> · hasta {plan.descuentoAnualPorcentaje}% en Anual</>
                   )}
                 </p>
                 <div className="mt-auto">
                   <button
                     type="button"
-                    onClick={() => handleComprar(plan)}
-                    disabled={comprandoPlan === plan.nivel}
-                    className="w-full rounded-lg bg-blue-500 py-2.5 text-sm font-semibold hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed transition-colors"
+                    onClick={() => handleElegir(plan)}
+                    className="w-full rounded-lg bg-blue-500 py-2.5 text-sm font-semibold hover:bg-blue-600 transition-colors"
                   >
-                    {comprandoPlan === plan.nivel ? "Redirigiendo..." : "Comprar Plan"}
+                    Elegir este plan
                   </button>
                 </div>
               </div>
@@ -197,8 +176,9 @@ export default function Precios() {
         <div className="mt-10 flex items-center justify-center gap-3 rounded-xl border border-[#3b2f2f] bg-[#1a1515] p-4">
           <FaPaypal className="text-3xl text-[#0070ba]" />
           <p className="text-sm text-[#9aa1b1]">
-            El pago se procesa de forma segura con <strong className="text-white">PayPal</strong>. Por
-            ahora es el único método de pago disponible.
+            El pago se procesa de forma segura con{" "}
+            <strong className="text-white">PayPal</strong>. Por ahora es el único
+            método de pago disponible.
           </p>
         </div>
       </main>

@@ -1,7 +1,8 @@
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
-import { FaCarSide, FaEnvelope, FaSignOutAlt } from "react-icons/fa";
+import { FaCarSide, FaEnvelope, FaHome, FaLevelUpAlt, FaSignOutAlt, FaUserCog } from "react-icons/fa";
 import { authService } from "../../services/auth.service";
 import logo from "../../assets/AutoMarketRD_Logo.svg";
+import CampanaNotificaciones from "./CampanaNotificaciones";
 
 export default function VendedorLayout() {
   const navigate = useNavigate();
@@ -30,6 +31,16 @@ export default function VendedorLayout() {
         </Link>
 
         <div className="flex items-center gap-4">
+          <CampanaNotificaciones rutaLeads="/vendedor/interesados" tema="claro" />
+
+          <Link
+            to="/"
+            title="Volver al inicio"
+            className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
+          >
+            <FaHome />
+            <span className="hidden sm:inline">Volver al inicio</span>
+          </Link>
           <span className="hidden text-sm text-gray-600 md:inline">
             {nombreUsuario}
           </span>
@@ -76,6 +87,34 @@ export default function VendedorLayout() {
         >
           <FaEnvelope className="text-xs" />
           Interesados
+        </NavLink>
+
+        <NavLink
+          to="/vendedor/ascender"
+          className={({ isActive }) =>
+            `flex items-center gap-2 border-b-2 px-3 py-2.5 text-sm font-medium transition-colors ${
+              isActive
+                ? "border-yellow-600 text-yellow-700"
+                : "border-transparent text-gray-500 hover:text-gray-800"
+            }`
+          }
+        >
+          <FaLevelUpAlt className="text-xs" />
+          Ascender a Dealer
+        </NavLink>
+
+        <NavLink
+          to="/vendedor/cuenta"
+          className={({ isActive }) =>
+            `flex items-center gap-2 border-b-2 px-3 py-2.5 text-sm font-medium transition-colors ${
+              isActive
+                ? "border-gray-800 text-gray-900"
+                : "border-transparent text-gray-500 hover:text-gray-800"
+            }`
+          }
+        >
+          <FaUserCog className="text-xs" />
+          Mi cuenta
         </NavLink>
       </div>
 

@@ -29,6 +29,14 @@ export interface UsuarioAdmin {
   fechaRegistro: string;
 }
 
+export interface CambiarRolAdminDto {
+  nuevoRol: string;
+  nombreAgencia?: string;
+  agenciaRNC?: string;
+  ubicacionAgencia?: string;
+  telefonoAgencia?: string;
+}
+
 export interface AnuncioAdmin {
   id: number;
   marca: string;
@@ -82,6 +90,10 @@ export const adminService = {
 
   async reactivarUsuario(id: number): Promise<{ exito: boolean; mensaje: string }> {
     return respuesta(api.patch(`/api/admin/usuarios/${id}/reactivar`));
+  },
+
+  async cambiarRol(id: number, datos: CambiarRolAdminDto): Promise<{ exito: boolean; mensaje: string }> {
+    return respuesta(api.put(`/api/admin/usuarios/${id}/rol`, datos));
   },
 
   // ===== Anuncios =====

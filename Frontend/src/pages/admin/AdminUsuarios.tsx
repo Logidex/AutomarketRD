@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
-import { FaBan, FaCheckCircle, FaCoins, FaRedoAlt } from "react-icons/fa";
+import { FaBan, FaCheckCircle, FaCoins, FaRedoAlt, FaUserTag } from "react-icons/fa";
 import {
   adminService,
   type UsuarioAdmin,
@@ -184,6 +184,107 @@ export default function AdminUsuarios() {
     }
   };
 
+  const cambiarRol = async (usuario: UsuarioAdmin) => {
+    if (procesando !== null) return;
+
+    const opciones: Record<string, string> = {
+      Comprador: "Comprador",
+      Vendedor: "Vendedor",
+      Dealer: "Dealer",
+    };
+    delete opciones[usuario.rol];
+
+    const resultado = await Swal.fire({
+      icon: "warning",
+      title: "Cambiar rol",
+      text: `${usuario.nombre} ${usuario.apellido} (${usuario.email})`,
+      input: "select",
+      inputOptions: opciones,
+      inputPlaceholder: "Selecciona el nuevo rol",
+      showCancelButton: true,
+      confirmButtonText: "Cambiar",
+      cancelButtonText: "Cancelar",
+      inputValidator: (value) =>
+        value ? undefined : "Debes seleccionar un rol.",
+    });
+
+    if (!resultado.isConfirmed || !resultado.value) return;
+
+    const nuevoRol = resultado.value as string;
+
+    let datosAgencia = {};
+
+    if (nuevoRol === "Dealer") {
+      const formulario = await Swal.fire({
+        icon: "info",
+        title: "Datos de la agencia",
+        html: `
+          <input id="swal-nombre" class="swal2-input" placeholder="Nombre de la agencia *" />
+          <input id="swal-rnc" class="swal2-input" placeholder="RNC de la agencia *" />
+          <input id="swal-ubicacion" class="swal2-input" placeholder="Ubicación" />
+          <input id="swal-telefono" class="swal2-input" placeholder="Teléfono" />
+        `,
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: "Convertir en Dealer",
+        cancelButtonText: "Cancelar",
+        preConfirm: () => {
+          const nombre = (
+            document.getElementById("swal-nombre") as HTMLInputElement
+          ).value?.trim();
+          const rnc = (
+            document.getElementById("swal-rnc") as HTMLInputElement
+          ).value?.trim();
+          if (!nombre || !rnc) {
+            Swal.showValidationMessage(
+              "El nombre de la agencia y el RNC son obligatorios."
+            );
+            return false;
+          }
+          return {
+            nombreAgencia: nombre,
+            agenciaRNC: rnc,
+            ubicacionAgencia: (
+              document.getElementById("swal-ubicacion") as HTMLInputElement
+            ).value?.trim() || "",
+            telefonoAgencia: (
+              document.getElementById("swal-telefono") as HTMLInputElement
+            ).value?.trim() || "",
+          };
+        },
+      });
+
+      if (!formulario.isConfirmed || !formulario.value) return;
+      datosAgencia = formulario.value;
+    }
+
+    setProcesando(usuario.usuarioId);
+    try {
+      const respuesta = await adminService.cambiarRol(usuario.usuarioId, {
+        nuevoRol,
+        ...datosAgencia,
+      });
+
+      await Swal.fire({
+        icon: "success",
+        title: "Listo",
+        text: respuesta.mensaje,
+        confirmButtonColor: "#7c3aed",
+      });
+      await cargar();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      await Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: error.message || "No se pudo cambiar el rol.",
+        confirmButtonColor: "#7c3aed",
+      });
+    } finally {
+      setProcesando(null);
+    }
+  };
+
   if (loading) {
     return <Spinner />;
   }
@@ -261,6 +362,18 @@ export default function AdminUsuarios() {
                           Renovar
                         </button>
                       </>
+                    )}
+
+                    {usuario.rol !== "Admin" && (
+                      <button
+                        type="button"
+                        onClick={() => cambiarRol(usuario)}
+                        disabled={procesando !== null}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-amber-200 bg-white px-3 py-1.5 text-xs font-semibold text-amber-700 transition-colors hover:bg-amber-50 disabled:opacity-50"
+                      >
+                        <FaUserTag />
+                        Rol
+                      </button>
                     )}
 
                     {usuario.rol !== "Admin" && (

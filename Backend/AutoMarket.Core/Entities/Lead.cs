@@ -10,6 +10,9 @@ public class Lead
     public int AnuncioId { get; private set; }
     public Anuncio Anuncio { get; private set; } = null!;
 
+    // Remitente autenticado (usuario logueado). Null si el contacto fue anónimo.
+    public int? UsuarioIdRemitente { get; private set; }
+
     // Datos del prospecto
     public string NombreContacto { get; private set; } = null!;
     public string EmailContacto { get; private set; } = null!;
@@ -26,7 +29,7 @@ public class Lead
     private Lead() { }
 
     // Constructor de dominio para instanciación segura
-    public Lead(int anuncioId, string nombreContacto, string emailContacto, string telefonoContacto, string mensaje, CanalContacto canal)
+    public Lead(int anuncioId, string nombreContacto, string emailContacto, string telefonoContacto, string mensaje, CanalContacto canal, int? usuarioIdRemitente = null)
     {
         if (anuncioId <= 0) 
             throw new ArgumentException("El ID del anuncio es inválido.");
@@ -35,6 +38,7 @@ public class Lead
             throw new ArgumentException("El nombre de contacto es obligatorio.");
 
         AnuncioId = anuncioId;
+        UsuarioIdRemitente = usuarioIdRemitente;
         NombreContacto = nombreContacto;
         EmailContacto = emailContacto;
         TelefonoContacto = telefonoContacto;

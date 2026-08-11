@@ -33,6 +33,8 @@ export default function EditarCuenta() {
   const [passwordActual, setPasswordActual] = useState('');
   const [nuevaPassword, setNuevaPassword] = useState('');
   const [repetirPassword, setRepetirPassword] = useState('');
+  const [pasoCodigoPassword, setPasoCodigoPassword] = useState(false);
+  const [codigoPassword, setCodigoPassword] = useState('');
 
   // Cambio de correo (dos pasos)
   const [pasoCodigo, setPasoCodigo] = useState(false);
@@ -100,7 +102,7 @@ export default function EditarCuenta() {
     }
   };
 
-  const cambiarPassword = async () => {
+  const solicitarCodigoPassword = async () => {
     if (!passwordActual || !nuevaPassword) {
       Swal.fire(
         'Campos incompletos',
@@ -134,7 +136,39 @@ export default function EditarCuenta() {
         passwordActual,
         nuevaPassword
       );
+      Swal.fire('Código enviado', resultado.mensaje, 'success');
+      setPasoCodigoPassword(true);
+    } catch (err) {
+      Swal.fire(
+        'Error',
+        err instanceof Error
+          ? err.message
+          : 'No se pudo solicitar el cambio.',
+        'error'
+      );
+    } finally {
+      setEnviando(false);
+    }
+  };
+
+  const confirmarCodigoPassword = async () => {
+    if (codigoPassword.trim().length < 6) {
+      Swal.fire(
+        'Código incompleto',
+        'Ingresa el código de 6 dígitos que recibiste.',
+        'warning'
+      );
+      return;
+    }
+
+    setEnviando(true);
+    try {
+      const resultado = await usuarioService.confirmarCambioPassword(
+        codigoPassword.trim()
+      );
       Swal.fire('Contraseña actualizada', resultado.mensaje, 'success');
+      setPasoCodigoPassword(false);
+      setCodigoPassword('');
       setPasswordActual('');
       setNuevaPassword('');
       setRepetirPassword('');
@@ -143,7 +177,7 @@ export default function EditarCuenta() {
         'Error',
         err instanceof Error
           ? err.message
-          : 'No se pudo cambiar la contraseña.',
+          : 'El código no pudo confirmarse.',
         'error'
       );
     } finally {
@@ -316,50 +350,94 @@ export default function EditarCuenta() {
             Cambiar contraseña
           </h2>
           <p className="mt-1 text-sm text-[#9aa1b1]">
-            Para cambiarla necesitas conocer la contraseña actual.
+            {pasoCodigoPassword
+              ? 'Paso 2 de 2: ingresa el código que enviamos a tu correo.'
+              : 'Paso 1 de 2: confirma con tu contraseña actual. Recibirás un código en tu correo.'}
           </p>
 
-          <div className="mt-5 space-y-4">
-            <div>
-              <label className={labelClase}>Contraseña actual *</label>
-              <input
-                type="password"
-                value={passwordActual}
-                onChange={(e) => setPasswordActual(e.target.value)}
-                className={inputClase}
-              />
-            </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {!pasoCodigoPassword ? (
+            <div className="mt-5 space-y-4">
               <div>
-                <label className={labelClase}>Nueva contraseña *</label>
+                <label className={labelClase}>Contraseña actual *</label>
                 <input
                   type="password"
-                  value={nuevaPassword}
-                  onChange={(e) => setNuevaPassword(e.target.value)}
+                  value={passwordActual}
+                  onChange={(e) => setPasswordActual(e.target.value)}
                   className={inputClase}
                 />
               </div>
-              <div>
-                <label className={labelClase}>Repetir nueva contraseña *</label>
-                <input
-                  type="password"
-                  value={repetirPassword}
-                  onChange={(e) => setRepetirPassword(e.target.value)}
-                  className={inputClase}
-                />
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label className={labelClase}>Nueva contraseña *</label>
+                  <input
+                    type="password"
+                    value={nuevaPassword}
+                    onChange={(e) => setNuevaPassword(e.target.value)}
+                    className={inputClase}
+                  />
+                </div>
+                <div>
+                  <label className={labelClase}>Repetir nueva contraseña *</label>
+                  <input
+                    type="password"
+                    value={repetirPassword}
+                    onChange={(e) => setRepetirPassword(e.target.value)}
+                    className={inputClase}
+                  />
+                </div>
               </div>
-            </div>
-          </div>
 
-          <button
-            type="button"
-            onClick={cambiarPassword}
-            disabled={enviando}
-            className="mt-5 inline-flex items-center gap-2 rounded-lg bg-blue-500 px-6 py-2.5 text-sm font-semibold transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <FaLock />
-            Cambiar contraseña
-          </button>
+              <button
+                type="button"
+                onClick={solicitarCodigoPassword}
+                disabled={enviando}
+                className="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-6 py-2.5 text-sm font-semibold transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <FaEnvelopeOpenText />
+                Enviar código a mi correo
+              </button>
+            </div>
+          ) : (
+            <div className="mt-5 space-y-4">
+              <div>
+                <label className={labelClase}>
+                  Código de confirmación (6 dígitos) *
+                </label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={6}
+                  value={codigoPassword}
+                  onChange={(e) =>
+                    setCodigoPassword(e.target.value.replace(/\D/g, ''))
+                  }
+                  className={`${inputClase} tracking-[0.5em]`}
+                />
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={confirmarCodigoPassword}
+                  disabled={enviando}
+                  className="inline-flex items-center gap-2 rounded-lg bg-green-500 px-6 py-2.5 text-sm font-semibold transition-colors hover:bg-green-600 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <FaLock />
+                  Confirmar cambio
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPasoCodigoPassword(false);
+                    setCodigoPassword('');
+                  }}
+                  disabled={enviando}
+                  className="rounded-lg border border-white/10 px-5 py-2.5 text-sm text-[#9aa1b1] transition-colors hover:text-white"
+                >
+                  Volver
+                </button>
+              </div>
+            </div>
+          )}
         </section>
 
         {/* SECCIÓN 3: CORREO (DOS PASOS) */}

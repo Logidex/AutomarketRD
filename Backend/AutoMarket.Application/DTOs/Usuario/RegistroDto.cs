@@ -20,8 +20,9 @@ public class RegistroDto
     // ==========================================
     // PLAN INICIAL PARA DEALERS
     // Valores: "Gratis", "Basico", "Pro", "Elite".
-    // Mientras no exista un flujo de pago activo,
-    // solo se permite el plan "Gratis" al registrarse.
+    // La cuenta siempre se crea con el plan "Gratis";
+    // si el dealer elige un plan de pago, el pago se
+    // procesa después del registro (flujo PayPal).
     // ==========================================
     public string? PlanInicial { get; set; }
 }

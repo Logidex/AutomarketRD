@@ -8,7 +8,10 @@ import DetalleAnuncio from './pages/DetalleAnuncio';
 import VendedorPublico from './pages/VendedorPublico';
 import Login from './pages/Login';
 import Registro from './pages/Registro';
+import RecuperarPassword from './pages/RecuperarPassword';
 import Precios from './pages/Precios';
+import Suscripcion from './pages/Suscripcion';
+import Checkout from './pages/Checkout';
 import PagoExitoso from './pages/PagoExitoso';
 import PagoCancelado from './pages/PagoCancelado';
 
@@ -28,6 +31,7 @@ import MiPerfil from './pages/MiPerfil';
 import MiCuenta from './pages/MiCuenta';
 import Favoritos from './pages/Favoritos';
 import Historial from './pages/Historial';
+import Contactados from './pages/Contactados';
 import EditarCuenta from './pages/EditarCuenta';
 import DashboardSuscripcion from './pages/DashboardSuscripcion';
 
@@ -42,6 +46,8 @@ import MiVehiculoVendedor from './pages/vendedor/MiVehiculoVendedor';
 import PublicarVehiculoVendedor from './pages/vendedor/PublicarVehiculoVendedor';
 import EditarVehiculoVendedor from './pages/vendedor/EditarVehiculoVendedor';
 import InteresadosVendedor from './pages/vendedor/InteresadosVendedor';
+import AscenderVendedor from './pages/vendedor/AscenderVendedor';
+import CuentaVendedor from './pages/vendedor/CuentaVendedor';
 import VendedorLayout from './components/layout/VendedorLayout';
 
 function App() {
@@ -65,6 +71,12 @@ function App() {
       {/* PRECIOS PÚBLICOS */}
       <Route path="/precios" element={<Precios />} />
 
+      {/* SUSCRIPCIÓN: ELECCIÓN DE PLAN */}
+      <Route path="/suscripcion" element={<Suscripcion />} />
+
+      {/* CHECKOUT DE SUSCRIPCIÓN */}
+      <Route path="/checkout" element={<Checkout />} />
+
       {/* RESULTADO DE PAGO PAYPAL */}
       <Route path="/pago-exitoso" element={<PagoExitoso />} />
       <Route path="/pago-cancelado" element={<PagoCancelado />} />
@@ -72,6 +84,7 @@ function App() {
       {/* AUTENTICACIÓN */}
       <Route path="/login" element={<Login />} />
       <Route path="/registro" element={<Registro />} />
+      <Route path="/recuperar-password" element={<RecuperarPassword />} />
 
       {/* CUENTA DE COMPRADOR (INICIO DE SU ACTIVIDAD) */}
       <Route
@@ -82,6 +95,7 @@ function App() {
         <Route path="/perfil" element={<MiCuenta />} />
         <Route path="/perfil/favoritos" element={<Favoritos />} />
         <Route path="/perfil/historial" element={<Historial />} />
+        <Route path="/perfil/contactados" element={<Contactados />} />
         <Route path="/perfil/editar" element={<EditarCuenta />} />
       </Route>
 
@@ -103,6 +117,12 @@ function App() {
 
           {/* /vendedor/interesados */}
           <Route path="interesados" element={<InteresadosVendedor />} />
+
+          {/* /vendedor/ascender */}
+          <Route path="ascender" element={<AscenderVendedor />} />
+
+          {/* /vendedor/cuenta */}
+          <Route path="cuenta" element={<CuentaVendedor />} />
         </Route>
       </Route>
 

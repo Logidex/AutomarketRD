@@ -1,7 +1,10 @@
+using AutoMarket.Application.DTOs.Admin;
+using AutoMarket.Application.DTOs.Auth;
 using AutoMarket.Application.DTOs.Usuario;
 using AutoMarket.Application.Helpers;
 using AutoMarket.Application.Interfaces;
 using AutoMarket.Core.Entities;
+using AutoMarket.Core.Entities.Enums;
 using AutoMarket.Core.Exceptions;
 using AutoMarket.Core.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -14,15 +17,21 @@ public class UsuarioCuentaService : IUsuarioCuentaService
     private static readonly TimeSpan VIGENCIA_CODIGO = TimeSpan.FromMinutes(15);
 
     private readonly IUsuarioRepository _usuarioRepository;
+    private readonly ISuscripcionService _suscripcionService;
+    private readonly ITokenService _tokenService;
     private readonly IEmailSenderService _emailSender;
     private readonly ILogger<UsuarioCuentaService> _logger;
 
     public UsuarioCuentaService(
         IUsuarioRepository usuarioRepository,
+        ISuscripcionService suscripcionService,
+        ITokenService tokenService,
         IEmailSenderService emailSender,
         ILogger<UsuarioCuentaService> logger)
     {
         _usuarioRepository = usuarioRepository;
+        _suscripcionService = suscripcionService;
+        _tokenService = tokenService;
         _emailSender = emailSender;
         _logger = logger;
     }
@@ -44,7 +53,93 @@ public class UsuarioCuentaService : IUsuarioCuentaService
         return MapearCuenta(usuario);
     }
 
-    public async Task CambiarPasswordAsync(int usuarioId, CambiarPasswordDto dto)
+    public async Task<LoginResultDto> AscenderRolAsync(int usuarioId, AscenderRolDto dto)
+    {
+        var usuario = await ObtenerUsuarioAsync(usuarioId);
+
+        var nuevoRol = dto.NuevoRol?.Trim();
+
+        if (nuevoRol == "Vendedor")
+        {
+            usuario.ConvertirAVendedor();
+            await _usuarioRepository.GuardarCambiosAsync();
+
+            return GenerarSesion(usuario, "Tu cuenta ahora es de tipo Vendedor.");
+        }
+
+        if (nuevoRol == "Dealer")
+        {
+            if (string.IsNullOrWhiteSpace(dto.NombreAgencia) || string.IsNullOrWhiteSpace(dto.AgenciaRNC))
+                throw new BusinessRuleException("Los datos de la agencia y el RNC son obligatorios para cuentas tipo Dealer.");
+
+            usuario.ConvertirADealer(
+                nombreAgencia: dto.NombreAgencia!.Trim(),
+                agenciaRNC: dto.AgenciaRNC!.Trim(),
+                ubicacion: dto.UbicacionAgencia ?? string.Empty,
+                telefonoAgencia: dto.TelefonoAgencia ?? string.Empty
+            );
+
+            await _usuarioRepository.GuardarCambiosAsync();
+
+            var perfilDealerId = usuario.PerfilDealer!.UsuarioId;
+            await _suscripcionService.AsignarPlanInicialAsync(perfilDealerId, PlanNivel.Gratis, CicloFacturacion.Mensual);
+
+            return GenerarSesion(usuario, "Tu cuenta ahora es de tipo Dealer. Se te asignó el plan Gratis.");
+        }
+
+        throw new BusinessRuleException("El rol de destino no es válido. Solo puedes ascender a Vendedor o Dealer.");
+    }
+
+    /// <summary>
+    /// Cambio de rol efectuado por el administrador. Permite ascender o degradar
+    /// una cuenta a Comprador/Vendedor/Dealer. Cuando se deja de ser Dealer se
+    /// elimina el perfil comercial (y con él, su suscripción y pagos asociados).
+    /// </summary>
+    public async Task<UsuarioCuentaDto> CambiarRolAdminAsync(int usuarioId, CambiarRolAdminDto dto)
+    {
+        var usuario = await _usuarioRepository.ObtenerDealerConPerfilPorIdAsync(usuarioId)
+            ?? throw new KeyNotFoundException("No se encontró la cuenta del usuario.");
+
+        var nuevoRol = dto.NuevoRol?.Trim();
+
+        if (nuevoRol != "Comprador" && nuevoRol != "Vendedor" && nuevoRol != "Dealer")
+            throw new BusinessRuleException("El rol de destino no es válido. Usa Comprador, Vendedor o Dealer.");
+
+        if (usuario.Rol == nuevoRol)
+            throw new BusinessRuleException("El usuario ya posee ese rol.");
+
+        if (nuevoRol == "Dealer")
+        {
+            if (string.IsNullOrWhiteSpace(dto.NombreAgencia) || string.IsNullOrWhiteSpace(dto.AgenciaRNC))
+                throw new BusinessRuleException("Para convertir en Dealer son obligatorios el nombre de la agencia y el RNC.");
+
+            usuario.ConvertirADealer(
+                nombreAgencia: dto.NombreAgencia!.Trim(),
+                agenciaRNC: dto.AgenciaRNC!.Trim(),
+                ubicacion: dto.UbicacionAgencia ?? string.Empty,
+                telefonoAgencia: dto.TelefonoAgencia ?? string.Empty);
+
+            await _usuarioRepository.GuardarCambiosAsync();
+
+            var perfilDealerId = usuario.PerfilDealer!.UsuarioId;
+            await _suscripcionService.AsignarPlanInicialAsync(perfilDealerId, PlanNivel.Gratis, CicloFacturacion.Mensual);
+        }
+        else
+        {
+            if (usuario.PerfilDealer != null)
+            {
+                await _usuarioRepository.EliminarPerfilDealerAsync(usuarioId);
+                usuario.QuitarPerfilDealer();
+            }
+
+            usuario.FijarRolAdmin(nuevoRol);
+            await _usuarioRepository.GuardarCambiosAsync();
+        }
+
+        return MapearCuenta(usuario);
+    }
+
+    public async Task SolicitarCambioPasswordAsync(int usuarioId, SolicitarCambioPasswordDto dto)
     {
         var usuario = await ObtenerUsuarioAsync(usuarioId);
 
@@ -59,13 +154,38 @@ public class UsuarioCuentaService : IUsuarioCuentaService
             throw new BusinessRuleException("La nueva contraseña debe ser diferente a la actual.");
 
         var nuevoHash = BCrypt.Net.BCrypt.HashPassword(dto.NuevaPassword);
-        usuario.CambiarPassword(nuevoHash);
+        var codigo = CodigoUtil.GenerarCodigoNumerico();
+
+        usuario.EstablecerCambioPassword(
+            nuevoHash,
+            CodigoUtil.HashCodigo(codigo),
+            DateTime.UtcNow.Add(VIGENCIA_CODIGO));
 
         await _usuarioRepository.GuardarCambiosAsync();
 
         NotificarPorCorreo(
             usuario.Email,
-            "Tu contraseña de AutoMarket RD ha sido cambiada",
+            "Confirma el cambio de contraseña en AutoMarket RD",
+            "<p>Hola <strong>" + usuario.Nombre + "</strong>,</p>" +
+            "<p>Usa este código para confirmar el cambio de tu contraseña:</p>" +
+            "<h2 style='letter-spacing:6px'>" + codigo + "</h2>" +
+            "<p>El código expira en 15 minutos. Si no solicitaste este cambio, ignora este correo.</p>");
+    }
+
+    public async Task ConfirmarCambioPasswordAsync(int usuarioId, ConfirmarPasswordDto dto)
+    {
+        var usuario = await ObtenerUsuarioAsync(usuarioId);
+
+        var codigoHash = CodigoUtil.HashCodigo(dto.Codigo);
+
+        if (!usuario.AplicarCambioPasswordSiValido(codigoHash, DateTime.UtcNow))
+            throw new BusinessRuleException("El código es inválido o ha expirado. Solicita un nuevo código.");
+
+        await _usuarioRepository.GuardarCambiosAsync();
+
+        NotificarPorCorreo(
+            usuario.Email,
+            "Tu contraseña en AutoMarket RD ha sido cambiada",
             "<p>Hola <strong>" + usuario.Nombre + "</strong>,</p>" +
             "<p>Te confirmamos que tu contraseña fue actualizada correctamente.</p>" +
             "<p>Si no realizaste este cambio, contacta a soporte de inmediato.</p>");
@@ -144,6 +264,26 @@ public class UsuarioCuentaService : IUsuarioCuentaService
             EmailConfirmado = usuario.EmailConfirmado,
             TelefonoPersonal = usuario.TelefonoPersonal,
             Rol = usuario.Rol
+        };
+    }
+
+    // Tras el ascenso el rol cambió: hay que re-emitir el token con el nuevo rol
+    // y devolver la sesión actualizada igual que hace el login.
+    private LoginResultDto GenerarSesion(Usuario usuario, string mensaje)
+    {
+        return new LoginResultDto
+        {
+            Exito = true,
+            Mensaje = mensaje,
+            Token = _tokenService.GenerarToken(usuario),
+            Usuario = new UsuarioAuthDto
+            {
+                UsuarioId = usuario.UsuarioId,
+                Nombre = usuario.Nombre,
+                Apellido = usuario.Apellido ?? string.Empty,
+                Email = usuario.Email,
+                Rol = usuario.Rol
+            }
         };
     }
 

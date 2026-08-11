@@ -37,6 +37,13 @@ public class UsuarioRepository : IUsuarioRepository
         return usuarioEncontrado;
     }
 
+    public async Task<Usuario?> ObtenerPorEmailParaEscrituraAsync(string email)
+    {
+        var usuarioEncontrado = await _context.Usuarios
+                                              .FirstOrDefaultAsync(u => u.Email == email.ToLowerInvariant());
+        return usuarioEncontrado;
+    }
+
     public async Task<Usuario?> ObtenerPorIdAsync(int id)
     {
         var usuarioEncontrado = await _context.Usuarios
@@ -53,6 +60,15 @@ public class UsuarioRepository : IUsuarioRepository
             .FirstOrDefaultAsync(u =>
                 u.UsuarioId == usuarioId
             );
+    }
+
+    public async Task EliminarPerfilDealerAsync(int usuarioId)
+    {
+        var perfil = await _context.PerfilesDealers
+            .FirstOrDefaultAsync(p => p.UsuarioId == usuarioId);
+
+        if (perfil != null)
+            _context.PerfilesDealers.Remove(perfil);
     }
 
     public async Task GuardarCambiosAsync()

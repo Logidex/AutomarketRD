@@ -1,4 +1,5 @@
 import api from './api';
+import type { AuthResponse } from '../types/auth.types';
 
 export interface UsuarioCuenta {
   usuarioId: number;
@@ -8,6 +9,14 @@ export interface UsuarioCuenta {
   emailConfirmado: boolean;
   telefonoPersonal: string | null;
   rol: string;
+}
+
+export interface AscenderRolDto {
+  nuevoRol: "Vendedor" | "Dealer";
+  nombreAgencia?: string;
+  agenciaRNC?: string;
+  ubicacionAgencia?: string;
+  telefonoAgencia?: string;
 }
 
 export const usuarioService = {
@@ -39,6 +48,16 @@ export const usuarioService = {
     return response.data;
   },
 
+  async confirmarCambioPassword(
+    codigo: string
+  ): Promise<{ mensaje: string }> {
+    const response = await api.post<{ mensaje: string }>(
+      '/api/usuario/confirmar-password',
+      { codigo }
+    );
+    return response.data;
+  },
+
   async solicitarCambioEmail(
     passwordActual: string,
     nuevoEmail: string
@@ -56,6 +75,15 @@ export const usuarioService = {
     const response = await api.post<{ mensaje: string }>(
       '/api/usuario/confirmar-email',
       { codigo }
+    );
+    return response.data;
+  },
+
+  // Asciende el rol de la cuenta (Comprador → Vendedor/Dealer, Vendedor → Dealer).
+  async ascenderRol(dto: AscenderRolDto): Promise<AuthResponse> {
+    const response = await api.post<AuthResponse>(
+      '/api/usuario/ascender-rol',
+      dto
     );
     return response.data;
   },

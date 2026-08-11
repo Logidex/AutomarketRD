@@ -53,7 +53,8 @@ public class LeadService : ILeadService
             emailContacto: dto.EmailContacto ?? string.Empty,
             telefonoContacto: dto.TelefonoContacto ?? string.Empty,
             mensaje: dto.Mensaje,
-            canal: dto.Canal
+            canal: dto.Canal,
+            usuarioIdRemitente: usuarioIdRemitente
         );
 
         await _leadRepository.AgregarAsync(lead);
@@ -153,6 +154,77 @@ public class LeadService : ILeadService
             .ToList();
     }
 
+    public async Task<LeadNoLeidosResumenDto> ObtenerResumenNoLeidosAsync(int usuarioId)
+    {
+        var cantidad = await _leadRepository.ContarNoLeidosPorUsuarioAsync(usuarioId);
+        var recientes = await _leadRepository.ObtenerRecientesNoLeidosPorUsuarioAsync(usuarioId, 5);
+
+        return new LeadNoLeidosResumenDto
+        {
+            CantidadNoLeidos = cantidad,
+            Recientes = recientes
+                .Select(l => new LeadDealerDto
+                {
+                    Id = l.Id,
+                    AnuncioId = l.AnuncioId,
+                    Anuncio = l.Anuncio == null
+                        ? null
+                        : new LeadAnuncioResumenDto
+                        {
+                            Id = l.Anuncio.Id,
+                            NombreAnuncio = l.Anuncio.NombreAnuncio,
+                            Marca = l.Anuncio.Marca,
+                            Modelo = l.Anuncio.Modelo,
+                            Anio = l.Anuncio.Anio
+                        },
+                    NombreContacto = l.NombreContacto,
+                    Mensaje = l.Mensaje,
+                    Canal = l.Canal.ToString(),
+                    FechaCreacionUtc = l.FechaCreacionUtc,
+                    Leido = false
+                })
+                .ToList()
+        };
+    }
+
+    public async Task<IReadOnlyCollection<LeadContactoUsuarioDto>> ObtenerMisContactosAsync(int usuarioId)
+    {
+        var leads = await _leadRepository.ObtenerPorRemitenteIdAsync(usuarioId);
+
+        return leads
+            .Select(l =>
+            {
+                var vendedor = l.Anuncio?.Usuario;
+                string? nombreVendedor = null;
+                bool esParticular = false;
+
+                if (vendedor != null)
+                {
+                    nombreVendedor =
+                        vendedor.PerfilDealer?.NombreAgencia ??
+                        $"{vendedor.Nombre} {vendedor.Apellido}".Trim();
+                    esParticular =
+                        string.Equals(vendedor.Rol, "Vendedor", StringComparison.OrdinalIgnoreCase);
+                }
+
+                return new LeadContactoUsuarioDto
+                {
+                    Id = l.Id,
+                    AnuncioId = l.AnuncioId,
+                    Marca = l.Anuncio?.Marca ?? string.Empty,
+                    Modelo = l.Anuncio?.Modelo ?? string.Empty,
+                    Anio = l.Anuncio?.Anio ?? 0,
+                    FotoPrincipal = l.Anuncio?.Fotos.FirstOrDefault(),
+                    NombreVendedor = nombreVendedor,
+                    EsVendedorParticular = esParticular,
+                    Mensaje = l.Mensaje,
+                    Canal = l.Canal.ToString(),
+                    FechaCreacionUtc = l.FechaCreacionUtc
+                };
+            })
+            .ToList();
+    }
+
     public async Task<bool> MarcarLeidoAsync(int leadId, int usuarioId)
     {
         var lead = await _leadRepository.ObtenerPorIdAsync(leadId);
@@ -167,5 +239,10 @@ public class LeadService : ILeadService
         await _leadRepository.GuardarCambiosAsync();
 
         return true;
+    }
+
+    public async Task<int> MarcarTodosLeidosAsync(int usuarioId)
+    {
+        return await _leadRepository.MarcarTodosLeidosAsync(usuarioId);
     }
 }
