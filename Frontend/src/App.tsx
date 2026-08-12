@@ -1,212 +1,221 @@
+import { lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 
 // Páginas públicas
-import Home from './pages/Home';
-import Vehiculos from './pages/Vehiculos';
-import Comparador from './pages/Comparador';
-import DetalleAnuncio from './pages/DetalleAnuncio';
-import VendedorPublico from './pages/VendedorPublico';
-import Login from './pages/Login';
-import Registro from './pages/Registro';
-import RecuperarPassword from './pages/RecuperarPassword';
-import Precios from './pages/Precios';
-import Suscripcion from './pages/Suscripcion';
-import Checkout from './pages/Checkout';
-import PagoExitoso from './pages/PagoExitoso';
-import PagoCancelado from './pages/PagoCancelado';
+const Home = lazy(() => import('./pages/Home'));
+const Vehiculos = lazy(() => import('./pages/Vehiculos'));
+const Comparador = lazy(() => import('./pages/Comparador'));
+const DetalleAnuncio = lazy(() => import('./pages/DetalleAnuncio'));
+const VendedorPublico = lazy(() => import('./pages/VendedorPublico'));
+const Login = lazy(() => import('./pages/Login'));
+const Registro = lazy(() => import('./pages/Registro'));
+const RecuperarPassword = lazy(() => import('./pages/RecuperarPassword'));
+const Precios = lazy(() => import('./pages/Precios'));
+const Suscripcion = lazy(() => import('./pages/Suscripcion'));
+const Checkout = lazy(() => import('./pages/Checkout'));
+const PagoExitoso = lazy(() => import('./pages/PagoExitoso'));
+const PagoCancelado = lazy(() => import('./pages/PagoCancelado'));
 
 // Componentes de estructura
 import ProtectedRoute from './components/ProtectedRoute';
-import DashboardLayout from './components/layout/DashboardLayout';
-import AdminLayout from './components/layout/AdminLayout';
+const DashboardLayout = lazy(() => import('./components/layout/DashboardLayout'));
+const AdminLayout = lazy(() => import('./components/layout/AdminLayout'));
+const VendedorLayout = lazy(() => import('./components/layout/VendedorLayout'));
 import { ROLES } from './constants/roles';
 
 // Páginas del dashboard de Dealers
-import DashboardIndex from './pages/DashboardIndex';
-import MisAnuncios from './pages/MisAnuncios';
-import PublicarVehiculo from './pages/CrearAnuncio';
-import EditarVehiculo from './pages/EditarVehiculo';
-import Leads from './pages/Leads';
-import MiPerfil from './pages/MiPerfil';
-import MiCuenta from './pages/MiCuenta';
-import Favoritos from './pages/Favoritos';
-import Historial from './pages/Historial';
-import Contactados from './pages/Contactados';
-import EditarCuenta from './pages/EditarCuenta';
-import DashboardSuscripcion from './pages/DashboardSuscripcion';
+const DashboardIndex = lazy(() => import('./pages/DashboardIndex'));
+const MisAnuncios = lazy(() => import('./pages/MisAnuncios'));
+const PublicarVehiculo = lazy(() => import('./pages/CrearAnuncio'));
+const EditarVehiculo = lazy(() => import('./pages/EditarVehiculo'));
+const Leads = lazy(() => import('./pages/Leads'));
+const MiPerfil = lazy(() => import('./pages/MiPerfil'));
+const MiCuenta = lazy(() => import('./pages/MiCuenta'));
+const Favoritos = lazy(() => import('./pages/Favoritos'));
+const Historial = lazy(() => import('./pages/Historial'));
+const Contactados = lazy(() => import('./pages/Contactados'));
+const EditarCuenta = lazy(() => import('./pages/EditarCuenta'));
+const DashboardSuscripcion = lazy(() => import('./pages/DashboardSuscripcion'));
 
 // Páginas del panel de administración
-import AdminIndex from './pages/admin/AdminIndex';
-import AdminUsuarios from './pages/admin/AdminUsuarios';
-import AdminAnuncios from './pages/admin/AdminAnuncios';
-import AdminPlanes from './pages/admin/AdminPlanes';
+const AdminIndex = lazy(() => import('./pages/admin/AdminIndex'));
+const AdminUsuarios = lazy(() => import('./pages/admin/AdminUsuarios'));
+const AdminAnuncios = lazy(() => import('./pages/admin/AdminAnuncios'));
+const AdminPlanes = lazy(() => import('./pages/admin/AdminPlanes'));
 
 // Páginas del área de Vendedor
-import MiVehiculoVendedor from './pages/vendedor/MiVehiculoVendedor';
-import PublicarVehiculoVendedor from './pages/vendedor/PublicarVehiculoVendedor';
-import EditarVehiculoVendedor from './pages/vendedor/EditarVehiculoVendedor';
-import InteresadosVendedor from './pages/vendedor/InteresadosVendedor';
-import AscenderVendedor from './pages/vendedor/AscenderVendedor';
-import CuentaVendedor from './pages/vendedor/CuentaVendedor';
-import VendedorLayout from './components/layout/VendedorLayout';
+const MiVehiculoVendedor = lazy(() => import('./pages/vendedor/MiVehiculoVendedor'));
+const PublicarVehiculoVendedor = lazy(() => import('./pages/vendedor/PublicarVehiculoVendedor'));
+const EditarVehiculoVendedor = lazy(() => import('./pages/vendedor/EditarVehiculoVendedor'));
+const InteresadosVendedor = lazy(() => import('./pages/vendedor/InteresadosVendedor'));
+const AscenderVendedor = lazy(() => import('./pages/vendedor/AscenderVendedor'));
+const CuentaVendedor = lazy(() => import('./pages/vendedor/CuentaVendedor'));
 
 function App() {
   return (
-    <Routes>
-      {/* INICIO PÚBLICO */}
-      <Route path="/" element={<Home />} />
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-[#0c101b]">
+          <div className="h-10 w-10 animate-spin rounded-full border-2 border-white/10 border-t-blue-500" />
+        </div>
+      }
+    >
+      <Routes>
+        {/* INICIO PÚBLICO */}
+        <Route path="/" element={<Home />} />
 
-      {/* TODOS LOS VEHÍCULOS CON FILTROS DETALLADOS */}
-      <Route path="/vehiculos" element={<Vehiculos />} />
+        {/* TODOS LOS VEHÍCULOS CON FILTROS DETALLADOS */}
+        <Route path="/vehiculos" element={<Vehiculos />} />
 
-      {/* COMPARADOR DE VEHÍCULOS */}
-      <Route path="/comparador" element={<Comparador />} />
+        {/* COMPARADOR DE VEHÍCULOS */}
+        <Route path="/comparador" element={<Comparador />} />
 
-      {/* DETALLE PÚBLICO DE UN VEHÍCULO */}
-      <Route path="/anuncio/:id" element={<DetalleAnuncio />} />
+        {/* DETALLE PÚBLICO DE UN VEHÍCULO */}
+        <Route path="/anuncio/:id" element={<DetalleAnuncio />} />
 
-      {/* PERFIL PÚBLICO DE UN VENDEDOR */}
-      <Route path="/vendedor/:id" element={<VendedorPublico />} />
+        {/* PERFIL PÚBLICO DE UN VENDEDOR */}
+        <Route path="/vendedor/:id" element={<VendedorPublico />} />
 
-      {/* PRECIOS PÚBLICOS */}
-      <Route path="/precios" element={<Precios />} />
+        {/* PRECIOS PÚBLICOS */}
+        <Route path="/precios" element={<Precios />} />
 
-      {/* SUSCRIPCIÓN: ELECCIÓN DE PLAN */}
-      <Route path="/suscripcion" element={<Suscripcion />} />
+        {/* SUSCRIPCIÓN: ELECCIÓN DE PLAN */}
+        <Route path="/suscripcion" element={<Suscripcion />} />
 
-      {/* CHECKOUT DE SUSCRIPCIÓN */}
-      <Route path="/checkout" element={<Checkout />} />
+        {/* CHECKOUT DE SUSCRIPCIÓN */}
+        <Route path="/checkout" element={<Checkout />} />
 
-      {/* RESULTADO DE PAGO PAYPAL */}
-      <Route path="/pago-exitoso" element={<PagoExitoso />} />
-      <Route path="/pago-cancelado" element={<PagoCancelado />} />
+        {/* RESULTADO DE PAGO PAYPAL */}
+        <Route path="/pago-exitoso" element={<PagoExitoso />} />
+        <Route path="/pago-cancelado" element={<PagoCancelado />} />
 
-      {/* AUTENTICACIÓN */}
-      <Route path="/login" element={<Login />} />
-      <Route path="/registro" element={<Registro />} />
-      <Route path="/recuperar-password" element={<RecuperarPassword />} />
+        {/* AUTENTICACIÓN */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/registro" element={<Registro />} />
+        <Route path="/recuperar-password" element={<RecuperarPassword />} />
 
-      {/* CUENTA DE COMPRADOR (INICIO DE SU ACTIVIDAD) */}
-      <Route
-        element={
-          <ProtectedRoute allowedRoles={[ROLES.COMPRADOR]} />
-        }
-      >
-        <Route path="/perfil" element={<MiCuenta />} />
-        <Route path="/perfil/favoritos" element={<Favoritos />} />
-        <Route path="/perfil/historial" element={<Historial />} />
-        <Route path="/perfil/contactados" element={<Contactados />} />
-        <Route path="/perfil/editar" element={<EditarCuenta />} />
-      </Route>
-
-      {/* ÁREA DE VENDEDOR (UNA CUENTA = UN ANUNCIO) */}
-      <Route
-        element={
-          <ProtectedRoute allowedRoles={[ROLES.VENDEDOR]} />
-        }
-      >
-        <Route path="/vendedor" element={<VendedorLayout />}>
-          {/* /vendedor */}
-          <Route index element={<MiVehiculoVendedor />} />
-
-          {/* /vendedor/publicar */}
-          <Route path="publicar" element={<PublicarVehiculoVendedor />} />
-
-          {/* /vendedor/editar-anuncio/:id */}
-          <Route path="editar-anuncio/:id" element={<EditarVehiculoVendedor />} />
-
-          {/* /vendedor/interesados */}
-          <Route path="interesados" element={<InteresadosVendedor />} />
-
-          {/* /vendedor/ascender */}
-          <Route path="ascender" element={<AscenderVendedor />} />
-
-          {/* /vendedor/cuenta */}
-          <Route path="cuenta" element={<CuentaVendedor />} />
+        {/* CUENTA DE COMPRADOR (INICIO DE SU ACTIVIDAD) */}
+        <Route
+          element={
+            <ProtectedRoute allowedRoles={[ROLES.COMPRADOR]} />
+          }
+        >
+          <Route path="/perfil" element={<MiCuenta />} />
+          <Route path="/perfil/favoritos" element={<Favoritos />} />
+          <Route path="/perfil/historial" element={<Historial />} />
+          <Route path="/perfil/contactados" element={<Contactados />} />
+          <Route path="/perfil/editar" element={<EditarCuenta />} />
         </Route>
-      </Route>
 
-      {/* DASHBOARD EXCLUSIVO PARA DEALERS */}
-      <Route
-        element={
-          <ProtectedRoute allowedRoles={[ROLES.DEALER]} />
-        }
-      >
-        <Route path="/dashboard" element={<DashboardLayout />}>
-          {/* /dashboard */}
-          <Route
-            index
-            element={<DashboardIndex />}
-          />
+        {/* ÁREA DE VENDEDOR (UNA CUENTA = UN ANUNCIO) */}
+        <Route
+          element={
+            <ProtectedRoute allowedRoles={[ROLES.VENDEDOR]} />
+          }
+        >
+          <Route path="/vendedor" element={<VendedorLayout />}>
+            {/* /vendedor */}
+            <Route index element={<MiVehiculoVendedor />} />
 
-          {/* /dashboard/mis-anuncios */}
-          <Route
-            path="mis-anuncios"
-            element={<MisAnuncios />}
-          />
+            {/* /vendedor/publicar */}
+            <Route path="publicar" element={<PublicarVehiculoVendedor />} />
 
-          {/* /dashboard/publicar */}
-          <Route
-            path="publicar"
-            element={<PublicarVehiculo />}
-          />
-          {/* /dashboard/editar-anuncio/:id --> NUEVA PUERTA */}
-          <Route
-            path="editar-anuncio/:id"
-            element={<EditarVehiculo />}
-          />
+            {/* /vendedor/editar-anuncio/:id */}
+            <Route path="editar-anuncio/:id" element={<EditarVehiculoVendedor />} />
 
-          {/* /dashboard/leads */}
-          <Route
-            path="leads"
-            element={<Leads />}
-          />
+            {/* /vendedor/interesados */}
+            <Route path="interesados" element={<InteresadosVendedor />} />
 
-          {/* /dashboard/mi-perfil */}
-          <Route
-            path="mi-perfil"
-            element={<MiPerfil />}
-          />
+            {/* /vendedor/ascender */}
+            <Route path="ascender" element={<AscenderVendedor />} />
 
-          {/* /dashboard/suscripcion */}
-          <Route
-            path="suscripcion"
-            element={<DashboardSuscripcion />}
-          />
+            {/* /vendedor/cuenta */}
+            <Route path="cuenta" element={<CuentaVendedor />} />
+          </Route>
         </Route>
-      </Route>
 
-      {/* PANEL DE ADMINISTRACIÓN */}
-      <Route
-        element={
-          <ProtectedRoute allowedRoles={[ROLES.ADMIN]} />
-        }
-      >
-        <Route path="/admin" element={<AdminLayout />}>
-          {/* /admin */}
-          <Route index element={<AdminIndex />} />
+        {/* DASHBOARD EXCLUSIVO PARA DEALERS */}
+        <Route
+          element={
+            <ProtectedRoute allowedRoles={[ROLES.DEALER]} />
+          }
+        >
+          <Route path="/dashboard" element={<DashboardLayout />}>
+            {/* /dashboard */}
+            <Route
+              index
+              element={<DashboardIndex />}
+            />
 
-          {/* /admin/usuarios */}
-          <Route path="usuarios" element={<AdminUsuarios />} />
+            {/* /dashboard/mis-anuncios */}
+            <Route
+              path="mis-anuncios"
+              element={<MisAnuncios />}
+            />
 
-          {/* /admin/anuncios */}
-          <Route path="anuncios" element={<AdminAnuncios />} />
+            {/* /dashboard/publicar */}
+            <Route
+              path="publicar"
+              element={<PublicarVehiculo />}
+            />
+            {/* /dashboard/editar-anuncio/:id --> NUEVA PUERTA */}
+            <Route
+              path="editar-anuncio/:id"
+              element={<EditarVehiculo />}
+            />
 
-          {/* /admin/planes */}
-          <Route path="planes" element={<AdminPlanes />} />
+            {/* /dashboard/leads */}
+            <Route
+              path="leads"
+              element={<Leads />}
+            />
+
+            {/* /dashboard/mi-perfil */}
+            <Route
+              path="mi-perfil"
+              element={<MiPerfil />}
+            />
+
+            {/* /dashboard/suscripcion */}
+            <Route
+              path="suscripcion"
+              element={<DashboardSuscripcion />}
+            />
+          </Route>
         </Route>
-      </Route>
 
-      {/* CUALQUIER RUTA DESCONOCIDA */}
-      <Route
-        path="*"
-        element={
-          <h1 className="p-8 text-2xl font-bold">
-            Página no encontrada
-          </h1>
-        }
-      />
-    </Routes>
+        {/* PANEL DE ADMINISTRACIÓN */}
+        <Route
+          element={
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN]} />
+          }
+        >
+          <Route path="/admin" element={<AdminLayout />}>
+            {/* /admin */}
+            <Route index element={<AdminIndex />} />
+
+            {/* /admin/usuarios */}
+            <Route path="usuarios" element={<AdminUsuarios />} />
+
+            {/* /admin/anuncios */}
+            <Route path="anuncios" element={<AdminAnuncios />} />
+
+            {/* /admin/planes */}
+            <Route path="planes" element={<AdminPlanes />} />
+          </Route>
+        </Route>
+
+        {/* CUALQUIER RUTA DESCONOCIDA */}
+        <Route
+          path="*"
+          element={
+            <h1 className="p-8 text-2xl font-bold">
+              Página no encontrada
+            </h1>
+          }
+        />
+      </Routes>
+    </Suspense>
   );
 }
 
