@@ -1,12 +1,17 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Swal from "sweetalert2";
 import { FaBan, FaCheckCircle, FaCoins, FaRedoAlt, FaUserTag } from "react-icons/fa";
-import {
-  adminService,
-  type UsuarioAdmin,
-} from "../../services/admin.service";
+import type { UsuarioAdmin } from "../../services/admin.service";
 import Spinner from "../../components/Spinner";
 import { formatearFecha } from "../../utils/fecha";
+import {
+  useAdminUsuarios,
+  useSuspenderUsuario,
+  useReactivarUsuario,
+  useCambiarPlanDealer,
+  useRenovarSuscripcion,
+  useCambiarRolUsuario,
+} from "../../hooks/useAdmin";
 
 const COLOR_ROL: Record<string, string> = {
   Admin: "bg-red-100 text-red-700",
@@ -16,48 +21,28 @@ const COLOR_ROL: Record<string, string> = {
 };
 
 export default function AdminUsuarios() {
-  const [usuarios, setUsuarios] = useState<UsuarioAdmin[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: usuarios = [], isLoading: loading } = useAdminUsuarios();
   const [procesando, setProcesando] = useState<number | null>(null);
 
-  const cargar = async () => {
-    try {
-      const data = await adminService.listarUsuarios();
-      setUsuarios(data);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      await Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: error.message || "No se pudieron cargar los usuarios.",
-        confirmButtonColor: "#7c3aed",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    const inicializar = async () => {
-      await cargar();
-    };
-
-    inicializar();
-  }, []);
+  const suspender = useSuspenderUsuario();
+  const reactivar = useReactivarUsuario();
+  const cambiarPlan = useCambiarPlanDealer();
+  const renovarSuscripcion = useRenovarSuscripcion();
+  const cambiarRol = useCambiarRolUsuario();
 
   const toggleEstado = async (usuario: UsuarioAdmin) => {
     if (procesando !== null) return;
 
-    const reactivar = !usuario.isActivo;
+    const reactivarCuenta = !usuario.isActivo;
     const resultado = await Swal.fire({
       icon: "warning",
-      title: reactivar ? "Reactivar usuario" : "Suspender usuario",
-      text: reactivar
+      title: reactivarCuenta ? "Reactivar usuario" : "Suspender usuario",
+      text: reactivarCuenta
         ? `¿Reactivar a ${usuario.nombre} ${usuario.apellido}?`
         : `¿Suspender a ${usuario.nombre} ${usuario.apellido}? No podrá iniciar sesión hasta ser reactivado.`,
       showCancelButton: true,
-      confirmButtonColor: reactivar ? "#059669" : "#dc2626",
-      confirmButtonText: reactivar ? "Sí, reactivar" : "Sí, suspender",
+      confirmButtonColor: reactivarCuenta ? "#059669" : "#dc2626",
+      confirmButtonText: reactivarCuenta ? "Sí, reactivar" : "Sí, suspender",
       cancelButtonText: "Cancelar",
     });
 
@@ -65,9 +50,9 @@ export default function AdminUsuarios() {
 
     setProcesando(usuario.usuarioId);
     try {
-      const respuesta = reactivar
-        ? await adminService.reactivarUsuario(usuario.usuarioId)
-        : await adminService.suspenderUsuario(usuario.usuarioId);
+      const respuesta = reactivarCuenta
+        ? await reactivar.mutateAsync(usuario.usuarioId)
+        : await suspender.mutateAsync(usuario.usuarioId);
 
       await Swal.fire({
         icon: "success",
@@ -75,7 +60,6 @@ export default function AdminUsuarios() {
         text: respuesta.mensaje,
         confirmButtonColor: "#7c3aed",
       });
-      await cargar();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       await Swal.fire({
@@ -89,7 +73,7 @@ export default function AdminUsuarios() {
     }
   };
 
-  const cambiarPlan = async (dealer: UsuarioAdmin) => {
+  const cambiarPlanDealer = async (dealer: UsuarioAdmin) => {
     if (procesando !== null) return;
 
     const resultado = await Swal.fire({
@@ -115,10 +99,10 @@ export default function AdminUsuarios() {
 
     setProcesando(dealer.usuarioId);
     try {
-      const respuesta = await adminService.cambiarPlan(
-        dealer.usuarioId,
-        resultado.value as string,
-      );
+      const respuesta = await cambiarPlan.mutateAsync({
+        dealerId: dealer.usuarioId,
+        nivel: resultado.value as string,
+      });
 
       await Swal.fire({
         icon: "success",
@@ -139,7 +123,7 @@ export default function AdminUsuarios() {
     }
   };
 
-  const renovarSuscripcion = async (dealer: UsuarioAdmin) => {
+  const renovarDealer = async (dealer: UsuarioAdmin) => {
     if (procesando !== null) return;
 
     const hoy = new Date().toISOString().split("T")[0];
@@ -160,10 +144,10 @@ export default function AdminUsuarios() {
 
     setProcesando(dealer.usuarioId);
     try {
-      const respuesta = await adminService.renovarSuscripcion(
-        dealer.usuarioId,
-        `${resultado.value}T00:00:00Z`,
-      );
+      const respuesta = await renovarSuscripcion.mutateAsync({
+        dealerId: dealer.usuarioId,
+        nuevaFechaVencimiento: `${resultado.value}T00:00:00Z`,
+      });
 
       await Swal.fire({
         icon: "success",
@@ -184,7 +168,7 @@ export default function AdminUsuarios() {
     }
   };
 
-  const cambiarRol = async (usuario: UsuarioAdmin) => {
+  const cambiarRolUsuario = async (usuario: UsuarioAdmin) => {
     if (procesando !== null) return;
 
     const opciones: Record<string, string> = {
@@ -260,9 +244,12 @@ export default function AdminUsuarios() {
 
     setProcesando(usuario.usuarioId);
     try {
-      const respuesta = await adminService.cambiarRol(usuario.usuarioId, {
-        nuevoRol,
-        ...datosAgencia,
+      const respuesta = await cambiarRol.mutateAsync({
+        id: usuario.usuarioId,
+        datos: {
+          nuevoRol,
+          ...datosAgencia,
+        },
       });
 
       await Swal.fire({
@@ -271,7 +258,6 @@ export default function AdminUsuarios() {
         text: respuesta.mensaje,
         confirmButtonColor: "#7c3aed",
       });
-      await cargar();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       await Swal.fire({
@@ -345,7 +331,7 @@ export default function AdminUsuarios() {
                       <>
                         <button
                           type="button"
-                          onClick={() => cambiarPlan(usuario)}
+                          onClick={() => cambiarPlanDealer(usuario)}
                           disabled={procesando !== null}
                           className="inline-flex items-center gap-1.5 rounded-lg border border-violet-200 bg-white px-3 py-1.5 text-xs font-semibold text-violet-700 transition-colors hover:bg-violet-50 disabled:opacity-50"
                         >
@@ -354,7 +340,7 @@ export default function AdminUsuarios() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => renovarSuscripcion(usuario)}
+                          onClick={() => renovarDealer(usuario)}
                           disabled={procesando !== null}
                           className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-white px-3 py-1.5 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-50 disabled:opacity-50"
                         >
@@ -367,7 +353,7 @@ export default function AdminUsuarios() {
                     {usuario.rol !== "Admin" && (
                       <button
                         type="button"
-                        onClick={() => cambiarRol(usuario)}
+                        onClick={() => cambiarRolUsuario(usuario)}
                         disabled={procesando !== null}
                         className="inline-flex items-center gap-1.5 rounded-lg border border-amber-200 bg-white px-3 py-1.5 text-xs font-semibold text-amber-700 transition-colors hover:bg-amber-50 disabled:opacity-50"
                       >

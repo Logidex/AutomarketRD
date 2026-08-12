@@ -1,13 +1,15 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Swal from "sweetalert2";
 import { FaPlus, FaTrash, FaSave, FaTimes } from "react-icons/fa";
-import {
-  adminService,
-  type PlanAdmin,
-  type PlanAdminForm,
-} from "../../services/admin.service";
+import type { PlanAdmin, PlanAdminForm } from "../../services/admin.service";
 import Spinner from "../../components/Spinner";
 import { formatearRD$ } from "../../utils/formato";
+import {
+  useAdminPlanes,
+  useCrearPlan,
+  useActualizarPlan,
+  useEliminarPlan,
+} from "../../hooks/useAdmin";
 
 const NIVELES = ["Gratis", "Basico", "Pro", "Elite"];
 
@@ -27,38 +29,16 @@ const inputClase =
 const labelClase = "mb-1 block text-sm font-medium text-gray-700";
 
 export default function AdminPlanes() {
-  const [planes, setPlanes] = useState<PlanAdmin[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: planes = [], isLoading: loading } = useAdminPlanes();
   const [guardando, setGuardando] = useState(false);
 
   const [modalAbierto, setModalAbierto] = useState(false);
   const [editandoId, setEditandoId] = useState<number | null>(null);
   const [form, setForm] = useState<PlanAdminForm>(PLAN_VACIO);
 
-  const cargar = async () => {
-    try {
-      const data = await adminService.listarPlanes();
-      setPlanes(data);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      await Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: error.message || "No se pudieron cargar los planes.",
-        confirmButtonColor: "#7c3aed",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    const inicializar = async () => {
-      await cargar();
-    };
-
-    inicializar();
-  }, []);
+  const crearPlan = useCrearPlan();
+  const actualizarPlan = useActualizarPlan();
+  const eliminarPlan = useEliminarPlan();
 
   const abrirNuevo = () => {
     setEditandoId(null);
@@ -96,8 +76,8 @@ export default function AdminPlanes() {
     try {
       const respuesta =
         editandoId === null
-          ? await adminService.crearPlan(form)
-          : await adminService.actualizarPlan(editandoId, form);
+          ? await crearPlan.mutateAsync(form)
+          : await actualizarPlan.mutateAsync({ id: editandoId, datos: form });
 
       await Swal.fire({
         icon: "success",
@@ -106,7 +86,6 @@ export default function AdminPlanes() {
         confirmButtonColor: "#7c3aed",
       });
       setModalAbierto(false);
-      await cargar();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       await Swal.fire({
@@ -134,7 +113,7 @@ export default function AdminPlanes() {
     if (!resultado.isConfirmed) return;
 
     try {
-      const respuesta = await adminService.eliminarPlan(plan.id);
+      const respuesta = await eliminarPlan.mutateAsync(plan.id);
 
       await Swal.fire({
         icon: "success",
@@ -142,7 +121,6 @@ export default function AdminPlanes() {
         text: respuesta.mensaje,
         confirmButtonColor: "#7c3aed",
       });
-      await cargar();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       await Swal.fire({

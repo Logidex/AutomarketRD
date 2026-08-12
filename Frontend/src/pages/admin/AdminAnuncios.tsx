@@ -1,42 +1,15 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Swal from "sweetalert2";
 import { FaTrash } from "react-icons/fa";
-import {
-  adminService,
-  type AnuncioAdmin,
-} from "../../services/admin.service";
+import type { AnuncioAdmin } from "../../services/admin.service";
 import Spinner from "../../components/Spinner";
 import { formatearRD$ } from "../../utils/formato";
+import { useAdminAnuncios, useEliminarAnuncioAdmin } from "../../hooks/useAdmin";
 
 export default function AdminAnuncios() {
-  const [anuncios, setAnuncios] = useState<AnuncioAdmin[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: anuncios = [], isLoading: loading } = useAdminAnuncios();
   const [procesando, setProcesando] = useState<number | null>(null);
-
-  const cargar = async () => {
-    try {
-      const data = await adminService.listarAnuncios();
-      setAnuncios(data);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      await Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: error.message || "No se pudieron cargar los anuncios.",
-        confirmButtonColor: "#7c3aed",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    const inicializar = async () => {
-      await cargar();
-    };
-
-    inicializar();
-  }, []);
+  const eliminarAnuncio = useEliminarAnuncioAdmin();
 
   const eliminar = async (anuncio: AnuncioAdmin) => {
     if (procesando !== null) return;
@@ -55,7 +28,7 @@ export default function AdminAnuncios() {
 
     setProcesando(anuncio.id);
     try {
-      const respuesta = await adminService.eliminarAnuncio(anuncio.id);
+      const respuesta = await eliminarAnuncio.mutateAsync(anuncio.id);
 
       await Swal.fire({
         icon: "success",
@@ -63,7 +36,6 @@ export default function AdminAnuncios() {
         text: respuesta.mensaje,
         confirmButtonColor: "#7c3aed",
       });
-      await cargar();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       await Swal.fire({
