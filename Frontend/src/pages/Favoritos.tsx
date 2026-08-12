@@ -6,6 +6,7 @@ import {
   FaCalendarAlt,
 } from "react-icons/fa";
 import { useMisFavoritos, useQuitarFavorito } from "../hooks/useFavoritos";
+import { urlImagen } from "../utils/imagen";
 
 const IMAGEN_VACIA =
   "https://via.placeholder.com/600x400?text=Sin+Foto";
@@ -103,7 +104,7 @@ export default function Favoritos() {
                   className="relative aspect-[16/10] overflow-hidden text-left"
                 >
                   <img
-                    src={favorito.fotoPrincipal || IMAGEN_VACIA}
+                    src={urlImagen(favorito.fotoPrincipal) || IMAGEN_VACIA}
                     alt={`${favorito.marca} ${favorito.modelo}`}
                     className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                     onError={(e) => {

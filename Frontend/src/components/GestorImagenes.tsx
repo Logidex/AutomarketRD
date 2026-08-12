@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { urlImagen } from '../utils/imagen';
 
 const MINIMO_IMAGENES = 5;
 const MAXIMO_IMAGENES = 10;
@@ -98,7 +99,7 @@ export default function GestorImagenes({
           {/* 1. Fotos viejas (S3) */}
           {fotosGuardadas.map((foto, indice) => (
             <div key={`old-${indice}`} className="group relative overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
-              <img src={foto} alt={`Guardada ${indice + 1}`} className="h-36 w-full object-cover" />
+              <img src={urlImagen(foto)} alt={`Guardada ${indice + 1}`} className="h-36 w-full object-cover" />
               
               <button
                 type="button"

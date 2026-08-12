@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { FaCalendarAlt, FaHistory, FaClock } from "react-icons/fa";
 import { formatearFecha } from "../utils/fecha";
 import { useHistorialReciente } from "../hooks/useHistorial";
+import { urlImagen } from "../utils/imagen";
 
 const IMAGEN_VACIA =
   "https://via.placeholder.com/600x400?text=Sin+Foto";
@@ -88,7 +89,7 @@ export default function Historial() {
               >
                 <div className="relative aspect-[16/10] overflow-hidden">
                   <img
-                    src={anuncio.fotoPrincipal || IMAGEN_VACIA}
+                    src={urlImagen(anuncio.fotoPrincipal) || IMAGEN_VACIA}
                     alt={`${anuncio.marca} ${anuncio.modelo}`}
                     className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                     onError={(e) => {

@@ -22,6 +22,7 @@ import { useComparador } from "../context/ComparadorContext";
 import logo from "../assets/AutoMarketRD_Logo.svg";
 import MenuPublico from "../components/layout/MenuPublico";
 import { useCompararVehiculos, useBuscarComparador } from "../hooks/useComparador";
+import { urlImagen } from "../utils/imagen";
 import {
   TIPOS_VEHICULO,
   TRANSMISIONES,
@@ -151,12 +152,11 @@ export default function Comparador() {
   ];
 
   const fotoPrincipal = (v: VehiculoComparador): string =>
-    v.fotoPrincipal || "https://via.placeholder.com/600x400?text=Sin+Foto";
+    urlImagen(v.fotoPrincipal) || "https://via.placeholder.com/600x400?text=Sin+Foto";
 
   const fotoAnuncio = (a: AnuncioListado): string =>
-    a.fotos && a.fotos.length > 0
-      ? a.fotos[0]
-      : "https://via.placeholder.com/600x400?text=Sin+Foto";
+    urlImagen(a.fotos?.[0]) ||
+    "https://via.placeholder.com/600x400?text=Sin+Foto";
 
   const filaComparativa = (
     etiqueta: string,

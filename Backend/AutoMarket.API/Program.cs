@@ -1,40 +1,55 @@
+using AutoMarket.API.Middleware;
+using AutoMarket.Application.Interfaces;
 using AutoMarket.Application.Services;
 using AutoMarket.Core.Interfaces;
+using AutoMarket.Infrastructure.BackgroundServices;
+using AutoMarket.Infrastructure.Data;
 using AutoMarket.Infrastructure.Repositories;
 using AutoMarket.Infrastructure.Services;
-using AutoMarket.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
-using Scalar.AspNetCore;
-using AutoMarket.Application.Interfaces;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using AutoMarket.Infrastructure.BackgroundServices;
-using Microsoft.AspNetCore.RateLimiting;
-using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
-using AutoMarket.API.Middleware;
-using Serilog;
-using Serilog.Events;
-using System.Text.Json.Serialization;
-using System.Security.Claims;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.RateLimiting;
 
-// Configurar Serilog
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+
+using Microsoft.IdentityModel.Tokens;
+
+using Scalar.AspNetCore;
+
+using Serilog;
+using Serilog.Events;
+
+using System.Security.Claims;
+using System.Text;
+using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
+
+
+// =======================================================
+// CONFIGURACIÓN DE SERILOG
+// =======================================================
+
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-    .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
+    .MinimumLevel.Override(
+        "Microsoft.EntityFrameworkCore",
+        LogEventLevel.Warning)
     .Enrich.FromLogContext()
     .WriteTo.Console(
-        outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
+        outputTemplate:
+            "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
     .WriteTo.File(
         path: "logs/api-.log",
         rollingInterval: RollingInterval.Day,
-        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
+        outputTemplate:
+            "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
     .CreateLogger();
+
 
 try
 {
@@ -42,199 +57,346 @@ try
 
     var builder = WebApplication.CreateBuilder(args);
 
+
     // =======================================================
     // LÍMITES DE SUBIDA DE ARCHIVOS
-    // - 5 MB por archivo (validado en cada servicio)
-    // - 50 MB por petición completa (defensa contra payloads grandes)
     // =======================================================
+
     builder.WebHost.ConfigureKestrel(options =>
     {
-        options.Limits.MaxRequestBodySize = 50L * 1024 * 1024;
+        options.Limits.MaxRequestBodySize =
+            50L * 1024 * 1024;
     });
 
     builder.Services.Configure<FormOptions>(options =>
     {
-        options.MultipartBodyLengthLimit = 50L * 1024 * 1024;
+        options.MultipartBodyLengthLimit =
+            50L * 1024 * 1024;
     });
+
+
+    // =======================================================
+    // SERILOG
+    // =======================================================
 
     builder.Host.UseSerilog();
 
-    builder.Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-    });
+
+    // =======================================================
+    // CONTROLLERS
+    // =======================================================
+
+    builder.Services
+        .AddControllers()
+        .AddJsonOptions(options =>
+        {
+            options.JsonSerializerOptions.Converters.Add(
+                new JsonStringEnumConverter());
+        });
+
+
+    // =======================================================
+    // SERVICIOS DE LA APLICACIÓN
+    // =======================================================
 
     builder.Services.AddScoped<IAlmacenadorArchivos, AlmacenadorS3>();
+
     builder.Services.AddScoped<IAnuncioService, AnuncioService>();
     builder.Services.AddScoped<IAnuncioRepository, AnuncioRepository>();
+
     builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+    builder.Services.AddScoped<IUsuarioCuentaService, UsuarioCuentaService>();
+
     builder.Services.AddScoped<ITokenService, TokenService>();
     builder.Services.AddScoped<IAuthService, AuthService>();
+
     builder.Services.AddScoped<IPerfilDealerService, PerfilDealerService>();
+
     builder.Services.AddScoped<ISuscripcionRepository, SuscripcionRepository>();
+    builder.Services.AddScoped<ISuscripcionService, SuscripcionService>();
+
     builder.Services.AddScoped<ILeadRepository, LeadRepository>();
-    builder.Services.AddHostedService<SuscripcionMonitorService>();
-    builder.Services.AddScoped<IEmailSenderService, SmtpEmailSenderService>();
     builder.Services.AddScoped<ILeadService, LeadService>();
+
     builder.Services.AddScoped<IDashboardService, DashboardService>();
     builder.Services.AddScoped<IFavoritoService, FavoritoService>();
+    builder.Services.AddScoped<IFavoritoRepository, FavoritoRepository>();
+
     builder.Services.AddScoped<IComparadorService, ComparadorService>();
     builder.Services.AddScoped<ICatalogoService, CatalogoService>();
+
     builder.Services.AddScoped<IHistorialVistaService, HistorialVistaService>();
-    builder.Services.AddHttpClient<IPayPalService, PayPalService>();
-    builder.Services.AddScoped<IFavoritoRepository, FavoritoRepository>();
     builder.Services.AddScoped<IHistorialVistaRepository, HistorialVistaRepository>();
-    builder.Services.AddScoped<IUsuarioCuentaService, UsuarioCuentaService>();
-    builder.Services.AddScoped<ISuscripcionService, SuscripcionService>();
+
     builder.Services.AddScoped<IPlanCatalogoRepository, PlanCatalogoRepository>();
     builder.Services.AddScoped<IPlanCatalogoService, PlanCatalogoService>();
 
-    builder.Services.AddDbContext<ApplicationDbContext>(options =>
-        options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    builder.Services.AddScoped<IEmailSenderService, SmtpEmailSenderService>();
 
-    var jwtSecret = builder.Configuration["Jwt:Secret"]
-        ?? throw new InvalidOperationException("Falta Jwt:Secret");
+    builder.Services.AddHostedService<SuscripcionMonitorService>();
+
+    builder.Services.AddHttpClient<IPayPalService, PayPalService>();
+
+
+    // =======================================================
+    // BASE DE DATOS
+    // =======================================================
+
+    var connectionString =
+        builder.Configuration.GetConnectionString("DefaultConnection")
+        ?? throw new InvalidOperationException(
+            "Falta ConnectionStrings:DefaultConnection");
+
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseNpgsql(connectionString));
+
+
+    // =======================================================
+    // JWT
+    // =======================================================
+
+    var jwtSecret =
+        builder.Configuration["Jwt:Secret"]
+        ?? throw new InvalidOperationException(
+            "Falta Jwt:Secret");
+
+    if (Encoding.UTF8.GetByteCount(jwtSecret) < 32)
+    {
+        throw new InvalidOperationException(
+            "Jwt:Secret debe tener al menos 32 bytes.");
+    }
 
     builder.Services.AddAuthentication(
-    JwtBearerDefaults.AuthenticationScheme
-)
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
+        JwtBearerDefaults.AuthenticationScheme)
+        .AddJwtBearer(options =>
+        {
+            options.TokenValidationParameters =
+                new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
 
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
+                    ValidIssuer =
+                        builder.Configuration["Jwt:Issuer"],
 
-        IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(jwtSecret)
-        ),
+                    ValidAudience =
+                        builder.Configuration["Jwt:Audience"],
 
-        NameClaimType = ClaimTypes.Name,
-        RoleClaimType = ClaimTypes.Role,
+                    IssuerSigningKey =
+                        new SymmetricSecurityKey(
+                            Encoding.UTF8.GetBytes(jwtSecret)),
 
-        ClockSkew = TimeSpan.Zero
-    };
-});
+                    NameClaimType = ClaimTypes.Name,
+                    RoleClaimType = ClaimTypes.Role,
+
+                    ClockSkew = TimeSpan.Zero
+                };
+        });
 
     builder.Services.AddAuthorization();
 
+
     // =======================================================
-    // CONFIGURACIÓN DE CORS (Para el Frontend en React)
+    // CORS
     // =======================================================
-    var frontendPolicy = "FrontendCorsPolicy";
-    var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+
+    const string frontendPolicy = "FrontendCorsPolicy";
+
+    var allowedOrigins =
+        builder.Configuration
+            .GetSection("Cors:AllowedOrigins")
+            .Get<string[]>() ?? [];
 
     builder.Services.AddCors(options =>
     {
         options.AddPolicy(frontendPolicy, policy =>
         {
-            // En desarrollo permitimos cualquier origen: cubre túneles
-            // tipo VS Code Dev Tunnels con subdominios dinámicos
-            // (ej. https://xxxx-5173.use2.devtunnels.ms). El frontend
-            // autentica con token JWT por header, no por cookies.
             if (builder.Environment.IsDevelopment())
             {
-                policy.AllowAnyOrigin()
-                      .AllowAnyHeader()
-                      .AllowAnyMethod();
+                policy
+                    .AllowAnyOrigin()
+                    .AllowAnyHeader()
+                    .AllowAnyMethod();
             }
             else if (allowedOrigins.Length > 0)
             {
-                policy.WithOrigins(allowedOrigins)
-                      .AllowAnyHeader()
-                      .AllowAnyMethod()
-                      .AllowCredentials();
+                policy
+                    .WithOrigins(allowedOrigins)
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials();
             }
         });
     });
 
+
     // =======================================================
-    // CONFIGURACIÓN DE RATE LIMITING (Protección contra Spam)
+    // RATE LIMITING
     // =======================================================
+
     builder.Services.AddRateLimiter(options =>
     {
-        options.AddFixedWindowLimiter("PoliticaLeads", limiterOptions =>
-        {
-            limiterOptions.PermitLimit = 3;
-            limiterOptions.Window = TimeSpan.FromMinutes(5);
-            limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-            limiterOptions.QueueLimit = 0;
-        });
+        options.AddFixedWindowLimiter(
+            "PoliticaLeads",
+            limiterOptions =>
+            {
+                limiterOptions.PermitLimit = 3;
+                limiterOptions.Window =
+                    TimeSpan.FromMinutes(5);
 
-        options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+                limiterOptions.QueueProcessingOrder =
+                    QueueProcessingOrder.OldestFirst;
 
-        // Política de protección contra fuerza bruta en el login
-        options.AddPolicy("PoliticaLogin", context =>
-        {
-            var ip = context.Connection.RemoteIpAddress?.ToString() ?? "desconocido";
+                limiterOptions.QueueLimit = 0;
+            });
 
-            return RateLimitPartition.GetFixedWindowLimiter(ip, _ =>
-                new FixedWindowRateLimiterOptions
-                {
-                    AutoReplenishment = true,
-                    PermitLimit = 5,
-                    Window = TimeSpan.FromMinutes(15),
-                    QueueLimit = 0
-                });
-        });
+        options.AddPolicy(
+            "PoliticaLogin",
+            context =>
+            {
+                var ip =
+                    context.Connection.RemoteIpAddress
+                        ?.ToString()
+                    ?? "desconocido";
+
+                return RateLimitPartition
+                    .GetFixedWindowLimiter(
+                        ip,
+                        _ =>
+                            new FixedWindowRateLimiterOptions
+                            {
+                                AutoReplenishment = true,
+                                PermitLimit = 5,
+                                Window =
+                                    TimeSpan.FromMinutes(15),
+                                QueueLimit = 0
+                            });
+            });
+
+        options.RejectionStatusCode =
+            StatusCodes.Status429TooManyRequests;
     });
 
+
     // =======================================================
-    // CONFIGURACIÓN DE HEALTH CHECKS (Monitoreo de Salud)
+    // HEALTH CHECKS
     // =======================================================
-    builder.Services.AddHealthChecks()
-        .AddCheck("self", () => HealthCheckResult.Healthy("API está funcionando"))
+
+    builder.Services
+        .AddHealthChecks()
+        .AddCheck(
+            "self",
+            () =>
+                HealthCheckResult.Healthy(
+                    "API está funcionando"))
         .AddNpgSql(
-            builder.Configuration.GetConnectionString("DefaultConnection")!,
+            connectionString,
             name: "postgres",
-            tags: new[] { "database", "ready" }
-        );
+            tags: ["database", "ready"]);
+
+
+    // =======================================================
+    // OPENAPI
+    // =======================================================
 
     builder.Services.AddOpenApi();
 
+
     // =======================================================
-    // FORWARD HEADERS (detrás de nginx/proxy en producción)
-    // Permite que la API respete X-Forwarded-Proto (HTTPS)
+    // FORWARDED HEADERS
     // =======================================================
-    builder.Services.Configure<ForwardedHeadersOptions>(options =>
-    {
-        options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-        options.KnownNetworks.Clear();
-        options.KnownProxies.Clear();
-    });
+
+    builder.Services.Configure<ForwardedHeadersOptions>(
+        options =>
+        {
+            options.ForwardedHeaders =
+                ForwardedHeaders.XForwardedFor
+                | ForwardedHeaders.XForwardedProto;
+
+            options.KnownNetworks.Clear();
+            options.KnownProxies.Clear();
+        });
+
 
     var app = builder.Build();
+
+
+    // =======================================================
+    // FORWARDED HEADERS
+    // Debe ejecutarse antes del rate limiting.
+    // =======================================================
 
     if (!app.Environment.IsDevelopment())
     {
         app.UseForwardedHeaders();
     }
 
-    // Aplicar migraciones automáticamente solo en Desarrollo o si se fuerza con MigrateOnStartup=true.
-    // En Producción las migraciones se aplican como paso manual del deploy (dotnet ef database update).
-    var migrarAlIniciar = app.Environment.IsDevelopment()
-        || app.Configuration.GetValue<bool>("MigrateOnStartup");
 
-    if (migrarAlIniciar)
+    // =======================================================
+    // MIGRACIONES Y SEEDER
+    // =======================================================
+
+    var migrateOnStartup =
+        app.Environment.IsDevelopment()
+        || app.Configuration.GetValue<bool>(
+            "MigrateOnStartup");
+
+    if (migrateOnStartup)
     {
-        using (var scope = app.Services.CreateScope())
-        {
-            var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            dbContext.Database.Migrate();
-        }
+        Log.Information(
+            "Aplicando migraciones. Entorno: {Environment}",
+            app.Environment.EnvironmentName);
+
+        using var migrationScope =
+            app.Services.CreateScope();
+
+        var dbContext =
+            migrationScope
+                .ServiceProvider
+                .GetRequiredService<ApplicationDbContext>();
+
+        dbContext.Database.Migrate();
+
+        Log.Information(
+            "Migraciones aplicadas correctamente.");
+    }
+    else
+    {
+        Log.Information(
+            "Migraciones automáticas deshabilitadas. Entorno: {Environment}",
+            app.Environment.EnvironmentName);
     }
 
-    // Luego seedear (solo Desarrollo, o si se fuerza con Seeder:Enabled=true)
-    if (app.Environment.IsDevelopment() || app.Configuration.GetValue<bool>("Seeder:Enabled"))
+
+    var seederEnabled =
+        app.Environment.IsDevelopment()
+        || app.Configuration.GetValue<bool>(
+            "Seeder:Enabled");
+
+    if (seederEnabled)
     {
-        DatabaseSeeder.SeedAsync(app.Services).Wait();
+        Log.Information(
+            "Ejecutando DatabaseSeeder. Entorno: {Environment}",
+            app.Environment.EnvironmentName);
+
+        await DatabaseSeeder.SeedAsync(app.Services);
+
+        Log.Information(
+            "DatabaseSeeder ejecutado correctamente.");
     }
+    else
+    {
+        Log.Information(
+            "DatabaseSeeder deshabilitado. Entorno: {Environment}",
+            app.Environment.EnvironmentName);
+    }
+
+
+    // =======================================================
+    // OPENAPI Y SCALAR
+    // =======================================================
 
     if (app.Environment.IsDevelopment())
     {
@@ -242,52 +404,76 @@ try
         app.MapScalarApiReference();
     }
 
+
+    // =======================================================
+    // PIPELINE HTTP
+    // =======================================================
+
     app.UseCors(frontendPolicy);
 
     app.UseRateLimiter();
 
     app.UseAuthentication();
+
     app.UseAuthorization();
 
-    // ===== MIDDLEWARE DE MANEJO DE ERRORES =====
     app.UseMiddleware<ExceptionHandlingMiddleware>();
 
     app.MapControllers();
 
+
     // =======================================================
-    // ENDPOINTS DE HEALTH CHECKS
+    // HEALTH CHECK GENERAL
     // =======================================================
+
     app.MapHealthChecks("/health");
 
-    app.MapHealthChecks("/health/ready", new HealthCheckOptions
-    {
-        Predicate = check => check.Tags.Contains("ready"),
-        ResponseWriter = async (context, report) =>
+
+    // =======================================================
+    // HEALTH CHECK DE DEPENDENCIAS
+    // =======================================================
+
+    app.MapHealthChecks(
+        "/health/ready",
+        new HealthCheckOptions
         {
-            context.Response.ContentType = "application/json";
+            Predicate = check =>
+                check.Tags.Contains("ready"),
 
-            var result = new
+            ResponseWriter = async (context, report) =>
             {
-                status = report.Status.ToString(),
-                duration = report.TotalDuration,
-                checks = report.Entries.Select(e => new
-                {
-                    name = e.Key,
-                    status = e.Value.Status.ToString(),
-                    description = e.Value.Description,
-                    duration = e.Value.Duration
-                })
-            };
+                context.Response.ContentType =
+                    "application/json";
 
-            await context.Response.WriteAsJsonAsync(result);
-        }
-    });
+                var result = new
+                {
+                    status = report.Status.ToString(),
+                    duration = report.TotalDuration,
+                    checks = report.Entries.Select(entry =>
+                        new
+                        {
+                            name = entry.Key,
+                            status =
+                                entry.Value.Status.ToString(),
+                            description =
+                                entry.Value.Description,
+                            duration =
+                                entry.Value.Duration
+                        })
+                };
+
+                await context.Response.WriteAsJsonAsync(result);
+            }
+        });
+
 
     app.Run();
 }
 catch (Exception ex)
 {
-    Log.Fatal(ex, "La aplicación terminó inesperadamente");
+    Log.Fatal(
+        ex,
+        "La aplicación terminó inesperadamente");
 }
 finally
 {

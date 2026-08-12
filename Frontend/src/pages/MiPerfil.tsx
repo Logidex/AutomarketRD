@@ -10,6 +10,7 @@ import {
 } from "react-icons/fa";
 import type { PerfilDealer } from "../services/perfilDealer.service";
 import { getUserIdFromToken } from "../utils/jwt.util";
+import { urlImagen } from "../utils/imagen";
 import { useLoading } from "../context/LoadingContext";
 import Spinner from "../components/Spinner";
 import SeccionCambiarCorreo from "../components/SeccionCambiarCorreo";
@@ -248,7 +249,7 @@ export default function MiPerfil() {
             <div className="h-24 w-24 overflow-hidden rounded-xl border border-gray-200 bg-gray-100">
               {logoPreview ? (
                 <img
-                  src={logoPreview}
+                  src={logo ? logoPreview : urlImagen(logoPreview)}
                   alt="Logo"
                   className="h-full w-full object-cover"
                 />

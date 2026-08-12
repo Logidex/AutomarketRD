@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { FaTrash, FaEye } from "react-icons/fa";
 import type { AnuncioListado } from "../types/anuncio.types";
+import { urlImagen } from "../utils/imagen";
 
 interface AnuncioCardProps {
   anuncio: AnuncioListado;
@@ -16,9 +17,8 @@ export default function AnuncioCard({
   onEliminar,
 }: AnuncioCardProps) {
   const fotoPrincipal =
-    anuncio.fotos && anuncio.fotos.length > 0
-      ? anuncio.fotos[0]
-      : "https://via.placeholder.com/300x200?text=Sin+Foto";
+    urlImagen(anuncio.fotos?.[0]) ||
+    "https://via.placeholder.com/300x200?text=Sin+Foto";
 
   const estadoNormalizado = (anuncio.estado ?? "").trim();
   const estadoLower = estadoNormalizado.toLowerCase();

@@ -29,6 +29,7 @@ import {
 } from "../hooks/useFavoritos";
 import { useRegistrarVisita } from "../hooks/useHistorial";
 import { useUsuarioCuenta } from "../hooks/useUsuario";
+import { urlImagen } from "../utils/imagen";
 import logo from "../assets/AutoMarketRD_Logo.svg";
 import MenuPublico from "../components/layout/MenuPublico";
 import {
@@ -113,7 +114,7 @@ export default function DetalleAnuncio() {
 
   const fotoPrincipal =
     anuncio != null && anuncio.fotos && anuncio.fotos.length > 0
-      ? anuncio.fotos[fotoActiva]
+      ? urlImagen(anuncio.fotos[fotoActiva])
       : IMAGEN_VACIA;
 
   // Carrusel: avanza solo cada 2s mientras haya fotos y el usuario
@@ -433,7 +434,7 @@ export default function DetalleAnuncio() {
                         }`}
                       >
                         <img
-                          src={foto}
+                          src={urlImagen(foto)}
                           alt={`Foto ${i + 1} de ${anuncio.marca} ${anuncio.modelo}`}
                           className="h-full w-full object-cover"
                           onError={(e) => {

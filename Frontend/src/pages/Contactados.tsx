@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { FaEnvelope, FaWhatsapp, FaComments, FaCar } from "react-icons/fa";
 import { formatearFecha } from "../utils/fecha";
 import { useMisContactos } from "../hooks/useLeads";
+import { urlImagen } from "../utils/imagen";
 
 const IMAGEN_VACIA =
   "https://via.placeholder.com/600x400?text=Sin+Foto";
@@ -95,7 +96,7 @@ export default function Contactados() {
               >
                 <div className="relative aspect-[16/10] overflow-hidden">
                   <img
-                    src={contacto.fotoPrincipal || IMAGEN_VACIA}
+                    src={urlImagen(contacto.fotoPrincipal) || IMAGEN_VACIA}
                     alt={`${contacto.marca} ${contacto.modelo}`}
                     className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                     onError={(e) => {

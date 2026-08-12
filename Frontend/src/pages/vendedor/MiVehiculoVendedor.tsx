@@ -4,6 +4,7 @@ import Swal from "sweetalert2";
 import Spinner from "../../components/Spinner";
 import type { AnuncioListado } from "../../types/anuncio.types";
 import { getUserIdFromToken } from "../../utils/jwt.util";
+import { urlImagen } from "../../utils/imagen";
 import { useMisAnuncios, usePublicarAnuncio, useEliminarAnuncio } from "../../hooks/useAnuncios";
 
 export default function MiVehiculoVendedor() {
@@ -134,7 +135,7 @@ export default function MiVehiculoVendedor() {
         {/* FOTO */}
         {anuncio.fotos.length > 0 ? (
           <img
-            src={anuncio.fotos[0]}
+            src={urlImagen(anuncio.fotos[0])}
             alt={`${anuncio.marca} ${anuncio.modelo}`}
             className="h-52 w-full object-cover sm:h-64"
           />

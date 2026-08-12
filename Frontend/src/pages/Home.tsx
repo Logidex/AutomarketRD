@@ -10,6 +10,7 @@ import {
 import { useVehiculos } from "../hooks/useVehiculos";
 import type { AnuncioListado } from "../types/anuncio.types";
 import logo from "../assets/AutoMarketRD_Logo.svg";
+import { urlImagen } from "../utils/imagen";
 import MenuPublico from "../components/layout/MenuPublico";
 import {
   TIPOS_VEHICULO,
@@ -92,9 +93,8 @@ export default function Home() {
   };
 
   const fotoPrincipal = (anuncio: AnuncioListado): string =>
-    anuncio.fotos && anuncio.fotos.length > 0
-      ? anuncio.fotos[0]
-      : "https://via.placeholder.com/600x400?text=Sin+Foto";
+    urlImagen(anuncio.fotos?.[0]) ||
+    "https://via.placeholder.com/600x400?text=Sin+Foto";
 
   return (
     <div className="min-h-screen bg-[#0c101b] text-white">

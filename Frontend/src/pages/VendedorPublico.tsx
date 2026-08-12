@@ -12,6 +12,7 @@ import {
   FaWhatsapp,
 } from "react-icons/fa";
 import type { AnuncioListado } from "../types/anuncio.types";
+import { urlImagen } from "../utils/imagen";
 import Spinner from "../components/Spinner";
 import { usePerfilDealerPublico, useAnunciosVendedor } from "../hooks/usePerfilDealer";
 
@@ -45,9 +46,8 @@ export default function VendedorPublico() {
     : "";
 
   const fotoPrincipal = (anuncio: AnuncioListado): string =>
-    anuncio.fotos && anuncio.fotos.length > 0
-      ? anuncio.fotos[0]
-      : "https://via.placeholder.com/600x400?text=Sin+Foto";
+    urlImagen(anuncio.fotos?.[0]) ||
+    "https://via.placeholder.com/600x400?text=Sin+Foto";
 
   const renderAnuncioCard = (
     anuncio: AnuncioListado,
@@ -221,7 +221,7 @@ export default function VendedorPublico() {
                       <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-2 border-blue-500/30 bg-white/5 shadow-lg shadow-blue-500/10">
                         {perfil?.logoUrl ? (
                           <img
-                            src={perfil.logoUrl}
+                            src={urlImagen(perfil.logoUrl)}
                             alt={perfil.nombreAgencia}
                             className="h-full w-full object-cover"
                           />

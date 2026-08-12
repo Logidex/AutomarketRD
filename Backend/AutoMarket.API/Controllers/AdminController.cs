@@ -171,7 +171,7 @@ public class AdminController : ControllerBase
         {
             foreach (var urlFoto in anuncio.Fotos)
             {
-                // Eliminamos el objeto en S3 usando la URL pública completa
+                // Eliminamos el objeto en S3 (clave u URL legada)
                 await _almacenadorArchivos.EliminarArchivoAsync(urlFoto);
             }
         }
