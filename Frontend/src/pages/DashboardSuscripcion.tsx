@@ -1,65 +1,52 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import Swal from "sweetalert2";
 import { FaCreditCard } from "react-icons/fa";
-import { planesService, type PlanCatalogo } from "../services/planes.service";
-import { pagosService } from "../services/pagos.service";
-import { suscripcionService, type SuscripcionDealer, type PagoSuscripcion } from "../services/suscripcion.service";
+import { type PlanCatalogo } from "../services/planes.service";
 import { dashboardService } from "../services/dashboard.service";
 import Spinner from "../components/Spinner";
 import { formatearRD$, precioCicloDe } from "../utils/formato";
 import { nombrePlan } from "../constants/planes";
 import { formatearFecha } from "../utils/fecha";
+import {
+  useSuscripcion,
+  usePlanesCatalogo,
+  useHistorialPagos,
+  useCancelarSuscripcion,
+  useGenerarLinkPago,
+} from "../hooks/useSuscripcion";
 
 type Ciclo = "Mensual" | "Trimestral" | "Anual";
 
 const CICLOS: Ciclo[] = ["Mensual", "Trimestral", "Anual"];
 
 export default function DashboardSuscripcion() {
-  const [suscripcion, setSuscripcion] = useState<SuscripcionDealer | null>(null);
-  const [planes, setPlanes] = useState<PlanCatalogo[]>([]);
-  const [pagos, setPagos] = useState<PagoSuscripcion[]>([]);
   const [ciclo, setCiclo] = useState<Ciclo>("Mensual");
-  const [cargando, setCargando] = useState(true);
   const [procesando, setProcesando] = useState<string | null>(null);
-  const [anunciosActivos, setAnunciosActivos] = useState<number | null>(null);
 
-  const cargarSuscripcion = async () => {
-    try {
-      const data = await suscripcionService.obtenerSuscripcion();
-      setSuscripcion(data);
-    } catch {
-      setSuscripcion(null);
-    }
-  };
+  const suscQuery = useSuscripcion();
+  const planesQuery = usePlanesCatalogo();
+  const pagosQuery = useHistorialPagos();
+  const resumenQuery = useQuery({
+    queryKey: ['dashboard-resumen'],
+    queryFn: () => dashboardService.obtenerResumen(),
+    staleTime: 1000 * 60 * 2,
+    retry: false,
+  });
 
-  useEffect(() => {
-    async function cargarDatos() {
-      await cargarSuscripcion();
+  const cancelar = useCancelarSuscripcion();
+  const generarLinkPago = useGenerarLinkPago();
 
-      try {
-        setPlanes(await planesService.obtenerCatalogo());
-      } catch {
-        setPlanes([]);
-      }
+  const suscripcion = suscQuery.data ?? null;
+  const planes = planesQuery.data ?? [];
+  const pagos = pagosQuery.data ?? [];
+  const anunciosActivos = resumenQuery.data?.anunciosActivos ?? null;
 
-      try {
-        setPagos(await suscripcionService.obtenerHistorialPagos());
-      } catch {
-        setPagos([]);
-      }
-
-      try {
-        const resumen = await dashboardService.obtenerResumen();
-        setAnunciosActivos(resumen.anunciosActivos ?? 0);
-      } catch {
-        setAnunciosActivos(null);
-      }
-
-      setCargando(false);
-    }
-
-    cargarDatos();
-  }, []);
+  const cargando =
+    suscQuery.isLoading ||
+    planesQuery.isLoading ||
+    pagosQuery.isLoading ||
+    resumenQuery.isLoading;
 
   const precioCiclo = (plan: PlanCatalogo) => precioCicloDe(plan, ciclo);
 
@@ -98,7 +85,7 @@ export default function DashboardSuscripcion() {
     setProcesando(plan.nivel);
 
     try {
-      const { url } = await pagosService.generarLinkPago(plan.nivel, ciclo);
+      const { url } = await generarLinkPago.mutateAsync({ plan: plan.nivel, ciclo });
       window.location.assign(url);
     } catch (err) {
       await Swal.fire({
@@ -127,13 +114,12 @@ export default function DashboardSuscripcion() {
     if (!resultado.isConfirmed) return;
 
     try {
-      await suscripcionService.cancelarSuscripcion();
+      await cancelar.mutateAsync();
       await Swal.fire({
         icon: "success",
         title: "Suscripción cancelada",
         confirmButtonColor: "#3b82f6",
       });
-      await cargarSuscripcion();
     } catch (err) {
       await Swal.fire({
         icon: "error",
