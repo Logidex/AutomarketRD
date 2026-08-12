@@ -131,6 +131,8 @@ try
     builder.Services.AddScoped<IPlanCatalogoRepository, PlanCatalogoRepository>();
     builder.Services.AddScoped<IPlanCatalogoService, PlanCatalogoService>();
 
+    builder.Services.AddScoped<IContactoService, ContactoService>();
+
     builder.Services.AddScoped<IEmailSenderService, SmtpEmailSenderService>();
 
     builder.Services.AddHostedService<SuscripcionMonitorService>();
