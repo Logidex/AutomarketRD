@@ -1,4 +1,5 @@
 import React from 'react';
+import { TIPOS_VEHICULO } from '../constants/vehiculo.opciones';
 
 const MAXIMO_TRANSMISION = 50;
 
@@ -172,17 +173,11 @@ export default function FormularioVehiculo({
             className="w-full rounded-md border border-gray-300 bg-white p-2.5 focus:border-blue-500 focus:ring-blue-500"
           >
             <option value="">Selecciona...</option>
-            <option value="Sedan">Sedán</option>
-            <option value="Jeepeta">Jeepeta (SUV)</option>
-            <option value="Camioneta">Camioneta (Pick-up)</option>
-            <option value="Deportivo">Deportivo</option>
-            <option value="SuperDeportivo">Súper Deportivo</option>
-            <option value="Hypercar">Hypercar</option>
-            <option value="Coupe">Coupé</option>
-            <option value="Convertible">Convertible</option>
-            <option value="Minivan">Minivan</option>
-            <option value="Hatchback">Hatchback</option>
-            <option value="Otro">Otro</option>
+            {TIPOS_VEHICULO.map((opcion) => (
+              <option key={opcion.valor} value={opcion.valor}>
+                {opcion.etiqueta}
+              </option>
+            ))}
           </select>
         </div>
 

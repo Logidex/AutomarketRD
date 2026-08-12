@@ -4,6 +4,7 @@ export interface OpcionVehiculo {
 }
 
 export const TIPOS_VEHICULO: OpcionVehiculo[] = [
+  // Autos
   { valor: "Sedan", etiqueta: "Sedán" },
   { valor: "Jeepeta", etiqueta: "Jeepeta (SUV)" },
   { valor: "Camioneta", etiqueta: "Camioneta (Pick-up)" },
@@ -14,6 +15,11 @@ export const TIPOS_VEHICULO: OpcionVehiculo[] = [
   { valor: "Convertible", etiqueta: "Convertible" },
   { valor: "Minivan", etiqueta: "Minivan" },
   { valor: "Hatchback", etiqueta: "Hatchback" },
+  // Motos
+  { valor: "Motor", etiqueta: "Motocicleta" },
+  // Vehículos pesados
+  { valor: "Camion", etiqueta: "Camión" },
+  // Otros
   { valor: "Otro", etiqueta: "Otro" },
 ];
 
