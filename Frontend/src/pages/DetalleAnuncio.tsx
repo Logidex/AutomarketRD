@@ -17,14 +17,18 @@ import {
   FaUsers,
   FaWhatsapp,
 } from "react-icons/fa";
-import { anuncioService } from "../services/anuncio.service";
-import { leadService } from "../services/lead.service";
-import { favoritoService } from "../services/favorito.service";
-import { historialService } from "../services/historial.service";
 import { authService } from "../services/auth.service";
-import { usuarioService } from "../services/usuario.service";
 import { useComparador } from "../context/ComparadorContext";
-import type { AnuncioDetalle } from "../types/anuncio.types";
+import { useVehiculoDetalle } from "../hooks/useVehiculos";
+import { useRegistrarVista } from "../hooks/useAnuncios";
+import { useCrearLead } from "../hooks/useLeads";
+import {
+  useMisFavoritos,
+  useAgregarFavorito,
+  useQuitarFavorito,
+} from "../hooks/useFavoritos";
+import { useRegistrarVisita } from "../hooks/useHistorial";
+import { useUsuarioCuenta } from "../hooks/useUsuario";
 import logo from "../assets/AutoMarketRD_Logo.svg";
 import MenuPublico from "../components/layout/MenuPublico";
 import {
@@ -41,8 +45,21 @@ export default function DetalleAnuncio() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const [anuncio, setAnuncio] = useState<AnuncioDetalle | null>(null);
-  const [cargando, setCargando] = useState(true);
+  const anuncioId = Number(id);
+  const idValido = Number.isInteger(anuncioId) && anuncioId > 0;
+
+  const {
+    data: anuncio,
+    isLoading: cargando,
+    error: errorCarga,
+  } = useVehiculoDetalle(idValido ? anuncioId : 0, idValido);
+
+  const registrarVista = useRegistrarVista();
+  const registrarVisita = useRegistrarVisita();
+  const crearLead = useCrearLead();
+  const agregarFavorito = useAgregarFavorito();
+  const quitarFavorito = useQuitarFavorito();
+
   const [error, setError] = useState("");
 
   const [esFavorito, setEsFavorito] = useState(false);
@@ -61,49 +78,12 @@ export default function DetalleAnuncio() {
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [enviando, setEnviando] = useState(false);
 
+  // Contador de visitas del anuncio (transaccional, no bloquea la ficha).
   useEffect(() => {
-    let activo = true;
-
-    async function cargar() {
-      if (!id) {
-        setError("No se indicó el vehículo a consultar.");
-        setCargando(false);
-        return;
-      }
-
-      try {
-        const datos = await anuncioService.obtenerPorId(id);
-        if (!activo) return;
-
-        setAnuncio(datos);
-        setFotoActiva(0);
-        setError("");
-
-        if (datos.estado === "Publicado") {
-          try {
-            await anuncioService.registrarVista(datos.id);
-          } catch {
-            // Registrar la vista es transaccional; si falla no bloquea la ficha.
-          }
-        }
-      } catch (err) {
-        if (!activo) return;
-        setError(
-          err instanceof Error
-            ? err.message
-            : "No se pudo cargar el vehículo.",
-        );
-      } finally {
-        if (activo) setCargando(false);
-      }
-    }
-
-    cargar();
-
-    return () => {
-      activo = false;
-    };
-  }, [id]);
+    if (!anuncio || anuncio.estado !== "Publicado") return;
+    registrarVista.mutate(anuncio.id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [anuncio]);
 
   const usuario = authService.getCurrentUser();
 
@@ -118,31 +98,16 @@ export default function DetalleAnuncio() {
 
   // Si el visitante inició sesión, se precargan sus datos de contacto
   // para que solo tenga que escribir el mensaje.
+  const cuentaQuery = useUsuarioCuenta(usuarioIdLogueado != null);
+
   useEffect(() => {
-    if (!usuarioIdLogueado) return;
-
-    let activo = true;
-
-    async function precargarContacto() {
-      try {
-        const cuenta = await usuarioService.obtenerCuenta();
-        if (!activo) return;
-        setNombre(nombreCompletoUsuario || cuenta.nombre || "");
-        setEmail(cuenta.email ?? emailUsuario ?? "");
-        setTelefono(cuenta.telefonoPersonal ?? "");
-      } catch {
-        if (!activo) return;
-        setNombre(nombreCompletoUsuario || "");
-        setEmail(emailUsuario ?? "");
-      }
-    }
-
-    precargarContacto();
-
-    return () => {
-      activo = false;
-    };
-  }, [usuarioIdLogueado, nombreCompletoUsuario, emailUsuario]);
+    const cuenta = cuentaQuery.data;
+    if (!cuenta) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setNombre(nombreCompletoUsuario || cuenta.nombre || "");
+    setEmail(cuenta.email ?? emailUsuario ?? "");
+    setTelefono(cuenta.telefonoPersonal ?? "");
+  }, [cuentaQuery.data, nombreCompletoUsuario, emailUsuario]);
 
   const esVendedorParticular = anuncio?.esVendedorParticular === true;
 
@@ -165,6 +130,12 @@ export default function DetalleAnuncio() {
 
     return () => window.clearInterval(intervalo);
   }, [anuncio, fotoAmpliada, enPausa]);
+
+  // Reinicia la galería cuando se consulta otro vehículo.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setFotoActiva(0);
+  }, [anuncio?.id]);
 
   const siguienteFoto = () => {
     if (!anuncio || !anuncio.fotos || anuncio.fotos.length === 0) return;
@@ -195,7 +166,7 @@ export default function DetalleAnuncio() {
     setEnviando(true);
 
     try {
-      await leadService.crearLead({
+      await crearLead.mutateAsync({
         anuncioId: anuncio.id,
         nombreContacto: nombre.trim(),
         emailContacto: email.trim() || undefined,
@@ -240,7 +211,7 @@ export default function DetalleAnuncio() {
     // (canal WhatsApp) antes de abrir la conversación.
     if (usuario && !esPropietario) {
       try {
-        await leadService.crearLead({
+        await crearLead.mutateAsync({
           anuncioId: anuncio.id,
           nombreContacto: nombreCompletoUsuario || nombre || "Interesado",
           emailContacto: email || undefined,
@@ -288,28 +259,25 @@ export default function DetalleAnuncio() {
     anuncio.precioAnterior != null &&
     anuncio.precioAnterior > anuncio.precio;
 
-  // Estado de favorito: solo aplica a compradores autenticados que no sean dueños
+  // Estado de favorito: solo aplica a compradores autenticados que no sean dueños.
+  const favoritosQuery = useMisFavoritos(
+    usuario != null && anuncio != null && !esPropietario,
+  );
+
   useEffect(() => {
-    if (!authService.isAuthenticated() || anuncio == null || esPropietario)
-      return;
+    if (!anuncio || !favoritosQuery.data) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setEsFavorito(favoritosQuery.data.some((f) => f.id === anuncio.id));
+  }, [favoritosQuery.data, anuncio]);
 
-    let activo = true;
-    favoritoService
-      .obtenerMisFavoritos()
-      .then((lista) => {
-        if (activo) setEsFavorito(lista.some((f) => f.id === anuncio.id));
-      })
-      .catch(() => {});
+  // Registra la visita en el historial del comprador (sin bloquear la página).
+  useEffect(() => {
+    if (!anuncio || !usuario || esPropietario) return;
+    registrarVisita.mutate(anuncio.id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [anuncio, usuario, esPropietario]);
 
-    // Registra la visita en el historial del comprador (sin bloquear la página)
-    historialService.registrarVista(anuncio.id).catch(() => {});
-
-    return () => {
-      activo = false;
-    };
-  }, [anuncio, esPropietario]);
-
-  const toggleFavorito = async () => {
+  const toggleFavorito = () => {
     if (!authService.isAuthenticated()) {
       navigate("/login");
       return;
@@ -318,18 +286,12 @@ export default function DetalleAnuncio() {
     if (anuncio == null || cargandoFavorito) return;
 
     setCargandoFavorito(true);
-    try {
-      if (esFavorito) {
-        await favoritoService.quitar(anuncio.id);
-        setEsFavorito(false);
-      } else {
-        await favoritoService.agregar(anuncio.id);
-        setEsFavorito(true);
-      }
-    } catch {
-      // El interceptor de api.ts ya expone el mensaje del backend en error.message.
-    } finally {
-      setCargandoFavorito(false);
+    const onSettled = () => setCargandoFavorito(false);
+
+    if (esFavorito) {
+      quitarFavorito.mutate(anuncio.id, { onSettled });
+    } else {
+      agregarFavorito.mutate(anuncio.id, { onSettled });
     }
   };
 
@@ -363,11 +325,17 @@ export default function DetalleAnuncio() {
           <div className="flex items-center justify-center py-32">
             <div className="h-10 w-10 animate-spin rounded-full border-2 border-white/10 border-t-blue-500" />
           </div>
-        ) : error && !anuncio ? (
+        ) : (errorCarga || !idValido) && !anuncio ? (
           <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-12 text-center">
             <FaCar className="mx-auto text-5xl text-red-400/60" />
             <h2 className="mt-4 text-lg font-semibold">Vehículo no disponible</h2>
-            <p className="mt-2 text-sm text-[#9aa1b1]">{error}</p>
+            <p className="mt-2 text-sm text-[#9aa1b1]">
+              {!idValido
+                ? "No se indicó el vehículo a consultar."
+                : errorCarga instanceof Error
+                  ? errorCarga.message
+                  : "No se pudo cargar el vehículo."}
+            </p>
             <button
               type="button"
               onClick={() => navigate("/")}
