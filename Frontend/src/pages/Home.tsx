@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   FaCar,
@@ -7,7 +7,7 @@ import {
   FaSearch,
   FaTachometerAlt,
 } from "react-icons/fa";
-import { catalogoService } from "../services/catalogo.service";
+import { useVehiculos } from "../hooks/useVehiculos";
 import type { AnuncioListado } from "../types/anuncio.types";
 import logo from "../assets/AutoMarketRD_Logo.svg";
 import MenuPublico from "../components/layout/MenuPublico";
@@ -39,77 +39,42 @@ const FILTROS_INICIALES: Filtros = {
 };
 
 export default function Home() {
-  const [anuncios, setAnuncios] = useState<AnuncioListado[]>([]);
   const [pagina, setPagina] = useState(1);
-  const [totalRegistros, setTotalRegistros] = useState(0);
-  const [totalPaginas, setTotalPaginas] = useState(1);
-  const [cargando, setCargando] = useState(true);
-  const [error, setError] = useState("");
   const [filtros, setFiltros] = useState<Filtros>(FILTROS_INICIALES);
-  const [filtrosAplicados, setFiltrosAplicados] =
-    useState<Filtros>(FILTROS_INICIALES);
-  const [aplicando, setAplicando] = useState(false);
+  const [filtrosAplicados, setFiltrosAplicados] = useState<Filtros>(FILTROS_INICIALES);
 
   const navigate = useNavigate();
 
-  const cargar = useCallback(
-    async (paginaActual: number, aplicados: Filtros) => {
-      try {
-        const resultado = await catalogoService.buscar({
-          marca: aplicados.marca || undefined,
-          tipoVehiculo: aplicados.tipoVehiculo || undefined,
-          transmision: aplicados.transmision || undefined,
-          combustible: aplicados.combustible || undefined,
-          precioMinimo: aplicados.precioMinimo
-            ? Number(aplicados.precioMinimo)
-            : undefined,
-          precioMaximo: aplicados.precioMaximo
-            ? Number(aplicados.precioMaximo)
-            : undefined,
-          paginaActual,
-          cantidadAnuncios: TAMANO_PAGINA,
-        });
-
-        const items = resultado.items.map((a) => ({
-          ...a,
-          precio: Number(a.precio ?? 0),
-          kilometraje: Number(a.kilometraje ?? 0),
-        }));
-
-        const totalPag =
-          resultado.cantidadPorPagina > 0
-            ? Math.ceil(
-                (resultado.totalRegistros ?? 0) / resultado.cantidadPorPagina,
-              )
-            : 1;
-
-        setAnuncios(items);
-        setTotalRegistros(resultado.totalRegistros ?? 0);
-        setTotalPaginas(totalPag > 0 ? totalPag : 1);
-        setError("");
-      } catch (err) {
-        setError(
-          err instanceof Error
-            ? err.message
-            : "No se pudieron cargar los vehículos. Inténtalo nuevamente.",
-        );
-      } finally {
-        setCargando(false);
-        setAplicando(false);
-      }
+  const {
+    data,
+    isLoading,
+    isError,
+    error,
+    isFetching,
+    refetch,
+  } = useVehiculos({
+    filtros: {
+      marca: filtrosAplicados.marca || undefined,
+      tipoVehiculo: filtrosAplicados.tipoVehiculo || undefined,
+      transmision: filtrosAplicados.transmision || undefined,
+      combustible: filtrosAplicados.combustible || undefined,
+      precioMinimo: filtrosAplicados.precioMinimo ? Number(filtrosAplicados.precioMinimo) : undefined,
+      precioMaximo: filtrosAplicados.precioMaximo ? Number(filtrosAplicados.precioMaximo) : undefined,
     },
-    [],
-  );
+    pagina,
+  });
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    cargar(pagina, filtrosAplicados);
-  }, [cargar, pagina, filtrosAplicados]);
+  const anuncios = data?.items ?? [];
+  const totalRegistros = data?.totalRegistros ?? 0;
+  const cantidadPorPagina = data?.cantidadPorPagina ?? TAMANO_PAGINA;
+  const totalPaginas = cantidadPorPagina > 0
+    ? Math.ceil(totalRegistros / cantidadPorPagina)
+    : 1;
+
+  const cargando = isLoading || isFetching;
 
   const aplicarBusqueda = (e: React.FormEvent) => {
     e.preventDefault();
-    setAplicando(true);
-    setCargando(true);
     setPagina(1);
     setFiltrosAplicados({ ...filtros });
   };
@@ -117,15 +82,12 @@ export default function Home() {
   const limpiarFiltros = () => {
     setFiltros(FILTROS_INICIALES);
     setFiltrosAplicados({ ...FILTROS_INICIALES });
-    setAplicando(true);
-    setCargando(true);
     setPagina(1);
   };
 
   const irAPagina = (p: number) => {
     if (p < 1 || p > totalPaginas || p === pagina) return;
     window.scrollTo({ top: 0, behavior: "smooth" });
-    setCargando(true);
     setPagina(p);
   };
 
@@ -178,10 +140,10 @@ export default function Home() {
 
               <button
                 type="submit"
-                disabled={aplicando || cargando}
+                disabled={cargando}
                 className="rounded-xl bg-blue-500 px-8 py-3 text-sm font-semibold transition-colors hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed"
               >
-                {aplicando ? "Buscando..." : "Buscar"}
+                {cargando ? "Buscando..." : "Buscar"}
               </button>
             </div>
 
@@ -283,19 +245,18 @@ export default function Home() {
           </button>
         </div>
 
-        {cargando ? (
+        {isLoading ? (
           <div className="flex items-center justify-center py-24">
             <div className="h-10 w-10 animate-spin rounded-full border-2 border-white/10 border-t-blue-500" />
           </div>
-        ) : error ? (
+        ) : isError ? (
           <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-8 text-center">
-            <p className="text-red-400">{error}</p>
+            <p className="text-red-400">
+              {error instanceof Error ? error.message : "No se pudieron cargar los vehículos. Inténtalo nuevamente."}
+            </p>
             <button
               type="button"
-              onClick={() => {
-                setCargando(true);
-                cargar(pagina, filtrosAplicados);
-              }}
+              onClick={() => refetch()}
               className="mt-4 rounded-lg bg-blue-500 px-6 py-2 text-sm font-semibold transition-colors hover:bg-blue-600"
             >
               Reintentar
@@ -386,7 +347,7 @@ export default function Home() {
         )}
 
         {/* PAGINACIÓN */}
-        {!cargando && !error && totalPaginas > 1 && (
+        {!cargando && !isError && totalPaginas > 1 && (
           <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
             <button
               type="button"

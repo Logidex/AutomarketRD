@@ -4,6 +4,12 @@ import Swal from 'sweetalert2';
 import { anuncioService } from '../services/anuncio.service';
 import type { AnuncioCreateRequestDto } from '../types/anuncio.types';
 import { useLoading } from '../context/LoadingContext';
+import {
+  useCrearAnuncio,
+  useActualizarAnuncio,
+  useSubirImagenesAnuncio,
+  useEliminarImagenAnuncio,
+} from './useAnuncios';
 
 export const useFormularioVehiculo = (
   isEditMode: boolean = false,
@@ -12,6 +18,11 @@ export const useFormularioVehiculo = (
   const navigate = useNavigate();
   const { id } = useParams();
   const { setLoading } = useLoading();
+
+  const crearAnuncio = useCrearAnuncio();
+  const actualizarAnuncio = useActualizarAnuncio();
+  const subirImagenes = useSubirImagenesAnuncio();
+  const eliminarImagen = useEliminarImagenAnuncio();
 
   const MINIMO_IMAGENES = 5;
   const MAXIMO_IMAGENES = 10;
@@ -125,20 +136,19 @@ export const useFormularioVehiculo = (
 
     try {
       if (isEditMode && id) {
-        await anuncioService.actualizarAnuncio(id, payload);
+        await actualizarAnuncio.mutateAsync({ id, dto: payload });
 
         const fotosEliminadas = fotosInicialesRef.current.filter(
           (foto) => !fotosGuardadas.includes(foto),
         );
         for (const url of fotosEliminadas) {
-          await anuncioService.eliminarImagen(Number(id), url);
+          await eliminarImagen.mutateAsync({ id: Number(id), urlImagen: url });
         }
 
-        if (archivos.length > 0) await anuncioService.subirImagenes(Number(id), archivos);
-        Swal.fire("Éxito", "Actualizado correctamente", "success");
+        if (archivos.length > 0) await subirImagenes.mutateAsync({ id: Number(id), imagenes: archivos });
       } else {
-        const response = await anuncioService.crearAnuncio(payload);
-        if (archivos.length > 0) await anuncioService.subirImagenes(response.id, archivos);
+        const response = await crearAnuncio.mutateAsync(payload);
+        if (archivos.length > 0) await subirImagenes.mutateAsync({ id: response.id, imagenes: archivos });
         Swal.fire("Éxito", "Creado correctamente", "success");
       }
       navigate(destino);

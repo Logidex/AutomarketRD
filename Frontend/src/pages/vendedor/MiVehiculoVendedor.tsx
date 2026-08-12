@@ -1,53 +1,20 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import Swal from "sweetalert2";
 import Spinner from "../../components/Spinner";
-import { anuncioService } from "../../services/anuncio.service";
 import type { AnuncioListado } from "../../types/anuncio.types";
 import { getUserIdFromToken } from "../../utils/jwt.util";
+import { useMisAnuncios, usePublicarAnuncio, useEliminarAnuncio } from "../../hooks/useAnuncios";
 
 export default function MiVehiculoVendedor() {
   const usuarioId = getUserIdFromToken();
-  const [anuncio, setAnuncio] = useState<AnuncioListado | null>(null);
-  const [cargando, setCargando] = useState(true);
   const [accion, setAccion] = useState<string | null>(null);
 
-  useEffect(() => {
-  const cargar = async () => {
-    if (usuarioId === null) return;
-    try {
-      const resultado = await anuncioService.obtenerMisAnuncios(usuarioId);
-      setAnuncio(resultado.items?.[0] ?? null);
-    } catch {
-      Swal.fire({
-        title: "Error",
-        text: "No se pudo cargar tu vehículo.",
-        icon: "error",
-        confirmButtonColor: "#ef4444",
-      });
-    } finally {
-      setCargando(false);
-    }
-  };
+  const { data: paged, isLoading, invalidate } = useMisAnuncios(usuarioId ?? 0, usuarioId !== null);
+  const publicar = usePublicarAnuncio();
+  const eliminar = useEliminarAnuncio();
 
-  cargar();
-}, [usuarioId]);
-
-// Recarga el anuncio actual en pantalla, sin tocar el estado de "cargando".
-const recargarAnuncio = async () => {
-  if (usuarioId === null) return;
-  try {
-    const resultado = await anuncioService.obtenerMisAnuncios(usuarioId);
-    setAnuncio(resultado.items?.[0] ?? null);
-  } catch {
-    Swal.fire({
-      title: "Error",
-      text: "No se pudo cargar tu vehículo.",
-      icon: "error",
-      confirmButtonColor: "#ef4444",
-    });
-  }
-};
+  const anuncio: AnuncioListado | null = paged?.items?.[0] ?? null;
 
   if (usuarioId === null) {
     return (
@@ -57,7 +24,7 @@ const recargarAnuncio = async () => {
     );
   }
 
-  if (cargando) {
+  if (isLoading) {
     return <Spinner />;
   }
 
@@ -65,8 +32,8 @@ const recargarAnuncio = async () => {
     if (!anuncio) return;
     setAccion("publicar");
     try {
-      await anuncioService.publicarAnuncio(anuncio.id);
-      await recargarAnuncio();
+      await publicar.mutateAsync(anuncio.id);
+      await invalidate();
     } catch (error) {
       Swal.fire({
         title: "Error",
@@ -100,8 +67,8 @@ const recargarAnuncio = async () => {
 
     setAccion("eliminar");
     try {
-      await anuncioService.eliminarAnuncio(anuncio.id);
-      setAnuncio(null);
+      await eliminar.mutateAsync(anuncio.id);
+      await invalidate();
     } catch (error) {
       Swal.fire({
         title: "Error",

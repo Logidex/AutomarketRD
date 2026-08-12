@@ -1,35 +1,26 @@
-import { useEffect, useState } from 'react';
-import { dashboardService, type DashboardResumen } from '../services/dashboard.service';
+import { useQuery } from '@tanstack/react-query';
+import { dashboardService } from '../services/dashboard.service';
 import { nombrePlan } from '../constants/planes';
 import Swal from 'sweetalert2';
 import Spinner from '../components/Spinner';
 
 export default function DashboardIndex() {
-  const [resumen, setResumen] = useState<DashboardResumen | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: resumen, isLoading, isError, error } = useQuery({
+    queryKey: ['dashboard-resumen'],
+    queryFn: () => dashboardService.obtenerResumen(),
+    staleTime: 1000 * 60 * 2,
+  });
 
-  useEffect(() => {
-    async function cargarResumen() {
-      try {
-        const data = await dashboardService.obtenerResumen();
-        setResumen(data);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } catch (error: any) {
-        await Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: error.message || 'No se pudo cargar el resumen del dashboard',
-          confirmButtonColor: '#3b82f6',
-        });
-      } finally {
-        setLoading(false);
-      }
-    }
+  if (isError) {
+    void Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: error instanceof Error ? error.message : 'No se pudo cargar el resumen del dashboard',
+      confirmButtonColor: '#3b82f6',
+    });
+  }
 
-    cargarResumen();
-  }, []);
-
-  if (loading) {
+  if (isLoading) {
     return <Spinner />;
   }
 

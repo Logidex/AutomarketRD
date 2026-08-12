@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   FaBalanceScale,
@@ -8,7 +8,7 @@ import {
   FaSearch,
   FaTachometerAlt,
 } from "react-icons/fa";
-import { catalogoService } from "../services/catalogo.service";
+import { useVehiculos } from "../hooks/useVehiculos";
 import type { AnuncioListado } from "../types/anuncio.types";
 import { useComparador } from "../context/ComparadorContext";
 import logo from "../assets/AutoMarketRD_Logo.svg";
@@ -20,7 +20,6 @@ import {
   etiquetaDe,
 } from "../constants/vehiculo.opciones";
 
-const TAMANO_PAGINA = 12;
 const ANIO_ACTUAL = new Date().getFullYear();
 
 interface Filtros {
@@ -73,18 +72,30 @@ function filtrosDesdeParams(params: URLSearchParams): Filtros {
   };
 }
 
+function paramsDesdeFiltros(filtros: Filtros): URLSearchParams {
+  const params = new URLSearchParams();
+  if (filtros.marca) params.set("marca", filtros.marca);
+  if (filtros.modelo) params.set("modelo", filtros.modelo);
+  if (filtros.tipoVehiculo) params.set("tipo", filtros.tipoVehiculo);
+  if (filtros.transmision) params.set("transmision", filtros.transmision);
+  if (filtros.combustible) params.set("combustible", filtros.combustible);
+  if (filtros.ubicacion) params.set("ubicacion", filtros.ubicacion);
+  if (filtros.condicion) params.set("condicion", filtros.condicion);
+  if (filtros.enOferta) params.set("enOferta", "true");
+  if (filtros.anioDesde) params.set("anioDesde", filtros.anioDesde);
+  if (filtros.anioHasta) params.set("anioHasta", filtros.anioHasta);
+  if (filtros.precioMinimo) params.set("precioMinimo", filtros.precioMinimo);
+  if (filtros.precioMaximo) params.set("precioMaximo", filtros.precioMaximo);
+  if (filtros.kilometrajeMaximo) params.set("kmMax", filtros.kilometrajeMaximo);
+  return params;
+}
+
 export default function Vehiculos() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  const [anuncios, setAnuncios] = useState<AnuncioListado[]>([]);
   const [pagina, setPagina] = useState(1);
-  const [totalRegistros, setTotalRegistros] = useState(0);
-  const [totalPaginas, setTotalPaginas] = useState(1);
-  const [cargando, setCargando] = useState(true);
-  const [error, setError] = useState("");
   const [filtros, setFiltros] = useState<Filtros>(FILTROS_INICIALES);
-
   const [filtrosAplicados, setFiltrosAplicados] = useState<Filtros>(FILTROS_INICIALES);
 
   // Selección para el comparador (compartida y persistida en localStorage)
@@ -96,110 +107,65 @@ export default function Vehiculos() {
     maxVehiculos,
   } = useComparador();
 
-  const irAComparador = () => {
+  const irAComparador = useCallback(() => {
     if (seleccionados.length < 2) return;
     const qs = seleccionados.map((id) => `ids=${id}`).join("&");
     navigate(`/comparador?${qs}`);
-  };
+  }, [seleccionados, navigate]);
 
-  const cargar = useCallback(
-    async (paginaActual: number, aplicados: Filtros) => {
-      try {
-        const resultado = await catalogoService.buscar({
-          marca: aplicados.marca || undefined,
-          modelo: aplicados.modelo || undefined,
-          tipoVehiculo: aplicados.tipoVehiculo || undefined,
-          transmision: aplicados.transmision || undefined,
-          combustible: aplicados.combustible || undefined,
-          ubicacion: aplicados.ubicacion || undefined,
-          condicion: aplicados.condicion || undefined,
-          enOferta: aplicados.enOferta ? true : undefined,
-          anioDesde: aplicados.anioDesde
-            ? Number(aplicados.anioDesde)
-            : undefined,
-          anioHasta: aplicados.anioHasta
-            ? Number(aplicados.anioHasta)
-            : undefined,
-          precioMinimo: aplicados.precioMinimo
-            ? Number(aplicados.precioMinimo)
-            : undefined,
-          precioMaximo: aplicados.precioMaximo
-            ? Number(aplicados.precioMaximo)
-            : undefined,
-          kilometrajeMaximo: aplicados.kilometrajeMaximo
-            ? Number(aplicados.kilometrajeMaximo)
-            : undefined,
-          paginaActual,
-          cantidadAnuncios: TAMANO_PAGINA,
-        });
-
-        const items = resultado.items.map((a) => ({
-          ...a,
-          precio: Number(a.precio ?? 0),
-          kilometraje: Number(a.kilometraje ?? 0),
-        }));
-
-        const totalPag =
-          resultado.cantidadPorPagina > 0
-            ? Math.ceil(
-                (resultado.totalRegistros ?? 0) / resultado.cantidadPorPagina,
-              )
-            : 1;
-
-        setAnuncios(items);
-        setTotalRegistros(resultado.totalRegistros ?? 0);
-        setTotalPaginas(totalPag > 0 ? totalPag : 1);
-        setError("");
-      } catch (err) {
-        setError(
-          err instanceof Error
-            ? err.message
-            : "No se pudieron cargar los vehículos. Inténtalo nuevamente.",
-        );
-      } finally {
-        setCargando(false);
-      }
-    },
-    [],
-  );
-
+  // Sincronizar filtros con URL al cargar
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setFiltros(filtrosDesdeParams(searchParams));
   }, [searchParams]);
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    cargar(pagina, filtrosAplicados);
-  }, [cargar, pagina, filtrosAplicados]);
+  const {
+    data,
+    isLoading,
+    isError,
+    error,
+    isFetching,
+    refetch,
+  } = useVehiculos({
+    filtros: {
+      marca: filtrosAplicados.marca || undefined,
+      modelo: filtrosAplicados.modelo || undefined,
+      tipoVehiculo: filtrosAplicados.tipoVehiculo || undefined,
+      transmision: filtrosAplicados.transmision || undefined,
+      combustible: filtrosAplicados.combustible || undefined,
+      ubicacion: filtrosAplicados.ubicacion || undefined,
+      condicion: filtrosAplicados.condicion || undefined,
+      enOferta: filtrosAplicados.enOferta ? true : undefined,
+      anioDesde: filtrosAplicados.anioDesde ? Number(filtrosAplicados.anioDesde) : undefined,
+      anioHasta: filtrosAplicados.anioHasta ? Number(filtrosAplicados.anioHasta) : undefined,
+      precioMinimo: filtrosAplicados.precioMinimo ? Number(filtrosAplicados.precioMinimo) : undefined,
+      precioMaximo: filtrosAplicados.precioMaximo ? Number(filtrosAplicados.precioMaximo) : undefined,
+      kilometrajeMaximo: filtrosAplicados.kilometrajeMaximo ? Number(filtrosAplicados.kilometrajeMaximo) : undefined,
+    },
+    pagina,
+  });
+
+  const anuncios = data?.items ?? [];
+  const totalRegistros = data?.totalRegistros ?? 0;
+  const cantidadPorPagina = data?.cantidadPorPagina ?? 12;
+  const totalPaginas = cantidadPorPagina > 0
+    ? Math.ceil(totalRegistros / cantidadPorPagina)
+    : 1;
+
+  const cargando = isLoading || isFetching;
 
   const aplicarBusqueda = (e: React.FormEvent) => {
     e.preventDefault();
     const aplicados = { ...filtros };
-    const params = new URLSearchParams();
-    if (aplicados.marca) params.set("marca", aplicados.marca);
-    if (aplicados.modelo) params.set("modelo", aplicados.modelo);
-    if (aplicados.tipoVehiculo) params.set("tipo", aplicados.tipoVehiculo);
-    if (aplicados.transmision) params.set("transmision", aplicados.transmision);
-    if (aplicados.combustible) params.set("combustible", aplicados.combustible);
-    if (aplicados.ubicacion) params.set("ubicacion", aplicados.ubicacion);
-    if (aplicados.condicion) params.set("condicion", aplicados.condicion);
-    if (aplicados.enOferta) params.set("enOferta", "true");
-    if (aplicados.anioDesde) params.set("anioDesde", aplicados.anioDesde);
-    if (aplicados.anioHasta) params.set("anioHasta", aplicados.anioHasta);
-    if (aplicados.precioMinimo) params.set("precioMinimo", aplicados.precioMinimo);
-    if (aplicados.precioMaximo) params.set("precioMaximo", aplicados.precioMaximo);
-    if (aplicados.kilometrajeMaximo) params.set("kmMax", aplicados.kilometrajeMaximo);
-
-    const qs = params.toString();
-    navigate(qs ? `/vehiculos?${qs}` : "/vehiculos");
+    const params = paramsDesdeFiltros(aplicados);
+    setSearchParams(params, { replace: true });
     setFiltrosAplicados(aplicados);
     setPagina(1);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const limpiarFiltros = () => {
-    navigate("/vehiculos");
+    setSearchParams({}, { replace: true });
     setFiltros(FILTROS_INICIALES);
     setFiltrosAplicados({ ...FILTROS_INICIALES });
     setPagina(1);
@@ -431,14 +397,16 @@ export default function Vehiculos() {
             <div className="mt-4 flex flex-wrap items-center gap-3">
               <button
                 type="submit"
-                className="rounded-xl bg-blue-500 px-8 py-3 text-sm font-semibold transition-colors hover:bg-blue-600"
+                disabled={cargando}
+                className="rounded-xl bg-blue-500 px-8 py-3 text-sm font-semibold transition-colors hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed"
               >
-                Buscar
+                {cargando ? "Buscando..." : "Buscar"}
               </button>
               <button
                 type="button"
                 onClick={limpiarFiltros}
-                className="rounded-xl border border-white/10 px-6 py-3 text-sm font-medium text-[#9aa1b1] transition-colors hover:border-white/30 hover:text-white"
+                disabled={cargando}
+                className="rounded-xl border border-white/10 px-6 py-3 text-sm font-medium text-[#9aa1b1] transition-colors hover:border-white/30 hover:text-white disabled:opacity-50"
               >
                 Limpiar filtros
               </button>
@@ -449,19 +417,18 @@ export default function Vehiculos() {
 
       {/* VITRINA */}
       <main className="mx-auto max-w-6xl px-6 py-10 sm:px-8">
-        {cargando ? (
+        {isLoading ? (
           <div className="flex items-center justify-center py-24">
             <div className="h-10 w-10 animate-spin rounded-full border-2 border-white/10 border-t-blue-500" />
           </div>
-        ) : error ? (
+        ) : isError ? (
           <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-8 text-center">
-            <p className="text-red-400">{error}</p>
+            <p className="text-red-400">
+              {error instanceof Error ? error.message : "No se pudieron cargar los vehículos. Inténtalo nuevamente."}
+            </p>
             <button
               type="button"
-              onClick={() => {
-                setCargando(true);
-                cargar(pagina, filtrosAplicados);
-              }}
+              onClick={() => refetch()}
               className="mt-4 rounded-lg bg-blue-500 px-6 py-2 text-sm font-semibold transition-colors hover:bg-blue-600"
             >
               Reintentar
@@ -527,52 +494,52 @@ export default function Vehiculos() {
                       </p>
                     )}
 
-                  <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 border-t border-white/10 pt-4 text-xs text-[#9aa1b1]">
-                    <span className="inline-flex items-center gap-1.5">
-                      {anuncio.condicion === "Nuevo" ? (
-                        <span className="rounded-full bg-blue-500/10 px-3 py-1 text-xs font-semibold text-blue-400">
-                          Nuevo
-                        </span>
-                      ) : (
-                        <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-gray-300">
-                          Usado
+                    <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 border-t border-white/10 pt-4 text-xs text-[#9aa1b1]">
+                      <span className="inline-flex items-center gap-1.5">
+                        {anuncio.condicion === "Nuevo" ? (
+                          <span className="rounded-full bg-blue-500/10 px-3 py-1 text-xs font-semibold text-blue-400">
+                            Nuevo
+                          </span>
+                        ) : (
+                          <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-gray-300">
+                            Usado
+                          </span>
+                        )}
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <FaTachometerAlt className="text-gray-500" />
+                        {anuncio.kilometraje.toLocaleString("es-DO")} km
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <FaCalendarAlt className="text-gray-500" />
+                        {anuncio.anio}
+                      </span>
+                      {anuncio.ubicacion && (
+                        <span className="inline-flex items-center gap-1.5">
+                          <FaMapMarkerAlt className="text-gray-500" />
+                          {anuncio.ubicacion}
                         </span>
                       )}
-                    </span>
-                    <span className="inline-flex items-center gap-1.5">
-                      <FaTachometerAlt className="text-gray-500" />
-                      {anuncio.kilometraje.toLocaleString("es-DO")} km
-                    </span>
-                    <span className="inline-flex items-center gap-1.5">
-                      <FaCalendarAlt className="text-gray-500" />
-                      {anuncio.anio}
-                    </span>
-                    {anuncio.ubicacion && (
-                      <span className="inline-flex items-center gap-1.5">
-                        <FaMapMarkerAlt className="text-gray-500" />
-                        {anuncio.ubicacion}
-                      </span>
-                    )}
-                  </div>
+                    </div>
 
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {anuncio.tipoVehiculo && (
-                      <span className="rounded-full bg-blue-500/10 px-3 py-1 text-xs font-medium text-blue-400">
-                        {etiquetaDe(anuncio.tipoVehiculo, TIPOS_VEHICULO)}
-                      </span>
-                    )}
-                    {anuncio.combustible && (
-                      <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-gray-300">
-                        {etiquetaDe(anuncio.combustible, COMBUSTIBLES)}
-                      </span>
-                    )}
-                    {anuncio.transmision && (
-                      <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-gray-300">
-                        {etiquetaDe(anuncio.transmision, TRANSMISIONES)}
-                      </span>
-                    )}
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {anuncio.tipoVehiculo && (
+                        <span className="rounded-full bg-blue-500/10 px-3 py-1 text-xs font-medium text-blue-400">
+                          {etiquetaDe(anuncio.tipoVehiculo, TIPOS_VEHICULO)}
+                        </span>
+                      )}
+                      {anuncio.combustible && (
+                        <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-gray-300">
+                          {etiquetaDe(anuncio.combustible, COMBUSTIBLES)}
+                        </span>
+                      )}
+                      {anuncio.transmision && (
+                        <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-gray-300">
+                          {etiquetaDe(anuncio.transmision, TRANSMISIONES)}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
                 </button>
 
                 <button
@@ -598,7 +565,8 @@ export default function Vehiculos() {
           </div>
         )}
 
-        {!cargando && !error && totalPaginas > 1 && (
+        {/* PAGINACIÓN */}
+        {!cargando && !isError && totalPaginas > 1 && (
           <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
             <button
               type="button"

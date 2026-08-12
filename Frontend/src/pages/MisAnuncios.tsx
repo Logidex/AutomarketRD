@@ -2,47 +2,46 @@ import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import AnuncioCard from "../components/AnuncioCard";
 import Spinner from "../components/Spinner";
-import { anuncioService } from "../services/anuncio.service";
 import { dashboardService, type DashboardResumen } from "../services/dashboard.service";
 import type { AnuncioListado } from "../types/anuncio.types";
 import { getUserIdFromToken } from "../utils/jwt.util";
 import { Link } from "react-router-dom";
 import { FaCar, FaPlusCircle } from "react-icons/fa";
+import {
+  useMisAnuncios,
+  usePublicarAnuncio,
+  useCambiarEstadoAnuncio,
+  useEliminarAnuncio,
+} from "../hooks/useAnuncios";
 
 export default function MisAnuncios() {
-  const [anuncios, setAnuncios] = useState<AnuncioListado[]>([]);
   const [resumen, setResumen] = useState<DashboardResumen | null>(null);
-  const [cargando, setCargando] = useState(true);
   const usuarioId = getUserIdFromToken();
+
+  const {
+    data: paged,
+    isLoading,
+    invalidate,
+  } = useMisAnuncios(usuarioId ?? 0, usuarioId !== null);
+
+  const publicar = usePublicarAnuncio();
+  const cambiarEstado = useCambiarEstadoAnuncio();
+  const eliminar = useEliminarAnuncio();
+
+  const anuncios = paged?.items ?? ([] as AnuncioListado[]);
 
   useEffect(() => {
     if (usuarioId === null) return;
 
-    const fetchAnuncios = async () => {
-      try {
-        setCargando(true);
-        const response = await anuncioService.obtenerMisAnuncios(usuarioId);
-        setAnuncios(response.items ?? []);
-      } catch (error) {
-        console.error(error);
-        Swal.fire({
-          title: "Error",
-          text: "No se pudieron cargar los anuncios.",
-          icon: "error",
-          confirmButtonColor: "#ef4444",
-        });
-      }
-
+    const cargarResumen = async () => {
       try {
         setResumen(await dashboardService.obtenerResumen());
       } catch {
         // El banner de uso del plan es opcional; no bloquea la lista.
-      } finally {
-        setCargando(false);
       }
     };
 
-    fetchAnuncios();
+    cargarResumen();
   }, [usuarioId]);
 
   if (usuarioId === null) {
@@ -53,7 +52,7 @@ export default function MisAnuncios() {
     );
   }
 
-  if (cargando) {
+  if (isLoading) {
     return <Spinner />;
   }
 
@@ -67,14 +66,8 @@ export default function MisAnuncios() {
 
   const handlePublicar = async (id: number) => {
     try {
-      await anuncioService.publicarAnuncio(id);
-
-      setAnuncios((prev) =>
-        prev.map((anuncio) =>
-          anuncio.id === id ? { ...anuncio, estado: "Publicado" } : anuncio,
-        ),
-      );
-
+      await publicar.mutateAsync(id);
+      await invalidate();
       await recargarResumen();
 
       Swal.fire({
@@ -109,14 +102,8 @@ export default function MisAnuncios() {
 
       if (!result.isConfirmed) return;
 
-      await anuncioService.cambiarEstado(id, nuevoEstado);
-
-      setAnuncios((prev) =>
-        prev.map((anuncio) =>
-          anuncio.id === id ? { ...anuncio, estado: nuevoEstado } : anuncio,
-        ),
-      );
-
+      await cambiarEstado.mutateAsync({ id, estado: nuevoEstado });
+      await invalidate();
       await recargarResumen();
 
       Swal.fire({
@@ -151,10 +138,8 @@ export default function MisAnuncios() {
     if (!result.isConfirmed) return;
 
     try {
-      await anuncioService.eliminarAnuncio(id);
-
-      setAnuncios((prev) => prev.filter((anuncio) => anuncio.id !== id));
-
+      await eliminar.mutateAsync(id);
+      await invalidate();
       await recargarResumen();
 
       Swal.fire({
