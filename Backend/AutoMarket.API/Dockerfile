@@ -37,8 +37,22 @@ WORKDIR /app
 ENV ASPNETCORE_ENVIRONMENT=Production
 ENV ASPNETCORE_URLS=http://+:8080
 
-EXPOSE 8080
+# curl no viene por defecto en la imagen aspnet; es necesario para el healthcheck
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Usuario no-root (UID fijo 1654) para ejecutar la API sin privilegios
+RUN useradd --create-home --shell /usr/sbin/nologin --uid 1001 appuser
 
 COPY --from=publish /app/publish .
+RUN chown -R appuser:appuser /app
+
+USER appuser
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD curl -f http://localhost:8080/health/ready || exit 1
+
+EXPOSE 8080
 
 ENTRYPOINT ["dotnet", "AutoMarket.API.dll"]

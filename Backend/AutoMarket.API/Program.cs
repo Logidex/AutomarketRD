@@ -19,6 +19,8 @@ using Serilog;
 using Serilog.Events;
 using System.Text.Json.Serialization;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.HttpOverrides;
 
 // Configurar Serilog
 Log.Logger = new LoggerConfiguration()
@@ -39,6 +41,21 @@ try
     Log.Information("Iniciando AutoMarket.API");
 
     var builder = WebApplication.CreateBuilder(args);
+
+    // =======================================================
+    // LÍMITES DE SUBIDA DE ARCHIVOS
+    // - 5 MB por archivo (validado en cada servicio)
+    // - 50 MB por petición completa (defensa contra payloads grandes)
+    // =======================================================
+    builder.WebHost.ConfigureKestrel(options =>
+    {
+        options.Limits.MaxRequestBodySize = 50L * 1024 * 1024;
+    });
+
+    builder.Services.Configure<FormOptions>(options =>
+    {
+        options.MultipartBodyLengthLimit = 50L * 1024 * 1024;
+    });
 
     builder.Host.UseSerilog();
 
@@ -181,13 +198,36 @@ try
 
     builder.Services.AddOpenApi();
 
+    // =======================================================
+    // FORWARD HEADERS (detrás de nginx/proxy en producción)
+    // Permite que la API respete X-Forwarded-Proto (HTTPS)
+    // =======================================================
+    builder.Services.Configure<ForwardedHeadersOptions>(options =>
+    {
+        options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+        options.KnownNetworks.Clear();
+        options.KnownProxies.Clear();
+    });
+
     var app = builder.Build();
 
-    // Aplicar migraciones automáticamente
-    using (var scope = app.Services.CreateScope())
+    if (!app.Environment.IsDevelopment())
     {
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        dbContext.Database.Migrate();
+        app.UseForwardedHeaders();
+    }
+
+    // Aplicar migraciones automáticamente solo en Desarrollo o si se fuerza con MigrateOnStartup=true.
+    // En Producción las migraciones se aplican como paso manual del deploy (dotnet ef database update).
+    var migrarAlIniciar = app.Environment.IsDevelopment()
+        || app.Configuration.GetValue<bool>("MigrateOnStartup");
+
+    if (migrarAlIniciar)
+    {
+        using (var scope = app.Services.CreateScope())
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            dbContext.Database.Migrate();
+        }
     }
 
     // Luego seedear (solo Desarrollo, o si se fuerza con Seeder:Enabled=true)

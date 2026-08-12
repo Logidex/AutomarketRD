@@ -1,0 +1,39 @@
+# =========================================
+# .dockerignore — Contexto de build (carpeta Backend/)
+# Evita que el "COPY . ." del Dockerfile incruste
+# secretos, binarios locales o artefactos de build.
+# =========================================
+
+# Secretos y variables de entorno (¡NUNCA a la imagen!)
+.env
+.env.dev
+.env.prod
+*.env
+!*.env.example
+
+# Outputs de build de .NET
+**/bin/
+**/obj/
+
+# Logs
+**/logs/
+*.log
+
+# Artefactos de test / cobertura / análisis
+**/TestResults/
+**/coveragereport/
+**/graphify-out/
+Codigo.txt
+session-*.md
+
+# Proyecto de tests (no se necesita en la imagen de runtime)
+AutoMarket.Tests/
+
+# IDE
+.vs/
+.vscode/
+*.user
+
+# OS
+.DS_Store
+Thumbs.db

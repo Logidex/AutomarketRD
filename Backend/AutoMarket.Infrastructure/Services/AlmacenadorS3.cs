@@ -7,9 +7,12 @@ namespace AutoMarket.Infrastructure.Services;
 
 public class AlmacenadorS3 : IAlmacenadorArchivos
 {
+    private const string PREFIJO_OBJECT_KEY = "uploads/";
+
     private readonly IAmazonS3 _s3Client;
     private readonly string _bucketName;
     private readonly string _region;
+    private readonly TimeSpan _expiracionUrls;
 
     public AlmacenadorS3(IConfiguration configuration)
     {
@@ -18,6 +21,9 @@ public class AlmacenadorS3 : IAlmacenadorArchivos
         _region = s3Options["Region"]!;
         _bucketName = s3Options["BucketName"]!;
 
+        var expiracionMinutos = s3Options.GetValue("ExpirationMinutes", 15);
+        _expiracionUrls = TimeSpan.FromMinutes(expiracionMinutos);
+
         _s3Client = new AmazonS3Client(
             s3Options["AccessKey"],
             s3Options["SecretKey"],
@@ -25,31 +31,61 @@ public class AlmacenadorS3 : IAlmacenadorArchivos
         );
     }
 
-    public async Task<string> GuardarArchivoAsync(Stream stream, string nombreArchivo, string contentType)
+    /// <summary>
+/// Guarda un archivo en el bucket S3 privada con encriptacion AES256.
+/// Devuelve la clave (ruta) del objeto almacenado, que se usara para generar URLs firmadas.
+/// </summary>
+/// <param name="stream">Stream del archivo a almacenar.</param>
+/// <param name="nombreArchivo">Nombre del archivo (se anadira el prefijo 'uploads/' automatico).</param>
+/// <param name="contentType">Tipo MIME del archivo (ej. image/png, image/jpeg).</param>
+/// <returns>Clave S3 bajo la cual el archivo fue almacenado (ej. 'uploads/foto.jpg').</returns>
+public async Task<string> GuardarArchivoAsync(Stream stream, string nombreArchivo, string contentType)
     {
-        var key = $"uploads/{nombreArchivo}";
+        var key = $"{PREFIJO_OBJECT_KEY}{nombreArchivo}";
 
         var putRequest = new PutObjectRequest
         {
             BucketName = _bucketName,
             Key = key,
             InputStream = stream,
-            ContentType = contentType
+            ContentType = contentType,
+            ServerSideEncryptionMethod = ServerSideEncryptionMethod.AES256
         };
 
         await _s3Client.PutObjectAsync(putRequest);
 
-        return $"https://{_bucketName}.s3.{_region}.amazonaws.com/{key}";
+        return key;
     }
 
-    public async Task EliminarArchivoAsync(string rutaArchivo)
+    /// <summary>
+/// Genera una URL firmada de S3 con duracion de expiracion configurada (por defecto 15 minutos).
+/// La URL permite descargar o visualizar el archivo privado sin necesidad de credenciales AWS.
+/// </summary>
+/// <param name="clave">Clave S3 del archivo (ruta dentro del bucket, ej. 'uploads/foto.jpg').</param>
+/// <returns>URL firmada de solo uso (HTTPS) que vencera despues del periodo de expiracion.</returns>
+public Task<string> GenerarUrlFirmadaAsync(string clave)
     {
-        if (string.IsNullOrWhiteSpace(rutaArchivo)) return;
+        var request = new GetPreSignedUrlRequest
+        {
+            BucketName = _bucketName,
+            Key = NormalizarClave(clave),
+            Expires = DateTime.UtcNow.Add(_expiracionUrls),
+            Protocol = Protocol.HTTPS
+        };
 
-        var uri = new Uri(rutaArchivo);
-        var key = uri.AbsolutePath.TrimStart('/');
+        return Task.FromResult(_s3Client.GetPreSignedURL(request));
+    }
 
-        if (string.IsNullOrWhiteSpace(key)) return;
+    /// <summary>
+/// Elimina un archivo del bucket S3 utilizando su clave (ruta).
+/// Si la clave proporcionada no tiene un formato valido, el metodo la normaliza automaticamente.
+/// </summary>
+/// <param name="claveOUrl">Clave S3 o URL completa del archivo a eliminar.</param>
+public Task EliminarArchivoAsync(string claveOUrl)
+    {
+        if (string.IsNullOrWhiteSpace(claveOUrl)) return Task.CompletedTask;
+
+        var key = NormalizarClave(claveOUrl);
 
         var deleteRequest = new DeleteObjectRequest
         {
@@ -57,6 +93,26 @@ public class AlmacenadorS3 : IAlmacenadorArchivos
             Key = key
         };
 
-        await _s3Client.DeleteObjectAsync(deleteRequest);
+        return _s3Client.DeleteObjectAsync(deleteRequest);
+    }
+
+    /// <summary>
+    /// Convierte una URL pública legada ("https://bucket.s3.region.amazonaws.com/uploads/x.jpg")
+    /// o una clave ("uploads/x.jpg") en la clave de objeto correspondiente.
+    /// </summary>
+    private static string NormalizarClave(string claveOUrl)
+    {
+        var candidato = claveOUrl.Trim();
+
+        if (Uri.TryCreate(candidato, UriKind.Absolute, out var uri) &&
+            !string.IsNullOrEmpty(uri.Host))
+        {
+            var path = uri.AbsolutePath.TrimStart('/');
+            return path.StartsWith(PREFIJO_OBJECT_KEY, StringComparison.OrdinalIgnoreCase)
+                ? path
+                : $"{PREFIJO_OBJECT_KEY}{path.TrimStart('/')}";
+        }
+
+        return candidato;
     }
 }

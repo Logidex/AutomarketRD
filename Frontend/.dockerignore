@@ -1,0 +1,27 @@
+# =========================================
+# .dockerignore — Frontend
+# =========================================
+
+# Dependencias (se instalan con npm ci dentro del build)
+node_modules/
+
+# Output del build local
+dist/
+
+# Variables de entorno (¡no a la imagen!)
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+
+# IDE / OS
+.vs/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Cobertura de tests
+coverage/

@@ -373,6 +373,10 @@ public class AnuncioService : IAnuncioService
 
         foreach (var imagen in dto.Imagenes)
         {
+            /// <summary>
+            /// Valida que el archivo no exceda los 5 MB y que sea un tipo de imagen permitido (PNG o JPEG).
+            /// Lanza excepcion si la validacion falla para ser tratada en el controlador como BadRequest.
+            /// </summary>
             if (imagen.Length > 5 * 1024 * 1024)
                 throw new ArgumentException("Imagen excede el tamaño máximo");
 
@@ -384,8 +388,8 @@ public class AnuncioService : IAnuncioService
 
             using (var stream = imagen.OpenReadStream())
             {
-                var urlPublicaAws = await _almacenadorArchivos.GuardarArchivoAsync(stream, nombreUnico, imagen.ContentType);
-                rutasGuardadas.Add(urlPublicaAws);
+                var claveS3 = await _almacenadorArchivos.GuardarArchivoAsync(stream, nombreUnico, imagen.ContentType);
+                rutasGuardadas.Add(claveS3);
             }
         }
 

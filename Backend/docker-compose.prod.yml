@@ -50,9 +50,49 @@ services:
       Admin__Password: ${ADMIN_PASSWORD_PROD}  # ← Contraseña de admin solo para prod
       Admin__RotatePassword: ${ADMIN_ROTATE_PASSWORD_PROD:-false}
 
-    # En producción, solo exponemos el puerto 80 (Nginx o acceso directo)
+    # En producción NO exponemos la API al exterior: solo nginx (frontend)
+    # se publica en el puerto 80 y reenvía /api/* a este contenedor.
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: always
+
+  frontend:
+    build:
+      context: ../Frontend
+      dockerfile: Dockerfile
+    container_name: automarket-frontend-prod
     ports:
-      - "80:8080"
+      - "80:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: always
+
+  db-backup:
+    image: postgres:16
+    container_name: automarket-db-backup
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_PROD}
+      BACKUP_DIR: /backups
+      BACKUP_RETENTION_DAYS: 14
+      # Ejecutar a las 03:00 todos los días (formato cron)
+      CRON_SCHEDULE: "0 3 * * *"
+    volumes:
+      - ./scripts/backup-db.sh:/backup-db.sh:ro
+      - db_backups:/backups
+    entrypoint:
+      - sh
+      - -c
+      - |
+        apk add --no-cache dcron
+        chmod +x /backup-db.sh
+        chmod 0600 /etc/crontabs/root || true
+        echo "$${CRON_SCHEDULE} /backup-db.sh >> /backups/backup.log 2>&1" > /etc/crontabs/root
+        crond -f -l 2
     depends_on:
       db:
         condition: service_healthy
@@ -60,3 +100,4 @@ services:
 
 volumes:
   pgdata_prod:
+  db_backups:
