@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Swal from "sweetalert2";
 import { FaReply } from "react-icons/fa";
-import { leadService } from "../../services/lead.service";
 import type { LeadDealer } from "../../types/lead.types";
 import { formatearFecha } from "../../utils/fecha";
+import { useMisLeads, useMarcarLeido } from "../../hooks/useLeads";
 
 const construirMailtoRespuesta = (lead: LeadDealer): string => {
   const vehiculo = lead.anuncio
@@ -17,29 +17,9 @@ const construirMailtoRespuesta = (lead: LeadDealer): string => {
 };
 
 export default function InteresadosVendedor() {
-  const [leads, setLeads] = useState<LeadDealer[]>([]);
-  const [cargando, setCargando] = useState(true);
+  const { data: leads = [], isLoading: cargando } = useMisLeads();
+  const marcarLeido = useMarcarLeido();
   const [mostrandoPendientes, setMostrandoPendientes] = useState(false);
-
-  useEffect(() => {
-    const cargarLeads = async () => {
-      try {
-        const datos = await leadService.obtenerMisLeads();
-        setLeads(datos);
-      } catch {
-        Swal.fire({
-          title: "Error",
-          text: "No se pudieron cargar los interesados.",
-          icon: "error",
-          confirmButtonColor: "#ef4444",
-        });
-      } finally {
-        setCargando(false);
-      }
-    };
-
-    cargarLeads();
-  }, []);
 
   const pendientes = leads.filter((lead) => !lead.leido);
   const leidos = leads.filter((lead) => lead.leido);
@@ -47,8 +27,7 @@ export default function InteresadosVendedor() {
 
   const handleMarcarLeido = async (id: number) => {
     try {
-      await leadService.marcarLeido(id);
-      setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, leido: true } : l)));
+      await marcarLeido.mutateAsync(id);
       window.dispatchEvent(new Event("leads:cambiado"));
     } catch {
       Swal.fire({

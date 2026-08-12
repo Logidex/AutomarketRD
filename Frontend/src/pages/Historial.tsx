@@ -1,11 +1,7 @@
-import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaCalendarAlt, FaHistory, FaClock } from "react-icons/fa";
-import {
-  historialService,
-  type AnuncioReciente,
-} from "../services/historial.service";
 import { formatearFecha } from "../utils/fecha";
+import { useHistorialReciente } from "../hooks/useHistorial";
 
 const IMAGEN_VACIA =
   "https://via.placeholder.com/600x400?text=Sin+Foto";
@@ -13,32 +9,14 @@ const IMAGEN_VACIA =
 export default function Historial() {
   const navigate = useNavigate();
 
-  const [recientes, setRecientes] = useState<AnuncioReciente[]>([]);
-  const [cargando, setCargando] = useState(true);
-  const [error, setError] = useState("");
+  const {
+    data: recientes = [],
+    isLoading: cargando,
+    isError,
+    refetch,
+  } = useHistorialReciente(12);
 
-  const cargar = useCallback(async () => {
-    try {
-      const lista = await historialService.obtenerRecientes(12);
-      setRecientes(
-        lista.map((a) => ({ ...a, precio: Number(a.precio ?? 0) })),
-      );
-      setError("");
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "No se pudo cargar tu historial.",
-      );
-    } finally {
-      setCargando(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    cargar();
-  }, [cargar]);
+  const mensajeError = isError ? "No se pudo cargar tu historial." : "";
 
   return (
     <div className="min-h-screen bg-[#0c101b] text-white">
@@ -71,15 +49,12 @@ export default function Historial() {
           <div className="flex items-center justify-center py-24">
             <div className="h-10 w-10 animate-spin rounded-full border-2 border-white/10 border-t-blue-500" />
           </div>
-        ) : error ? (
+        ) : mensajeError ? (
           <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-8 text-center">
-            <p className="text-red-400">{error}</p>
+            <p className="text-red-400">{mensajeError}</p>
             <button
               type="button"
-              onClick={() => {
-                setCargando(true);
-                cargar();
-              }}
+              onClick={() => refetch()}
               className="mt-4 rounded-lg bg-blue-500 px-6 py-2 text-sm font-semibold transition-colors hover:bg-blue-600"
             >
               Reintentar

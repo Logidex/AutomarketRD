@@ -1,14 +1,11 @@
-import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 import {
   FaHeart,
   FaLocationArrow,
   FaCalendarAlt,
 } from "react-icons/fa";
-import {
-  favoritoService,
-  type AnuncioFavorito,
-} from "../services/favorito.service";
+import { useMisFavoritos, useQuitarFavorito } from "../hooks/useFavoritos";
 
 const IMAGEN_VACIA =
   "https://via.placeholder.com/600x400?text=Sin+Foto";
@@ -16,45 +13,23 @@ const IMAGEN_VACIA =
 export default function Favoritos() {
   const navigate = useNavigate();
 
-  const [favoritos, setFavoritos] = useState<AnuncioFavorito[]>([]);
-  const [cargando, setCargando] = useState(true);
-  const [error, setError] = useState("");
+  const { data: favoritos = [], isLoading: cargando, isError, refetch } = useMisFavoritos();
+  const quitarFavorito = useQuitarFavorito();
 
-  const cargar = useCallback(async () => {
+  const quitar = async (anuncioId: number) => {
     try {
-      const lista = await favoritoService.obtenerMisFavoritos();
-      setFavoritos(
-        lista.map((f) => ({ ...f, precio: Number(f.precio ?? 0) })),
-      );
-      setError("");
+      await quitarFavorito.mutateAsync(anuncioId);
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "No se pudieron cargar tus favoritos.",
-      );
-    } finally {
-      setCargando(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    cargar();
-  }, [cargar]);
-
-  const quitarFavorito = async (anuncioId: number) => {
-    try {
-      await favoritoService.quitar(anuncioId);
-      setFavoritos((prev) => prev.filter((f) => f.id !== anuncioId));
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "No se pudo quitar el favorito.",
-      );
+      void Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: err instanceof Error ? err.message : "No se pudo quitar el favorito.",
+        confirmButtonColor: "#ef4444",
+      });
     }
   };
+
+  const mensajeError = isError ? "No se pudieron cargar tus favoritos." : "";
 
   return (
     <div className="min-h-screen bg-[#0c101b] text-white">
@@ -87,15 +62,12 @@ export default function Favoritos() {
           <div className="flex items-center justify-center py-24">
             <div className="h-10 w-10 animate-spin rounded-full border-2 border-white/10 border-t-blue-500" />
           </div>
-        ) : error ? (
+        ) : mensajeError ? (
           <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-8 text-center">
-            <p className="text-red-400">{error}</p>
+            <p className="text-red-400">{mensajeError}</p>
             <button
               type="button"
-              onClick={() => {
-                setCargando(true);
-                cargar();
-              }}
+              onClick={() => refetch()}
               className="mt-4 rounded-lg bg-blue-500 px-6 py-2 text-sm font-semibold transition-colors hover:bg-blue-600"
             >
               Reintentar
@@ -176,7 +148,7 @@ export default function Favoritos() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => quitarFavorito(favorito.id)}
+                      onClick={() => quitar(favorito.id)}
                       title="Quitar de favoritos"
                       className="rounded-lg border border-white/10 px-4 py-2 text-sm text-[#9aa1b1] transition-colors hover:border-red-500/40 hover:text-red-400"
                     >

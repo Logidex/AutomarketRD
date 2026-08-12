@@ -1,9 +1,7 @@
-import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaEnvelope, FaWhatsapp, FaComments, FaCar } from "react-icons/fa";
-import { leadService } from "../services/lead.service";
-import type { LeadContactoUsuario } from "../types/lead.types";
 import { formatearFecha } from "../utils/fecha";
+import { useMisContactos } from "../hooks/useLeads";
 
 const IMAGEN_VACIA =
   "https://via.placeholder.com/600x400?text=Sin+Foto";
@@ -11,30 +9,9 @@ const IMAGEN_VACIA =
 export default function Contactados() {
   const navigate = useNavigate();
 
-  const [contactos, setContactos] = useState<LeadContactoUsuario[]>([]);
-  const [cargando, setCargando] = useState(true);
-  const [error, setError] = useState("");
+  const { data: contactos = [], isLoading: cargando, isError, refetch } = useMisContactos();
 
-  const cargar = useCallback(async () => {
-    try {
-      const lista = await leadService.obtenerMisContactos();
-      setContactos(lista);
-      setError("");
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "No se pudo cargar tus contactos.",
-      );
-    } finally {
-      setCargando(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    cargar();
-  }, [cargar]);
+  const mensajeError = isError ? "No se pudo cargar tus contactos." : "";
 
   const iconoCanal = (canal: string) => {
     switch (canal) {
@@ -79,15 +56,12 @@ export default function Contactados() {
           <div className="flex items-center justify-center py-24">
             <div className="h-10 w-10 animate-spin rounded-full border-2 border-white/10 border-t-blue-500" />
           </div>
-        ) : error ? (
+        ) : mensajeError ? (
           <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-8 text-center">
-            <p className="text-red-400">{error}</p>
+            <p className="text-red-400">{mensajeError}</p>
             <button
               type="button"
-              onClick={() => {
-                setCargando(true);
-                cargar();
-              }}
+              onClick={() => refetch()}
               className="mt-4 rounded-lg bg-blue-500 px-6 py-2 text-sm font-semibold transition-colors hover:bg-blue-600"
             >
               Reintentar

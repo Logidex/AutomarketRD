@@ -1,15 +1,14 @@
-import { useEffect, useState } from "react";
-import Swal from "sweetalert2";
+import { useEffect } from "react";
 import {
   FaEnvelopeOpenText,
   FaEnvelope,
   FaPhoneAlt,
   FaReply,
 } from "react-icons/fa";
-import { leadService } from "../services/lead.service";
 import type { LeadDealer } from "../types/lead.types";
 import Spinner from "../components/Spinner";
 import { formatearFecha } from "../utils/fecha";
+import { useMisLeads, useMarcarTodosLeidos } from "../hooks/useLeads";
 
 const construirMailtoRespuesta = (lead: LeadDealer): string => {
   const vehiculo = lead.anuncio
@@ -23,39 +22,23 @@ const construirMailtoRespuesta = (lead: LeadDealer): string => {
 };
 
 export default function Leads() {
-  const [leads, setLeads] = useState<LeadDealer[]>([]);
-  const [cargando, setCargando] = useState(true);
+  const { data: leads = [], isLoading: cargando } = useMisLeads();
+  const marcarTodosLeidos = useMarcarTodosLeidos();
 
   useEffect(() => {
-    const fetchLeads = async () => {
-      try {
-        setCargando(true);
-        const data = await leadService.obtenerMisLeads();
-        setLeads(data);
+    // Al abrir el panel se marcan todos como leídos automáticamente:
+    // evita que el dealer tenga que marcar mensaje por mensaje.
+    const timeout = window.setTimeout(() => {
+      marcarTodosLeidos.mutate(undefined, {
+        onSuccess: () => {
+          window.dispatchEvent(new Event("leads:cambiado"));
+        },
+        onError: () => {},
+      });
+    }, 0);
 
-        // Al abrir el panel se marcan todos como leídos automáticamente:
-        // evita que el dealer tenga que marcar mensaje por mensaje.
-        leadService
-          .marcarTodosLeidos()
-          .then(() => {
-            setLeads((prev) => prev.map((lead) => ({ ...lead, leido: true })));
-            window.dispatchEvent(new Event("leads:cambiado"));
-          })
-          .catch(() => {});
-      } catch (error) {
-        console.error(error);
-        Swal.fire({
-          title: "Error",
-          text: "No se pudieron cargar los leads.",
-          icon: "error",
-          confirmButtonColor: "#ef4444",
-        });
-      } finally {
-        setCargando(false);
-      }
-    };
-
-    fetchLeads();
+    return () => window.clearTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const noLeidos = leads.filter((lead) => !lead.leido).length;
