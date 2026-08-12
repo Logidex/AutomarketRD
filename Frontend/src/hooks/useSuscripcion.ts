@@ -50,3 +50,15 @@ export const useGenerarLinkPago = () => {
       pagosService.generarLinkPago(plan, ciclo),
   });
 };
+
+export const useConfirmarPago = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (orderId: string) => pagosService.confirmarPago(orderId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['suscripcion'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-resumen'] });
+    },
+  });
+};

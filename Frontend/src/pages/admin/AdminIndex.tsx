@@ -1,34 +1,20 @@
-import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
-import { adminService, type AdminResumen } from "../../services/admin.service";
 import Spinner from "../../components/Spinner";
+import { useAdminResumen } from "../../hooks/useAdmin";
 
 export default function AdminIndex() {
-  const [resumen, setResumen] = useState<AdminResumen | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: resumen, isLoading, isError, error } = useAdminResumen();
 
-  useEffect(() => {
-    async function cargarResumen() {
-      try {
-        const data = await adminService.obtenerResumen();
-        setResumen(data);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } catch (error: any) {
-        await Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: error.message || "No se pudo cargar el resumen.",
-          confirmButtonColor: "#7c3aed",
-        });
-      } finally {
-        setLoading(false);
-      }
-    }
+  if (isError) {
+    void Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: error instanceof Error ? error.message : "No se pudo cargar el resumen.",
+      confirmButtonColor: "#7c3aed",
+    });
+  }
 
-    cargarResumen();
-  }, []);
-
-  if (loading) {
+  if (isLoading) {
     return <Spinner />;
   }
 

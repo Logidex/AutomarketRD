@@ -1,27 +1,21 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { FaPaypal } from "react-icons/fa";
-import { planesService, type PlanCatalogo } from "../services/planes.service";
+import { type PlanCatalogo } from "../services/planes.service";
 import { authService } from "../services/auth.service";
 import { ROLES } from "../constants/roles";
 import { formatearRD$, precioCicloDe, type Ciclo } from "../utils/formato";
 import logo from "../assets/AutoMarketRD_Logo.svg";
 import MenuPublico from "../components/layout/MenuPublico";
+import { usePlanesCatalogo } from "../hooks/useSuscripcion";
 
 const CICLOS: Ciclo[] = ["Mensual", "Trimestral", "Anual"];
 
 export default function Suscripcion() {
-  const [planes, setPlanes] = useState<PlanCatalogo[]>([]);
+  const { data: planes = [] } = usePlanesCatalogo();
   const [ciclo, setCiclo] = useState<Ciclo>("Mensual");
   const navigate = useNavigate();
-
-  useEffect(() => {
-    planesService
-      .obtenerCatalogo()
-      .then(setPlanes)
-      .catch(() => setPlanes([]));
-  }, []);
 
   const planesPago = planes.filter((p) => p.nivel !== "Gratis");
   const planGratis = planes.find((p) => p.nivel === "Gratis");

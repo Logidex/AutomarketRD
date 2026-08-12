@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   FaArrowLeft,
@@ -12,12 +11,9 @@ import {
   FaUser,
   FaWhatsapp,
 } from "react-icons/fa";
-import { catalogoService } from "../services/catalogo.service";
-import { dealerService, type PerfilDealerPublico } from "../services/dealer.service";
 import type { AnuncioListado } from "../types/anuncio.types";
 import Spinner from "../components/Spinner";
-
-const CANTIDAD_ANUNCIOS = 50;
+import { usePerfilDealerPublico, useAnunciosVendedor } from "../hooks/usePerfilDealer";
 
 export default function VendedorPublico() {
   const { id } = useParams<{ id: string }>();
@@ -26,65 +22,21 @@ export default function VendedorPublico() {
   const vendedorId = Number(id);
   const esIdInvalido = !Number.isInteger(vendedorId) || vendedorId <= 0;
 
-  const [perfil, setPerfil] = useState<PerfilDealerPublico | null>(null);
-  const [anuncios, setAnuncios] = useState<AnuncioListado[]>([]);
-  const [cargando, setCargando] = useState(true);
-  const [noEncontrado, setNoEncontrado] = useState(false);
-  const [error, setError] = useState("");
+  const { data: perfil = null, isLoading: cargandoPerfil, isError, error } =
+    usePerfilDealerPublico(vendedorId, !esIdInvalido);
+  const { data: anuncios = [], isLoading: cargandoAnuncios } = useAnunciosVendedor(
+    vendedorId,
+    !esIdInvalido,
+  );
 
-  useEffect(() => {
-    if (esIdInvalido) return;
-
-    let activo = true;
-
-    const cargar = async () => {
-      try {
-        const [datosPerfil, resultado] = await Promise.all([
-          dealerService.obtenerPerfilPublico(vendedorId),
-          catalogoService.buscar({
-            vendedorId,
-            paginaActual: 1,
-            cantidadAnuncios: CANTIDAD_ANUNCIOS,
-          }),
-        ]);
-
-        if (!activo) return;
-
-        const items = resultado.items.map((a) => ({
-          ...a,
-          precio: Number(a.precio ?? 0),
-          kilometraje: Number(a.kilometraje ?? 0),
-        }));
-
-        setPerfil(datosPerfil);
-        setAnuncios(items);
-      } catch (err) {
-        if (!activo) return;
-
-        if (err instanceof Error && err.message.includes("404")) {
-          setNoEncontrado(true);
-        } else {
-          setError(
-            err instanceof Error
-              ? err.message
-              : "No se pudo cargar el perfil del vendedor."
-          );
-        }
-      } finally {
-        if (activo) setCargando(false);
-      }
-    };
-
-    cargar();
-
-    return () => {
-      activo = false;
-    };
-  }, [vendedorId, esIdInvalido]);
+  const cargando = cargandoPerfil || cargandoAnuncios;
 
   if (cargando && !esIdInvalido) {
     return <Spinner />;
   }
+
+  const noEncontrado = isError && error instanceof Error && error.message.includes("404");
+  const errorGeneral = isError && !noEncontrado ? (error instanceof Error ? error.message : "No se pudo cargar el perfil del vendedor.") : "";
 
   const esParticular = perfil?.esVendedorParticular === true;
   const inicial = (perfil?.nombreAgencia ?? "V").trim().charAt(0).toUpperCase() || "V";
@@ -207,9 +159,9 @@ export default function VendedorPublico() {
         </main>
       ) : (
         <main className="mx-auto max-w-6xl px-6 py-10 sm:px-8">
-          {error ? (
+          {errorGeneral ? (
             <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-8 text-center">
-              <p className="text-red-400">{error}</p>
+              <p className="text-red-400">{errorGeneral}</p>
             </div>
           ) : (
             <>

@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { FaCheckCircle, FaExclamationCircle, FaSpinner, FaTachometerAlt } from "react-icons/fa";
-import { pagosService } from "../services/pagos.service";
 import logo from "../assets/AutoMarketRD_Logo.svg";
+import { useConfirmarPago } from "../hooks/useSuscripcion";
 
 type Estado = "procesando" | "exito" | "error";
 
@@ -10,6 +10,7 @@ export default function PagoExitoso() {
   const [params] = useSearchParams();
 
   const orderId = params.get("token");
+  const confirmarPago = useConfirmarPago();
   const [estado, setEstado] = useState<Estado>(orderId ? "procesando" : "exito");
   const [mensajeError, setMensajeError] = useState<string>("");
 
@@ -18,8 +19,8 @@ export default function PagoExitoso() {
 
     let activo = true;
 
-    pagosService
-      .confirmarPago(orderId)
+    confirmarPago
+      .mutateAsync(orderId)
       .then(() => {
         if (activo) setEstado("exito");
       })
@@ -35,6 +36,7 @@ export default function PagoExitoso() {
     return () => {
       activo = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderId]);
 
   return (
