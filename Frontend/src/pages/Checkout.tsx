@@ -1,10 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import { FaPaypal, FaSpinner, FaStore } from "react-icons/fa";
-import { planesService, type PlanCatalogo } from "../services/planes.service";
-import { pagosService } from "../services/pagos.service";
 import { authService } from "../services/auth.service";
+import { usePlanesCatalogo, useGenerarLinkPago } from "../hooks/useSuscripcion";
 import { ROLES } from "../constants/roles";
 import { formatearRD$, precioCicloDe, type Ciclo } from "../utils/formato";
 import logo from "../assets/AutoMarketRD_Logo.svg";
@@ -19,15 +18,9 @@ export default function Checkout() {
   const ciclo: Ciclo =
     cicloParam === "Trimestral" || cicloParam === "Anual" ? cicloParam : "Mensual";
 
-  const [planes, setPlanes] = useState<PlanCatalogo[]>([]);
+  const { data: planes = [] } = usePlanesCatalogo();
+  const generarLinkPago = useGenerarLinkPago();
   const [procesando, setProcesando] = useState(false);
-
-  useEffect(() => {
-    planesService
-      .obtenerCatalogo()
-      .then(setPlanes)
-      .catch(() => setPlanes([]));
-  }, []);
 
   const plan = planes.find((p) => p.nivel === planNivel) ?? null;
   const precio = plan ? precioCicloDe(plan, ciclo) : 0;
@@ -51,7 +44,7 @@ export default function Checkout() {
     setProcesando(true);
 
     try {
-      const { url } = await pagosService.generarLinkPago(plan.nivel, ciclo);
+      const { url } = await generarLinkPago.mutateAsync({ plan: plan.nivel, ciclo });
       window.location.assign(url);
     } catch (err) {
       await Swal.fire({
