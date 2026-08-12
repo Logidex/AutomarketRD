@@ -8,6 +8,7 @@
 .env
 .env.dev
 .env.prod
+.env.staging
 *.env
 !*.env.example
 

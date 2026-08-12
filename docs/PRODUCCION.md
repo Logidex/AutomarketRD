@@ -18,8 +18,10 @@ qué bloquea un lanzamiento y qué es solo recomendable.
 - [x] **Frontend de comprador funcional** — login/registro, favoritos, historial,
       leads desde la ficha, comparador.
 - [x] **Panel de administración (frontend)** — usuarios, anuncios y planes.
-- [ ] **Flujo de pago verificado contra PayPal real** — funciona en local
-      (`confirmar-pago` idempotente + webhook); falta probarlo con una cuenta real.
+- [x] **Flujo de pago verificado contra PayPal real** — funciona en local
+      (`confirmar-pago` idempotente + webhook); confirmado en staging con
+      credenciales sandbox reales (env `Staging`). Falta probar contra una cuenta
+      **live** de PayPal antes de lanzar a producción.
 - [ ] **Correos operativos llegando a la bandeja** — depende del SMTP real (sección B).
 - [ ] **Automatización E2E (recomendado)** — Playwright que recorra registrar → publicar →
       comprar plan; así el CI valida la UX, no solo el build y el lint.

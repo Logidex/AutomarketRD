@@ -46,9 +46,12 @@ AutoMarketRDSpn/
 │   ├── AutoMarket.Core/
 │   ├── AutoMarket.Infrastructure/
 │   ├── docker-compose.dev.yml
+│   ├── docker-compose.staging.yml
 │   ├── docker-compose.prod.yml
 │   ├── .env.dev
+│   ├── .env.staging
 │   ├── .env.prod
+│   ├── .env.staging.example
 │   └── .env.example
 ├── Frontend/
 │   ├── src/
@@ -192,7 +195,46 @@ Para detenerlo:
 docker compose -f docker-compose.prod.yml --env-file .env.prod down
 ```
 
-### 8. Aplicar migraciones manualmente
+### 8. Levantar el backend en modo staging
+
+El entorno de staging replica la configuración de producción pero con credenciales
+de PayPal Sandbox y su propia base de datos. Es el entorno donde se prueban los
+flujos de pago antes de salir a producción.
+
+```bash
+cd Backend
+# Copiar la plantilla y editar las credenciales de PayPal Sandbox
+cp .env.staging.example .env.staging
+
+# Levantar (el api fallara al iniciar si falta PAYPAL_CLIENT_ID/SECRET/RETURN_URL/CANCEL_URL)
+docker compose -f docker-compose.staging.yml --env-file .env.staging up -d
+```
+
+Ver logs:
+
+```bash
+docker compose -f docker-compose.staging.yml --env-file .env.staging logs -f api
+```
+
+Detener:
+
+```bash
+docker compose -f docker-compose.staging.yml --env-file .env.staging down
+```
+
+URLs locales de staging:
+
+- Frontend: `http://localhost:5174`
+- API: `http://localhost:8081`
+- Health check: `http://localhost:8081/health/ready`
+
+> **Importante**: las credenciales de PayPal (`PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`)
+> son obligatorias en `.env.staging`. Si se dejan las del placeholder, el endpoint
+> `/api/pagos/generar-link` devolverá HTTP 500 porque PayPal Sandbox las rechazará
+> con `401 Unauthorized`. Obtén credenciales reales en
+> https://developer.paypal.com/dashboard/applications/sandbox.
+
+### 9. Aplicar migraciones manualmente
 
 Las migraciones suelen aplicarse automáticamente al iniciar, pero si necesitas ejecutarlas manualmente:
 
@@ -382,8 +424,8 @@ git checkout -b feature/nueva-pantalla
 
 ## Seguridad
 
-- Nunca subir `.env.dev` ni `.env.prod` al repositorio.
-- Usar `.env.example` como plantilla.
+- Nunca subir `.env.dev`, `.env.staging` ni `.env.prod` al repositorio.
+- Usar `.env.example` y `.env.staging.example` como plantillas.
 - Guardar secrets en GitHub Secrets si se usa CI/CD.
 - No exponer credenciales reales en el README.
 

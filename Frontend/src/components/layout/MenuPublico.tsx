@@ -9,6 +9,12 @@ interface OpcionCompra {
   to: string;
 }
 
+interface OpcionLegal {
+  etiqueta: string;
+  descripcion: string;
+  to: string;
+}
+
 const OPCIONES_COMPRA: OpcionCompra[] = [
   {
     etiqueta: "Carros nuevos",
@@ -37,9 +43,34 @@ const OPCIONES_COMPRA: OpcionCompra[] = [
   },
 ];
 
+const OPCIONES_LEGAL: OpcionLegal[] = [
+  {
+    etiqueta: "Términos y Condiciones",
+    descripcion: "Reglas de uso de la plataforma",
+    to: "/terminos",
+  },
+  {
+    etiqueta: "Política de Privacidad",
+    descripcion: "Tratamiento de datos personales",
+    to: "/privacidad",
+  },
+  {
+    etiqueta: "Política de Reembolso",
+    descripcion: "Condiciones para devoluciones",
+    to: "/reembolso",
+  },
+  {
+    etiqueta: "Contacto",
+    descripcion: "Soporte y consultas",
+    to: "/contacto",
+  },
+];
+
 export default function MenuPublico() {
   const [menuAbierto, setMenuAbierto] = useState(false);
+  const [menuLegalAbierto, setMenuLegalAbierto] = useState(false);
   const contenedorRef = useRef<HTMLDivElement>(null);
+  const contenedorLegalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const cerrarFuera = (e: MouseEvent) => {
@@ -48,6 +79,12 @@ export default function MenuPublico() {
         !contenedorRef.current.contains(e.target as Node)
       ) {
         setMenuAbierto(false);
+      }
+      if (
+        contenedorLegalRef.current &&
+        !contenedorLegalRef.current.contains(e.target as Node)
+      ) {
+        setMenuLegalAbierto(false);
       }
     };
 
@@ -78,24 +115,26 @@ export default function MenuPublico() {
         {menuAbierto && (
           <div
             role="menu"
-            className="absolute right-0 top-[calc(100%+10px)] z-50 w-72 overflow-hidden rounded-xl border border-white/10 bg-[#13161d] py-2 shadow-2xl"
+            className="absolute right-0 top-full z-50 w-72 pt-2"
           >
-            {OPCIONES_COMPRA.map((opcion) => (
-              <Link
-                key={opcion.to}
-                to={opcion.to}
-                role="menuitem"
-                onClick={() => setMenuAbierto(false)}
-                className="block px-5 py-3 transition-colors hover:bg-white/5"
-              >
-                <span className="block font-semibold text-white">
-                  {opcion.etiqueta}
-                </span>
-                <span className="block text-xs text-[#9aa1b1]">
-                  {opcion.descripcion}
-                </span>
-              </Link>
-            ))}
+            <div className="overflow-hidden rounded-xl border border-white/10 bg-[#13161d] py-2 shadow-2xl">
+              {OPCIONES_COMPRA.map((opcion) => (
+                <Link
+                  key={opcion.to}
+                  to={opcion.to}
+                  role="menuitem"
+                  onClick={() => setMenuAbierto(false)}
+                  className="block px-5 py-3 transition-colors hover:bg-white/5"
+                >
+                  <span className="block font-semibold text-white">
+                    {opcion.etiqueta}
+                  </span>
+                  <span className="block text-xs text-[#9aa1b1]">
+                    {opcion.descripcion}
+                  </span>
+                </Link>
+              ))}
+            </div>
           </div>
         )}
       </div>
@@ -130,6 +169,51 @@ export default function MenuPublico() {
       >
         Precios
       </Link>
+
+      {/* LEGAL */}
+      <div
+        ref={contenedorLegalRef}
+        className="relative"
+        onMouseEnter={() => setMenuLegalAbierto(true)}
+        onMouseLeave={() => setMenuLegalAbierto(false)}
+      >
+        <button
+          type="button"
+          aria-expanded={menuLegalAbierto}
+          aria-haspopup="menu"
+          onClick={() => setMenuLegalAbierto((abierto) => !abierto)}
+          className="flex items-center gap-1.5 text-[#9aa1b1] transition-colors hover:text-white"
+        >
+          Legal
+          <FaChevronDown className="text-[10px]" />
+        </button>
+
+        {menuLegalAbierto && (
+          <div
+            role="menu"
+            className="absolute right-0 top-full z-50 w-72 pt-2"
+          >
+            <div className="overflow-hidden rounded-xl border border-white/10 bg-[#13161d] py-2 shadow-2xl">
+              {OPCIONES_LEGAL.map((opcion) => (
+                <Link
+                  key={opcion.to}
+                  to={opcion.to}
+                  role="menuitem"
+                  onClick={() => setMenuLegalAbierto(false)}
+                  className="block px-5 py-3 transition-colors hover:bg-white/5"
+                >
+                  <span className="block font-semibold text-white">
+                    {opcion.etiqueta}
+                  </span>
+                  <span className="block text-xs text-[#9aa1b1]">
+                    {opcion.descripcion}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
 
       <NavbarUsuario />
     </nav>

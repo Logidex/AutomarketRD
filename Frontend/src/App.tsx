@@ -16,6 +16,12 @@ const Checkout = lazy(() => import('./pages/Checkout'));
 const PagoExitoso = lazy(() => import('./pages/PagoExitoso'));
 const PagoCancelado = lazy(() => import('./pages/PagoCancelado'));
 
+// Páginas legales y de contenido estático
+const Terminos = lazy(() => import('./pages/legales/Terminos'));
+const Privacidad = lazy(() => import('./pages/legales/Privacidad'));
+const Reembolso = lazy(() => import('./pages/legales/Reembolso'));
+const Contacto = lazy(() => import('./pages/legales/Contacto'));
+
 // Componentes de estructura
 import ProtectedRoute from './components/ProtectedRoute';
 const DashboardLayout = lazy(() => import('./components/layout/DashboardLayout'));
@@ -88,6 +94,12 @@ function App() {
         {/* RESULTADO DE PAGO PAYPAL */}
         <Route path="/pago-exitoso" element={<PagoExitoso />} />
         <Route path="/pago-cancelado" element={<PagoCancelado />} />
+
+        {/* PÁGINAS LEGALES Y DE CONTENIDO ESTÁTICO */}
+        <Route path="/terminos" element={<Terminos />} />
+        <Route path="/privacidad" element={<Privacidad />} />
+        <Route path="/reembolso" element={<Reembolso />} />
+        <Route path="/contacto" element={<Contacto />} />
 
         {/* AUTENTICACIÓN */}
         <Route path="/login" element={<Login />} />

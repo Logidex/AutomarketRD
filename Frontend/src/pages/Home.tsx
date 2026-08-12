@@ -400,9 +400,23 @@ export default function Home() {
       <footer className="border-t border-white/10 py-8">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 text-sm text-[#9aa1b1] sm:flex-row sm:px-8">
           <span>© 2026 AutoMarket RD. Todos los derechos reservados.</span>
-          <Link to="/precios" className="transition-colors hover:text-white">
-            Planes y precios
-          </Link>
+          <nav className="flex flex-wrap items-center justify-center gap-4">
+            <Link to="/terminos" className="transition-colors hover:text-white">
+              Términos
+            </Link>
+            <Link to="/privacidad" className="transition-colors hover:text-white">
+              Privacidad
+            </Link>
+            <Link to="/reembolso" className="transition-colors hover:text-white">
+              Reembolsos
+            </Link>
+            <Link to="/contacto" className="transition-colors hover:text-white">
+              Contacto
+            </Link>
+            <Link to="/precios" className="transition-colors hover:text-white">
+              Planes y precios
+            </Link>
+          </nav>
         </div>
       </footer>
     </div>
