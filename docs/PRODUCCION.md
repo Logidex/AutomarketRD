@@ -8,97 +8,115 @@ qué bloquea un lanzamiento y qué es solo recomendable.
 
 ## A. Funciones pendientes (producto)
 
-> Estas son funcionalidades que aún no existen o están a medias. Bloquean "tener un
-> marketplace completo", pero no bloquean al panel interno del dealer.
+> Todo el frontend de producto ya existe y está migrado a TanStack Query. Esta sección
+> queda para lo que aún no existe o depende de servicios reales.
 
-- [ ] **Home / vitrina pública** — catálogo de vehículos visible para visitantes
-      (hoy el frontend público es placeholder; la API de búsqueda ya existe).
-- [ ] **Detalle de vehículo para compradores** — ficha pública con fotos, equipo,
-      descripción y botón "Contactar" (crea el lead).
-- [ ] **Página pública del vendedor (`/vendedor/:id`)** — perfil público con anuncios.
-- [ ] **Frontend de comprador funcional** — login/registro del comprador, favoritos,
-      historial, creación de leads desde la ficha.
-- [ ] **Panel de administración (frontend)** — el backend admin existe (`AdminController`),
-      la UI administrativa no.
-- [ ] **Flujo de pago verificado** — el flujo funciona en local (retorno `confirmar-pago`),
-      falta probarlo contra una cuenta PayPal real.
-- [ ] **Correos operativos** — confirmaciones de registro, lead nuevo y recordatorio de
-      renovación llegando realmente a la bandeja (depende del SMTP real, sección B).
+- [x] **Home / vitrina pública** — catálogo con filtros y búsqueda.
+- [x] **Detalle de vehículo para compradores** — ficha con fotos, equipo, descripción
+      y "Contactar" (crea el lead).
+- [x] **Página pública del vendedor (`/vendedor/:id`)** — perfil público con anuncios.
+- [x] **Frontend de comprador funcional** — login/registro, favoritos, historial,
+      leads desde la ficha, comparador.
+- [x] **Panel de administración (frontend)** — usuarios, anuncios y planes.
+- [ ] **Flujo de pago verificado contra PayPal real** — funciona en local
+      (`confirmar-pago` idempotente + webhook); falta probarlo con una cuenta real.
+- [ ] **Correos operativos llegando a la bandeja** — depende del SMTP real (sección B).
 - [ ] **Automatización E2E (recomendado)** — Playwright que recorra registrar → publicar →
-      comprar plan; así el CI valida la UX, no solo el build.
+      comprar plan; así el CI valida la UX, no solo el build y el lint.
 
 ---
 
 ## B. Requisitos de operación y claves (obligatorio para lanzar)
 
 > Ninguno de estos es "código", pero sin ellos la API no sirve de verdad en producción.
-> Varios de estos se prueban solo contra servicios reales.
 
 ### B.1 Credenciales reales (hoy son placeholders en `.env`/user-secrets)
 - [ ] **Base de datos**: cambiar `POSTGRES_PASSWORD` y la `CONNECTION_STRING` por un secreto fuerte.
 - [ ] **JWT**: secreto largo y rotado (min 32+ chars, no el de ejemplo).
 - [ ] **SMTP**: host/puerto/usuario/password reales.
-- [ ] **AWS S3**: access key, secret key, bucket y región; bucket privado con URLs firmadas para las fotos.
+- [ ] **AWS S3**: access key, secret key, bucket y región; bucket privado con URLs firmadas.
 - [ ] **PayPal**: pasar de `sandbox` a **producción** (`PAYPAL_URL_BASE=https://api-m.paypal.com`),
       `CLIENT_ID`/`CLIENT_SECRET` reales, y configurar el **webhook** (B.2).
 - [ ] **Admin inicial**: email/contraseña reales y `ADMIN_ROTATE_PASSWORD=false`.
 - [ ] **CORS**: permitir solo el dominio real (`https://tudominio.com`), no `*`.
 
-### B.2 El entpo de red
+### B.2 El entorno de red
 - [ ] **Dominio + HTTPS** (proxy inverso / load balancer, ej. Nginx, Caddy, Cloudflare, un VPS).
-- [ ] **URLs de retorno/cancelación PayPal** apuntando al dominio HTTPS real
-      (`PAYPAL_RETURN_URL`/`PAYPAL_CANCEL_URL`).
-- [ ] **Webhook de PayPal operativo**: necesita URL pública (https://tudominio.com/api/pagos/webhook)
-      y el `PAYPAL_WEBHOOK_ID` verificado.
-- [ ] **Base de datos** en servicio gestionado o VPS con backup (sección B.4).
+- [ ] **URLs de retorno/cancelación PayPal** apuntando al dominio HTTPS real.
+- [ ] **Webhook de PayPal operativo**: URL pública (`https://tudominio.com/api/pagos/webhook`)
+      y `PAYPAL_WEBHOOK_ID` verificado.
+- [ ] **Base de datos** en servicio gestionado o VPS con backup (B.4).
 
 ### B.3 Despliegue de la API
 - [ ] **Migraciones**: `dotnet ef database update` como paso del deploy (no auto-migrate en prod).
-- [ ] **Seeder desactivado**: confirmar que en `Release` no se crea/rotada datos ni el admin (gate por
-      `Development`/`Seeder:Enabled`).
+- [ ] **Seeder desactivado**: confirmar que en `Release` no se crea/rota datos ni el admin
+      (gate por `Development`/`Seeder:Enabled`).
 - [ ] **Swagger/Scalar cerrado**: verificado en producción (response 404).
-- [ ] **Publicación optimizada**: `dotnet publish -c Release` con runtime-publish (self-contained o framework).
+- [ ] **Publicación optimizada**: `dotnet publish -c Release` (self-contained o framework).
 - [ ] **Secretos no versionados**: config vía entorno/Secrets Manager, nunca en el repo.
+- [ ] **Deploy automatizado con rollback por tags**: elegir destino (VPS con Docker,
+      PaaS, registro de imágenes) y conectar el workflow de release a la tag `v*`.
 
 ### B.4 Operación día a día
 - [ ] **Backups automáticos** de la base de datos (diarios + retención).
-- [ ] **Monitoreo/logs**: recoger logs con correlación (Serilog claro o OpenTelemetry/Application Insights)
-      y alertas de errores.
-- [ ] **Health checks conectados**: `/health` y `/health/ready` expuestos al balanceador/reverse proxy.
+- [ ] **Monitoreo/logs**: logs con correlación (Serilog claro o OpenTelemetry) y alertas.
+- [ ] **Health checks conectados**: `/health` y `/health/ready` al balanceador/reverse proxy.
 - [ ] **Medición de `Frontend`**: build estático servido por CDN o reverse proxy con cache.
 
 ---
 
 ## C. Endurecimiento (recomendable antes del lanzamiento)
 
-> Son mejoras que bajan el riesgo. Pueden ir después del lanzamiento, pero mejor antes.
-
 - [ ] **Rate limiting** en login, registro y creación de leads (evitar abuso/spam).
 - [ ] **Cabeceras de seguridad** (HSTS, CSP, X-Content-Type-Options) en la respuesta HTTP.
 - [ ] **Revisión de rutas públicas** para que ninguna fuga información de borradores o leads.
 - [ ] **Pruebas de carga** básica (leads y búsqueda) para conocer el techo del servidor.
-- [ ] **Playbook de rollback** documentado (restaurar backup + release anterior).
+- [x] **Playbook de rollback documentado** (sección C.5).
+
+### C.5 Playbook de rollback por tags
+
+Cada release se etiqueta con una tag semántica (`v1.2.3`) sobre `main`. Rollback =
+re-deploy de una tag anterior. Pasos:
+
+1. **Identificar el release a restaurar**: `git tag -l 'v*' --sort=-version:refname`
+   (el anterior a la última tag que causó el incidente).
+2. **Revert del código (si hace falta)**:
+   - Hotfix: `git checkout -b hotfix/<descripcion> <tag-anterior>` → corregir → PR → merge a `main`.
+   - Sin corrección: mantener la rama pero desplegar la imagen/artefacto de la tag anterior.
+3. **Redeploy del artefacto anterior**:
+   - **Docker**: `docker compose -f docker-compose.prod.yml pull` con la tag anterior
+     (imágenes versionadas con la tag de git) y `docker compose up -d --force-recreate api`.
+   - **Frontend estático**: restaurar el `dist` de la tag anterior (artefacto del CI de esa tag).
+4. **Migraciones**: si el release fallido incluyó una migración de base de datos,
+   **no** se revierte la base automáticamente. Evaluar con `dotnet ef migrations list`
+   si la migración ya corrió y aplicar el fix en un hotfix (nunca eliminar migraciones aplicadas).
+5. **Verificar**: `/health` y `/health/ready` OK; smoke test del flujo afectado
+   (login, pago, carga de vitrina).
+6. **Documentar**: fecha, tag anterior/fallida, causa, y acción correctiva en el repo
+   (issue o nota del release).
 
 ---
 
-## Estado actual (al crear este documento)
+## Estado actual (al día)
 
-- [x] Panel dealer: crear/editar anuncios, fotos S3, publicación con cupo y 5 fotos,
-      cambio de estado validado, leads y vistas solo en publicado.
-- [x] Suscripciones y pagos PayPal (link + `confirmar-pago` idempotente + webhook como respaldo).
-- [x] Downgrade de plan validando inventario activo.
-- [x] Runtime endurecido: Swagger/Scalar y Seeder solo en `Development`; sin `AddAuthorization` duplicado.
-- [x] Backend: **197 / 197 tests** (incluye controllers y servicios del dealer).
-- [x] Frontend: build + lint limpios.
-- [x] **CI** verde en GitHub Actions (push/PR a `master`): build + tests backend y build+lint frontend.
+- [x] Frontend completo: vitrina, ficha, vendedor público, comprador (favoritos/historial/
+      leads/comparador), panel dealer, panel vendedor y panel admin.
+- [x] **Frontend 100 % migrado a TanStack Query** (ninguna página llama servicios directo).
+- [x] **Code splitting**: rutas con `lazy()` + `<Suspense>`; chunk principal ~308 kB (antes ~711 kB).
+- [x] **Logo optimizado**: `AutoMarketRD_Logo.svg` de 251 kB a ~70 kB (-72 %).
+- [x] Suscripciones y pagos PayPal (link + `confirmar-pago` idempotente + webhook).
+- [x] Backend: **247 tests** y compilación `net10.0`.
+- [x] **CI** verde en GitHub Actions (push/PR a `main` y `develop`): .NET 10.0.x + Node 20,
+      build+test backend y build+lint frontend.
+- [ ] **Tests frontend** (unidad de utilidades/hooks con Vitest) — pendiente.
 
 ---
 
 ## ¿Cuándo está "listo para producción"?
 
 Si marcas todas las casillas de **A** (funciones pendientes) y **B** (operación y claves),
-y dejas **C** tan cubierta como puedas, el proyecto se considera lista.
+y dejas **C** tan cubierta como puedas, el proyecto se considera listo.
 
-Prioridad de ejecución sugerida: primero **A** (funciones de producto para que tenga sentido
-tener, luego **B** (con el deploy real de un solo golpe) y al final **C** mientras tanto
-puedes ir cerrando ítems de **C** en paralelo.
+Prioridad de ejecución sugerida: primero **A** (funciones de producto), luego **B**
+(deploy real de un solo golpe) y al final **C** mientras tanto puedes ir cerrando ítems
+de **C** en paralelo.
