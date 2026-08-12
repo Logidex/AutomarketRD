@@ -5,14 +5,16 @@ export default function Reembolso() {
     <LayoutPublico titulo="Política de Reembolso">
       <article className="prose prose-invert max-w-none space-y-6 text-[#cdd3e0]">
         <header>
-          <p className="text-sm text-[#9aa1b1]">Última actualización: TODO</p>
+          <p className="text-sm text-[#9aa1b1]">
+            Última actualización: 12 de agosto de 2026
+          </p>
         </header>
 
         <section>
           <h2 className="text-2xl font-bold text-white">1. Aplicación</h2>
           <p>
             Esta Política de Reembolso aplica a las suscripciones pagadas de
-            AutoMarket RD (planes Pro y superiores) procesadas a través de
+            AutoMarket RD (planes Básicos y posteriores) procesadas a través de
             PayPal. No aplica a la publicación de anuncios individuales ni a
             transacciones entre Compradores y Dealers, las cuales son
             responsabilidad exclusiva de las partes.
@@ -23,7 +25,7 @@ export default function Reembolso() {
           <h2 className="text-2xl font-bold text-white">2. Periodo de reembolso</h2>
           <p>
             Tienes derecho a solicitar un reembolso completo dentro de los{" "}
-            <strong>7 días naturales</strong>Posteriores a la fecha de pago
+            <strong>7 días naturales</strong> Posteriores a la fecha de pago
             de tu suscripción, siempre que cumplas las condiciones indicadas
             en esta política.
           </p>
@@ -79,12 +81,12 @@ export default function Reembolso() {
             <li>
               Envía un correo a{" "}
               <a
-                href="mailto:soporte@automarket.com"
+                href="mailto:soporte.automarketrd@gmail.com"
                 className="text-blue-400 hover:text-blue-300 underline"
               >
-                soporte@automarket.com
+                soporte.automarketrd@gmail.com
               </a>{" "}
-              (TODO) con el asunto{" "}
+               con el asunto{" "}
               <em>"Solicitud de reembolso — [tu correo de cuenta]"</em>.
             </li>
             <li>
@@ -132,23 +134,14 @@ export default function Reembolso() {
           <p>
             Para consultas sobre esta política, escríbenos a{" "}
             <a
-              href="mailto:soporte@automarket.com"
+              href="mailto:soporte.automarketrd@gmail.com"
               className="text-blue-400 hover:text-blue-300 underline"
             >
-              soporte@automarket.com
+              soporte.automarketrd@gmail.com
             </a>{" "}
-            (TODO).
           </p>
         </section>
 
-        <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/5 p-4 text-sm text-yellow-200/80">
-          <strong className="font-semibold">TODO:</strong> esta es una
-          plantilla genérica. Ajusta el plazo de 7 días según tu criterion
-          comercial, sustituye el correo y la fecha, y revísalo con
-          asesoría legal. Ten en cuenta los requisitos de política de
-          reembolso que PayPal exige para mantener una cuenta business
-          activa en producción.
-        </div>
       </article>
     </LayoutPublico>
   );

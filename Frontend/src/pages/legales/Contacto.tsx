@@ -1,8 +1,9 @@
 import LayoutPublico from "../../components/layout/LayoutPublico";
+import { Link } from "react-router-dom";
 import { FaEnvelope, FaClock, FaShieldAlt } from "react-icons/fa";
 
 export default function Contacto() {
-  const soporteEmail = "soporte@automarket.com";
+  const soporteEmail = "soporte.automarketrd@gmail.com";
 
   return (
     <LayoutPublico titulo="Contacto">
@@ -12,8 +13,8 @@ export default function Contacto() {
             ¿Cómo podemos ayudarte?
           </h1>
           <p className="text-[#9aa1b1]">
-            Nuestro equipo de soporte está disponible para resolver tus
-            dudas, problemas técnicos o consultas comerciales.
+            Nuestro equipo de soporte está disponible para resolver tus dudas,
+            problemas técnicos o consultas comerciales.
           </p>
         </header>
 
@@ -23,18 +24,13 @@ export default function Contacto() {
               <FaEnvelope />
             </div>
             <h2 className="text-lg font-semibold text-white mb-2">Email</h2>
-            <p className="text-sm text-[#9aa1b1] mb-3">
-              Escríbanos a
-            </p>
+            <p className="text-sm text-[#9aa1b1] mb-3">Escríbanos a</p>
             <a
               href={`mailto:${soporteEmail}`}
-              className="inline-block rounded-lg bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-300 transition-colors hover:bg-blue-500/20"
+              className="inline-block max-w-full break-words rounded-lg bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-300 transition-colors hover:bg-blue-500/20"
             >
               {soporteEmail}
             </a>
-            <p className="mt-3 text-xs text-[#9aa1b1]">
-              TODO: email real de soporte
-            </p>
           </div>
 
           <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 text-center">
@@ -45,12 +41,11 @@ export default function Contacto() {
               Horario de atención
             </h2>
             <p className="text-sm text-[#9aa1b1]">
-              Lunes a Viernes<br />
-              9:00 AM — 6:00 PM<br />
+              Lunes a Viernes
+              <br />
+              9:00 AM — 5:00 PM
+              <br />
               (Hora de República Dominicana)
-            </p>
-            <p className="mt-3 text-xs text-[#9aa1b1]">
-              TODO: ajustar horario real
             </p>
           </div>
 
@@ -62,12 +57,11 @@ export default function Contacto() {
               Tiempo de respuesta
             </h2>
             <p className="text-sm text-[#9aa1b1]">
-              Hasta 48 horas hábiles<br />
-              para consultas generales<br />
+              Hasta 48 horas hábiles
+              <br />
+              para consultas generales
+              <br />
               hasta 24 horas para pagos
-            </p>
-            <p className="mt-3 text-xs text-[#9aa1b1]">
-              TODO: ajustar SLAs reales
             </p>
           </div>
         </div>
@@ -86,12 +80,12 @@ export default function Contacto() {
                 Dudas sobre tu plan, facturación, cancelación, reembolsos.
                 Incluye tu correo de cuenta y el ID de orden de PayPal si
                 aplica. Consulta también nuestra{" "}
-                <a
-                  href="/reembolso"
+                <Link
+                  to="/reembolso"
                   className="text-blue-400 hover:text-blue-300 underline"
                 >
                   Política de Reembolso
-                </a>
+                </Link>
                 .
               </p>
             </div>
@@ -112,15 +106,14 @@ export default function Contacto() {
                 Verificación de cuenta
               </h3>
               <p className="text-sm">
-                Si eres Dealer y necesitas verificar tu cuenta para
-                desbloquear funciones avanzadas, envía tus documentos
-                desde tu panel en{" "}
-                <a
-                  href="/dashboard/mi-perfil"
+                Si eres Dealer y necesitas verificar tu cuenta para desbloquear
+                funciones avanzadas, envía tus documentos desde tu panel en{" "}
+                <Link
+                  to="/dashboard/mi-perfil"
                   className="text-blue-400 hover:text-blue-300 underline"
                 >
                   Mi Perfil
-                </a>
+                </Link>
                 .
               </p>
             </div>
@@ -132,8 +125,7 @@ export default function Contacto() {
               <p className="text-sm">
                 AutoMarket RD actúa como intermediario y no participa en
                 contratos de compraventa. Para disputas sobre vehículos,
-                contacta directamente al Dealer o a las autoridades
-                competentes.
+                contacta directamente al Dealer o a las autoridades competentes.
               </p>
             </div>
           </div>
@@ -151,14 +143,6 @@ export default function Contacto() {
             y te responderemos lo antes posible.
           </p>
         </section>
-
-        <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/5 p-4 text-sm text-yellow-200/80">
-          <strong className="font-semibold">TODO:</strong> esta página es
-          informativa. Para el formulario funcional con backend que guarde
-          y reenvíe los mensajes, corresponde a la Feature 3 (en roadmap).
-          Sustituye el email, el horario y los SLAs con los valores reales
-          de tu negocio.
-        </div>
       </article>
     </LayoutPublico>
   );

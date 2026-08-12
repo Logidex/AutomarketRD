@@ -1,11 +1,14 @@
 import LayoutPublico from "../../components/layout/LayoutPublico";
+import { Link } from "react-router-dom";
 
 export default function Terminos() {
   return (
     <LayoutPublico titulo="Términos y Condiciones">
       <article className="prose prose-invert max-w-none space-y-6 text-[#cdd3e0]">
         <header>
-          <p className="text-sm text-[#9aa1b1]">Última actualización: TODO</p>
+          <p className="text-sm text-[#9aa1b1]">
+            Última actualización: 12 de agosto de 2026
+          </p>
         </header>
 
         <section>
@@ -22,7 +25,7 @@ export default function Terminos() {
           <ul className="list-disc pl-6">
             <li>
               <strong>AutoMarket RD</strong>: plataforma digital de
-              compraventa de vehículos operada por TODO.
+              compraventa de vehículos operada por Erick Hipolito Lopez Genao.
             </li>
             <li>
               <strong>Dealer / Vendedor</strong>: usuario registrado que
@@ -69,12 +72,12 @@ export default function Terminos() {
             Algunas funciones del Sitio requieren la contratación de un plan
             de suscripción pagado. Los precios, ciclos de facturación y
             características de cada plan se muestran en la página{" "}
-            <a
-              href="/precios"
+            <Link
+              to="/precios"
               className="text-blue-400 hover:text-blue-300 underline"
             >
               Planes y precios
-            </a>
+            </Link>
             . El pago se procesa a través de PayPal.
           </p>
         </section>
@@ -122,21 +125,13 @@ export default function Terminos() {
           <p>
             Para consultas relacionadas con estos Términos, escríbenos a{" "}
             <a
-              href="mailto:soporte@automarket.com"
+              href="mailto:soporte.automarketrd@gmail.com"
               className="text-blue-400 hover:text-blue-300 underline"
             >
-              soporte@automarket.com
+              soporte.automarketrd@gmail.com
             </a>{" "}
-            (TODO: email real de soporte).
           </p>
         </section>
-
-        <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/5 p-4 text-sm text-yellow-200/80">
-          <strong className="font-semibold">TODO:</strong> este texto es una
-          plantilla genérica. Debes revisarlo con asesoría legal antes de
-          publicarlo oficialmente, sustituir el correo de contacto, la fecha
-          de última actualización y cualquier dato específico de tu empresa.
-        </div>
       </article>
     </LayoutPublico>
   );

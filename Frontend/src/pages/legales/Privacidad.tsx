@@ -5,22 +5,23 @@ export default function Privacidad() {
     <LayoutPublico titulo="Política de Privacidad">
       <article className="prose prose-invert max-w-none space-y-6 text-[#cdd3e0]">
         <header>
-          <p className="text-sm text-[#9aa1b1]">Última actualización: TODO</p>
+          <p className="text-sm text-[#9aa1b1]">
+            Última actualización: 12 de agosto de 2026
+          </p>
         </header>
 
         <section>
           <h2 className="text-2xl font-bold text-white">1. Responsable del tratamiento</h2>
           <p>
-            AutoMarket RD, con domicilio en TODO, es responsable del
+            AutoMarket RD, con domicilio en Santo Domingo, República Dominicana, es responsable del
             tratamiento de los datos personales recopilados a través de este
             Sitio. Puedes contactarnos en{" "}
             <a
-              href="mailto:soporte@automarket.com"
+              href="mailto:soporte.automarketrd@gmail.com"
               className="text-blue-400 hover:text-blue-300 underline"
             >
-              soporte@automarket.com
+              soporte.automarketrd@gmail.com
             </a>{" "}
-            (TODO: email real).
           </p>
         </section>
 
@@ -71,7 +72,9 @@ export default function Privacidad() {
             Tratamos tus datos con base en tu consentimiento al registrarte,
             en la ejecución del contrato de suscripción cuando aplicable, y
             en nuestro interés legítimo para operar la plataforma de forma
-            segura.
+            segura, en cumplimiento de la{" "}
+            <strong>Ley 172-13 sobre Protección de Datos Personales</strong>
+            {" "}de la República Dominicana.
           </p>
         </section>
 
@@ -122,12 +125,11 @@ export default function Privacidad() {
           <p>
             Para ejercerlos, escríbenos a{" "}
             <a
-              href="mailto:soporte@automarket.com"
+              href="mailto:soporte.automarketrd@gmail.com"
               className="text-blue-400 hover:text-blue-300 underline"
             >
-              soporte@automarket.com
+              soporte.automarketrd@gmail.com
             </a>{" "}
-            (TODO).
           </p>
         </section>
 
@@ -153,21 +155,13 @@ export default function Privacidad() {
         <section>
           <h2 className="text-2xl font-bold text-white">10. Cambios a esta política</h2>
           <p>
-           Podemos actualizar esta Política. Te avisaremos de cambios
+            Podemos actualizar esta Política. Te avisaremos de cambios
             importantes mediante la plataforma o por correo electrónico. La
             fecha de "última actualización" al inicio refleja la versión
-            vigente.
+            vigente. Si haces uso de la plataforma después de los cambios,
+            se considerará que los aceptas.
           </p>
         </section>
-
-        <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/5 p-4 text-sm text-yellow-200/80">
-          <strong className="font-semibold">TODO:</strong> este texto es una
-          plantilla genérica. Revísalo con asesoría legal, sustituye el
-          domicilio, el correo de contacto y la fecha de actualización
-          antes de publicarlo oficialmente. Si procesas datos de
-          usuarios europeos, considera alinearlo con GDPR; en República
-          Dominicana, con la Ley 172-13 sobre datos personales.
-        </div>
       </article>
     </LayoutPublico>
   );
