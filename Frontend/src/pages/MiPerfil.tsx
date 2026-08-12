@@ -8,15 +8,13 @@ import {
   FaTimes,
   FaSave,
 } from "react-icons/fa";
-import {
-  perfilDealerService,
-  type PerfilDealer,
-} from "../services/perfilDealer.service";
+import type { PerfilDealer } from "../services/perfilDealer.service";
 import { getUserIdFromToken } from "../utils/jwt.util";
 import { useLoading } from "../context/LoadingContext";
 import Spinner from "../components/Spinner";
 import SeccionCambiarCorreo from "../components/SeccionCambiarCorreo";
 import SeccionCambiarPassword from "../components/SeccionCambiarPassword";
+import { usePerfilDealer, useActualizarPerfilDealer } from "../hooks/usePerfilDealer";
 
 const CAMPOS_VACIOS = {
   nombreAgencia: "",
@@ -42,7 +40,6 @@ export default function MiPerfil() {
   const usuarioId = getUserIdFromToken();
   const { setLoading } = useLoading();
 
-  const [cargando, setCargando] = useState(true);
   const [perfilExiste, setPerfilExiste] = useState(false);
   const [modoEdicion, setModoEdicion] = useState(false);
 
@@ -53,47 +50,37 @@ export default function MiPerfil() {
   const [logo, setLogo] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState("");
 
+  const { data: perfil, isLoading: cargando, isError, error } = usePerfilDealer(usuarioId);
+  const actualizarPerfil = useActualizarPerfilDealer();
+
+  const esNoEncontrado =
+    isError && error instanceof Error && "response" in error &&
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (error as any).response?.status === 404;
+
+  // Sincroniza el formulario cuando el perfil llega del servidor.
   useEffect(() => {
-    if (usuarioId === null) return;
+    if (!perfil) return;
+    const valores = mapearCampos(perfil);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setForm(valores);
+    setCamposGuardados(valores);
+    setLogoUrlGuardado(perfil.logoUrl ?? "");
+    setLogoPreview(perfil.logoUrl ?? "");
+    setPerfilExiste(true);
+  }, [perfil]);
 
-    const cargarPerfil = async () => {
-      setCargando(true);
-      setLoading(true);
-      try {
-        const data = await perfilDealerService.obtenerPerfil(usuarioId);
-
-        const valores = mapearCampos(data);
-        setForm(valores);
-        setCamposGuardados(valores);
-        setLogoUrlGuardado(data.logoUrl ?? "");
-        setLogoPreview(data.logoUrl ?? "");
-        setPerfilExiste(true);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } catch (error: any) {
-        if (error?.response?.status === 404) {
-          // Primera vez: aún no hay perfil creado en la base de datos
-          setPerfilExiste(false);
-          setForm(CAMPOS_VACIOS);
-          setCamposGuardados(CAMPOS_VACIOS);
-          setLogoUrlGuardado("");
-          setLogoPreview("");
-        } else {
-          console.error(error);
-          Swal.fire({
-            title: "Error",
-            text: error.message || "No se pudo cargar tu perfil.",
-            icon: "error",
-            confirmButtonColor: "#ef4444",
-          });
-        }
-      } finally {
-        setCargando(false);
-        setLoading(false);
-      }
-    };
-
-    cargarPerfil();
-  }, [usuarioId, setLoading]);
+  useEffect(() => {
+    if (isError && !esNoEncontrado) {
+      Swal.fire({
+        title: "Error",
+        text: error instanceof Error ? error.message : "No se pudo cargar tu perfil.",
+        icon: "error",
+        confirmButtonColor: "#ef4444",
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isError]);
 
   const hayCambios =
     logo !== null ||
@@ -131,7 +118,7 @@ export default function MiPerfil() {
 
     setLoading(true);
     try {
-      const data = await perfilDealerService.actualizarPerfil({
+      const data = await actualizarPerfil.mutateAsync({
         ...form,
         logo: logo ?? undefined,
       });

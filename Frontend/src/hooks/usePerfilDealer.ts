@@ -1,6 +1,7 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { dealerService, type PerfilDealerPublico } from '../services/dealer.service';
 import { catalogoService } from '../services/catalogo.service';
+import { perfilDealerService, type PerfilDealer, type PerfilDealerUpdate } from '../services/perfilDealer.service';
 import type { AnuncioListado } from '../types/anuncio.types';
 
 const CANTIDAD_ANUNCIOS = 50;
@@ -32,5 +33,25 @@ export const useAnunciosVendedor = (vendedorId: number, enabled = true) => {
     },
     enabled: enabled && vendedorId > 0,
     staleTime: 1000 * 60 * 5,
+  });
+};
+
+export const usePerfilDealer = (usuarioId: number | null, enabled = true) => {
+  return useQuery<PerfilDealer>({
+    queryKey: ['mi-perfil-dealer', usuarioId],
+    queryFn: () => perfilDealerService.obtenerPerfil(usuarioId as number),
+    enabled: enabled && usuarioId !== null,
+    staleTime: 1000 * 60 * 2,
+    retry: false,
+  });
+};
+
+export const useActualizarPerfilDealer = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (dto: PerfilDealerUpdate) => perfilDealerService.actualizarPerfil(dto),
+    onSuccess: (perfil) => {
+      queryClient.setQueryData(['mi-perfil-dealer', perfil.id], perfil);
+    },
   });
 };

@@ -12,17 +12,25 @@ import {
   FaUserEdit,
 } from 'react-icons/fa';
 import { authService } from '../services/auth.service';
-import {
-  usuarioService,
-  type UsuarioCuenta,
-} from '../services/usuario.service';
 import Spinner from '../components/Spinner';
+import {
+  useUsuarioCuenta,
+  useActualizarDatos,
+  useCambiarPassword,
+  useConfirmarCambioPassword,
+  useSolicitarCambioEmail,
+  useConfirmarCambioEmail,
+} from '../hooks/useUsuario';
 
 const PASSWORD_MIN = 6;
 
 export default function EditarCuenta() {
-  const [cuenta, setCuenta] = useState<UsuarioCuenta | null>(null);
-  const [cargando, setCargando] = useState(true);
+  const { data: cuenta, isLoading: cargando } = useUsuarioCuenta();
+  const actualizarDatos = useActualizarDatos();
+  const cambiarPassword = useCambiarPassword();
+  const confirmarCambioPassword = useConfirmarCambioPassword();
+  const solicitarCambioEmail = useSolicitarCambioEmail();
+  const confirmarCambioEmail = useConfirmarCambioEmail();
 
   // Datos personales
   const [nombre, setNombre] = useState('');
@@ -45,26 +53,12 @@ export default function EditarCuenta() {
   const [enviando, setEnviando] = useState(false);
 
   useEffect(() => {
-    let activo = true;
-
-    usuarioService
-      .obtenerCuenta()
-      .then((data) => {
-        if (!activo) return;
-        setCuenta(data);
-        setNombre(data.nombre);
-        setApellido(data.apellido);
-        setTelefono(data.telefonoPersonal ?? '');
-      })
-      .catch(() => {})
-      .finally(() => {
-        if (activo) setCargando(false);
-      });
-
-    return () => {
-      activo = false;
-    };
-  }, []);
+    if (!cuenta) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setNombre(cuenta.nombre);
+    setApellido(cuenta.apellido);
+    setTelefono(cuenta.telefonoPersonal ?? '');
+  }, [cuenta]);
 
   const guardarDatos = async () => {
     if (nombre.trim().length === 0 || apellido.trim().length === 0) {
@@ -78,13 +72,12 @@ export default function EditarCuenta() {
 
     setEnviando(true);
     try {
-      const actualizada = await usuarioService.actualizarDatos({
+      const actualizada = await actualizarDatos.mutateAsync({
         nombre: nombre.trim(),
         apellido: apellido.trim(),
         telefonoPersonal: telefono.trim() || null,
       });
 
-      setCuenta(actualizada);
       authService.actualizarUsuario({
         nombre: actualizada.nombre,
         apellido: actualizada.apellido,
@@ -132,10 +125,10 @@ export default function EditarCuenta() {
 
     setEnviando(true);
     try {
-      const resultado = await usuarioService.cambiarPassword(
+      const resultado = await cambiarPassword.mutateAsync({
         passwordActual,
-        nuevaPassword
-      );
+        nuevaPassword,
+      });
       Swal.fire('Código enviado', resultado.mensaje, 'success');
       setPasoCodigoPassword(true);
     } catch (err) {
@@ -163,7 +156,7 @@ export default function EditarCuenta() {
 
     setEnviando(true);
     try {
-      const resultado = await usuarioService.confirmarCambioPassword(
+      const resultado = await confirmarCambioPassword.mutateAsync(
         codigoPassword.trim()
       );
       Swal.fire('Contraseña actualizada', resultado.mensaje, 'success');
@@ -202,10 +195,10 @@ export default function EditarCuenta() {
 
     setEnviando(true);
     try {
-      const resultado = await usuarioService.solicitarCambioEmail(
-        passwordEmail,
-        nuevoEmail.trim()
-      );
+      const resultado = await solicitarCambioEmail.mutateAsync({
+        passwordActual: passwordEmail,
+        nuevoEmail: nuevoEmail.trim(),
+      });
       Swal.fire('Código enviado', resultado.mensaje, 'success');
       setPasoCodigo(true);
     } catch (err) {
@@ -233,15 +226,12 @@ export default function EditarCuenta() {
 
     setEnviando(true);
     try {
-      const resultado = await usuarioService.confirmarCambioEmail(
+      const resultado = await confirmarCambioEmail.mutateAsync(
         codigo.trim()
       );
       const emailNuevo = nuevoEmail.trim();
 
       authService.actualizarUsuario({ email: emailNuevo });
-      setCuenta((prev) =>
-        prev ? { ...prev, email: emailNuevo, emailConfirmado: true } : prev
-      );
 
       Swal.fire('Correo actualizado', resultado.mensaje, 'success');
       setPasoCodigo(false);

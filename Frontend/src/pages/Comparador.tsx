@@ -16,13 +16,12 @@ import {
   FaTachometerAlt,
   FaTint,
 } from "react-icons/fa";
-import { comparadorService } from "../services/comparador.service";
 import type { VehiculoComparador } from "../services/comparador.service";
-import { catalogoService } from "../services/catalogo.service";
 import type { AnuncioListado } from "../types/anuncio.types";
 import { useComparador } from "../context/ComparadorContext";
 import logo from "../assets/AutoMarketRD_Logo.svg";
 import MenuPublico from "../components/layout/MenuPublico";
+import { useCompararVehiculos, useBuscarComparador } from "../hooks/useComparador";
 import {
   TIPOS_VEHICULO,
   TRANSMISIONES,
@@ -46,15 +45,6 @@ export default function Comparador() {
   const { seleccionados, esSeleccionado, toggle, reemplazar, limpiar } =
     useComparador();
 
-  const [vehiculos, setVehiculos] = useState<VehiculoComparador[]>([]);
-  const [cargando, setCargando] = useState(true);
-  const [error, setError] = useState("");
-  const [intento, setIntento] = useState(0);
-
-  const [terminoBusqueda, setTerminoBusqueda] = useState("");
-  const [buscando, setBuscando] = useState(false);
-  const [resultados, setResultados] = useState<AnuncioListado[]>([]);
-
   const ultimaClave = useRef("");
 
   // Al montar, si la URL trae ids y difieren de la selección guardada, se adoptan.
@@ -68,65 +58,32 @@ export default function Comparador() {
   }, []);
 
   const claveSeleccion = Array.from(new Set(seleccionados)).sort().join(",");
+  const activos = claveSeleccion
+    .split(",")
+    .map(Number)
+    .filter(Number.isFinite);
 
-  // Cargar los datos de los vehículos seleccionados
-  useEffect(() => {
-    const activos = claveSeleccion
-      .split(",")
-      .map(Number)
-      .filter(Number.isFinite);
+  const {
+    data: vehiculos = [],
+    isLoading: cargando,
+    isError,
+    refetch,
+  } = useCompararVehiculos(activos);
+  const error = isError ? "No pudimos cargar los vehículos para comparar. Inténtalo de nuevo." : "";
 
-    let activo = true;
-
-    async function cargar() {
-      if (activos.length < 2) {
-        setVehiculos([]);
-        setCargando(false);
-        return;
-      }
-
-      setCargando(true);
-      try {
-        const respuesta = await comparadorService.comparar(activos);
-        if (!activo) return;
-        setVehiculos(respuesta);
-        setError("");
-      } catch {
-        if (!activo) return;
-        setError("No pudimos cargar los vehículos para comparar. Inténtalo de nuevo.");
-      } finally {
-        if (activo) setCargando(false);
-      }
-    }
-
-    cargar();
-
-    return () => {
-      activo = false;
-    };
-  }, [claveSeleccion, intento]);
+  const [terminoBusqueda, setTerminoBusqueda] = useState("");
+  const [resultados, setResultados] = useState<AnuncioListado[]>([]);
+  const buscarMutation = useBuscarComparador();
 
   const buscar = async (e: FormEvent) => {
     e.preventDefault();
     if (!terminoBusqueda.trim()) return;
 
-    setBuscando(true);
     try {
-      const resultado = await catalogoService.buscar({
-        marca: terminoBusqueda.trim(),
-        paginaActual: 1,
-        cantidadAnuncios: 6,
-      });
-      const items = resultado.items.map((a) => ({
-        ...a,
-        precio: Number(a.precio ?? 0),
-        kilometraje: Number(a.kilometraje ?? 0),
-      }));
+      const items = await buscarMutation.mutateAsync(terminoBusqueda.trim());
       setResultados(items);
     } catch {
       setResultados([]);
-    } finally {
-      setBuscando(false);
     }
   };
 
@@ -276,10 +233,10 @@ export default function Comparador() {
               </div>
               <button
                 type="submit"
-                disabled={buscando || !terminoBusqueda.trim()}
+                disabled={buscarMutation.isPending || !terminoBusqueda.trim()}
                 className="rounded-xl bg-blue-500 px-6 py-3 text-sm font-semibold transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-blue-500/40"
               >
-                {buscando ? "Buscando..." : "Buscar"}
+                {buscarMutation.isPending ? "Buscando..." : "Buscar"}
               </button>
             </div>
 
@@ -368,7 +325,7 @@ export default function Comparador() {
             <p className="text-red-400">{error}</p>
             <button
               type="button"
-              onClick={() => setIntento((i) => i + 1)}
+              onClick={() => refetch()}
               className="mt-4 inline-block rounded-lg bg-blue-500 px-6 py-2 text-sm font-semibold transition-colors hover:bg-blue-600"
             >
               Reintentar
