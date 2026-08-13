@@ -2,6 +2,7 @@ using AutoMarket.Application.DTOs;
 using AutoMarket.Application.DTOs.Usuario;
 using AutoMarket.Application.Interfaces;
 using AutoMarket.Core.Exceptions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
@@ -17,6 +18,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("registrar")]
+    [AllowAnonymous]
     public async Task<IActionResult> Registrar([FromBody] RegistroDto dto)
     {
         var resultado = await _authService.RegistrarUsuarioAsync(dto);
@@ -30,6 +32,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
+    [AllowAnonymous]
     [EnableRateLimiting("PoliticaLogin")]
     public async Task<IActionResult> Login([FromBody] LoginDto dto)
     {
@@ -46,6 +49,7 @@ public class AuthController : ControllerBase
     // Envía un código de recuperación al correo del usuario.
     // Responde igual si el correo existe o no, para no revelar cuentas registradas.
     [HttpPost("recuperar-password")]
+    [AllowAnonymous]
     [EnableRateLimiting("PoliticaLogin")]
     public async Task<IActionResult> SolicitarRecuperacion([FromBody] SolicitarRecuperacionDto dto)
     {
@@ -59,6 +63,7 @@ public class AuthController : ControllerBase
 
     // Valida el código y aplica la nueva contraseña.
     [HttpPost("restablecer-password")]
+    [AllowAnonymous]
     [EnableRateLimiting("PoliticaLogin")]
     public async Task<IActionResult> RestablecerPassword([FromBody] RestablecerPasswordDto dto)
     {

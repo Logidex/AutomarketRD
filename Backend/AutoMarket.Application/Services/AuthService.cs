@@ -14,7 +14,7 @@ namespace AutoMarket.Application.Services;
 
 public class AuthService : IAuthService
 {
-    private const int PASSWORD_LONGITUD_MINIMA = 6;
+    private const int PASSWORD_LONGITUD_MINIMA = 8;
     private static readonly TimeSpan VIGENCIA_CODIGO = TimeSpan.FromMinutes(15);
 
     private readonly IUsuarioRepository _repository;

@@ -1,11 +1,22 @@
 namespace AutoMarket.Application.DTOs;
 
+using System.ComponentModel.DataAnnotations;
+
 public class RegistroDto
 {
+    [StringLength(100, MinimumLength = 2, ErrorMessage = "El nombre debe tener entre 2 y 100 caracteres.")]
     public string Nombre { get; set; } = null!;
+
+    [StringLength(100, MinimumLength = 2, ErrorMessage = "El apellido debe tener entre 2 y 100 caracteres.")]
     public string Apellido { get; set; } = null!;
+
+    [EmailAddress(ErrorMessage = "El formato del correo electrónico es inválido.")]
+    [StringLength(254, ErrorMessage = "El correo no puede tener más de 254 caracteres.")]
     public string Email { get; set; } = null!;
+
+    [StringLength(100, MinimumLength = 8, ErrorMessage = "La contraseña debe tener al menos 8 caracteres.")]
     public string Password { get; set; } = null!;
+
     public string Rol { get; set; } = null!; // "Comprador", "Vendedor" o "Dealer"
     public string? TelefonoPersonal { get; set; }
 

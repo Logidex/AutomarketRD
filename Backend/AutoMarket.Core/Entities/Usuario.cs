@@ -44,7 +44,7 @@ public class Usuario
         if (string.IsNullOrWhiteSpace(email))
             throw new ArgumentException("El correo electrónico es obligatorio.", nameof(email));
 
-        if (!email.Contains("@")) // Validación básica de estructura de correo
+        if (!email.Contains("@") || !new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(email))
             throw new ArgumentException("El formato del correo electrónico es inválido.", nameof(email));
 
         if (string.IsNullOrWhiteSpace(passwordHash))
