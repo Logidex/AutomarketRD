@@ -8,7 +8,8 @@ export default function CrearAnuncio() {
     mostrarTransmisionPersonalizada, transmisionPersonalizada, setTransmisionPersonalizada,
     archivos, fotosGuardadas, handleChange, handleImageChange,
     handleEliminarArchivo, handleEliminarFotoGuardada, guardar, submitting,
-    publicarAlGuardar, setPublicarAlGuardar
+    publicarAlGuardar, setPublicarAlGuardar,
+    fotoPrincipal, handleEstablecerPrincipal
   } = useFormularioVehiculo(false);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -43,9 +44,11 @@ export default function CrearAnuncio() {
         <GestorImagenes
           archivos={archivos}
           fotosGuardadas={fotosGuardadas}
+          fotoPrincipal={fotoPrincipal}
           onImageChange={handleImageChange}
           onEliminarArchivo={handleEliminarArchivo}
           onEliminarFotoGuardada={handleEliminarFotoGuardada}
+          onEstablecerPrincipal={handleEstablecerPrincipal}
         />
         <button
           type="submit"

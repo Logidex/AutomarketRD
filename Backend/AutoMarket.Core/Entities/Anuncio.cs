@@ -407,6 +407,21 @@ public class Anuncio
         UpdatedAt = DateTime.UtcNow;
     }
 
+    public void MoverFotoAlInicio(string urlFoto)
+    {
+        if (string.IsNullOrWhiteSpace(urlFoto))
+            throw new ArgumentException("La URL de la foto no puede estar vacía.");
+
+        if (!_fotos.Contains(urlFoto))
+            throw new KeyNotFoundException("La foto especificada no pertenece a este anuncio.");
+
+        if (_fotos[0] == urlFoto) return;
+
+        _fotos.Remove(urlFoto);
+        _fotos.Insert(0, urlFoto);
+        UpdatedAt = DateTime.UtcNow;
+    }
+
     public void CambiarEstado(string nuevoEstado)
     {
         Estado = nuevoEstado;

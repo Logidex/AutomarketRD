@@ -68,6 +68,19 @@ export const useSubirImagenesAnuncio = () => {
   });
 };
 
+export const useEstablecerFotoPrincipal = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, urlImagen }: { id: number; urlImagen: string }) =>
+      anuncioService.establecerFotoPrincipal(id, urlImagen),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: ['vehiculo', id] });
+      queryClient.invalidateQueries({ queryKey: ['mis-anuncios'] });
+    },
+  });
+};
+
 export const useEliminarImagenAnuncio = () => {
   const queryClient = useQueryClient();
 

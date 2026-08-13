@@ -22,7 +22,10 @@ namespace AutoMarket.Application.Interfaces
         Task<bool> PublicarAnuncioAsync(int id, int usuarioId);
 
         // 6. Subir Imágenes
-        Task SubirImagenesAsync(AnuncioImagenUploadDto dto);
+        Task<List<string>> SubirImagenesAsync(AnuncioImagenUploadDto dto);
+
+        // 6b. Establecer foto principal (mueve la foto al inicio de la lista)
+        Task<bool> EstablecerFotoPrincipalAsync(int id, int usuarioId, string urlImagen);
 
         // 7. Buscar (Filtros y Paginación)
         Task<PagedResult<AnuncioListadoDto>> BuscarAnunciosAsync(AnuncioSearchDto dto);

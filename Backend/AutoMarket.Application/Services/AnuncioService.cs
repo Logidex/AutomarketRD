@@ -362,7 +362,7 @@ public class AnuncioService : IAnuncioService
         }
     }
 
-    public async Task SubirImagenesAsync(AnuncioImagenUploadDto dto)
+    public async Task<List<string>> SubirImagenesAsync(AnuncioImagenUploadDto dto)
     {
         var _anuncio = await _repository.ObtenerPorIdAsync(dto.AnuncioId);
         if (_anuncio == null) throw new KeyNotFoundException("El anuncio no existe");
@@ -399,6 +399,26 @@ public class AnuncioService : IAnuncioService
         _anuncio.AgregarFotos(rutasGuardadas);
 
         await _repository.ActualizarAsync(_anuncio);
+
+        return rutasGuardadas;
+    }
+
+    public async Task<bool> EstablecerFotoPrincipalAsync(int id, int usuarioId, string urlImagen)
+    {
+        var anuncio = await _repository.ObtenerPorIdAsync(id);
+
+        if (anuncio == null) return false;
+
+        if (anuncio.UsuarioId != usuarioId)
+        {
+            throw new UnauthorizedAccessException("Acceso denegado: No tienes permiso para modificar este anuncio.");
+        }
+
+        anuncio.MoverFotoAlInicio(urlImagen);
+
+        await _repository.ActualizarAsync(anuncio);
+
+        return true;
     }
 
     public async Task EliminarImagenAsync(int anuncioId, int usuarioId, string urlImagen)

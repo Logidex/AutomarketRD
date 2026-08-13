@@ -12,7 +12,8 @@ export default function EditarVehiculo() {
     mostrarTransmisionPersonalizada, transmisionPersonalizada, setTransmisionPersonalizada,
     archivos, fotosGuardadas, handleChange, handleImageChange,
     handleEliminarArchivo, handleEliminarFotoGuardada, guardar, submitting,
-    publicarAlGuardar, setPublicarAlGuardar
+    publicarAlGuardar, setPublicarAlGuardar,
+    fotoPrincipal, handleEstablecerPrincipal
   } = useFormularioVehiculo(true);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -51,9 +52,11 @@ export default function EditarVehiculo() {
         <GestorImagenes
           archivos={archivos}
           fotosGuardadas={fotosGuardadas}
+          fotoPrincipal={fotoPrincipal}
           onImageChange={handleImageChange}
           onEliminarArchivo={handleEliminarArchivo}
           onEliminarFotoGuardada={handleEliminarFotoGuardada}
+          onEstablecerPrincipal={handleEstablecerPrincipal}
         />
 
         <div className="flex justify-end gap-4 border-t border-gray-100 pt-6">

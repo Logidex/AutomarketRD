@@ -515,6 +515,43 @@ public class AnuncioServiceTests
     }
 
     // =========================================================================
+    // PRUEBA 20b: Establecer Foto Principal
+    // =========================================================================
+    [Fact]
+    public async Task EstablecerFotoPrincipalAsync_AnuncioNoExiste_DebeRetornarFalso()
+    {
+        _mockRepo.Setup(r => r.ObtenerPorIdAsync(999)).ReturnsAsync((Anuncio?)null);
+
+        var resultado = await _servicio.EstablecerFotoPrincipalAsync(999, 1, "uploads/f1.jpg");
+
+        Assert.False(resultado);
+    }
+
+    [Fact]
+    public async Task EstablecerFotoPrincipalAsync_NoEsElDueno_DebeLanzarUnauthorizedAccessException()
+    {
+        var anuncioEnBD = new Anuncio(1, "Honda", "Civic", "", "Sedan", "1.8L", "Delantera", "Rojo", "Gris", 2022, 1200000, "DOP", 15000, "Automática", "Gasolina", new List<string>(), "Santiago", "Casi nuevo");
+        anuncioEnBD.AgregarFotos(new List<string> { "uploads/f1.jpg", "uploads/f2.jpg" });
+        _mockRepo.Setup(r => r.ObtenerPorIdAsync(5)).ReturnsAsync(anuncioEnBD);
+
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _servicio.EstablecerFotoPrincipalAsync(5, 99, "uploads/f2.jpg"));
+    }
+
+    [Fact]
+    public async Task EstablecerFotoPrincipalAsync_Dueno_DebeMoverFotoAlInicio()
+    {
+        var anuncioEnBD = new Anuncio(1, "Honda", "Civic", "", "Sedan", "1.8L", "Delantera", "Rojo", "Gris", 2022, 1200000, "DOP", 15000, "Automática", "Gasolina", new List<string>(), "Santiago", "Casi nuevo");
+        anuncioEnBD.AgregarFotos(new List<string> { "uploads/f1.jpg", "uploads/f2.jpg" });
+        _mockRepo.Setup(r => r.ObtenerPorIdAsync(5)).ReturnsAsync(anuncioEnBD);
+
+        var resultado = await _servicio.EstablecerFotoPrincipalAsync(5, 1, "uploads/f2.jpg");
+
+        Assert.True(resultado);
+        Assert.Equal("uploads/f2.jpg", anuncioEnBD.Fotos.First());
+        _mockRepo.Verify(r => r.ActualizarAsync(It.IsAny<Anuncio>()), Times.Once);
+    }
+
+    // =========================================================================
     // PRUEBA 21: Crear Anuncio - Éxito para particular con 0 anuncios
     // =========================================================================
     [Fact]

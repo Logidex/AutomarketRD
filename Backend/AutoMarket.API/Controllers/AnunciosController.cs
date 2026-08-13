@@ -119,11 +119,35 @@ public class AnunciosController : ControllerBase
 
         try
         {
-            await _anuncioService.SubirImagenesAsync(dto);
-            return Ok(new { mensaje = "Imágenes subidas correctamente." });
+            var rutasGuardadas = await _anuncioService.SubirImagenesAsync(dto);
+            return Ok(new { mensaje = "Imágenes subidas correctamente.", imagenes = rutasGuardadas });
         }
         catch (KeyNotFoundException ex) { return NotFound(new { error = ex.Message }); }
         catch (UnauthorizedAccessException ex) { return StatusCode(403, new { error = ex.Message }); } // 403 Forbidden si no es el dueño
+    }
+
+    // =========================================================================
+    // PUT: api/anuncios/{id}/foto-principal
+    // Establece cuál foto es la portada del anuncio moviéndola al inicio.
+    // =========================================================================
+    [HttpPut("{id:int}/foto-principal")]
+    [Authorize(Roles = Roles.DealerVendedor)]
+    public async Task<IActionResult> EstablecerFotoPrincipal(int id, [FromBody] AnuncioFotoPrincipalDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.UrlImagen))
+            return BadRequest(new { error = "Debes indicar la imagen que será la principal." });
+
+        int usuarioId = User.ObtenerUsuarioId();
+
+        try
+        {
+            var ok = await _anuncioService.EstablecerFotoPrincipalAsync(id, usuarioId, dto.UrlImagen);
+            if (!ok) return NotFound(new { mensaje = $"El vehículo con ID {id} no fue encontrado." });
+            return Ok(new { mensaje = "Foto principal actualizada correctamente." });
+        }
+        catch (UnauthorizedAccessException ex) { return StatusCode(403, new { error = ex.Message }); }
+        catch (KeyNotFoundException ex) { return NotFound(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     private int? ObtenerUsuarioIdSiAutenticado()

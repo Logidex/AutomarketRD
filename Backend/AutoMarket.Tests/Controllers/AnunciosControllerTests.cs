@@ -221,6 +221,77 @@ public class AnunciosControllerTests
     }
 
     // =========================================================================
+    // 4b. ESTABLECER FOTO PRINCIPAL
+    // =========================================================================
+
+    [Fact]
+    public async Task EstablecerFotoPrincipal_UrlVacia_DebeRetornarBadRequest()
+    {
+        // Arrange
+        SimularUsuarioAutenticado("15");
+        var dto = new AnuncioFotoPrincipalDto { UrlImagen = "" };
+
+        // Act
+        var resultado = await _controller.EstablecerFotoPrincipal(5, dto);
+
+        // Assert
+        Assert.IsType<BadRequestObjectResult>(resultado);
+        _mockServicio.Verify(
+            s => s.EstablecerFotoPrincipalAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task EstablecerFotoPrincipal_AnuncioNoExiste_DebeRetornarNotFound()
+    {
+        // Arrange
+        SimularUsuarioAutenticado("15");
+        _mockServicio
+            .Setup(s => s.EstablecerFotoPrincipalAsync(99, 15, "uploads/f2.jpg"))
+            .ReturnsAsync(false);
+
+        // Act
+        var resultado = await _controller.EstablecerFotoPrincipal(99, new AnuncioFotoPrincipalDto { UrlImagen = "uploads/f2.jpg" });
+
+        // Assert
+        Assert.IsType<NotFoundObjectResult>(resultado);
+    }
+
+    [Fact]
+    public async Task EstablecerFotoPrincipal_Exitoso_DebeRetornarOk()
+    {
+        // Arrange
+        SimularUsuarioAutenticado("15");
+        _mockServicio
+            .Setup(s => s.EstablecerFotoPrincipalAsync(5, 15, "uploads/f2.jpg"))
+            .ReturnsAsync(true);
+
+        // Act
+        var resultado = await _controller.EstablecerFotoPrincipal(5, new AnuncioFotoPrincipalDto { UrlImagen = "uploads/f2.jpg" });
+
+        // Assert
+        Assert.IsType<OkObjectResult>(resultado);
+        _mockServicio.Verify(s => s.EstablecerFotoPrincipalAsync(5, 15, "uploads/f2.jpg"), Times.Once);
+    }
+
+    [Fact]
+    public async Task EstablecerFotoPrincipal_NoEsElDueno_DebeRetornar403()
+    {
+        // Arrange
+        SimularUsuarioAutenticado("15");
+        _mockServicio
+            .Setup(s => s.EstablecerFotoPrincipalAsync(5, 15, "uploads/f2.jpg"))
+            .ThrowsAsync(new UnauthorizedAccessException());
+
+        // Act
+        var resultado = await _controller.EstablecerFotoPrincipal(5, new AnuncioFotoPrincipalDto { UrlImagen = "uploads/f2.jpg" });
+
+        // Assert
+        var status = Assert.IsType<ObjectResult>(resultado);
+        Assert.Equal(403, status.StatusCode);
+    }
+
+    // =========================================================================
     // 5. CAMBIAR ESTADO
     // =========================================================================
 

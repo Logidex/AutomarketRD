@@ -11,7 +11,8 @@ export default function EditarVehiculoVendedor() {
     mostrarTransmisionPersonalizada, transmisionPersonalizada, setTransmisionPersonalizada,
     archivos, fotosGuardadas, handleChange, handleImageChange,
     handleEliminarArchivo, handleEliminarFotoGuardada, guardar, submitting,
-    publicarAlGuardar, setPublicarAlGuardar
+    publicarAlGuardar, setPublicarAlGuardar,
+    fotoPrincipal, handleEstablecerPrincipal
   } = useFormularioVehiculo(true, "/vendedor");
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -52,9 +53,11 @@ export default function EditarVehiculoVendedor() {
         <GestorImagenes
           archivos={archivos}
           fotosGuardadas={fotosGuardadas}
+          fotoPrincipal={fotoPrincipal}
           onImageChange={handleImageChange}
           onEliminarArchivo={handleEliminarArchivo}
           onEliminarFotoGuardada={handleEliminarFotoGuardada}
+          onEstablecerPrincipal={handleEstablecerPrincipal}
         />
         <div className="flex justify-end gap-4 pt-2">
           <button

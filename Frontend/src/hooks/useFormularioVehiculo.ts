@@ -10,6 +10,7 @@ import {
   useSubirImagenesAnuncio,
   useEliminarImagenAnuncio,
   usePublicarAnuncio,
+  useEstablecerFotoPrincipal,
 } from './useAnuncios';
 
 export const useFormularioVehiculo = (
@@ -25,6 +26,7 @@ export const useFormularioVehiculo = (
   const subirImagenes = useSubirImagenesAnuncio();
   const eliminarImagen = useEliminarImagenAnuncio();
   const publicarAnuncio = usePublicarAnuncio();
+  const establecerFotoPrincipal = useEstablecerFotoPrincipal();
 
   const MINIMO_IMAGENES = 5;
   const MAXIMO_IMAGENES = 10;
@@ -36,6 +38,7 @@ export const useFormularioVehiculo = (
 
   const [archivos, setArchivos] = useState<File[]>([]);
   const [fotosGuardadas, setFotosGuardadas] = useState<string[]>([]);
+  const [fotoPrincipal, setFotoPrincipal] = useState<File | string | null>(null);
   const [accesoriosTexto, setAccesoriosTexto] = useState("");
   const [mostrarTransmisionPersonalizada, setMostrarTransmisionPersonalizada] = useState(false);
   const [transmisionPersonalizada, setTransmisionPersonalizada] = useState("");
@@ -113,10 +116,31 @@ export const useFormularioVehiculo = (
     setArchivos((prev) => [...prev, ...nuevosArchivos]);
   };
 
-  const handleEliminarArchivo = (indice: number) => setArchivos((prev) => prev.filter((_, i) => i !== indice));
+  const handleEliminarArchivo = (indice: number) => {
+    setArchivos((prev) => {
+      const eliminado = prev[indice];
+      if (fotoPrincipal === eliminado) setFotoPrincipal(null);
+      return prev.filter((_, i) => i !== indice);
+    });
+  };
 
-  const handleEliminarFotoGuardada = (indice: number) =>
-    setFotosGuardadas((prev) => prev.filter((_, i) => i !== indice));
+  const handleEliminarFotoGuardada = (indice: number) => {
+    setFotosGuardadas((prev) => {
+      const eliminado = prev[indice];
+      if (fotoPrincipal === eliminado) setFotoPrincipal(null);
+      return prev.filter((_, i) => i !== indice);
+    });
+  };
+
+  const handleEstablecerPrincipal = (tipo: "archivo" | "guardada", indice: number) => {
+    if (tipo === "archivo") {
+      const archivo = archivos[indice];
+      if (archivo) setFotoPrincipal(archivo);
+    } else {
+      const url = fotosGuardadas[indice];
+      if (url) setFotoPrincipal(url);
+    }
+  };
 
   const guardar = async (payload: AnuncioCreateRequestDto) => {
     if (enviandoRef.current) return;
@@ -149,11 +173,19 @@ export const useFormularioVehiculo = (
           await eliminarImagen.mutateAsync({ id: Number(id), urlImagen: url });
         }
 
-        if (archivos.length > 0) await subirImagenes.mutateAsync({ id: Number(id), imagenes: archivos });
+        let rutasSubidas: string[] = [];
+        if (archivos.length > 0) {
+          rutasSubidas = await subirImagenes.mutateAsync({ id: Number(id), imagenes: archivos });
+        }
+        await aplicarFotoPrincipal(Number(id), rutasSubidas);
         if (publicarAlGuardar) await publicarAnuncio.mutateAsync(Number(id));
       } else {
         const response = await crearAnuncio.mutateAsync(payload);
-        if (archivos.length > 0) await subirImagenes.mutateAsync({ id: response.id, imagenes: archivos });
+        let rutasSubidas: string[] = [];
+        if (archivos.length > 0) {
+          rutasSubidas = await subirImagenes.mutateAsync({ id: response.id, imagenes: archivos });
+        }
+        await aplicarFotoPrincipal(response.id, rutasSubidas);
         if (publicarAlGuardar) await publicarAnuncio.mutateAsync(response.id);
         Swal.fire("Éxito", publicarAlGuardar ? "Publicado correctamente" : "Creado correctamente", "success");
       }
@@ -175,6 +207,22 @@ export const useFormularioVehiculo = (
     }
   };
 
+  const aplicarFotoPrincipal = async (idAnuncio: number, rutasSubidas: string[]) => {
+    if (!fotoPrincipal) return;
+
+    let urlPrincipal: string | undefined;
+    if (typeof fotoPrincipal === "string") {
+      urlPrincipal = fotoPrincipal;
+    } else {
+      const indice = archivos.indexOf(fotoPrincipal);
+      urlPrincipal = indice >= 0 ? rutasSubidas[indice] : undefined;
+    }
+
+    if (urlPrincipal) {
+      await establecerFotoPrincipal.mutateAsync({ id: idAnuncio, urlImagen: urlPrincipal });
+    }
+  };
+
   return {
     formData, setFormData,
     kilometraje, setKilometraje,
@@ -183,6 +231,7 @@ export const useFormularioVehiculo = (
     transmisionPersonalizada, setTransmisionPersonalizada,
     archivos, fotosGuardadas, handleChange, handleImageChange, 
     handleEliminarArchivo, handleEliminarFotoGuardada, guardar, submitting,
-    publicarAlGuardar, setPublicarAlGuardar
+    publicarAlGuardar, setPublicarAlGuardar,
+    fotoPrincipal, handleEstablecerPrincipal
   };
 };

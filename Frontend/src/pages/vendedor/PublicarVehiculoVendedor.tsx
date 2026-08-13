@@ -8,7 +8,8 @@ export default function PublicarVehiculoVendedor() {
     mostrarTransmisionPersonalizada, transmisionPersonalizada, setTransmisionPersonalizada,
     archivos, fotosGuardadas, handleChange, handleImageChange,
     handleEliminarArchivo, handleEliminarFotoGuardada, guardar, submitting,
-    publicarAlGuardar, setPublicarAlGuardar
+    publicarAlGuardar, setPublicarAlGuardar,
+    fotoPrincipal, handleEstablecerPrincipal
   } = useFormularioVehiculo(false, "/vendedor");
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -50,9 +51,11 @@ export default function PublicarVehiculoVendedor() {
         <GestorImagenes
           archivos={archivos}
           fotosGuardadas={fotosGuardadas}
+          fotoPrincipal={fotoPrincipal}
           onImageChange={handleImageChange}
           onEliminarArchivo={handleEliminarArchivo}
           onEliminarFotoGuardada={handleEliminarFotoGuardada}
+          onEstablecerPrincipal={handleEstablecerPrincipal}
         />
         <button
           type="submit"

@@ -48,18 +48,35 @@ export const anuncioService = {
     return response.data;
   },
 
-  async subirImagenes(id: number, imagenes: File[]): Promise<void> {
+  async subirImagenes(id: number, imagenes: File[]): Promise<string[]> {
     const formData = new FormData();
 
     imagenes.forEach((img) => {
       formData.append("imagenes", img);
     });
 
-    await api.post(`/api/anuncios/${id}/imagenes`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
+    const response = await api.post<{ mensaje: string; imagenes: string[] }>(
+      `/api/anuncios/${id}/imagenes`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       },
-    });
+    );
+
+    return response.data.imagenes ?? [];
+  },
+
+  async establecerFotoPrincipal(
+    id: number,
+    urlImagen: string,
+  ): Promise<{ mensaje: string }> {
+    const response = await api.put<{ mensaje: string }>(
+      `/api/anuncios/${id}/foto-principal`,
+      { urlImagen },
+    );
+    return response.data;
   },
 
   async obtenerPorId(id: string): Promise<AnuncioDetalle> {

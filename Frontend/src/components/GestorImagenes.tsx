@@ -7,10 +7,18 @@ const MAXIMO_IMAGENES = 10;
 interface ImagenPreviewProps {
   archivo: File;
   indice: number;
+  esPrincipal: boolean;
   onEliminar: (indice: number) => void;
+  onEstablecerPrincipal: (indice: number) => void;
 }
 
-function ImagenPreview({ archivo, indice, onEliminar }: ImagenPreviewProps) {
+function ImagenPreview({
+  archivo,
+  indice,
+  esPrincipal,
+  onEliminar,
+  onEstablecerPrincipal
+}: ImagenPreviewProps) {
   const [previewUrl, setPreviewUrl] = useState<string>('');
 
   useEffect(() => {
@@ -24,7 +32,7 @@ function ImagenPreview({ archivo, indice, onEliminar }: ImagenPreviewProps) {
   }, [archivo]);
 
   return (
-    <div className="group relative h-36 w-full overflow-hidden rounded-lg border border-gray-200 bg-gray-100">
+    <div className="group relative h-36 w-full overflow-hidden rounded-lg border-2 border-gray-200 bg-gray-100">
       {previewUrl ? (
         <img 
           src={previewUrl} 
@@ -35,6 +43,25 @@ function ImagenPreview({ archivo, indice, onEliminar }: ImagenPreviewProps) {
         <div className="flex h-full items-center justify-center text-xs text-gray-400">
           Cargando...
         </div>
+      )}
+
+      <button
+        type="button"
+        onClick={() => onEstablecerPrincipal(indice)}
+        title={esPrincipal ? "Este es la foto principal" : "Establecer como foto principal"}
+        className={`absolute left-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full text-lg transition-colors ${
+          esPrincipal
+            ? "bg-amber-400 text-white"
+            : "bg-black/50 text-white opacity-0 hover:bg-amber-400 group-hover:opacity-100"
+        }`}
+      >
+        ★
+      </button>
+
+      {esPrincipal && (
+        <span className="absolute left-2 top-11 z-10 rounded bg-amber-400 px-1.5 py-0.5 text-[10px] font-bold uppercase text-white">
+          Principal
+        </span>
       )}
 
       <button
@@ -56,17 +83,21 @@ function ImagenPreview({ archivo, indice, onEliminar }: ImagenPreviewProps) {
 interface GestorImagenesProps {
   archivos: File[];
   fotosGuardadas: string[];
+  fotoPrincipal: File | string | null;
   onImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onEliminarArchivo: (indice: number) => void;
   onEliminarFotoGuardada: (indice: number) => void;
+  onEstablecerPrincipal: (tipo: "archivo" | "guardada", indice: number) => void;
 }
 
 export default function GestorImagenes({
   archivos,
   fotosGuardadas,
+  fotoPrincipal,
   onImageChange,
   onEliminarArchivo,
-  onEliminarFotoGuardada
+  onEliminarFotoGuardada,
+  onEstablecerPrincipal,
 }: GestorImagenesProps) {
   const totalImagenes = archivos.length + fotosGuardadas.length;
 
@@ -91,16 +122,41 @@ export default function GestorImagenes({
       />
 
       <p className="mt-1 text-xs text-gray-500">
-        Agrega imágenes una por una o varias a la vez. Debes tener entre {MINIMO_IMAGENES} y {MAXIMO_IMAGENES} para guardar el anuncio.
+        Agrega imágenes una por una o varias a la vez. Haz clic en la estrella (★) de una foto para elegir la principal.
+        Debes tener entre {MINIMO_IMAGENES} y {MAXIMO_IMAGENES} para guardar el anuncio.
       </p>
 
       {totalImagenes > 0 && (
         <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
           {/* 1. Fotos viejas (S3) */}
           {fotosGuardadas.map((foto, indice) => (
-            <div key={`old-${indice}`} className="group relative overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
+            <div
+              key={`old-${indice}`}
+              className={`group relative overflow-hidden rounded-lg border-2 bg-gray-50 ${
+                fotoPrincipal === foto ? "border-amber-400" : "border-gray-200"
+              }`}
+            >
               <img src={urlImagen(foto)} alt={`Guardada ${indice + 1}`} className="h-36 w-full object-cover" />
               
+              <button
+                type="button"
+                onClick={() => onEstablecerPrincipal("guardada", indice)}
+                title={fotoPrincipal === foto ? "Este es la foto principal" : "Establecer como foto principal"}
+                className={`absolute left-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full text-lg transition-colors ${
+                  fotoPrincipal === foto
+                    ? "bg-amber-400 text-white"
+                    : "bg-black/50 text-white opacity-0 hover:bg-amber-400 group-hover:opacity-100"
+                }`}
+              >
+                ★
+              </button>
+
+              {fotoPrincipal === foto && (
+                <span className="absolute left-2 top-11 z-10 rounded bg-amber-400 px-1.5 py-0.5 text-[10px] font-bold uppercase text-white">
+                  Principal
+                </span>
+              )}
+
               <button
                 type="button"
                 onClick={() => onEliminarFotoGuardada(indice)}
@@ -118,7 +174,9 @@ export default function GestorImagenes({
               key={`${archivo.name}-${archivo.size}`}
               archivo={archivo}
               indice={indice}
+              esPrincipal={fotoPrincipal === archivo}
               onEliminar={onEliminarArchivo}
+              onEstablecerPrincipal={() => onEstablecerPrincipal("archivo", indice)}
             />
           ))}
         </div>

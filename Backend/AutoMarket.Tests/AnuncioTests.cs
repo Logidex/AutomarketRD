@@ -131,4 +131,47 @@ public class AnuncioTests
             ubicacion: "Santo Domingo",
             descripcion: "Vehículo de prueba");
     }
+
+    // =========================================================================
+    // MoverFotoAlInicio - La primera foto es la portada
+    // =========================================================================
+    [Fact]
+    public void MoverFotoAlInicio_DebeColocarLaFotoComoPrimera()
+    {
+        // Arrange
+        var anuncio = CrearAnuncioBase(moneda: "DOP");
+        anuncio.AgregarFotos(new List<string> { "uploads/f1.jpg", "uploads/f2.jpg", "uploads/f3.jpg" });
+
+        // Act
+        anuncio.MoverFotoAlInicio("uploads/f2.jpg");
+
+        // Assert
+        Assert.Equal("uploads/f2.jpg", anuncio.Fotos.First());
+        Assert.Equal(new List<string> { "uploads/f2.jpg", "uploads/f1.jpg", "uploads/f3.jpg" }, anuncio.Fotos);
+    }
+
+    [Fact]
+    public void MoverFotoAlInicio_YaEsPrimera_DebeMantenerOrden()
+    {
+        // Arrange
+        var anuncio = CrearAnuncioBase(moneda: "DOP");
+        anuncio.AgregarFotos(new List<string> { "uploads/f1.jpg", "uploads/f2.jpg" });
+
+        // Act
+        anuncio.MoverFotoAlInicio("uploads/f1.jpg");
+
+        // Assert
+        Assert.Equal(new List<string> { "uploads/f1.jpg", "uploads/f2.jpg" }, anuncio.Fotos);
+    }
+
+    [Fact]
+    public void MoverFotoAlInicio_FotoNoPertenece_DebeLanzarKeyNotFoundException()
+    {
+        // Arrange
+        var anuncio = CrearAnuncioBase(moneda: "DOP");
+        anuncio.AgregarFotos(new List<string> { "uploads/f1.jpg" });
+
+        // Act & Assert
+        Assert.Throws<KeyNotFoundException>(() => anuncio.MoverFotoAlInicio("uploads/fantasma.jpg"));
+    }
 }
