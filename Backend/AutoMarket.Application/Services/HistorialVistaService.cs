@@ -57,6 +57,7 @@ public class HistorialVistaService : IHistorialVistaService
                 Modelo = v.Anuncio.Modelo,
                 Anio = v.Anuncio.Anio,
                 Precio = v.Anuncio.Precio,
+                Moneda = v.Anuncio.Moneda,
                 FotoPrincipal = AnuncioFotos.ObtenerPrincipal(v.Anuncio.Fotos),
                 VistoEnUtc = v.VistoEnUtc
             })

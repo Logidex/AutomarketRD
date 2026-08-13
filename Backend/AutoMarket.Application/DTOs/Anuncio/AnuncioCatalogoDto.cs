@@ -7,6 +7,7 @@ public class AnuncioCatalogoDto
     public string Modelo { get; set; } = string.Empty;
     public int Anio { get; set; }
     public decimal Precio { get; set; }
+    public string Moneda { get; set; } = "DOP";
     public int Kilometraje { get; set; }
     public string? FotoPrincipal { get; set; }
 }

@@ -118,6 +118,7 @@ public class AnuncioService : IAnuncioService
             colorInterior: NormalizarBusqueda(dto.ColorInterior),
             anio: dto.Anio,
             precio: dto.Precio,
+            moneda: dto.Moneda,
             kilometraje: dto.Kilometraje,
             transmision: NormalizarBusqueda(dto.Transmision),
             combustible: NormalizarBusqueda(dto.Combustible),
@@ -196,6 +197,7 @@ public class AnuncioService : IAnuncioService
 
             Anio = anuncio.Anio,
             Precio = anuncio.Precio,
+            Moneda = anuncio.Moneda,
             PrecioAnterior = anuncio.PrecioAnterior,
             Kilometraje = anuncio.Kilometraje,
 
@@ -264,6 +266,7 @@ public class AnuncioService : IAnuncioService
             colorInterior: NormalizarBusqueda(updateAnuncio.ColorInterior),
             anio: updateAnuncio.Anio,
             precio: updateAnuncio.Precio,
+            moneda: updateAnuncio.Moneda,
             kilometraje: updateAnuncio.Kilometraje,
             transmision: NormalizarBusqueda(updateAnuncio.Transmision),
             combustible: NormalizarBusqueda(updateAnuncio.Combustible),
@@ -453,6 +456,8 @@ public class AnuncioService : IAnuncioService
             PrecioMinimo = dto.PrecioMinimo,
             PrecioMaximo = dto.PrecioMaximo,
 
+            Moneda = dto.Moneda,
+
             KilometrajeMaximo = dto.KilometrajeMaximo,
 
             PaginaActual = dto.PaginaActual,
@@ -574,6 +579,7 @@ var anunciosDto = anuncios
             ColorInterior = anuncio.ColorInterior,
             Anio = anuncio.Anio,
             Precio = anuncio.Precio,
+            Moneda = anuncio.Moneda,
             PrecioAnterior = anuncio.PrecioAnterior,
             Kilometraje = anuncio.Kilometraje,
 

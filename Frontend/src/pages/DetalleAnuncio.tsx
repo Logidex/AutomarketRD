@@ -30,6 +30,7 @@ import {
 import { useRegistrarVisita } from "../hooks/useHistorial";
 import { useUsuarioCuenta } from "../hooks/useUsuario";
 import { urlImagen } from "../utils/imagen";
+import { formatearPrecio } from "../utils/formato";
 import logo from "../assets/AutoMarketRD_Logo.svg";
 import MenuPublico from "../components/layout/MenuPublico";
 import {
@@ -500,13 +501,13 @@ export default function DetalleAnuncio() {
                 </div>
 
                 <p className="mt-4 text-3xl font-bold text-blue-500">
-                  RD$ {anuncio.precio.toLocaleString("es-DO")}
+                  {formatearPrecio(anuncio.precio, anuncio.moneda)}
                 </p>
 
                 {esOferta && anuncio.precioAnterior != null && (
                   <p className="mt-1 text-sm text-[#9aa1b1]">
                     <span className="mr-2 line-through">
-                      RD$ {anuncio.precioAnterior.toLocaleString("es-DO")}
+                      {formatearPrecio(anuncio.precioAnterior, anuncio.moneda)}
                     </span>
                     <span className="font-semibold text-green-400">Oferta</span>
                   </p>

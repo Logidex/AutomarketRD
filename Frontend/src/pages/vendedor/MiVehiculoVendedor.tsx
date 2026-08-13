@@ -5,6 +5,7 @@ import Spinner from "../../components/Spinner";
 import type { AnuncioListado } from "../../types/anuncio.types";
 import { getUserIdFromToken } from "../../utils/jwt.util";
 import { urlImagen } from "../../utils/imagen";
+import { formatearPrecio } from "../../utils/formato";
 import { useMisAnuncios, usePublicarAnuncio, useEliminarAnuncio } from "../../hooks/useAnuncios";
 
 export default function MiVehiculoVendedor() {
@@ -157,7 +158,7 @@ export default function MiVehiculoVendedor() {
           </div>
 
           <p className="text-xl font-bold text-gray-900">
-            RD$ {anuncio.precio.toLocaleString("es-DO")}
+            {formatearPrecio(anuncio.precio, anuncio.moneda)}
           </p>
 
           <div className="flex items-center gap-4 text-sm text-gray-600">

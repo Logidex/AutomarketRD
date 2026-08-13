@@ -11,6 +11,7 @@ import { useVehiculos } from "../hooks/useVehiculos";
 import type { AnuncioListado } from "../types/anuncio.types";
 import logo from "../assets/AutoMarketRD_Logo.svg";
 import { urlImagen } from "../utils/imagen";
+import { formatearPrecio } from "../utils/formato";
 import MenuPublico from "../components/layout/MenuPublico";
 import {
   TIPOS_VEHICULO,
@@ -303,7 +304,7 @@ export default function Home() {
                   </div>
 
                   <p className="mt-2 text-xl font-bold text-blue-500">
-                    RD$ {anuncio.precio.toLocaleString("es-DO")}
+                    {formatearPrecio(anuncio.precio, anuncio.moneda)}
                   </p>
 
                   <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 border-t border-white/10 pt-4 text-xs text-[#9aa1b1]">

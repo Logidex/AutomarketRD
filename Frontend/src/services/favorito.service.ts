@@ -6,6 +6,7 @@ export interface AnuncioFavorito {
   modelo: string;
   anio: number;
   precio: number;
+  moneda: string;
   fotoPrincipal: string | null;
 }
 

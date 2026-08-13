@@ -39,6 +39,7 @@ public class FavoritoServiceTests
             "Negro",
             anio,
             precio,
+            "DOP",
             25000,
             "Automática",
             "Gasolina",

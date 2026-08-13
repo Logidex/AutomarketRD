@@ -3,7 +3,7 @@ import Swal from "sweetalert2";
 import { FaTrash } from "react-icons/fa";
 import type { AnuncioAdmin } from "../../services/admin.service";
 import Spinner from "../../components/Spinner";
-import { formatearRD$ } from "../../utils/formato";
+import { formatearPrecio } from "../../utils/formato";
 import { useAdminAnuncios, useEliminarAnuncioAdmin } from "../../hooks/useAdmin";
 
 export default function AdminAnuncios() {
@@ -87,7 +87,7 @@ export default function AdminAnuncios() {
                   </td>
                   <td className="px-4 py-3 text-gray-700">{anuncio.modelo}</td>
                   <td className="px-4 py-3 font-semibold text-gray-900">
-                    {formatearRD$(anuncio.precio)}
+                    {formatearPrecio(anuncio.precio, anuncio.moneda)}
                   </td>
                   <td className="px-4 py-3 text-gray-600">
                     {anuncio.usuarioId}

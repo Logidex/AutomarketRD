@@ -8,6 +8,7 @@ export interface VehiculoComparador {
   tipoVehiculo: string;
   anio: number;
   precio: number;
+  moneda: string;
   precioAnterior?: number | null;
   enOferta: boolean;
   kilometraje: number;

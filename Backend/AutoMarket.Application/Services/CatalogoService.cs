@@ -32,6 +32,7 @@ public class CatalogoService : ICatalogoService
             Modelo = a.Modelo,
             Anio = a.Anio,
             Precio = a.Precio,
+            Moneda = a.Moneda,
             Kilometraje = a.Kilometraje,
             FotoPrincipal = AnuncioFotos.ObtenerPrincipal(a.Fotos)
         }).ToList();

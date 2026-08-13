@@ -23,6 +23,7 @@ import logo from "../assets/AutoMarketRD_Logo.svg";
 import MenuPublico from "../components/layout/MenuPublico";
 import { useCompararVehiculos, useBuscarComparador } from "../hooks/useComparador";
 import { urlImagen } from "../utils/imagen";
+import { formatearPrecio } from "../utils/formato";
 import {
   TIPOS_VEHICULO,
   TRANSMISIONES,
@@ -104,7 +105,7 @@ export default function Comparador() {
     {
       etiqueta: "Precio",
       icono: <FaBalanceScale className="text-gray-500" />,
-      valor: `RD$ ${v.precio.toLocaleString("es-DO")}`,
+      valor: formatearPrecio(v.precio, v.moneda),
       destacado: v.precio === menorPrecio,
     },
     {
@@ -264,7 +265,7 @@ export default function Comparador() {
                           </span>
                         </p>
                         <p className="text-xs text-blue-400">
-                          RD$ {a.precio.toLocaleString("es-DO")} ·{" "}
+                          {formatearPrecio(a.precio, a.moneda)} ·{" "}
                           {a.kilometraje.toLocaleString("es-DO")} km
                         </p>
                       </div>
@@ -411,11 +412,11 @@ export default function Comparador() {
                     (v) => (
                       <div>
                         <div className="text-base font-bold text-blue-500">
-                          RD$ {v.precio.toLocaleString("es-DO")}
+                          {formatearPrecio(v.precio, v.moneda)}
                         </div>
                         {v.enOferta && v.precioAnterior != null && (
                           <div className="text-xs text-[#9aa1b1] line-through">
-                            RD$ {v.precioAnterior.toLocaleString("es-DO")}
+                            {formatearPrecio(v.precioAnterior, v.moneda)}
                           </div>
                         )}
                       </div>

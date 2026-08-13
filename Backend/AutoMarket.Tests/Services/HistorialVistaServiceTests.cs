@@ -33,6 +33,7 @@ public class HistorialVistaServiceTests
             "Negro",
             2024,
             20000m,
+            "DOP",
             25000,
             "Automática",
             "Gasolina",

@@ -14,6 +14,7 @@ export interface FormularioVehiculoData {
   colorInterior: string;
   anio: number;
   precio: number;
+  moneda: string;
   precioAnterior: number;
   kilometraje: number | string;
   transmision: string;
@@ -119,6 +120,22 @@ export default function FormularioVehiculo({
             placeholder="0"
             className="w-full rounded-md border border-gray-300 p-2.5 focus:border-blue-500 focus:ring-blue-500"
           />
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Moneda
+          </label>
+          <select
+            name="moneda"
+            required
+            value={formData.moneda}
+            onChange={onChange}
+            className="w-full rounded-md border border-gray-300 bg-white p-2.5 focus:border-blue-500 focus:ring-blue-500"
+          >
+            <option value="DOP">Peso dominicano (RD$)</option>
+            <option value="USD">Dólar (US$)</option>
+          </select>
         </div>
 
         <div>

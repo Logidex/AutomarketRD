@@ -86,6 +86,11 @@ public class ApplicationDbContext : DbContext
             b.Property(a => a.Precio)
                 .HasPrecision(18, 2);
 
+            b.Property(a => a.Moneda)
+                .IsRequired()
+                .HasMaxLength(3)
+                .HasDefaultValue("DOP");
+
             b.Property(a => a.Kilometraje)
                 .IsRequired();
 

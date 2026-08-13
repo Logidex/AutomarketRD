@@ -153,6 +153,7 @@ public class AdminController : ControllerBase
             a.Marca,
             a.Modelo,
             a.Precio,
+            a.Moneda,
             a.UsuarioId
         });
 

@@ -53,6 +53,7 @@ public class AdminControllerTests
             "Negro",
             2020,
             15000,
+            "DOP",
             10000,
             "Auto",
             "Gasolina",

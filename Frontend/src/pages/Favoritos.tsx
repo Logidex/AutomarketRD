@@ -7,6 +7,7 @@ import {
 } from "react-icons/fa";
 import { useMisFavoritos, useQuitarFavorito } from "../hooks/useFavoritos";
 import { urlImagen } from "../utils/imagen";
+import { formatearPrecio } from "../utils/formato";
 
 const IMAGEN_VACIA =
   "https://via.placeholder.com/600x400?text=Sin+Foto";
@@ -125,7 +126,7 @@ export default function Favoritos() {
                   </div>
 
                   <p className="mt-2 text-xl font-bold text-blue-500">
-                    RD$ {favorito.precio.toLocaleString("es-DO")}
+                    {formatearPrecio(favorito.precio, favorito.moneda)}
                   </p>
 
                   <div className="mt-4 flex items-center gap-3 border-t border-white/10 pt-4">

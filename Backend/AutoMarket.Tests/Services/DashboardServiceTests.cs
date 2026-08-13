@@ -36,7 +36,7 @@ public class DashboardServiceTests : IDisposable
     {
         var anuncio = new Anuncio(
             usuarioId, marca, "Corolla", "1.8L", "Sedan", "1.8L", "Delantera",
-            "Blanco", "Negro", anio, 600000, 50000, "Automática", "Gasolina",
+            "Blanco", "Negro", anio, 600000, "DOP", 50000, "Automática", "Gasolina",
             new List<string>(), "Santo Domingo", "Vehículo de ejemplo");
 
         Set(anuncio, "Id", id);

@@ -15,6 +15,7 @@ export interface AnuncioBusquedaDto {
   enOferta?: boolean;
   precioMinimo?: number;
   precioMaximo?: number;
+  moneda?: string;
   anioDesde?: number;
   anioHasta?: number;
   kilometrajeMaximo?: number;
@@ -45,6 +46,7 @@ export const catalogoService = {
       params.set("PrecioMinimo", String(dto.precioMinimo));
     if (dto.precioMaximo != null)
       params.set("PrecioMaximo", String(dto.precioMaximo));
+    if (dto.moneda?.trim()) params.set("Moneda", dto.moneda.trim());
     if (dto.anioDesde != null) params.set("AnioDesde", String(dto.anioDesde));
     if (dto.anioHasta != null) params.set("AnioHasta", String(dto.anioHasta));
     if (dto.kilometrajeMaximo != null)

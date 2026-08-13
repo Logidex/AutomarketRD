@@ -23,6 +23,10 @@ public class Anuncio
     public string Traccion { get; private set; } = null!;
     public bool PublicarAlGuardar { get; private set; }
 
+    // Moneda del precio del anuncio: "DOP" (pesos dominicanos) o "USD" (dólares).
+    // Por defecto en RD$ para mantener compatibilidad con datos existentes.
+    public string Moneda { get; private set; } = "DOP";
+
     // Condición del vehículo: "Nuevo" o "Usado". Se deriva del kilometraje
     // (un vehículo con 100 km o menos se considera nuevo).
     public string Condicion { get; private set; } = "Usado";
@@ -72,6 +76,7 @@ public class Anuncio
     string colorInterior,
     int anio,
     decimal precio,
+    string moneda,
     int kilometraje,
     string transmision,
     string combustible,
@@ -156,6 +161,14 @@ public class Anuncio
             );
         }
 
+        var monedaNormalizada = (moneda ?? "DOP").Trim().ToUpperInvariant();
+        if (monedaNormalizada != "DOP" && monedaNormalizada != "USD")
+        {
+            throw new ArgumentException(
+                "La moneda debe ser 'DOP' (pesos dominicanos) o 'USD' (dólares)."
+            );
+        }
+
         UsuarioId = usuarioId;
         Marca = marca;
         Modelo = modelo;
@@ -167,6 +180,7 @@ public class Anuncio
         ColorInterior = colorInterior;
         Anio = anio;
         Precio = precio;
+        Moneda = monedaNormalizada;
         Kilometraje = kilometraje;
         Transmision = transmision;
         Combustible = combustible;
@@ -222,6 +236,7 @@ public class Anuncio
     string colorInterior,
     int anio,
     decimal precio,
+    string moneda,
     int kilometraje,
     string transmision,
     string combustible,
@@ -342,6 +357,14 @@ public class Anuncio
             );
         }
 
+        var monedaNormalizada = (moneda ?? "DOP").Trim().ToUpperInvariant();
+        if (monedaNormalizada != "DOP" && monedaNormalizada != "USD")
+        {
+            throw new ArgumentException(
+                "La moneda debe ser 'DOP' (pesos dominicanos) o 'USD' (dólares)."
+            );
+        }
+
         Marca = marca.Trim();
         Modelo = modelo.Trim();
         Version = version?.Trim() ?? string.Empty;
@@ -355,6 +378,7 @@ public class Anuncio
 
         Anio = anio;
         Precio = precio;
+        Moneda = monedaNormalizada;
         Kilometraje = kilometraje;
 
         Condicion = kilometraje <= 100 ? "Nuevo" : "Usado";

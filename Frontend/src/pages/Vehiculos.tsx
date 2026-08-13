@@ -11,6 +11,7 @@ import {
 import { useVehiculos } from "../hooks/useVehiculos";
 import type { AnuncioListado } from "../types/anuncio.types";
 import { urlImagen } from "../utils/imagen";
+import { formatearPrecio } from "../utils/formato";
 import { useComparador } from "../context/ComparadorContext";
 import logo from "../assets/AutoMarketRD_Logo.svg";
 import MenuPublico from "../components/layout/MenuPublico";
@@ -482,13 +483,13 @@ export default function Vehiculos() {
                     </div>
 
                     <p className="mt-2 text-xl font-bold text-blue-500">
-                      RD$ {anuncio.precio.toLocaleString("es-DO")}
+                      {formatearPrecio(anuncio.precio, anuncio.moneda)}
                     </p>
 
                     {anuncio.enOferta && anuncio.precioAnterior != null && (
                       <p className="text-sm text-[#9aa1b1]">
                         <span className="mr-2 line-through">
-                          RD$ {anuncio.precioAnterior.toLocaleString("es-DO")}
+                          {formatearPrecio(anuncio.precioAnterior, anuncio.moneda)}
                         </span>
                         <span className="font-semibold text-green-400">Oferta</span>
                       </p>

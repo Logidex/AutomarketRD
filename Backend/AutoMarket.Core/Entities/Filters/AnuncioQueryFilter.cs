@@ -31,6 +31,9 @@ namespace AutoMarket.Core.Entities
         public decimal? PrecioMinimo { get; set; }
         public decimal? PrecioMaximo { get; set; }
 
+        // "DOP" | "USD" | null (todas)
+        public string? Moneda { get; set; }
+
         public int? KilometrajeMaximo { get; set; }
 
         public int PaginaActual { get; set; } = 1;

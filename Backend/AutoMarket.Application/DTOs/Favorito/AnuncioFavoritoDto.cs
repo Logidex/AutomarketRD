@@ -7,5 +7,6 @@ public class AnuncioFavoritoDto
     public string Modelo { get; set; } = string.Empty;
     public int Anio { get; set; }
     public decimal Precio { get; set; }
+    public string Moneda { get; set; } = "DOP";
     public string? FotoPrincipal { get; set; }
 }

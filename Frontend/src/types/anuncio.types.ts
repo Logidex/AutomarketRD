@@ -17,6 +17,7 @@ export interface AnuncioListado {
 
   anio: number;
   precio: number;
+  moneda: string;
   precioAnterior?: number | null;
   kilometraje: number;
 
@@ -62,6 +63,7 @@ export interface AnuncioCreateDto {
 
   anio: number;
   precio: number;
+  moneda: string;
   precioAnterior?: number | null;
   kilometraje: number;
 
@@ -97,6 +99,7 @@ export interface AnuncioDetalle {
   colorInterior: string;
   anio: number;
   precio: number;
+  moneda: string;
   precioAnterior?: number | null;
   kilometraje: number;
   transmision: string;

@@ -39,7 +39,7 @@ public class AnuncioServiceTests
         // 1. ARRANGE
         var listaSimulada = new List<Anuncio>
         {
-            new Anuncio(1, "Toyota", "Corolla", "", "Sedan", "1.8L", "Delantera", "Blanco", "Negro", 2015, 600000, 80000, "Automática", "Gasolina", new List<string> { "Ninguno" }, "Santo Domingo", "Excelente estado")
+            new Anuncio(1, "Toyota", "Corolla", "", "Sedan", "1.8L", "Delantera", "Blanco", "Negro", 2015, 600000, "DOP", 80000, "Automática", "Gasolina", new List<string> { "Ninguno" }, "Santo Domingo", "Excelente estado")
         };
 
         // Configuramos el mock centralizado
@@ -79,7 +79,7 @@ public class AnuncioServiceTests
     {
         // 1. ARRANGE
         var idReal = 5;
-        var anuncioEnBD = new Anuncio(1, "Honda", "Civic", "", "Sedan", "1.8L", "Delantera", "Rojo", "Gris", 2022, 1200000, 15000, "Automática", "Gasolina", new List<string> { "Sunroof" }, "Santiago", "Casi nuevo");
+        var anuncioEnBD = new Anuncio(1, "Honda", "Civic", "", "Sedan", "1.8L", "Delantera", "Rojo", "Gris", 2022, 1200000, "DOP", 15000, "Automática", "Gasolina", new List<string> { "Sunroof" }, "Santiago", "Casi nuevo");
 
         _mockRepo.Setup(r => r.ObtenerPorIdAsync(idReal)).ReturnsAsync(anuncioEnBD);
 
@@ -101,7 +101,7 @@ public class AnuncioServiceTests
     {
         // 1. ARRANGE
         var idReal = 5;
-        var anuncioEnBD = new Anuncio(1, "Honda", "Civic", "", "Sedan", "1.8L", "Delantera", "Rojo", "Gris", 2022, 1200000, 15000, "Automática", "Gasolina", new List<string> { "Sunroof" }, "Santiago", "Casi nuevo");
+        var anuncioEnBD = new Anuncio(1, "Honda", "Civic", "", "Sedan", "1.8L", "Delantera", "Rojo", "Gris", 2022, 1200000, "DOP", 15000, "Automática", "Gasolina", new List<string> { "Sunroof" }, "Santiago", "Casi nuevo");
 
         _mockRepo.Setup(r => r.ObtenerPorIdAsync(idReal)).ReturnsAsync(anuncioEnBD);
 
@@ -120,7 +120,7 @@ public class AnuncioServiceTests
     {
         // 1. ARRANGE
         var idBorrador = 7;
-        var anuncioBorrador = new Anuncio(3, "Toyota", "Corolla", "", "Sedan", "1.8L", "Delantera", "Blanco", "Negro", 2021, 900000, 20000, "Automática", "Gasolina", new List<string>(), "SDQ", "Nuevo");
+        var anuncioBorrador = new Anuncio(3, "Toyota", "Corolla", "", "Sedan", "1.8L", "Delantera", "Blanco", "Negro", 2021, 900000, "DOP", 20000, "Automática", "Gasolina", new List<string>(), "SDQ", "Nuevo");
 
         _mockRepo.Setup(r => r.ObtenerPorIdAsync(idBorrador)).ReturnsAsync(anuncioBorrador);
 
@@ -139,7 +139,7 @@ public class AnuncioServiceTests
     {
         // ARRANGE
         var idReal = 6;
-        var anuncio = new Anuncio(6, "Ford", "Mustang", "", "Deportivo", "5.0L", "Trasera", "Rojo", "Negro", 2020, 1500000, 30000, "Automática", "Gasolina", new List<string>(), "Santo Domingo", "Único dueño");
+        var anuncio = new Anuncio(6, "Ford", "Mustang", "", "Deportivo", "5.0L", "Trasera", "Rojo", "Negro", 2020, 1500000, "DOP", 30000, "Automática", "Gasolina", new List<string>(), "Santo Domingo", "Único dueño");
 
         _mockRepo.Setup(r => r.ObtenerPorIdAsync(idReal)).ReturnsAsync(anuncio);
 
@@ -176,7 +176,7 @@ public class AnuncioServiceTests
     {
         // ARRANGE
         var idReal = 5;
-        var anuncio = new Anuncio(5, "Honda", "Civic", "", "Sedan", "1.8L", "Delantera", "Blanco", "Negro", 2022, 1200000, 15000, "Automática", "Gasolina", new List<string>(), "Santiago", "Casi nuevo");
+        var anuncio = new Anuncio(5, "Honda", "Civic", "", "Sedan", "1.8L", "Delantera", "Blanco", "Negro", 2022, 1200000, "DOP", 15000, "Automática", "Gasolina", new List<string>(), "Santiago", "Casi nuevo");
 
         _mockRepo.Setup(r => r.ObtenerPorIdAsync(idReal)).ReturnsAsync(anuncio);
 
@@ -307,7 +307,7 @@ public class AnuncioServiceTests
         var idDueñoReal = 1;
         var idHacker = 99;
 
-        var anuncioEnBD = new Anuncio(idDueñoReal, "Honda", "Civic", "", "Sedan", "1.8L", "Delantera", "Rojo", "Gris", 2022, 1200000, 15000, "Automática", "Gasolina", new List<string>(), "Santiago", "Casi nuevo");
+        var anuncioEnBD = new Anuncio(idDueñoReal, "Honda", "Civic", "", "Sedan", "1.8L", "Delantera", "Rojo", "Gris", 2022, 1200000, "DOP", 15000, "Automática", "Gasolina", new List<string>(), "Santiago", "Casi nuevo");
 
         _mockRepo.Setup(r => r.ObtenerPorIdAsync(idAnuncio)).ReturnsAsync(anuncioEnBD);
 
@@ -330,7 +330,7 @@ public class AnuncioServiceTests
         var idAnuncio = 5;
         var idDueño = 1;
 
-        var anuncioEnBD = new Anuncio(idDueño, "Honda", "Civic", "", "Sedan", "1.8L", "Delantera", "Rojo", "Gris", 2022, 1200000, 15000, "Automática", "Gasolina", new List<string>(), "Santiago", "Casi nuevo");
+        var anuncioEnBD = new Anuncio(idDueño, "Honda", "Civic", "", "Sedan", "1.8L", "Delantera", "Rojo", "Gris", 2022, 1200000, "DOP", 15000, "Automática", "Gasolina", new List<string>(), "Santiago", "Casi nuevo");
 
         var updateDto = new AnuncioUpdateDto
         {
@@ -388,7 +388,7 @@ public class AnuncioServiceTests
         var idDueñoReal = 1;
         var idHacker = 99;
 
-        var anuncioEnBD = new Anuncio(idDueñoReal, "Honda", "Civic", "", "Sedan", "1.8L", "Delantera", "Rojo", "Gris", 2022, 1200000, 15000, "Automática", "Gasolina", new List<string>(), "Santiago", "Casi nuevo");
+        var anuncioEnBD = new Anuncio(idDueñoReal, "Honda", "Civic", "", "Sedan", "1.8L", "Delantera", "Rojo", "Gris", 2022, 1200000, "DOP", 15000, "Automática", "Gasolina", new List<string>(), "Santiago", "Casi nuevo");
 
         _mockRepo.Setup(r => r.ObtenerPorIdAsync(idAnuncio)).ReturnsAsync(anuncioEnBD);
 
@@ -410,7 +410,7 @@ public class AnuncioServiceTests
         var idAnuncio = 5;
         var idDueño = 1;
 
-        var anuncioEnBD = new Anuncio(idDueño, "Honda", "Civic", "", "Sedan", "1.8L", "Delantera", "Rojo", "Gris", 2022, 1200000, 15000, "Automática", "Gasolina", new List<string>(), "Santiago", "Casi nuevo");
+        var anuncioEnBD = new Anuncio(idDueño, "Honda", "Civic", "", "Sedan", "1.8L", "Delantera", "Rojo", "Gris", 2022, 1200000, "DOP", 15000, "Automática", "Gasolina", new List<string>(), "Santiago", "Casi nuevo");
 
         // Regla de negocio: agregamos 5 fotos
         anuncioEnBD.AgregarFotos(new List<string>
@@ -442,7 +442,7 @@ public class AnuncioServiceTests
         var idAnuncio = 5;
         var idDueño = 1;
 
-        var anuncioEnBD = new Anuncio(idDueño, "Honda", "Civic", "", "Sedan", "1.8L", "Delantera", "Rojo", "Gris", 2022, 1200000, 15000, "Automática", "Gasolina", new List<string>(), "Santiago", "Casi nuevo");
+        var anuncioEnBD = new Anuncio(idDueño, "Honda", "Civic", "", "Sedan", "1.8L", "Delantera", "Rojo", "Gris", 2022, 1200000, "DOP", 15000, "Automática", "Gasolina", new List<string>(), "Santiago", "Casi nuevo");
         anuncioEnBD.AgregarFotos(new List<string> { "url1.jpg", "url2.jpg", "url3.jpg", "url4.jpg", "url5.jpg" });
 
         var usuario = CrearUsuarioDealerConSuscripcion(idDueño, PlanNivel.Gratis, CicloFacturacion.Mensual, EstadoSuscripcion.Activa);
@@ -485,7 +485,7 @@ public class AnuncioServiceTests
         var idDueñoReal = 1;
         var dto = new AnuncioImagenUploadDto { AnuncioId = 5, UsuarioId = 99, Imagenes = new List<IFormFile>() };
 
-        var anuncioEnBD = new Anuncio(idDueñoReal, "Honda", "Civic", "", "Sedan", "1.8L", "Delantera", "Rojo", "Gris", 2022, 1200000, 15000, "Automática", "Gasolina", new List<string>(), "Santiago", "Casi nuevo");
+        var anuncioEnBD = new Anuncio(idDueñoReal, "Honda", "Civic", "", "Sedan", "1.8L", "Delantera", "Rojo", "Gris", 2022, 1200000, "DOP", 15000, "Automática", "Gasolina", new List<string>(), "Santiago", "Casi nuevo");
 
         _mockRepo.Setup(r => r.ObtenerPorIdAsync(dto.AnuncioId)).ReturnsAsync(anuncioEnBD);
 
@@ -501,7 +501,7 @@ public class AnuncioServiceTests
     {
         // 1. ARRANGE
         var idDueño = 1;
-        var anuncioEnBD = new Anuncio(idDueño, "Honda", "Civic", "", "Sedan", "1.8L", "Delantera", "Rojo", "Gris", 2022, 1200000, 15000, "Automática", "Gasolina", new List<string>(), "Santiago", "Casi nuevo");
+        var anuncioEnBD = new Anuncio(idDueño, "Honda", "Civic", "", "Sedan", "1.8L", "Delantera", "Rojo", "Gris", 2022, 1200000, "DOP", 15000, "Automática", "Gasolina", new List<string>(), "Santiago", "Casi nuevo");
         _mockRepo.Setup(r => r.ObtenerPorIdAsync(5)).ReturnsAsync(anuncioEnBD);
 
         // Simulamos un archivo de 6 Megabytes
@@ -764,7 +764,7 @@ public class AnuncioServiceTests
         // ARRANGE
         var anuncios = new List<Anuncio>
         {
-            new Anuncio(1, "Toyota", "Corolla", "", "Sedan", "1.8L", "Delantera", "Blanco", "Negro", 2015, 600000, 80000, "Automática", "Gasolina", new List<string> { "Ninguno" }, "Santo Domingo", "Excelente estado")
+            new Anuncio(1, "Toyota", "Corolla", "", "Sedan", "1.8L", "Delantera", "Blanco", "Negro", 2015, 600000, "DOP", 80000, "Automática", "Gasolina", new List<string> { "Ninguno" }, "Santo Domingo", "Excelente estado")
         };
 
         var dto = new AnuncioSearchDto

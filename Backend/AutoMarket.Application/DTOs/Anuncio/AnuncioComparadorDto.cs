@@ -9,6 +9,7 @@ public class AnuncioComparadorDto
     public string TipoVehiculo { get; set; } = string.Empty;
     public int Anio { get; set; }
     public decimal Precio { get; set; }
+    public string Moneda { get; set; } = "DOP";
     public decimal? PrecioAnterior { get; set; }
     public bool EnOferta { get; set; }
     public int Kilometraje { get; set; }

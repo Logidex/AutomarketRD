@@ -42,6 +42,7 @@ export interface AnuncioAdmin {
   marca: string;
   modelo: string;
   precio: number;
+  moneda: string;
   usuarioId: number;
 }
 

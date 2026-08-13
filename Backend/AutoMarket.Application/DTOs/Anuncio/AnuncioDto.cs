@@ -20,6 +20,7 @@ public class AnuncioDto
 
     public int Anio { get; set; }
     public decimal Precio { get; set; }
+    public string Moneda { get; set; } = "DOP";
     public decimal? PrecioAnterior { get; set; }
     public int Kilometraje { get; set; }
 

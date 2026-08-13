@@ -250,6 +250,14 @@ public class AnuncioRepository : IAnuncioRepository
             );
         }
 
+        if (!string.IsNullOrWhiteSpace(filtro.Moneda))
+        {
+            var moneda = NormalizadorTexto.Normalizar(filtro.Moneda);
+            query = query.Where(a =>
+                EF.Functions.ILike(a.Moneda, moneda)
+            );
+        }
+
         if (filtro.AnioDesde.HasValue)
         {
             query = query.Where(a =>

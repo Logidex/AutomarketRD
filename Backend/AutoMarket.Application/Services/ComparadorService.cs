@@ -40,6 +40,7 @@ public class ComparadorService : IComparadorService
             TipoVehiculo = a.TipoVehiculo,
             Anio = a.Anio,
             Precio = a.Precio,
+            Moneda = a.Moneda,
             PrecioAnterior = a.PrecioAnterior,
             EnOferta = a.EnOferta,
             Kilometraje = a.Kilometraje,

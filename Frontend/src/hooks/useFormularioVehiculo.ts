@@ -41,7 +41,7 @@ export const useFormularioVehiculo = (
   const [formData, setFormData] = useState({
     marca: "", modelo: "", version: "", tipoVehiculo: "", motor: "",
     traccion: "", colorExterior: "", colorInterior: "",
-    anio: new Date().getFullYear(), precio: 0, precioAnterior: 0, kilometraje: 0,
+    anio: new Date().getFullYear(), precio: 0, moneda: "DOP", precioAnterior: 0, kilometraje: 0,
     transmision: "", combustible: "", ubicacion: "", descripcion: "",
   });
 
@@ -56,6 +56,7 @@ export const useFormularioVehiculo = (
             tipoVehiculo: datos.tipoVehiculo, motor: datos.motor, traccion: datos.traccion,
             colorExterior: datos.colorExterior, colorInterior: datos.colorInterior,
             anio: datos.anio, precio: datos.precio,
+            moneda: datos.moneda ?? "DOP",
             precioAnterior: datos.precioAnterior ?? 0,
             kilometraje: datos.kilometraje,
             transmision: datos.transmision, combustible: datos.combustible,

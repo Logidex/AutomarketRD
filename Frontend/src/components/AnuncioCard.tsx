@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { FaTrash, FaEye } from "react-icons/fa";
 import type { AnuncioListado } from "../types/anuncio.types";
 import { urlImagen } from "../utils/imagen";
+import { formatearPrecio } from "../utils/formato";
 
 interface AnuncioCardProps {
   anuncio: AnuncioListado;
@@ -103,7 +104,7 @@ export default function AnuncioCard({
                 <span>{ubicacion}</span>
                 <span>•</span>
                 <span className="font-semibold text-blue-600">
-                  RD$ {precio.toLocaleString("es-DO")}
+                  {formatearPrecio(precio, anuncio.moneda)}
                 </span>
               </div>
             </div>

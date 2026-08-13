@@ -55,6 +55,7 @@ public class FavoritoService : IFavoritoService
             Modelo = a.Modelo,
             Anio = a.Anio,
             Precio = a.Precio,
+            Moneda = a.Moneda,
             FotoPrincipal = AnuncioFotos.ObtenerPrincipal(a.Fotos)
         }).ToList();
     }

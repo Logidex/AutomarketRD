@@ -41,6 +41,7 @@ public class ComparadorServiceTests
             "Negro",
             anio,
             precio,
+            "DOP",
             kilometraje,
             transmision,
             combustible,

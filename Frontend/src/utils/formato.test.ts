@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { formatearRD$, precioCicloDe, type Ciclo } from './formato';
+import {
+  formatearRD$,
+  formatearPrecio,
+  precioCicloDe,
+  type Ciclo,
+} from './formato';
 
 describe('formatearRD$', () => {
   it('devuelve "Gratis" cuando el valor es 0 o nulo', () => {
@@ -11,6 +16,25 @@ describe('formatearRD$', () => {
   it('formatea montos positivos con el símbolo RD$', () => {
     expect(formatearRD$(1000)).toBe('RD$ 1,000');
     expect(formatearRD$(1234567.5)).toBe('RD$ 1,234,567.5');
+  });
+});
+
+describe('formatearPrecio', () => {
+  it('devuelve "Gratis" cuando el valor es 0 o nulo y la moneda es DOP', () => {
+    expect(formatearPrecio(0)).toBe('Gratis');
+    expect(formatearPrecio(null)).toBe('Gratis');
+    expect(formatearPrecio(undefined)).toBe('Gratis');
+  });
+
+  it('formatea en RD$ por defecto (sin moneda o DOP)', () => {
+    expect(formatearPrecio(1000)).toBe('RD$ 1,000');
+    expect(formatearPrecio(1000, 'DOP')).toBe('RD$ 1,000');
+    expect(formatearPrecio(1000, 'dop')).toBe('RD$ 1,000');
+  });
+
+  it('formatea en dólares cuando la moneda es USD', () => {
+    expect(formatearPrecio(15000, 'USD')).toBe('US$ 15,000');
+    expect(formatearPrecio(15000, 'usd')).toBe('US$ 15,000');
   });
 });
 

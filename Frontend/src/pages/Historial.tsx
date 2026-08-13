@@ -3,6 +3,7 @@ import { FaCalendarAlt, FaHistory, FaClock } from "react-icons/fa";
 import { formatearFecha } from "../utils/fecha";
 import { useHistorialReciente } from "../hooks/useHistorial";
 import { urlImagen } from "../utils/imagen";
+import { formatearPrecio } from "../utils/formato";
 
 const IMAGEN_VACIA =
   "https://via.placeholder.com/600x400?text=Sin+Foto";
@@ -114,7 +115,7 @@ export default function Historial() {
                   </div>
 
                   <p className="mt-2 text-xl font-bold text-blue-500">
-                    RD$ {anuncio.precio.toLocaleString("es-DO")}
+                    {formatearPrecio(anuncio.precio, anuncio.moneda)}
                   </p>
 
                   <div className="mt-4 flex items-center gap-3 border-t border-white/10 pt-4 text-xs text-[#9aa1b1]">
