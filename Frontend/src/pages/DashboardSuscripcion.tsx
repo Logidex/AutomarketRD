@@ -82,6 +82,28 @@ export default function DashboardSuscripcion() {
       return;
     }
 
+    // Renovación anticipada: avisar que el nuevo período se suma al vencimiento actual
+    if (
+      estadoEscogido(plan) === "renovar" &&
+      suscripcion !== null &&
+      suscripcion.estado === "Activa" &&
+      suscripcion.activa
+    ) {
+      const confirmacion = await Swal.fire({
+        icon: "info",
+        title: "Renovar tu suscripción",
+        html: `Tu suscripción está activa hasta el <strong>${formatearFecha(
+          suscripcion.fechaVencimientoUtc,
+        )}</strong>. Si renuevas ahora, el próximo período (${ciclo.toLowerCase()}) se sumará al vencimiento actual y <strong>no perderás los días restantes</strong>.`,
+        showCancelButton: true,
+        confirmButtonColor: "#3b82f6",
+        confirmButtonText: "Sí, ir al pago",
+        cancelButtonText: "Cancelar",
+      });
+
+      if (!confirmacion.isConfirmed) return;
+    }
+
     setProcesando(plan.nivel);
 
     try {
