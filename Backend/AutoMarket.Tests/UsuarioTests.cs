@@ -30,4 +30,24 @@ public class UsuarioTests
 
         Assert.Equal("nuevoPasswordHash", excepcion.ParamName);
     }
+
+    [Fact]
+    public void ConstructorPublico_DebeAsignarLaFechaDeCreacionActual()
+    {
+        // Arrange
+        var antes = DateTime.UtcNow.AddSeconds(-5);
+
+        // Act
+        var usuario = new Usuario(
+            "Juan",
+            "Perez",
+            "juan@test.com",
+            "hash-123",
+            "8095550000",
+            "Comprador");
+
+        // Assert
+        var despues = DateTime.UtcNow.AddSeconds(5);
+        Assert.InRange(usuario.CreatedAt, antes, despues);
+    }
 }

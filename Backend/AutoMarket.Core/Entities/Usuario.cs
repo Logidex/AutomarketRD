@@ -66,6 +66,7 @@ public class Usuario
         TelefonoPersonal = telefonoPersonal;
         Rol = rol;
         EmailConfirmado = emailConfirmado;
+        CreatedAt = DateTime.UtcNow;
     }
 
     // MÉTODO DE FÁBRICA ESTÁTICO: Solo accesible internamente por el sistema
