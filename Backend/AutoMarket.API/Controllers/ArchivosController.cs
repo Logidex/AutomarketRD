@@ -5,10 +5,16 @@ namespace AutoMarket.API.Controllers;
 
 [ApiController]
 [Route("api/archivos")]
+/// <summary>
+/// Controlador para gestionar Archivos.
+/// </summary>
 public class ArchivosController : ControllerBase
 {
     private readonly IAlmacenadorArchivos _almacenadorArchivos;
 
+/// <summary>
+/// Inicializa una nueva instancia de la clase ArchivosController. Parámetro almacenadorArchivos (IAlmacenadorArchivos)
+/// </summary>
     public ArchivosController(IAlmacenadorArchivos almacenadorArchivos)
     {
         _almacenadorArchivos = almacenadorArchivos;
@@ -29,3 +35,4 @@ public class ArchivosController : ControllerBase
         return Redirect(urlFirmada);
     }
 }
+

@@ -13,6 +13,9 @@ namespace AutoMarket.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+/// <summary>
+/// Controlador para gestionar Pagos.
+/// </summary>
 public class PagosController : ControllerBase
 {
     private readonly IPayPalService _payPalService;
@@ -22,6 +25,9 @@ public class PagosController : ControllerBase
     private readonly IConfiguration _configuration;
     private readonly ILogger<PagosController> _logger;
 
+/// <summary>
+/// Inicializa una nueva instancia de la clase PagosController.
+/// </summary>
     public PagosController(
         IPayPalService payPalService,
         ISuscripcionService suscripcionService,

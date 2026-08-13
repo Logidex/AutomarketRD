@@ -6,10 +6,16 @@ using AutoMarket.Core.Interfaces;
 
 namespace AutoMarket.Application.Services;
 
+/// <summary>
+/// Servicio para manejar PlanCatalogo.
+/// </summary>
 public class PlanCatalogoService : IPlanCatalogoService
 {
     private readonly IPlanCatalogoRepository _repository;
 
+/// <summary>
+/// Inicializa una nueva instancia de la clase PlanCatalogoService. Parámetro repository (IPlanCatalogoRepository)
+/// </summary>
     public PlanCatalogoService(IPlanCatalogoRepository repository)
     {
         _repository = repository;
@@ -80,6 +86,9 @@ public class PlanCatalogoService : IPlanCatalogoService
         return MapearAdmin(plan);
     }
 
+/// <summary>
+/// EliminarPlanAsync Eliminar plan async. Parámetros: Parámetro id (int). Retorna: Task.
+/// </summary>
     public async Task EliminarPlanAsync(int id)
     {
         // Borrado lógico: cambia el plan a inactivo sin perder historial.

@@ -25,8 +25,10 @@ public class UsuarioTests
         // Arrange
         var admin = Usuario.CrearAdministradorInterno("Administrador", "Supremo", "admin@automarket.do", "hash-anterior");
 
-        // Act & Assert
-        var excepcion = Assert.Throws<ArgumentException>(() => admin.CambiarPassword(null));
+         // Act & Assert
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+         var excepcion = Assert.Throws<ArgumentException>(() => admin.CambiarPassword(null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
         Assert.Equal("nuevoPasswordHash", excepcion.ParamName);
     }

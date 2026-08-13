@@ -5,10 +5,16 @@ namespace AutoMarket.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+/// <summary>
+/// Controlador para gestionar Catalogo.
+/// </summary>
 public class CatalogoController : ControllerBase
 {
     private readonly ICatalogoService _catalogoService;
 
+/// <summary>
+/// Inicializa una nueva instancia de la clase CatalogoController. Parámetro catalogoService (ICatalogoService)
+/// </summary>
     public CatalogoController(ICatalogoService catalogoService)
     {
         _catalogoService = catalogoService;

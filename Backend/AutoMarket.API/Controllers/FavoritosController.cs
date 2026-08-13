@@ -8,10 +8,16 @@ namespace AutoMarket.API.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 [Authorize] 
+/// <summary>
+/// Controlador para gestionar Favoritos.
+/// </summary>
 public class FavoritosController : ControllerBase
 {
     private readonly IFavoritoService _favoritoService;
 
+/// <summary>
+/// Inicializa una nueva instancia de la clase FavoritosController. Parámetro favoritoService (IFavoritoService)
+/// </summary>
     public FavoritosController(IFavoritoService favoritoService)
     {
         _favoritoService = favoritoService;

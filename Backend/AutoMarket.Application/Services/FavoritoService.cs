@@ -6,17 +6,26 @@ using AutoMarket.Core.Interfaces;
 
 namespace AutoMarket.Application.Services;
 
+/// <summary>
+/// Servicio para manejar Favorito.
+/// </summary>
 public class FavoritoService : IFavoritoService
 {
     private readonly IFavoritoRepository _favoritoRepository;
     private readonly IAnuncioRepository _anuncioRepository;
 
+/// <summary>
+/// Inicializa una nueva instancia de la clase FavoritoService. Parámetro favoritoRepository (IFavoritoRepository), Parámetro anuncioRepository (IAnuncioRepository)
+/// </summary>
     public FavoritoService(IFavoritoRepository favoritoRepository, IAnuncioRepository anuncioRepository)
     {
         _favoritoRepository = favoritoRepository;
         _anuncioRepository = anuncioRepository;
     }
 
+/// <summary>
+/// AgregarFavoritoAsync Agregar favorito async. Parámetros: Parámetro usuarioId (int), Parámetro anuncioId (int). Retorna: Task.
+/// </summary>
     public async Task AgregarFavoritoAsync(int usuarioId, int anuncioId)
     {
         var anuncio = await _anuncioRepository.ObtenerPorIdAsync(anuncioId);
@@ -34,6 +43,9 @@ public class FavoritoService : IFavoritoService
         await _favoritoRepository.AgregarAsync(nuevoFavorito);
     }
 
+/// <summary>
+/// QuitarFavoritoAsync Quitar favorito async. Parámetros: Parámetro usuarioId (int), Parámetro anuncioId (int). Retorna: Task.
+/// </summary>
     public async Task QuitarFavoritoAsync(int usuarioId, int anuncioId)
     {
         var existente = await _favoritoRepository.ObtenerAsync(usuarioId, anuncioId);

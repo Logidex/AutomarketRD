@@ -6,6 +6,9 @@ using AutoMarket.Core.Interfaces;
 
 namespace AutoMarket.Application.Services;
 
+/// <summary>
+/// Servicio para manejar HistorialVista.
+/// </summary>
 public class HistorialVistaService : IHistorialVistaService
 {
     private const int CANTIDAD_MAXIMA = 50;
@@ -14,6 +17,9 @@ public class HistorialVistaService : IHistorialVistaService
     private readonly IHistorialVistaRepository _historialRepository;
     private readonly IAnuncioRepository _anuncioRepository;
 
+/// <summary>
+/// Inicializa una nueva instancia de la clase HistorialVistaService.
+/// </summary>
     public HistorialVistaService(
         IHistorialVistaRepository historialRepository,
         IAnuncioRepository anuncioRepository)
@@ -22,6 +28,9 @@ public class HistorialVistaService : IHistorialVistaService
         _anuncioRepository = anuncioRepository;
     }
 
+/// <summary>
+/// RegistrarVistaAsync Registrar vista async. Parámetros: Parámetro usuarioId (int), Parámetro anuncioId (int). Retorna: Task.
+/// </summary>
     public async Task RegistrarVistaAsync(int usuarioId, int anuncioId)
     {
         var anuncio = await _anuncioRepository.ObtenerPorIdAsync(anuncioId);

@@ -5,11 +5,17 @@ using Microsoft.AspNetCore.Http;
 
 namespace AutoMarket.Application.Services;
 
+/// <summary>
+/// Servicio para manejar PerfilDealer.
+/// </summary>
 public class PerfilDealerService : IPerfilDealerService
 {
     private readonly IUsuarioRepository _usuarioRepository;
     private readonly IAlmacenadorArchivos _almacenadorArchivos;
 
+/// <summary>
+/// Inicializa una nueva instancia de la clase PerfilDealerService.
+/// </summary>
     public PerfilDealerService(
         IUsuarioRepository usuarioRepository,
         IAlmacenadorArchivos almacenadorArchivos)

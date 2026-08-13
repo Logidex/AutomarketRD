@@ -8,12 +8,18 @@ using AutoMarket.Core.Interfaces;
 
 namespace AutoMarket.Application.Services;
 
+/// <summary>
+/// Servicio para manejar Anuncio.
+/// </summary>
 public class AnuncioService : IAnuncioService
 {
     private readonly IAnuncioRepository _repository;
     private readonly IAlmacenadorArchivos _almacenadorArchivos;
     private readonly IUsuarioRepository _usuarioRepository;
 
+/// <summary>
+/// Inicializa una nueva instancia de la clase AnuncioService.
+/// </summary>
     public AnuncioService(
         IAnuncioRepository repository,
         IAlmacenadorArchivos almacenadorArchivos,
@@ -374,17 +380,15 @@ public class AnuncioService : IAnuncioService
 
         var rutasGuardadas = new List<string>();
 
-        foreach (var imagen in dto.Imagenes)
-        {
-            /// <summary>
-            /// Valida que el archivo no exceda los 5 MB y que sea un tipo de imagen permitido (PNG o JPEG).
-            /// Lanza excepcion si la validacion falla para ser tratada en el controlador como BadRequest.
-            /// </summary>
-            if (imagen.Length > 5 * 1024 * 1024)
-                throw new ArgumentException("Imagen excede el tamaño máximo");
+         foreach (var imagen in dto.Imagenes)
+         {
+             // Valida que el archivo no exceda los 5 MB y que sea un tipo de imagen permitido (PNG o JPEG).
+             // Lanza excepcion si la validacion falla para ser tratada en el controlador como BadRequest.
+             if (imagen.Length > 5 * 1024 * 1024)
+                 throw new ArgumentException("Imagen excede el tamaño máximo");
 
-            if (imagen.ContentType != "image/png" && imagen.ContentType != "image/jpeg")
-                throw new ArgumentException("Formato no permitido");
+             if (imagen.ContentType != "image/png" && imagen.ContentType != "image/jpeg")
+                 throw new ArgumentException("Formato no permitido");
 
             var extension = Path.GetExtension(imagen.FileName);
             var nombreUnico = $"{Guid.NewGuid()}{extension}";
@@ -421,6 +425,9 @@ public class AnuncioService : IAnuncioService
         return true;
     }
 
+/// <summary>
+/// EliminarImagenAsync Eliminar imagen async. Parámetros: Parámetro anuncioId (int), Parámetro usuarioId (int), Parámetro urlImagen (string). Retorna: Task.
+/// </summary>
     public async Task EliminarImagenAsync(int anuncioId, int usuarioId, string urlImagen)
     {
         var anuncio = await _repository.ObtenerPorIdAsync(anuncioId);
@@ -536,6 +543,9 @@ var anunciosDto = anuncios
         return true;
     }
 
+/// <summary>
+/// RegistrarVistaAsync Registrar vista async. Parámetros: Parámetro anuncioId (int). Retorna: Task.
+/// </summary>
     public async Task RegistrarVistaAsync(int anuncioId)
     {
         var anuncio = await _repository.ObtenerPorIdAsync(anuncioId);

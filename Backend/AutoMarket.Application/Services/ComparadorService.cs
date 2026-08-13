@@ -5,10 +5,16 @@ using AutoMarket.Core.Interfaces;
 
 namespace AutoMarket.Application.Services;
 
+/// <summary>
+/// Servicio para manejar Comparador.
+/// </summary>
 public class ComparadorService : IComparadorService
 {
     private readonly IAnuncioRepository _anuncioRepository;
 
+/// <summary>
+/// Inicializa una nueva instancia de la clase ComparadorService. Parámetro anuncioRepository (IAnuncioRepository)
+/// </summary>
     public ComparadorService(IAnuncioRepository anuncioRepository)
     {
         _anuncioRepository = anuncioRepository;

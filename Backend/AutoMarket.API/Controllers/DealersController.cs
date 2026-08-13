@@ -10,12 +10,18 @@ namespace AutoMarket.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+/// <summary>
+/// Controlador para gestionar Dealers.
+/// </summary>
 public class DealersController : ControllerBase
 {
     private readonly IPerfilDealerService _perfilDealerService;
     private readonly IDashboardService _dashboardService;
     private readonly ISuscripcionService _suscripcionService;
 
+/// <summary>
+/// Inicializa una nueva instancia de la clase DealersController.
+/// </summary>
     public DealersController(
         IPerfilDealerService perfilDealerService,
         IDashboardService dashboardService,

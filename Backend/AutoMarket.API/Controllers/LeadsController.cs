@@ -9,10 +9,16 @@ namespace AutoMarket.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+/// <summary>
+/// Controlador para gestionar Leads.
+/// </summary>
 public class LeadsController : ControllerBase
 {
     private readonly ILeadService _leadService;
 
+/// <summary>
+/// Inicializa una nueva instancia de la clase LeadsController. Parámetro leadService (ILeadService)
+/// </summary>
     public LeadsController(ILeadService leadService)
     {
         _leadService = leadService;

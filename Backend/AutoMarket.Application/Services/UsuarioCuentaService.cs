@@ -11,6 +11,9 @@ using Microsoft.Extensions.Logging;
 
 namespace AutoMarket.Application.Services;
 
+/// <summary>
+/// Servicio para manejar UsuarioCuenta.
+/// </summary>
 public class UsuarioCuentaService : IUsuarioCuentaService
 {
     private const int PASSWORD_LONGITUD_MINIMA = 6;
@@ -22,6 +25,9 @@ public class UsuarioCuentaService : IUsuarioCuentaService
     private readonly IEmailSenderService _emailSender;
     private readonly ILogger<UsuarioCuentaService> _logger;
 
+/// <summary>
+/// Inicializa una nueva instancia de la clase UsuarioCuentaService.
+/// </summary>
     public UsuarioCuentaService(
         IUsuarioRepository usuarioRepository,
         ISuscripcionService suscripcionService,
@@ -139,6 +145,9 @@ public class UsuarioCuentaService : IUsuarioCuentaService
         return MapearCuenta(usuario);
     }
 
+/// <summary>
+/// SolicitarCambioPasswordAsync Solicitar cambio password async. Parámetros: Parámetro usuarioId (int), Parámetro dto (SolicitarCambioPasswordDto). Retorna: Task.
+/// </summary>
     public async Task SolicitarCambioPasswordAsync(int usuarioId, SolicitarCambioPasswordDto dto)
     {
         var usuario = await ObtenerUsuarioAsync(usuarioId);
@@ -172,6 +181,9 @@ public class UsuarioCuentaService : IUsuarioCuentaService
             "<p>El código expira en 15 minutos. Si no solicitaste este cambio, ignora este correo.</p>");
     }
 
+/// <summary>
+/// ConfirmarCambioPasswordAsync Confirmar cambio password async. Parámetros: Parámetro usuarioId (int), Parámetro dto (ConfirmarPasswordDto). Retorna: Task.
+/// </summary>
     public async Task ConfirmarCambioPasswordAsync(int usuarioId, ConfirmarPasswordDto dto)
     {
         var usuario = await ObtenerUsuarioAsync(usuarioId);
@@ -191,6 +203,9 @@ public class UsuarioCuentaService : IUsuarioCuentaService
             "<p>Si no realizaste este cambio, contacta a soporte de inmediato.</p>");
     }
 
+/// <summary>
+/// SolicitarCambioEmailAsync Solicitar cambio email async. Parámetros: Parámetro usuarioId (int), Parámetro dto (SolicitarCambioEmailDto). Retorna: Task.
+/// </summary>
     public async Task SolicitarCambioEmailAsync(int usuarioId, SolicitarCambioEmailDto dto)
     {
         var usuario = await ObtenerUsuarioAsync(usuarioId);
@@ -225,6 +240,9 @@ public class UsuarioCuentaService : IUsuarioCuentaService
             "<p>El código expira en 15 minutos. Si no solicitaste este cambio, ignora este correo.</p>");
     }
 
+/// <summary>
+/// ConfirmarCambioEmailAsync Confirmar cambio email async. Parámetros: Parámetro usuarioId (int), Parámetro dto (ConfirmarEmailDto). Retorna: Task.
+/// </summary>
     public async Task ConfirmarCambioEmailAsync(int usuarioId, ConfirmarEmailDto dto)
     {
         var usuario = await ObtenerUsuarioAsync(usuarioId);

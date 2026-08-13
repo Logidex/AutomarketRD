@@ -8,12 +8,18 @@ using AutoMarket.Core.Interfaces;
 
 namespace AutoMarket.Application.Services;
 
+/// <summary>
+/// Servicio para manejar Suscripcion.
+/// </summary>
 public class SuscripcionService : ISuscripcionService
 {
     private readonly ISuscripcionRepository _repository;
     private readonly IAnuncioRepository _anuncioRepository;
     private readonly IPayPalService _payPalService;
 
+/// <summary>
+/// Inicializa una nueva instancia de la clase SuscripcionService.
+/// </summary>
     public SuscripcionService(
         ISuscripcionRepository repository,
         IAnuncioRepository anuncioRepository,
@@ -24,6 +30,9 @@ public class SuscripcionService : ISuscripcionService
         _payPalService = payPalService;
     }
 
+/// <summary>
+/// AsignarPlanInicialAsync Asignar plan inicial async. Parámetros: Parámetro perfilDealerId (int), Parámetro nivel (PlanNivel), Parámetro ciclo (CicloFacturacion). Retorna: Task.
+/// </summary>
     public async Task AsignarPlanInicialAsync(int perfilDealerId, PlanNivel nivel, CicloFacturacion ciclo)
     {
         // Verificamos que no tenga una suscripción previa para evitar duplicados
@@ -36,6 +45,9 @@ public class SuscripcionService : ISuscripcionService
         await _repository.AgregarAsync(nuevaSuscripcion);
     }
 
+/// <summary>
+/// CambiarPlanAsync Cambiar plan async. Parámetros: Parámetro perfilDealerId (int), Parámetro nuevoNivel (PlanNivel), Parámetro ciclo (CicloFacturacion). Retorna: Task.
+/// </summary>
     public async Task CambiarPlanAsync(int perfilDealerId, PlanNivel nuevoNivel, CicloFacturacion ciclo)
     {
         var suscripcion = await _repository.ObtenerPorDealerIdAsync(perfilDealerId);
@@ -58,6 +70,9 @@ public class SuscripcionService : ISuscripcionService
         await _repository.ActualizarAsync(suscripcion);
     }
 
+/// <summary>
+/// RenovarManualAsync Renovar manual async. Parámetros: Parámetro perfilDealerId (int), Parámetro nuevaFechaVencimiento (DateTime). Retorna: Task.
+/// </summary>
     public async Task RenovarManualAsync(int perfilDealerId, DateTime nuevaFechaVencimiento)
     {
         var suscripcion = await _repository.ObtenerPorDealerIdAsync(perfilDealerId);
@@ -70,6 +85,9 @@ public class SuscripcionService : ISuscripcionService
         await _repository.ActualizarAsync(suscripcion);
     }
 
+/// <summary>
+/// ProcesarPagoSuscripcionAsync Procesar pago suscripcion async. Parámetros: Parámetro perfilDealerId (int), Parámetro nivel (PlanNivel), Parámetro ciclo (CicloFacturacion). Retorna: Task.
+/// </summary>
     public async Task ProcesarPagoSuscripcionAsync(int perfilDealerId, PlanNivel nivel, CicloFacturacion ciclo)
     {
         var suscripcionExistente = await _repository.ObtenerPorDealerIdAsync(perfilDealerId);
@@ -126,6 +144,9 @@ public class SuscripcionService : ISuscripcionService
         }
     }
 
+/// <summary>
+/// RegistrarPagoAsync Registrar pago async.. Retorna: Task.
+/// </summary>
     public async Task RegistrarPagoAsync(
         int perfilDealerId,
         PlanNivel nivel,
@@ -196,6 +217,9 @@ public class SuscripcionService : ISuscripcionService
             .ToList();
     }
 
+/// <summary>
+/// ReembolsarPagoAsync Reembolsar pago async. Parámetros: Parámetro pagoId (int). Retorna: Task.
+/// </summary>
     public async Task ReembolsarPagoAsync(int pagoId)
     {
         var pago = await _repository.ObtenerPagoPorIdAsync(pagoId);
@@ -252,6 +276,9 @@ public class SuscripcionService : ISuscripcionService
         };
     }
 
+/// <summary>
+/// CancelarSuscripcionAsync Cancelar suscripcion async. Parámetros: Parámetro perfilDealerId (int). Retorna: Task.
+/// </summary>
     public async Task CancelarSuscripcionAsync(int perfilDealerId)
     {
         var suscripcion = await _repository.ObtenerPorDealerIdAsync(perfilDealerId);

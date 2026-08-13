@@ -12,6 +12,9 @@ using Microsoft.Extensions.Logging;
 
 namespace AutoMarket.Application.Services;
 
+/// <summary>
+/// Servicio para manejar Auth.
+/// </summary>
 public class AuthService : IAuthService
 {
     private const int PASSWORD_LONGITUD_MINIMA = 8;
@@ -23,6 +26,9 @@ public class AuthService : IAuthService
     private readonly IEmailSenderService _emailSender;
     private readonly ILogger<AuthService> _logger;
 
+/// <summary>
+/// Inicializa una nueva instancia de la clase AuthService.
+/// </summary>
     public AuthService(
         IUsuarioRepository repository,
         ITokenService tokenService,
@@ -142,6 +148,9 @@ public class AuthService : IAuthService
     // ==========================================
     // RECUPERACIÓN DE CONTRASEÑA (olvidada)
     // ==========================================
+/// <summary>
+/// SolicitarRecuperacionAsync Solicitar recuperacion async. Parámetros: Parámetro email (string). Retorna: Task.
+/// </summary>
     public async Task SolicitarRecuperacionAsync(string email)
     {
         // No revelar si el correo existe: siempre se responde con el mismo mensaje.
@@ -174,6 +183,9 @@ public class AuthService : IAuthService
         }
     }
 
+/// <summary>
+/// RestablecerPasswordAsync Restablecer password async. Parámetros: Parámetro dto (RestablecerPasswordDto). Retorna: Task.
+/// </summary>
     public async Task RestablecerPasswordAsync(RestablecerPasswordDto dto)
     {
         var usuario = await _repository.ObtenerPorEmailParaEscrituraAsync(dto.Email.Trim().ToLowerInvariant())
@@ -207,4 +219,5 @@ public class AuthService : IAuthService
         }
     }
 }
+
 

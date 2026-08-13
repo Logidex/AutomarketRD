@@ -322,16 +322,16 @@ try
     // FORWARDED HEADERS
     // =======================================================
 
-    builder.Services.Configure<ForwardedHeadersOptions>(
-        options =>
-        {
-            options.ForwardedHeaders =
-                ForwardedHeaders.XForwardedFor
-                | ForwardedHeaders.XForwardedProto;
+     builder.Services.Configure<ForwardedHeadersOptions>(
+         options =>
+         {
+             options.ForwardedHeaders =
+                 ForwardedHeaders.XForwardedFor
+                 | ForwardedHeaders.XForwardedProto;
 
-            options.KnownNetworks.Clear();
-            options.KnownProxies.Clear();
-        });
+             options.KnownIPNetworks.Clear();
+             options.KnownProxies.Clear();
+         });
 
 
     var app = builder.Build();
@@ -494,29 +494,4 @@ finally
     await Log.CloseAndFlushAsync();
 }
 
-// Lee el campo "email" del cuerpo JSON de una petición sin consumirlo,
-// para que el rate limiter pueda particionar por cuenta en lugar de por IP.
-static string? LeerEmailDelCuerpo(HttpRequest request)
-{
-    try
-    {
-        request.EnableBuffering();
-        request.Body.Position = 0;
 
-        using var lector = new StreamReader(request.Body, leaveOpen: true);
-        var cuerpo = lector.ReadToEnd();
-        request.Body.Position = 0;
-
-        using var documento = JsonDocument.Parse(cuerpo);
-        if (documento.RootElement.TryGetProperty("email", out var propiedadEmail))
-        {
-            return propiedadEmail.GetString();
-        }
-
-        return null;
-    }
-    catch
-    {
-        return null;
-    }
-}

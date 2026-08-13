@@ -8,23 +8,40 @@ using AutoMarket.Application.Interfaces;
 
 namespace AutoMarket.API.Controllers;
 
+/// <summary>
+/// Controlador para gestionar las operaciones relacionadas con los anuncios de vehículos.
+/// Incluye creación, lectura, actualización, eliminación y otras acciones como subir imágenes,
+/// publicar, cambiar estado, etc.
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
+/// <summary>
+/// Controlador para gestionar Anuncios.
+/// </summary>
 public class AnunciosController : ControllerBase
 {
     private readonly IAnuncioService _anuncioService;
 
+/// <summary>
+/// Inicializa una nueva instancia de la clase AnunciosController. Parámetro anuncioService (IAnuncioService)
+/// </summary>
     public AnunciosController(IAnuncioService anuncioService)
     {
         _anuncioService = anuncioService;
     }
 
-    // ==========================================
-    // 1. CREAR: Necesitamos saber quién lo crea
-    // ==========================================
-    [HttpPost]
-    [Authorize(Roles = Roles.DealerVendedor)]
-    public async Task<IActionResult> CrearAnuncio([FromBody] AnuncioCreateDto dto)
+     /// <summary>
+     /// Crea un nuevo anuncio para el usuario autenticado.
+     /// Requiere rol DealerVendedor.
+     /// </summary>
+     /// <param name="dto">Datos para crear el anuncio.</param>
+     /// <returns>Resultado de la creación con mensaje y ID del anuncio creado.</returns>
+     // ==========================================
+     // 1. CREAR: Necesitamos saber quién lo crea
+     // ==========================================
+     [HttpPost]
+     [Authorize(Roles = Roles.DealerVendedor)]
+     public async Task<IActionResult> CrearAnuncio([FromBody] AnuncioCreateDto dto)
     {
         dto.UsuarioId = User.ObtenerUsuarioId();
 
@@ -35,12 +52,18 @@ public class AnunciosController : ControllerBase
         return Ok(new { mensaje = "Anuncio creado correctamente.", id = nuevoId });
     }
 
-    // ==========================================
-    // 2. OBTENER: Dejamos esto público (sin Authorize) 
-    // para que cualquier visitante vea la vitrina
-    // ==========================================
-    [HttpGet("{id:int}")]
-    public async Task<IActionResult> ObtenerPorId(int id)
+     /// <summary>
+     /// Obtiene un anuncio por su ID.
+     /// Acceso público para anuncios publicados; para otros estados, solo el propietario puede acceder.
+     /// </summary>
+     /// <param name="id">ID del anuncio.</param>
+     /// <returns>Datos del anuncio si se encuentra y el usuario tiene permiso; de lo contrario, NotFound.</returns>
+     // ==========================================
+     // 2. OBTENER: Dejamos esto público (sin Authorize) 
+     // para que cualquier visitante vea la vitrina
+     // ==========================================
+     [HttpGet("{id:int}")]
+     public async Task<IActionResult> ObtenerPorId(int id)
     {
         var usuarioId = ObtenerUsuarioIdSiAutenticado();
 
@@ -52,19 +75,31 @@ public class AnunciosController : ControllerBase
         return Ok(anuncioDto);
     }
 
-    [HttpGet]
-    public async Task<IActionResult> ObtenerTodosLosAnuncios()
-    {
-        var anuncios = await _anuncioService.ObtenerTodosLosAnuncios();
-        return Ok(anuncios);
-    }
+     /// <summary>
+     /// Obtiene todos los anuncios publicados (vitrina pública).
+     /// </summary>
+     /// <returns>Lista de anuncios publicados.</returns>
+     [HttpGet]
+     public async Task<IActionResult> ObtenerTodosLosAnuncios()
+     {
+         var anuncios = await _anuncioService.ObtenerTodosLosAnuncios();
+         return Ok(anuncios);
+     }
 
-    // ==========================================
-    // 3. ACTUALIZAR: Protegido y validando propiedad
-    // ==========================================
-    [HttpPut("{id}")]
-    [Authorize(Roles = Roles.DealerVendedor)]
-    public async Task<IActionResult> ActualizarAnuncio(int id, [FromBody] AnuncioUpdateDto updateDto)
+     /// <summary>
+     /// Actualiza un anuncio existente.
+     /// Solo el propietario del anuncio puede realizar esta acción.
+     /// Requiere rol DealerVendedor.
+     /// </summary>
+     /// <param name="id">ID del anuncio a actualizar.</param>
+     /// <param name="updateDto">Datos actualizados del anuncio.</param>
+     /// <returns>Anuncio actualizado si se encuentra y el usuario tiene permiso; de lo contrario, NotFound.</returns>
+     // ==========================================
+     // 3. ACTUALIZAR: Protegido y validando propiedad
+     // ==========================================
+     [HttpPut("{id}")]
+     [Authorize(Roles = Roles.DealerVendedor)]
+     public async Task<IActionResult> ActualizarAnuncio(int id, [FromBody] AnuncioUpdateDto updateDto)
     {
         int usuarioId = User.ObtenerUsuarioId();
 
@@ -77,12 +112,19 @@ public class AnunciosController : ControllerBase
         return Ok(resultado);
     }
 
-    // ==========================================
-    // 4. PUBLICAR: Añadimos Authorize
-    // ==========================================
-    [HttpPatch("{id}/publicar")]
-    [Authorize(Roles = Roles.DealerVendedor)]
-    public async Task<IActionResult> Publicar(int id)
+     /// <summary>
+     /// Publica un anuncio (cambia su estado a Publicado).
+     /// Verifica que el usuario sea el propietario y que cumpla con los requisitos de su plan.
+     /// Requiere rol DealerVendedor.
+     /// </summary>
+     /// <param name="id">ID del anuncio a publicar.</param>
+     /// <returns>Resultado de la operación de publicación.</returns>
+     // ==========================================
+     // 4. PUBLICAR: Añadimos Authorize
+     // ==========================================
+     [HttpPatch("{id}/publicar")]
+     [Authorize(Roles = Roles.DealerVendedor)]
+     public async Task<IActionResult> Publicar(int id)
     {
         int usuarioId = User.ObtenerUsuarioId();
 
@@ -94,13 +136,21 @@ public class AnunciosController : ControllerBase
         return Ok(new { mensaje = "Anuncio publicado con éxito." });
     }
 
-    // ==========================================
-    // 5. SUBIR IMÁGENES: Validación estricta
-    // ==========================================
-    [HttpPost("{id}/imagenes")]
-    [Authorize(Roles = Roles.DealerVendedor)]
-    [Consumes("multipart/form-data")]
-    public async Task<IActionResult> SubirImagenes(int id, [FromForm] List<IFormFile> imagenes)
+     /// <summary>
+     /// Sube imágenes para un anuncio específico.
+     /// Valida que el usuario sea el propietario y que las imágenes cumplan con los requisitos (máximo 10 imágenes, cada una ≤5 MB, formato PNG o JPEG).
+     /// Requiere rol DealerVendedor.
+     /// </summary>
+     /// <param name="id">ID del anuncio al que se subirán las imágenes.</param>
+     /// <param name="imagenes">Lista de archivos de imagen a subir.</param>
+     /// <returns>Resultado de la subida con las URLs de las imágenes guardadas.</returns>
+     // ==========================================
+     // 5. SUBIR IMÁGENES: Validación estricta
+     // ==========================================
+     [HttpPost("{id}/imagenes")]
+     [Authorize(Roles = Roles.DealerVendedor)]
+     [Consumes("multipart/form-data")]
+     public async Task<IActionResult> SubirImagenes(int id, [FromForm] List<IFormFile> imagenes)
     {
         if (imagenes == null || !imagenes.Any())
             return BadRequest(new { error = "Debes seleccionar al menos una imagen." });

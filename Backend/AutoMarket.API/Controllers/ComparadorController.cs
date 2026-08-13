@@ -5,10 +5,16 @@ namespace AutoMarket.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+/// <summary>
+/// Controlador para gestionar Comparador.
+/// </summary>
 public class ComparadorController : ControllerBase
 {
     private readonly IComparadorService _comparadorService;
 
+/// <summary>
+/// Inicializa una nueva instancia de la clase ComparadorController. Parámetro comparadorService (IComparadorService)
+/// </summary>
     public ComparadorController(IComparadorService comparadorService)
     {
         _comparadorService = comparadorService;

@@ -210,6 +210,9 @@ public class Anuncio
         UpdatedAt = DateTime.UtcNow;
     }
 
+    // ==========================================
+    // 4. MÉTODO PUBLICAR ANUNCIO
+    // ==========================================
     public void Publicar()
     {
         if (Estado == "Publicado")
@@ -223,7 +226,7 @@ public class Anuncio
     }
 
     // ==========================================
-    // 4. ACTUALIZAR INFO (Manteniendo consistencia)
+    // 5. ACTUALIZAR INFO (Manteniendo consistencia)
     // ==========================================
     public void ActualizarInfo(
     string marca,
@@ -395,6 +398,9 @@ public class Anuncio
         UpdatedAt = DateTime.UtcNow;
     }
 
+    // ==========================================
+    // 6. MÉTODO ELIMINAR FOTO
+    // ==========================================
     public void EliminarFoto(string urlFoto)
     {
         if (string.IsNullOrWhiteSpace(urlFoto))
@@ -407,6 +413,9 @@ public class Anuncio
         UpdatedAt = DateTime.UtcNow;
     }
 
+    // ==========================================
+    // 7. MÉTODO MOVER FOTO AL INICIO
+    // ==========================================
     public void MoverFotoAlInicio(string urlFoto)
     {
         if (string.IsNullOrWhiteSpace(urlFoto))
@@ -422,6 +431,9 @@ public class Anuncio
         UpdatedAt = DateTime.UtcNow;
     }
 
+    // ========================================================
+    // 8. MÉTODO CAMBIAR ESTADO - REGISTAR VISTA - FIJAR OFERTA
+    // ========================================================
     public void CambiarEstado(string nuevoEstado)
     {
         Estado = nuevoEstado;

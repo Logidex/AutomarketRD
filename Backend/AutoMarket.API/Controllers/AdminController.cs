@@ -14,6 +14,9 @@ namespace AutoMarket.API.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 [Authorize(Roles = Roles.Admin)]
+/// <summary>
+/// Controlador para gestionar Admin.
+/// </summary>
 public class AdminController : ControllerBase
 {
     private readonly IDashboardService _dashboardService;
@@ -24,6 +27,9 @@ public class AdminController : ControllerBase
     private readonly IPlanCatalogoService _planCatalogoService;
     private readonly IUsuarioCuentaService _usuarioCuentaService;
 
+/// <summary>
+/// Inicializa una nueva instancia de la clase AdminController.
+/// </summary>
     public AdminController(
         IDashboardService dashboardService,
         IUsuarioRepository usuarioRepository,

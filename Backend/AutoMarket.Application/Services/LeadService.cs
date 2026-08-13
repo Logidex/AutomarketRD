@@ -7,6 +7,9 @@ using Microsoft.Extensions.Logging;
 
 namespace AutoMarket.Application.Services;
 
+/// <summary>
+/// Servicio para manejar Lead.
+/// </summary>
 public class LeadService : ILeadService
 {
     private readonly ILeadRepository _leadRepository;
@@ -15,6 +18,9 @@ public class LeadService : ILeadService
     private readonly IEmailSenderService _emailSender;
     private readonly ILogger<LeadService> _logger;
 
+/// <summary>
+/// Inicializa una nueva instancia de la clase LeadService.
+/// </summary>
     public LeadService(
         ILeadRepository leadRepository,
         IAnuncioRepository anuncioRepository,
@@ -29,6 +35,9 @@ public class LeadService : ILeadService
         _logger = logger;
     }
 
+/// <summary>
+/// CrearLeadAsync Crear lead async. Parámetros: Parámetro dto (LeadCreateDto), Parámetro null (int? usuarioIdRemitente =). Retorna: Task.
+/// </summary>
     public async Task CrearLeadAsync(LeadCreateDto dto, int? usuarioIdRemitente = null)
     {
         var anuncio = await _anuncioRepository.ObtenerPorIdAsync(dto.AnuncioId);

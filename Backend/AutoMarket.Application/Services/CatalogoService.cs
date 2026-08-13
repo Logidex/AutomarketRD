@@ -6,10 +6,16 @@ using AutoMarket.Core.Interfaces;
 
 namespace AutoMarket.Application.Services;
 
+/// <summary>
+/// Servicio para manejar Catalogo.
+/// </summary>
 public class CatalogoService : ICatalogoService
 {
     private readonly IAnuncioRepository _anuncioRepository;
 
+/// <summary>
+/// Inicializa una nueva instancia de la clase CatalogoService. Parámetro anuncioRepository (IAnuncioRepository)
+/// </summary>
     public CatalogoService(IAnuncioRepository anuncioRepository)
     {
         _anuncioRepository = anuncioRepository;

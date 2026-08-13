@@ -8,10 +8,16 @@ namespace AutoMarket.API.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 [Authorize]
+/// <summary>
+/// Controlador para gestionar Historial.
+/// </summary>
 public class HistorialController : ControllerBase
 {
     private readonly IHistorialVistaService _historialService;
 
+/// <summary>
+/// Inicializa una nueva instancia de la clase HistorialController. Parámetro historialService (IHistorialVistaService)
+/// </summary>
     public HistorialController(IHistorialVistaService historialService)
     {
         _historialService = historialService;

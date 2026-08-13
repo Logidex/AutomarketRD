@@ -9,6 +9,9 @@ using Microsoft.Extensions.Configuration;
 
 namespace AutoMarket.Application.Services;
 
+/// <summary>
+/// Servicio para manejar PayPal.
+/// </summary>
 public class PayPalService : IPayPalService
 {
     private readonly HttpClient _httpClient;
@@ -19,6 +22,9 @@ public class PayPalService : IPayPalService
     private readonly string _cancelUrl;
     private readonly string _webhookId;
 
+/// <summary>
+/// Inicializa una nueva instancia de la clase PayPalService. Parámetro httpClient (HttpClient), Parámetro configuration (IConfiguration)
+/// </summary>
     public PayPalService(HttpClient httpClient, IConfiguration configuration)
     {
         _httpClient = httpClient;

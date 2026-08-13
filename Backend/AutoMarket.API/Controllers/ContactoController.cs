@@ -8,11 +8,17 @@ namespace AutoMarket.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+/// <summary>
+/// Controlador para gestionar Contacto.
+/// </summary>
 public class ContactoController : ControllerBase
 {
     private readonly IContactoService _contactoService;
     private readonly ILogger<ContactoController> _logger;
 
+/// <summary>
+/// Inicializa una nueva instancia de la clase ContactoController.
+/// </summary>
     public ContactoController(
         IContactoService contactoService,
         ILogger<ContactoController> logger)
@@ -54,3 +60,4 @@ public class ContactoController : ControllerBase
         return Ok(new { mensaje = "Tu mensaje ha sido enviado exitosamente. Te responderemos lo antes posible." });
     }
 }
+

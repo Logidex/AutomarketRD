@@ -6,12 +6,18 @@ using Microsoft.Extensions.Logging;
 
 namespace AutoMarket.Application.Services;
 
+/// <summary>
+/// Servicio para manejar Contacto.
+/// </summary>
 public class ContactoService : IContactoService
 {
     private readonly IEmailSenderService _emailSender;
     private readonly IConfiguration _configuration;
     private readonly ILogger<ContactoService> _logger;
 
+/// <summary>
+/// Inicializa una nueva instancia de la clase ContactoService.
+/// </summary>
     public ContactoService(
         IEmailSenderService emailSender,
         IConfiguration configuration,
@@ -73,3 +79,4 @@ public class ContactoService : IContactoService
         return true;
     }
 }
+
