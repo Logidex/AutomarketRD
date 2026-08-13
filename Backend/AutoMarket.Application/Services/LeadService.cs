@@ -32,7 +32,7 @@ public class LeadService : ILeadService
     public async Task CrearLeadAsync(LeadCreateDto dto, int? usuarioIdRemitente = null)
     {
         var anuncio = await _anuncioRepository.ObtenerPorIdAsync(dto.AnuncioId);
-        
+
         if (anuncio == null)
             throw new KeyNotFoundException("El vehículo al que intentas contactar no existe o ya fue vendido.");
 
@@ -41,7 +41,7 @@ public class LeadService : ILeadService
             throw new BusinessRuleException("Este vehículo ya no está disponible para contactos.");
 
         var vendedor = await _usuarioRepository.ObtenerDealerConPerfilPorIdAsync(anuncio.UsuarioId);
-        
+
         if (vendedor == null)
             throw new InvalidOperationException("No se encontró el propietario de este anuncio.");
 
@@ -59,10 +59,10 @@ public class LeadService : ILeadService
 
         await _leadRepository.AgregarAsync(lead);
 
-        try 
+        try
         {
             string asunto = $"Nuevo Lead de AutoMarket RD: {anuncio.Marca} {anuncio.Modelo}";
-            
+
             // Plantilla básica en HTML para que luzca profesional
             string cuerpoHtml = $@"
                 <h2>¡Tienes un nuevo interesado en tu vehículo!</h2>
@@ -76,7 +76,7 @@ public class LeadService : ILeadService
                 <p><i>{lead.Mensaje}</i></p>";
 
             // Asumiendo que tu entidad Usuario tiene la propiedad Email/Correo
-            await _emailSender.EnviarCorreoAsync(vendedor.Email, asunto, cuerpoHtml); 
+            await _emailSender.EnviarCorreoAsync(vendedor.Email, asunto, cuerpoHtml);
         }
         catch (Exception ex)
         {
@@ -86,12 +86,13 @@ public class LeadService : ILeadService
 
     private static void ValidarAutocontacto(LeadCreateDto dto, Anuncio anuncio, Usuario vendedor, int? usuarioIdRemitente)
     {
-        // Regla 1: si el remitente está autenticado y es el dueño del anuncio, no puede auto-generarse un lead.
+        Console.WriteLine($"[DEBUG] anuncio.UsuarioId = {anuncio.UsuarioId}, usuarioIdRemitente = {usuarioIdRemitente}");
+        Console.WriteLine($"[DEBUG] vendedor.Email = {vendedor.Email}, dto.EmailContacto = {dto.EmailContacto}");
+        Console.WriteLine($"[DEBUG] vendedor.TelefonoPersonal = {vendedor.TelefonoPersonal}, dto.TelefonoContacto = {dto.TelefonoContacto}");
+        // Regla 1: remitente autenticado dueño del anuncio
         if (usuarioIdRemitente is int usuarioId && usuarioId == anuncio.UsuarioId)
             throw new BusinessRuleException("No puedes crear un contacto sobre tu propio vehículo.");
 
-        // Regla 2: si se ingresa el correo o teléfono del propio anunciante, es un auto-contacto
-        // (por ejemplo, el dueño probando el formulario sin haber iniciado sesión).
         var emailPropietario = (vendedor.Email ?? string.Empty).Trim().ToLowerInvariant();
         var emailIngresado = (dto.EmailContacto ?? string.Empty).Trim().ToLowerInvariant();
 
@@ -100,9 +101,11 @@ public class LeadService : ILeadService
             .Select(SoloDigitos)
             .ToHashSet();
 
+        var telefonoIngresado = SoloDigitos(dto.TelefonoContacto);
+
         bool esAutoContacto =
             (emailIngresado.Length > 0 && emailIngresado == emailPropietario) ||
-            (!string.IsNullOrWhiteSpace(dto.TelefonoContacto) && telefonosPropietario.Contains(SoloDigitos(dto.TelefonoContacto)));
+            (!string.IsNullOrWhiteSpace(telefonoIngresado) && telefonosPropietario.Contains(telefonoIngresado));
 
         if (esAutoContacto)
             throw new BusinessRuleException("No puedes crear un contacto sobre tu propio vehículo.");

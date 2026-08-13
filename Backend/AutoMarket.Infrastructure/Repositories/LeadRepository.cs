@@ -40,7 +40,8 @@ public class LeadRepository : ILeadRepository
     {
         return await _context.Leads
             .Include(l => l.Anuncio)
-            .Where(l => l.Anuncio.UsuarioId == usuarioId)
+            .Where(l => l.Anuncio.UsuarioId == usuarioId
+                        && (l.UsuarioIdRemitente == null || l.UsuarioIdRemitente != usuarioId))
             .OrderByDescending(l => l.FechaCreacionUtc)
             .AsNoTracking()
             .ToListAsync();
@@ -62,20 +63,25 @@ public class LeadRepository : ILeadRepository
     {
         // Útil para el Dashboard rápido del Dealer
         return await _context.Leads
-            .CountAsync(l => l.Anuncio.UsuarioId == usuarioId);
+            .CountAsync(l => l.Anuncio.UsuarioId == usuarioId
+                          && (l.UsuarioIdRemitente == null || l.UsuarioIdRemitente != usuarioId));
     }
 
     public async Task<int> ContarNoLeidosPorUsuarioAsync(int usuarioId)
     {
         return await _context.Leads
-            .CountAsync(l => l.Anuncio.UsuarioId == usuarioId && !l.Leido);
+            .CountAsync(l => l.Anuncio.UsuarioId == usuarioId
+                          && (l.UsuarioIdRemitente == null || l.UsuarioIdRemitente != usuarioId)
+                          && !l.Leido);
     }
 
     public async Task<IReadOnlyCollection<Lead>> ObtenerRecientesNoLeidosPorUsuarioAsync(int usuarioId, int cantidad)
     {
         return await _context.Leads
             .Include(l => l.Anuncio)
-            .Where(l => l.Anuncio.UsuarioId == usuarioId && !l.Leido)
+            .Where(l => l.Anuncio.UsuarioId == usuarioId
+                        && (l.UsuarioIdRemitente == null || l.UsuarioIdRemitente != usuarioId)
+                        && !l.Leido)
             .OrderByDescending(l => l.FechaCreacionUtc)
             .Take(cantidad)
             .AsNoTracking()
@@ -90,7 +96,9 @@ public class LeadRepository : ILeadRepository
     public async Task<int> MarcarTodosLeidosAsync(int usuarioId)
     {
         var noLeidos = await _context.Leads
-            .Where(l => l.Anuncio.UsuarioId == usuarioId && !l.Leido)
+            .Where(l => l.Anuncio.UsuarioId == usuarioId
+                     && (l.UsuarioIdRemitente == null || l.UsuarioIdRemitente != usuarioId)
+                     && !l.Leido)
             .ToListAsync();
 
         foreach (var lead in noLeidos)
