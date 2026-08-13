@@ -393,6 +393,9 @@ public class ApplicationDbContext : DbContext
             b.Property(p => p.EventoIdPayPal)
                 .HasMaxLength(64);
 
+            b.Property(p => p.CaptureIdPayPal)
+                .HasMaxLength(64);
+
             b.Property(p => p.Referencia)
                 .HasMaxLength(255);
 

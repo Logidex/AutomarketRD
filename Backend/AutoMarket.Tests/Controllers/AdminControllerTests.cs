@@ -158,4 +158,78 @@ public class AdminControllerTests
             s => s.CambiarRolAdminAsync(5, It.IsAny<AutoMarket.Application.DTOs.Admin.CambiarRolAdminDto>()),
             Times.Once);
     }
+
+    [Fact]
+    public async Task ListarPagos_DebeRetornarLaListaDelServicio()
+    {
+        var pagos = new List<AutoMarket.Application.DTOs.Admin.PagoAdminDto>
+        {
+            new()
+            {
+                Id = 7,
+                PerfilDealerId = 15,
+                Nivel = AutoMarket.Core.Entities.Enums.PlanNivel.Pro,
+                Ciclo = AutoMarket.Core.Entities.Enums.CicloFacturacion.Mensual,
+                Monto = 30m,
+                Moneda = "USD"
+            }
+        };
+
+        var mockSuscripcionService = new Mock<ISuscripcionService>();
+        mockSuscripcionService.Setup(s => s.ObtenerPagosAdminAsync()).ReturnsAsync(pagos);
+
+        var controller = CrearController(mockSuscripcionService: mockSuscripcionService);
+
+        var resultado = await controller.ListarPagos();
+
+        var okResult = Assert.IsType<OkObjectResult>(resultado);
+        var dto = Assert.Single(Assert.IsAssignableFrom<List<AutoMarket.Application.DTOs.Admin.PagoAdminDto>>(okResult.Value));
+        Assert.Equal(15, dto.PerfilDealerId);
+        mockSuscripcionService.Verify(s => s.ObtenerPagosAdminAsync(), Times.Once);
+    }
+
+    [Fact]
+    public async Task ReembolsarPago_Exitoso_DebeRetornarOk()
+    {
+        var mockSuscripcionService = new Mock<ISuscripcionService>();
+        mockSuscripcionService.Setup(s => s.ReembolsarPagoAsync(7)).Returns(Task.CompletedTask);
+
+        var controller = CrearController(mockSuscripcionService: mockSuscripcionService);
+
+        var resultado = await controller.ReembolsarPago(7);
+
+        var okResult = Assert.IsType<OkObjectResult>(resultado);
+        Assert.NotNull(okResult);
+        mockSuscripcionService.Verify(s => s.ReembolsarPagoAsync(7), Times.Once);
+    }
+
+    [Fact]
+    public async Task ReembolsarPago_PagoNoEncontrado_DebeRetornarNotFound()
+    {
+        var mockSuscripcionService = new Mock<ISuscripcionService>();
+        mockSuscripcionService
+            .Setup(s => s.ReembolsarPagoAsync(99))
+            .ThrowsAsync(new KeyNotFoundException("No se encontró el pago solicitado."));
+
+        var controller = CrearController(mockSuscripcionService: mockSuscripcionService);
+
+        var resultado = await controller.ReembolsarPago(99);
+
+        Assert.IsType<NotFoundObjectResult>(resultado);
+    }
+
+    [Fact]
+    public async Task ReembolsarPago_ReglaDeNegocioViolada_DebeRetornarBadRequest()
+    {
+        var mockSuscripcionService = new Mock<ISuscripcionService>();
+        mockSuscripcionService
+            .Setup(s => s.ReembolsarPagoAsync(7))
+            .ThrowsAsync(new AutoMarket.Core.Exceptions.BusinessRuleException("El pago ya se encuentra reembolsado."));
+
+        var controller = CrearController(mockSuscripcionService: mockSuscripcionService);
+
+        var resultado = await controller.ReembolsarPago(7);
+
+        Assert.IsType<BadRequestObjectResult>(resultado);
+    }
 }

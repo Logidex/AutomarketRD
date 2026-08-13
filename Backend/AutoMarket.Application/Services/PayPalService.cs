@@ -206,6 +206,88 @@ public class PayPalService : IPayPalService
         return response.IsSuccessStatusCode;
     }
 
+    public async Task<string?> ObtenerCaptureIdDeOrdenAsync(string idOrden)
+    {
+        var token = await ObtenerTokenDeAccesoAsync();
+
+        var request = new HttpRequestMessage(
+            HttpMethod.Get,
+            $"{_baseUrl}/v2/checkout/orders/{idOrden}");
+
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await _httpClient.SendAsync(request);
+
+        if (!response.IsSuccessStatusCode)
+            return null;
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var document = JsonDocument.Parse(json);
+        var root = document.RootElement;
+
+        if (!root.TryGetProperty("purchase_units", out var purchaseUnits) ||
+            purchaseUnits.ValueKind != JsonValueKind.Array ||
+            purchaseUnits.GetArrayLength() == 0)
+        {
+            return null;
+        }
+
+        var purchaseUnit = purchaseUnits[0];
+
+        if (!purchaseUnit.TryGetProperty("payments", out var payments) ||
+            !payments.TryGetProperty("captures", out var captures) ||
+            captures.ValueKind != JsonValueKind.Array ||
+            captures.GetArrayLength() == 0)
+        {
+            return null;
+        }
+
+        var firstCapture = captures[0];
+
+        return firstCapture.TryGetProperty("id", out var captureIdProp)
+            ? captureIdProp.GetString()
+            : null;
+    }
+
+    public async Task<bool> ReembolsarAsync(string captureId, decimal monto, string moneda)
+    {
+        var token = await ObtenerTokenDeAccesoAsync();
+
+        var request = new HttpRequestMessage(
+            HttpMethod.Post,
+            $"{_baseUrl}/v2/payments/captures/{captureId}/refund");
+
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var payload = new
+        {
+            amount = new
+            {
+                currency_code = moneda?.ToUpperInvariant() ?? "USD",
+                value = monto.ToString("0.00", CultureInfo.InvariantCulture)
+            }
+        };
+
+        request.Content = new StringContent(
+            JsonSerializer.Serialize(payload),
+            Encoding.UTF8,
+            "application/json");
+
+        var response = await _httpClient.SendAsync(request);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var cuerpo = await response.Content.ReadAsStringAsync();
+            if (!string.IsNullOrWhiteSpace(cuerpo))
+            {
+                throw new InvalidOperationException(
+                    $"PayPal rechazó el reembolso ({response.StatusCode}): {cuerpo}");
+            }
+        }
+
+        return response.IsSuccessStatusCode;
+    }
+
     public async Task<bool> VerificarFirmaWebhookAsync(
     string jsonBody,
     string transmissionId,

@@ -17,6 +17,7 @@ public class PagoSuscripcion
 
     public string? OrderIdPayPal { get; private set; }
     public string? EventoIdPayPal { get; private set; }
+    public string? CaptureIdPayPal { get; private set; }
     public string? Referencia { get; private set; }
 
     public DateTime FechaUtc { get; private set; }
@@ -31,6 +32,7 @@ public class PagoSuscripcion
         string moneda,
         string? orderIdPayPal = null,
         string? eventoIdPayPal = null,
+        string? captureIdPayPal = null,
         string? referencia = null)
     {
         if (perfilDealerId <= 0)
@@ -50,6 +52,7 @@ public class PagoSuscripcion
         Moneda = moneda.Trim().ToUpperInvariant();
         OrderIdPayPal = orderIdPayPal;
         EventoIdPayPal = eventoIdPayPal;
+        CaptureIdPayPal = captureIdPayPal;
         Referencia = referencia;
         FechaUtc = DateTime.UtcNow;
     }
@@ -57,5 +60,21 @@ public class PagoSuscripcion
     public void MarcarComoFallido()
     {
         Estado = EstadoPago.Fallido;
+    }
+
+    public void RegistrarCaptureId(string captureIdPayPal)
+    {
+        if (string.IsNullOrWhiteSpace(captureIdPayPal))
+            throw new ArgumentException("El identificador de captura no puede estar vacío.", nameof(captureIdPayPal));
+
+        CaptureIdPayPal = captureIdPayPal;
+    }
+
+    public void MarcarComoReembolsado()
+    {
+        if (Estado == EstadoPago.Reembolsado)
+            throw new InvalidOperationException("El pago ya se encuentra reembolsado.");
+
+        Estado = EstadoPago.Reembolsado;
     }
 }

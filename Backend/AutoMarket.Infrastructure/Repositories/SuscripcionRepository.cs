@@ -46,6 +46,29 @@ public class SuscripcionRepository : ISuscripcionRepository
             .ToListAsync();
     }
 
+    public async Task<IReadOnlyList<PagoSuscripcion>> ObtenerTodosLosPagosAsync()
+    {
+        return await _context.PagosSuscripcion
+            .Include(p => p.PerfilDealer)
+            .ThenInclude(pd => pd.Usuario)
+            .OrderByDescending(p => p.FechaUtc)
+            .ToListAsync();
+    }
+
+    public async Task<PagoSuscripcion?> ObtenerPagoPorIdAsync(int pagoId)
+    {
+        return await _context.PagosSuscripcion
+            .Include(p => p.PerfilDealer)
+            .ThenInclude(pd => pd.Usuario)
+            .FirstOrDefaultAsync(p => p.Id == pagoId);
+    }
+
+    public async Task ActualizarPagoAsync(PagoSuscripcion pago)
+    {
+        _context.PagosSuscripcion.Update(pago);
+        await _context.SaveChangesAsync();
+    }
+
     public async Task<bool> ExistePagoPorEventoAsync(string eventoId)
     {
         return await _context.PagosSuscripcion

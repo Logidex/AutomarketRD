@@ -1,5 +1,6 @@
 using Moq;
 using Xunit;
+using AutoMarket.Application.Interfaces;
 using AutoMarket.Application.Services;
 using AutoMarket.Core.Interfaces;
 using AutoMarket.Core.Entities;
@@ -12,13 +13,15 @@ public class SuscripcionServiceTests
 {
     private readonly Mock<ISuscripcionRepository> _mockRepo;
     private readonly Mock<IAnuncioRepository> _mockAnuncioRepo;
+    private readonly Mock<IPayPalService> _mockPayPalService;
     private readonly SuscripcionService _servicio;
 
     public SuscripcionServiceTests()
     {
         _mockRepo = new Mock<ISuscripcionRepository>();
         _mockAnuncioRepo = new Mock<IAnuncioRepository>();
-        _servicio = new SuscripcionService(_mockRepo.Object, _mockAnuncioRepo.Object);
+        _mockPayPalService = new Mock<IPayPalService>();
+        _servicio = new SuscripcionService(_mockRepo.Object, _mockAnuncioRepo.Object, _mockPayPalService.Object);
     }
 
     // =========================================================================
@@ -498,6 +501,7 @@ public class SuscripcionServiceTests
             "usd",
             "ORDER-123",
             "EVENTO-1",
+            "CAPTURE-1",
             "DEALER-40-PLAN-Elite-CICLO-Anual");
 
         // Assert
@@ -509,6 +513,7 @@ public class SuscripcionServiceTests
             p.Moneda == "USD" &&
             p.OrderIdPayPal == "ORDER-123" &&
             p.EventoIdPayPal == "EVENTO-1" &&
+            p.CaptureIdPayPal == "CAPTURE-1" &&
             p.Estado == EstadoPago.Completado)), Times.Once);
     }
 
@@ -526,6 +531,7 @@ public class SuscripcionServiceTests
                 CicloFacturacion.Mensual,
                 0m,
                 "USD",
+                null,
                 null,
                 null,
                 null));
@@ -550,6 +556,7 @@ public class SuscripcionServiceTests
             "USD",
             "ORDER-77",
             null,
+            null,
             "DEALER-41-PLAN-Pro-CICLO-Trimestral");
 
         _mockRepo.Setup(r => r.ObtenerHistorialPagosAsync(perfilId))
@@ -567,5 +574,213 @@ public class SuscripcionServiceTests
         Assert.Equal(50m, dto.Monto);
         Assert.Equal("USD", dto.Moneda);
         Assert.Equal("ORDER-77", dto.OrdenIdPayPal);
+    }
+
+    // =========================================================================
+    // PRUEBA 23: Reembolsar Pago - Con CaptureId, reembolsa y guarda
+    // =========================================================================
+    [Fact]
+    public async Task ReembolsarPagoAsync_PagoConCaptureId_DebeReembolsarYGuardar()
+    {
+        // Arrange
+        var pago = new PagoSuscripcion(
+            15,
+            PlanNivel.Pro,
+            CicloFacturacion.Mensual,
+            30m,
+            "USD",
+            "ord-999",
+            "evt-1",
+            "cap-999",
+            "DEALER-15-PLAN-PRO-CICLO-MENSUAL");
+
+        _mockRepo.Setup(r => r.ObtenerPagoPorIdAsync(15)).ReturnsAsync(pago);
+        _mockPayPalService.Setup(s => s.ReembolsarAsync("cap-999", 30m, "USD")).ReturnsAsync(true);
+
+        // Act
+        await _servicio.ReembolsarPagoAsync(15);
+
+        // Assert
+        Assert.Equal(EstadoPago.Reembolsado, pago.Estado);
+        _mockPayPalService.Verify(s => s.ReembolsarAsync("cap-999", 30m, "USD"), Times.Once);
+        _mockRepo.Verify(r => r.ActualizarPagoAsync(pago), Times.Once);
+    }
+
+    // =========================================================================
+    // PRUEBA 24: Reembolsar Pago - Sin capture ni orden, lanza regla de negocio
+    // =========================================================================
+    [Fact]
+    public async Task ReembolsarPagoAsync_SinCaptureIdNiOrden_DebeLanzarBusinessRuleException()
+    {
+        // Arrange
+        var pago = new PagoSuscripcion(
+            15,
+            PlanNivel.Pro,
+            CicloFacturacion.Mensual,
+            30m,
+            "USD",
+            null,
+            null,
+            null,
+            null);
+
+        _mockRepo.Setup(r => r.ObtenerPagoPorIdAsync(15)).ReturnsAsync(pago);
+
+        // Act & Assert
+        var ex = await Assert.ThrowsAsync<BusinessRuleException>(() => _servicio.ReembolsarPagoAsync(15));
+        Assert.Contains("captura", ex.Message, StringComparison.OrdinalIgnoreCase);
+        _mockRepo.Verify(r => r.ActualizarPagoAsync(It.IsAny<PagoSuscripcion>()), Times.Never);
+    }
+
+    // =========================================================================
+    // PRUEBA 25: Reembolsar Pago - Sin capture pero con orden, recupera de PayPal
+    // =========================================================================
+    [Fact]
+    public async Task ReembolsarPagoAsync_SinCaptureIdConOrden_DebeRecuperarDePayPalYReembolsar()
+    {
+        // Arrange
+        var pago = new PagoSuscripcion(
+            15,
+            PlanNivel.Pro,
+            CicloFacturacion.Mensual,
+            30m,
+            "USD",
+            "ord-999",
+            null,
+            null,
+            "DEALER-15-PLAN-PRO-CICLO-MENSUAL");
+
+        _mockRepo.Setup(r => r.ObtenerPagoPorIdAsync(15)).ReturnsAsync(pago);
+        _mockPayPalService.Setup(s => s.ObtenerCaptureIdDeOrdenAsync("ord-999")).ReturnsAsync("cap-rec");
+        _mockPayPalService.Setup(s => s.ReembolsarAsync("cap-rec", 30m, "USD")).ReturnsAsync(true);
+
+        // Act
+        await _servicio.ReembolsarPagoAsync(15);
+
+        // Assert
+        Assert.Equal(EstadoPago.Reembolsado, pago.Estado);
+        Assert.Equal("cap-rec", pago.CaptureIdPayPal);
+        _mockRepo.Verify(r => r.ActualizarPagoAsync(pago), Times.Once);
+    }
+
+    // =========================================================================
+    // PRUEBA 26: Reembolsar Pago - Ya reembolsado, lanza regla de negocio
+    // =========================================================================
+    [Fact]
+    public async Task ReembolsarPagoAsync_YaReembolsado_DebeLanzarBusinessRuleException()
+    {
+        // Arrange
+        var pago = new PagoSuscripcion(
+            15,
+            PlanNivel.Pro,
+            CicloFacturacion.Mensual,
+            30m,
+            "USD",
+            "ord-999",
+            null,
+            "cap-999",
+            null);
+
+        pago.MarcarComoReembolsado();
+        _mockRepo.Setup(r => r.ObtenerPagoPorIdAsync(15)).ReturnsAsync(pago);
+
+        // Act & Assert
+        var ex = await Assert.ThrowsAsync<BusinessRuleException>(() => _servicio.ReembolsarPagoAsync(15));
+        Assert.Contains("reembolsado", ex.Message, StringComparison.OrdinalIgnoreCase);
+        _mockPayPalService.Verify(s => s.ReembolsarAsync(It.IsAny<string>(), It.IsAny<decimal>(), It.IsAny<string>()), Times.Never);
+    }
+
+    // =========================================================================
+    // PRUEBA 27: Reembolsar Pago - PayPal rechaza, lanza regla de negocio
+    // =========================================================================
+    [Fact]
+    public async Task ReembolsarPagoAsync_PayPalRechaza_DebeLanzarBusinessRuleException()
+    {
+        // Arrange
+        var pago = new PagoSuscripcion(
+            15,
+            PlanNivel.Pro,
+            CicloFacturacion.Mensual,
+            30m,
+            "USD",
+            "ord-999",
+            null,
+            "cap-999",
+            null);
+
+        _mockRepo.Setup(r => r.ObtenerPagoPorIdAsync(15)).ReturnsAsync(pago);
+        _mockPayPalService.Setup(s => s.ReembolsarAsync("cap-999", 30m, "USD")).ReturnsAsync(false);
+
+        // Act & Assert
+        var ex = await Assert.ThrowsAsync<BusinessRuleException>(() => _servicio.ReembolsarPagoAsync(15));
+        Assert.Contains("rechazó", ex.Message, StringComparison.OrdinalIgnoreCase);
+        _mockRepo.Verify(r => r.ActualizarPagoAsync(It.IsAny<PagoSuscripcion>()), Times.Never);
+    }
+
+    // =========================================================================
+    // PRUEBA 28: Reembolsar Pago - Pago inexistente, lanza KeyNotFoundException
+    // =========================================================================
+    [Fact]
+    public async Task ReembolsarPagoAsync_PagoNoExiste_DebeLanzarKeyNotFoundException()
+    {
+        _mockRepo.Setup(r => r.ObtenerPagoPorIdAsync(99)).ReturnsAsync((PagoSuscripcion?)null);
+
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => _servicio.ReembolsarPagoAsync(99));
+    }
+
+    // =========================================================================
+    // PRUEBA 29: Obtener Pagos Admin - Mapea los datos del dealer
+    // =========================================================================
+    [Fact]
+    public async Task ObtenerPagosAdminAsync_DebeRetornarDtoConDatosDelDealer()
+    {
+        // Arrange
+        var usuario = new Usuario(
+            nombre: "Erick",
+            apellido: "Hipolito",
+            email: "erick@test.com",
+            passwordHash: BCrypt.Net.BCrypt.HashPassword("ClaveSegura123"),
+            rol: "Dealer",
+            telefonoPersonal: "8095555555"
+        );
+
+        var perfilDealer = (PerfilDealer)Activator.CreateInstance(typeof(PerfilDealer), nonPublic: true)!;
+        typeof(PerfilDealer).GetProperty("UsuarioId")?.SetValue(perfilDealer, 15);
+        typeof(PerfilDealer).GetProperty("NombreAgencia")?.SetValue(perfilDealer, "Agencia Erick");
+        typeof(PerfilDealer).GetProperty("Usuario")?.SetValue(perfilDealer, usuario);
+        typeof(Usuario).GetProperty("PerfilDealer")?.SetValue(usuario, perfilDealer);
+
+        var pago = new PagoSuscripcion(
+            15,
+            PlanNivel.Pro,
+            CicloFacturacion.Mensual,
+            30m,
+            "USD",
+            "ord-999",
+            "evt-1",
+            "cap-999",
+            "DEALER-15-PLAN-PRO-CICLO-MENSUAL");
+
+        typeof(PagoSuscripcion).GetProperty("Id")?.SetValue(pago, 7);
+        typeof(PagoSuscripcion).GetProperty("PerfilDealer")?.SetValue(pago, perfilDealer);
+
+        _mockRepo.Setup(r => r.ObtenerTodosLosPagosAsync()).ReturnsAsync(new[] { pago });
+
+        // Act
+        var resultado = await _servicio.ObtenerPagosAdminAsync();
+
+        // Assert
+        var dto = Assert.Single(resultado);
+        Assert.Equal(7, dto.Id);
+        Assert.Equal(15, dto.PerfilDealerId);
+        Assert.Equal("Agencia Erick", dto.DealerNombreAgencia);
+        Assert.Equal("erick@test.com", dto.DealerEmail);
+        Assert.Equal(PlanNivel.Pro, dto.Nivel);
+        Assert.Equal(CicloFacturacion.Mensual, dto.Ciclo);
+        Assert.Equal(EstadoPago.Completado, dto.Estado);
+        Assert.Equal(30m, dto.Monto);
+        Assert.Equal("USD", dto.Moneda);
+        Assert.Equal("ord-999", dto.OrdenIdPayPal);
+        Assert.Equal("cap-999", dto.CaptureIdPayPal);
     }
 }

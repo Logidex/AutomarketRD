@@ -5,6 +5,7 @@ import {
   type UsuarioAdmin,
   type AnuncioAdmin,
   type PlanAdmin,
+  type PagoAdmin,
   type CambiarRolAdminDto,
   type PlanAdminForm,
 } from '../services/admin.service';
@@ -38,6 +39,22 @@ export const useAdminPlanes = () => {
     queryKey: ['admin-planes'],
     queryFn: () => adminService.listarPlanes(),
     staleTime: 1000 * 60 * 2,
+  });
+};
+
+export const useAdminPagos = () => {
+  return useQuery<PagoAdmin[]>({
+    queryKey: ['admin-pagos'],
+    queryFn: () => adminService.listarPagos(),
+    staleTime: 1000 * 60 * 2,
+  });
+};
+
+export const useReembolsarPago = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => adminService.reembolsarPago(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-pagos'] }),
   });
 };
 

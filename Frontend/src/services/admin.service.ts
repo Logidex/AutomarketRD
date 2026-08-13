@@ -46,6 +46,21 @@ export interface AnuncioAdmin {
   usuarioId: number;
 }
 
+export interface PagoAdmin {
+  id: number;
+  perfilDealerId: number;
+  dealerNombreAgencia: string;
+  dealerEmail: string;
+  nivel: string;
+  ciclo: string;
+  estado: string;
+  monto: number;
+  moneda: string;
+  ordenIdPayPal?: string | null;
+  captureIdPayPal?: string | null;
+  fechaUtc: string;
+}
+
 export interface PlanAdmin {
   id: number;
   nivel: string;
@@ -117,6 +132,15 @@ export const adminService = {
     return respuesta(api.put(`/api/admin/suscripciones/${dealerId}/renovar`, {
       nuevaFechaVencimiento,
     }));
+  },
+
+  // ===== Pagos y reembolsos =====
+  async listarPagos(): Promise<PagoAdmin[]> {
+    return respuesta(api.get<PagoAdmin[]>("/api/admin/pagos"));
+  },
+
+  async reembolsarPago(id: number): Promise<{ exito: boolean; mensaje: string }> {
+    return respuesta(api.post(`/api/admin/pagos/${id}/reembolsar`));
   },
 
   // ===== Catálogo de planes =====

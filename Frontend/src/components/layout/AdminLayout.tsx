@@ -6,6 +6,7 @@ import {
   FaCoins,
   FaShieldAlt,
   FaSignOutAlt,
+  FaMoneyCheckAlt,
 } from "react-icons/fa";
 import { authService } from "../../services/auth.service";
 import logo from "../../assets/AutoMarketRD_Logo.svg";
@@ -49,6 +50,11 @@ export default function AdminLayout() {
       path: "/admin/planes",
       label: "Planes",
       icon: <FaCoins />,
+    },
+    {
+      path: "/admin/pagos",
+      label: "Pagos",
+      icon: <FaMoneyCheckAlt />,
     },
   ];
 

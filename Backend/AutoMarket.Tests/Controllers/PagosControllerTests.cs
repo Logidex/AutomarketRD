@@ -501,7 +501,7 @@ public class PagosControllerTests
             s.ProcesarPagoSuscripcionAsync(15, PlanNivel.Pro, CicloFacturacion.Mensual),
             Times.Once);
         _mockSuscripcionService.Verify(s =>
-            s.RegistrarPagoAsync(15, PlanNivel.Pro, CicloFacturacion.Mensual, 30.00m, "USD", "ord-999", "evt-1", "DEALER-15-PLAN-PRO-CICLO-MENSUAL"),
+            s.RegistrarPagoAsync(15, PlanNivel.Pro, CicloFacturacion.Mensual, 30.00m, "USD", "ord-999", "evt-1", null, "DEALER-15-PLAN-PRO-CICLO-MENSUAL"),
             Times.Once);
     }
 

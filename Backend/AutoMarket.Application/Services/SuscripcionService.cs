@@ -1,3 +1,4 @@
+using AutoMarket.Application.DTOs.Admin;
 using AutoMarket.Application.DTOs.Suscripcion;
 using AutoMarket.Application.Interfaces;
 using AutoMarket.Core.Entities;
@@ -11,11 +12,16 @@ public class SuscripcionService : ISuscripcionService
 {
     private readonly ISuscripcionRepository _repository;
     private readonly IAnuncioRepository _anuncioRepository;
+    private readonly IPayPalService _payPalService;
 
-    public SuscripcionService(ISuscripcionRepository repository, IAnuncioRepository anuncioRepository)
+    public SuscripcionService(
+        ISuscripcionRepository repository,
+        IAnuncioRepository anuncioRepository,
+        IPayPalService payPalService)
     {
         _repository = repository;
         _anuncioRepository = anuncioRepository;
+        _payPalService = payPalService;
     }
 
     public async Task AsignarPlanInicialAsync(int perfilDealerId, PlanNivel nivel, CicloFacturacion ciclo)
@@ -128,6 +134,7 @@ public class SuscripcionService : ISuscripcionService
         string moneda,
         string? orderIdPayPal,
         string? eventoIdPayPal,
+        string? captureIdPayPal,
         string? referencia)
     {
         var pago = new PagoSuscripcion(
@@ -138,6 +145,7 @@ public class SuscripcionService : ISuscripcionService
             moneda,
             orderIdPayPal,
             eventoIdPayPal,
+            captureIdPayPal,
             referencia);
 
         await _repository.AgregarPagoAsync(pago);
@@ -158,10 +166,69 @@ public class SuscripcionService : ISuscripcionService
                 Monto = p.Monto,
                 Moneda = p.Moneda,
                 OrdenIdPayPal = p.OrderIdPayPal,
+                CaptureIdPayPal = p.CaptureIdPayPal,
                 Referencia = p.Referencia,
                 FechaUtc = p.FechaUtc
             })
             .ToList();
+    }
+
+    public async Task<IReadOnlyList<PagoAdminDto>> ObtenerPagosAdminAsync()
+    {
+        var pagos = await _repository.ObtenerTodosLosPagosAsync();
+
+        return pagos
+            .Select(p => new PagoAdminDto
+            {
+                Id = p.Id,
+                PerfilDealerId = p.PerfilDealerId,
+                DealerNombreAgencia = p.PerfilDealer?.NombreAgencia ?? $"Dealer {p.PerfilDealerId}",
+                DealerEmail = p.PerfilDealer?.Usuario.Email ?? string.Empty,
+                Nivel = p.Nivel,
+                Ciclo = p.Ciclo,
+                Estado = p.Estado,
+                Monto = p.Monto,
+                Moneda = p.Moneda,
+                OrdenIdPayPal = p.OrderIdPayPal,
+                CaptureIdPayPal = p.CaptureIdPayPal,
+                FechaUtc = p.FechaUtc
+            })
+            .ToList();
+    }
+
+    public async Task ReembolsarPagoAsync(int pagoId)
+    {
+        var pago = await _repository.ObtenerPagoPorIdAsync(pagoId);
+
+        if (pago == null)
+            throw new KeyNotFoundException("No se encontró el pago solicitado.");
+
+        if (pago.Estado == EstadoPago.Reembolsado)
+            throw new BusinessRuleException("El pago ya se encuentra reembolsado.");
+
+        var captureId = pago.CaptureIdPayPal;
+
+        // Pago registrado antes de guardar el CaptureId: se intenta recuperar de PayPal.
+        if (string.IsNullOrWhiteSpace(captureId) && !string.IsNullOrWhiteSpace(pago.OrderIdPayPal))
+        {
+            captureId = await _payPalService.ObtenerCaptureIdDeOrdenAsync(pago.OrderIdPayPal);
+        }
+
+        if (string.IsNullOrWhiteSpace(captureId))
+        {
+            throw new BusinessRuleException(
+                "Este pago no tiene una captura de PayPal vinculada y no es posible reembolsarlo.");
+        }
+
+        var reembolsado = await _payPalService.ReembolsarAsync(captureId, pago.Monto, pago.Moneda);
+
+        if (!reembolsado)
+            throw new BusinessRuleException("PayPal rechazó el reembolso. Verifica el estado de la captura.");
+
+        pago.MarcarComoReembolsado();
+        pago.RegistrarCaptureId(captureId);
+
+        await _repository.ActualizarPagoAsync(pago);
     }
 
     public async Task<SuscripcionDealerDto?> ObtenerSuscripcionAsync(int perfilDealerId)

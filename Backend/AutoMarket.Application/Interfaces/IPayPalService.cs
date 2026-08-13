@@ -13,6 +13,12 @@ public interface IPayPalService
     // 3. Verifica que el dinero haya entrado realmente cuando de PayPal nos avise (Webhook)
     Task<bool> CapturarOrdenAsync(string idOrden);
 
+    // 4. Extrae el identificador de la captura ya realizada (para poder reembolsarla)
+    Task<string?> ObtenerCaptureIdDeOrdenAsync(string idOrden);
+
+    // 5. Reembolsa un pago previamente capturado (reembolso total)
+    Task<bool> ReembolsarAsync(string captureId, decimal monto, string moneda);
+
     Task<bool> VerificarFirmaWebhookAsync(
         string jsonBody,
         string transmissionId,

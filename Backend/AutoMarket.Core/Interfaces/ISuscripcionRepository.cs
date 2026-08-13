@@ -9,6 +9,9 @@ public interface ISuscripcionRepository
     Task ActualizarAsync(SuscripcionDealer suscripcion);
     Task AgregarPagoAsync(PagoSuscripcion pago);
     Task<IReadOnlyList<PagoSuscripcion>> ObtenerHistorialPagosAsync(int perfilDealerId);
+    Task<IReadOnlyList<PagoSuscripcion>> ObtenerTodosLosPagosAsync();
+    Task<PagoSuscripcion?> ObtenerPagoPorIdAsync(int pagoId);
+    Task ActualizarPagoAsync(PagoSuscripcion pago);
     Task<bool> ExistePagoPorEventoAsync(string eventoId);
     Task<bool> ExistePagoPorOrdenAsync(string orderId);
 }

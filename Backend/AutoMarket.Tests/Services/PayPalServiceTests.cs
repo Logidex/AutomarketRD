@@ -270,6 +270,152 @@ public class PayPalServiceTests
         Assert.Equal("Falta PayPal:WebhookId.", ex.Message);
     }
 
+    [Fact]
+    public async Task ObtenerCaptureIdDeOrdenAsync_ConCaptura_DebeRetornarElId()
+    {
+        var handler = new FakeHttpMessageHandler(new[]
+        {
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "access_token": "token-test"
+                }
+                """, Encoding.UTF8, "application/json")
+            },
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "id": "ord-123",
+                  "status": "COMPLETED",
+                  "purchase_units": [
+                    {
+                      "reference_id": "DEALER-15-PLAN-PRO-CICLO-MENSUAL",
+                      "payments": {
+                        "captures": [
+                          { "id": "cap-999", "status": "COMPLETED", "amount": { "value": "30.00", "currency_code": "USD" } }
+                        ]
+                      }
+                    }
+                  ]
+                }
+                """, Encoding.UTF8, "application/json")
+            }
+        });
+
+        var httpClient = new HttpClient(handler);
+        var config = CrearConfiguracion();
+        var service = new PayPalService(httpClient, config);
+
+        var captureId = await service.ObtenerCaptureIdDeOrdenAsync("ord-123");
+
+        Assert.Equal("cap-999", captureId);
+    }
+
+    [Fact]
+    public async Task ObtenerCaptureIdDeOrdenAsync_SinCapturas_DebeRetornarNull()
+    {
+        var handler = new FakeHttpMessageHandler(new[]
+        {
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "access_token": "token-test"
+                }
+                """, Encoding.UTF8, "application/json")
+            },
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "id": "ord-123",
+                  "status": "APPROVED",
+                  "purchase_units": [
+                    {
+                      "reference_id": "DEALER-15-PLAN-PRO-CICLO-MENSUAL"
+                    }
+                  ]
+                }
+                """, Encoding.UTF8, "application/json")
+            }
+        });
+
+        var httpClient = new HttpClient(handler);
+        var config = CrearConfiguracion();
+        var service = new PayPalService(httpClient, config);
+
+        var captureId = await service.ObtenerCaptureIdDeOrdenAsync("ord-123");
+
+        Assert.Null(captureId);
+    }
+
+    [Fact]
+    public async Task ReembolsarAsync_StatusExitoso_DebeRetornarTrue()
+    {
+        var handler = new FakeHttpMessageHandler(new[]
+        {
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "access_token": "token-test"
+                }
+                """, Encoding.UTF8, "application/json")
+            },
+            new HttpResponseMessage(HttpStatusCode.Created)
+            {
+                Content = new StringContent("""
+                {
+                  "status": "COMPLETED"
+                }
+                """, Encoding.UTF8, "application/json")
+            }
+        });
+
+        var httpClient = new HttpClient(handler);
+        var config = CrearConfiguracion();
+        var service = new PayPalService(httpClient, config);
+
+        var resultado = await service.ReembolsarAsync("cap-999", 30m, "USD");
+
+        Assert.True(resultado);
+    }
+
+    [Fact]
+    public async Task ReembolsarAsync_Rechazado_DebeLanzarInvalidOperationException()
+    {
+        var handler = new FakeHttpMessageHandler(new[]
+        {
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "access_token": "token-test"
+                }
+                """, Encoding.UTF8, "application/json")
+            },
+            new HttpResponseMessage(HttpStatusCode.BadRequest)
+            {
+                Content = new StringContent("""
+                {
+                  "name": "PAYMENT_ALREADY_REFUNDED"
+                }
+                """, Encoding.UTF8, "application/json")
+            }
+        });
+
+        var httpClient = new HttpClient(handler);
+        var config = CrearConfiguracion();
+        var service = new PayPalService(httpClient, config);
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            service.ReembolsarAsync("cap-999", 30m, "USD"));
+
+        Assert.Contains("PayPal rechazó el reembolso", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
     private sealed class FakeHttpMessageHandler : HttpMessageHandler
     {
         private readonly Queue<HttpResponseMessage> _responses;

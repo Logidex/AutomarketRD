@@ -231,6 +231,18 @@ public class PagosController : ControllerBase
 
             await _suscripcionService.ProcesarPagoSuscripcionAsync(perfilDealerId, planNivel, ciclo);
 
+            string? captureIdPayPal = null;
+            try
+            {
+                captureIdPayPal = await _payPalService.ObtenerCaptureIdDeOrdenAsync(dto.OrderId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex,
+                    "No se pudo obtener el CaptureId de la orden al confirmar. OrderId {OrderId}",
+                    dto.OrderId);
+            }
+
             try
             {
                 await _suscripcionService.RegistrarPagoAsync(
@@ -241,6 +253,7 @@ public class PagosController : ControllerBase
                     detalle.Moneda,
                     dto.OrderId,
                     null,
+                    captureIdPayPal,
                     detalle.ReferenceId);
             }
             catch (Exception ex)
@@ -509,6 +522,18 @@ public class PagosController : ControllerBase
 
             await _suscripcionService.ProcesarPagoSuscripcionAsync(dealerId, planEnum, cicloEnum);
 
+            string? captureIdPayPal = null;
+            try
+            {
+                captureIdPayPal = await _payPalService.ObtenerCaptureIdDeOrdenAsync(orderId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex,
+                    "No se pudo obtener el CaptureId de la orden en el webhook. OrderId {OrderId}",
+                    orderId);
+            }
+
             try
             {
                 await _suscripcionService.RegistrarPagoAsync(
@@ -519,6 +544,7 @@ public class PagosController : ControllerBase
                     moneda,
                     orderId,
                     eventId,
+                    captureIdPayPal,
                     referenceId);
             }
             catch (Exception ex)

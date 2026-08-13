@@ -1,3 +1,4 @@
+using AutoMarket.Application.DTOs.Admin;
 using AutoMarket.Application.DTOs.Suscripcion;
 using AutoMarket.Core.Entities.Enums;
 
@@ -17,10 +18,13 @@ public interface ISuscripcionService
         string moneda,
         string? orderIdPayPal,
         string? eventoIdPayPal,
+        string? captureIdPayPal,
         string? referencia);
     Task<IReadOnlyList<PagoSuscripcionDto>> ObtenerHistorialPagosAsync(int perfilDealerId);
     Task<SuscripcionDealerDto?> ObtenerSuscripcionAsync(int perfilDealerId);
     Task CancelarSuscripcionAsync(int perfilDealerId);
+    Task<IReadOnlyList<PagoAdminDto>> ObtenerPagosAdminAsync();
+    Task ReembolsarPagoAsync(int pagoId);
     Task<bool> ExistePagoPorEventoAsync(string eventoId);
     Task<bool> ExistePagoPorOrdenAsync(string orderId);
 }

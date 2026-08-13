@@ -4,6 +4,7 @@ using AutoMarket.Application.DTOs.Planes;
 using AutoMarket.Application.Interfaces;
 using AutoMarket.Application.Services;
 using AutoMarket.Core.Entities.Enums;
+using AutoMarket.Core.Exceptions;
 using AutoMarket.Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -201,6 +202,35 @@ public class AdminController : ControllerBase
 
         await _suscripcionService.RenovarManualAsync(dealerId, fechaUtc);
         return Ok(new { exito = true, mensaje = $"Suscripción extendida y activada hasta {fechaUtc:dd/MM/yyyy}." });
+    }
+
+    // ==========================================
+    // 4b. PAGOS Y REEMBOLSOS
+    // ==========================================
+
+    [HttpGet("pagos")]
+    public async Task<IActionResult> ListarPagos()
+    {
+        var pagos = await _suscripcionService.ObtenerPagosAdminAsync();
+        return Ok(pagos);
+    }
+
+    [HttpPost("pagos/{id:int}/reembolsar")]
+    public async Task<IActionResult> ReembolsarPago(int id)
+    {
+        try
+        {
+            await _suscripcionService.ReembolsarPagoAsync(id);
+            return Ok(new { exito = true, mensaje = $"El pago {id} fue reembolsado correctamente." });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { exito = false, mensaje = ex.Message });
+        }
+        catch (BusinessRuleException ex)
+        {
+            return BadRequest(new { exito = false, mensaje = ex.Message });
+        }
     }
 
     // ==========================================
