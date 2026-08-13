@@ -104,6 +104,28 @@ export default function DashboardSuscripcion() {
       if (!confirmacion.isConfirmed) return;
     }
 
+    // Cambio de plan con suscripción activa: avisar que se pierden los días restantes
+    if (
+      estadoEscogido(plan) === "cambiar" &&
+      suscripcion !== null &&
+      suscripcion.estado === "Activa" &&
+      suscripcion.activa
+    ) {
+      const confirmacion = await Swal.fire({
+        icon: "warning",
+        title: "Cambiar de plan",
+        html: `Tu suscripción actual vence el <strong>${formatearFecha(
+          suscripcion.fechaVencimientoUtc,
+        )}</strong>. Al cambiar el plan o el ciclo, la nueva vigencia empieza desde hoy y <strong>los días restantes del plan actual no se conservan</strong>.`,
+        showCancelButton: true,
+        confirmButtonColor: "#3b82f6",
+        confirmButtonText: "Sí, cambiar ahora",
+        cancelButtonText: "Cancelar",
+      });
+
+      if (!confirmacion.isConfirmed) return;
+    }
+
     setProcesando(plan.nivel);
 
     try {
