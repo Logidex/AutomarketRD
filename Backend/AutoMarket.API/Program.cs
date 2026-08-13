@@ -25,6 +25,7 @@ using Serilog.Events;
 
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 
@@ -254,7 +255,7 @@ try
                 limiterOptions.QueueLimit = 0;
             });
 
-        options.AddPolicy(
+        options.AddPolicy<string>(
             "PoliticaLogin",
             context =>
             {
@@ -263,9 +264,20 @@ try
                         ?.ToString()
                     ?? "desconocido";
 
+                var clave = $"ip:{ip}";
+
+                if (!builder.Environment.IsProduction())
+                {
+                    // En Dev/Staging: usar partición por IP simple.
+                    // La extracción de email del body causa consumos múltiples
+                    // y rate limiting inconsistente (ya consumido por model binder).
+                    // Si se necesita límites por cuenta, usar JWT claims en lugar
+                    // de leer el body consumido.
+                }
+
                 return RateLimitPartition
                     .GetFixedWindowLimiter(
-                        ip,
+                        clave,
                         _ =>
                             new FixedWindowRateLimiterOptions
                             {
@@ -480,4 +492,31 @@ catch (Exception ex)
 finally
 {
     await Log.CloseAndFlushAsync();
+}
+
+// Lee el campo "email" del cuerpo JSON de una petición sin consumirlo,
+// para que el rate limiter pueda particionar por cuenta en lugar de por IP.
+static string? LeerEmailDelCuerpo(HttpRequest request)
+{
+    try
+    {
+        request.EnableBuffering();
+        request.Body.Position = 0;
+
+        using var lector = new StreamReader(request.Body, leaveOpen: true);
+        var cuerpo = lector.ReadToEnd();
+        request.Body.Position = 0;
+
+        using var documento = JsonDocument.Parse(cuerpo);
+        if (documento.RootElement.TryGetProperty("email", out var propiedadEmail))
+        {
+            return propiedadEmail.GetString();
+        }
+
+        return null;
+    }
+    catch
+    {
+        return null;
+    }
 }
