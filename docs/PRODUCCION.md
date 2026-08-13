@@ -17,7 +17,12 @@ qué bloquea un lanzamiento y qué es solo recomendable.
 - [x] **Página pública del vendedor (`/vendedor/:id`)** — perfil público con anuncios.
 - [x] **Frontend de comprador funcional** — login/registro, favoritos, historial,
       leads desde la ficha, comparador.
-- [x] **Panel de administración (frontend)** — usuarios, anuncios y planes.
+- [x] **Panel de administración (frontend)** — usuarios, anuncios, planes y pagos.
+- [x] **Reembolsos de pagos PayPal (Feature 5)** — capture id, `ReembolsarAsync`
+      contra `/v2/payments/captures/{id}/refund`, estado `Reembolsado`, página
+      admin `/admin/pagos`. Verificado en staging (SQL de la migración + endpoint).
+- [x] **Precios en RD$/USD (Feature 2)** — moneda por anuncio (DOP/USD) filtrable,
+      mostrada con `formatearPrecio` en toda la vitrina. Migración aplicada en staging.
 - [x] **Flujo de pago verificado contra PayPal real** — funciona en local
       (`confirmar-pago` idempotente + webhook); confirmado en staging con
       credenciales sandbox reales (env `Staging`). Falta probar contra una cuenta
@@ -107,10 +112,13 @@ re-deploy de una tag anterior. Pasos:
 - [x] **Code splitting**: rutas con `lazy()` + `<Suspense>`; chunk principal ~308 kB (antes ~711 kB).
 - [x] **Logo optimizado**: `AutoMarketRD_Logo.svg` de 251 kB a ~70 kB (-72 %).
 - [x] Suscripciones y pagos PayPal (link + `confirmar-pago` idempotente + webhook).
-- [x] Backend: **247 tests** y compilación `net10.0`.
+- [x] Backend: **270 tests** y compilación `net10.0`.
 - [x] **CI** verde en GitHub Actions (push/PR a `main` y `develop`): .NET 10.0.x + Node 20,
       build+test backend y build+lint frontend.
-- [ ] **Tests frontend** (unidad de utilidades/hooks con Vitest) — pendiente.
+- [x] **Tests frontend** (unidad de utilidades/hooks con Vitest) — 25 tests.
+- [x] Flow de pago y reembolso PayPal verificados en staging (migraciones
+      `AgregarMonedaAAnuncios` y `AgregarCaptureIdPayPalPagos` aplicadas; `/health` y
+      `/health/ready` OK; login admin y `GET /api/admin/pagos` respondiendo con datos).
 
 ---
 
