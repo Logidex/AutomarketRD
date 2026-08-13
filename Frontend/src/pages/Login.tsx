@@ -95,10 +95,27 @@ export default function Login() {
       });
     } catch (err) {
       console.log(err);
+
+      const status = (err as { response?: { status?: number } })?.response?.status;
+
+      let mensaje = "Correo electrónico o contraseña incorrectos.";
+
+      if (status === 429) {
+        mensaje =
+          "Has hecho demasiados intentos de inicio de sesión. " +
+          "Por seguridad fuiste bloqueado temporalmente. " +
+          "Espera unos 15 minutos y vuelve a intentarlo.";
+      } else {
+        const msg = (err as { message?: unknown })?.message;
+        if (typeof msg === "string" && msg && msg !== "Network Error") {
+          mensaje = msg;
+        }
+      }
+
       await Swal.fire({
         icon: "error",
         title: "Error al iniciar sesión",
-        text: "Correo electrónico o contraseña incorrectos.",
+        text: mensaje,
         confirmButtonColor: "#3b82f6",
       });
     } finally {

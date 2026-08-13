@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import {
@@ -20,7 +20,6 @@ import {
 import { authService } from "../services/auth.service";
 import { useComparador } from "../context/ComparadorContext";
 import { useVehiculoDetalle } from "../hooks/useVehiculos";
-import { useRegistrarVista } from "../hooks/useAnuncios";
 import { useCrearLead } from "../hooks/useLeads";
 import {
   useMisFavoritos,
@@ -40,8 +39,7 @@ import {
   etiquetaDe,
 } from "../constants/vehiculo.opciones";
 
-const IMAGEN_VACIA =
-  "https://via.placeholder.com/800x500?text=Sin+Foto";
+const IMAGEN_VACIA = "https://via.placeholder.com/800x500?text=Sin+Foto";
 
 export default function DetalleAnuncio() {
   const { id } = useParams<{ id: string }>();
@@ -56,7 +54,6 @@ export default function DetalleAnuncio() {
     error: errorCarga,
   } = useVehiculoDetalle(idValido ? anuncioId : 0, idValido);
 
-  const registrarVista = useRegistrarVista();
   const registrarVisita = useRegistrarVisita();
   const crearLead = useCrearLead();
   const agregarFavorito = useAgregarFavorito();
@@ -73,6 +70,9 @@ export default function DetalleAnuncio() {
   const [fotoAmpliada, setFotoAmpliada] = useState(false);
   const [enPausa, setEnPausa] = useState(false);
 
+  // Ref para asegurar que la visita solo se registra una vez por anuncio + usuario
+  const visitaRegistradaRef = useRef(false);
+
   const [nombre, setNombre] = useState("");
   const [email, setEmail] = useState("");
   const [telefono, setTelefono] = useState("");
@@ -80,17 +80,12 @@ export default function DetalleAnuncio() {
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [enviando, setEnviando] = useState(false);
 
-  // Contador de visitas del anuncio (transaccional, no bloquea la ficha).
-  useEffect(() => {
-    if (!anuncio || anuncio.estado !== "Publicado") return;
-    registrarVista.mutate(anuncio.id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [anuncio]);
-
   const usuario = authService.getCurrentUser();
 
   const esPropietario =
-    usuario != null && anuncio != null && usuario.usuarioId === anuncio.usuarioId;
+    usuario != null &&
+    anuncio != null &&
+    usuario.usuarioId === anuncio.usuarioId;
 
   const usuarioIdLogueado = usuario?.usuarioId;
   const nombreCompletoUsuario = usuario
@@ -99,7 +94,6 @@ export default function DetalleAnuncio() {
   const emailUsuario = usuario?.email ?? "";
 
   // Si el visitante inició sesión, se precargan sus datos de contacto
-  // para que solo tenga que escribir el mensaje.
   const cuentaQuery = useUsuarioCuenta(usuarioIdLogueado != null);
 
   useEffect(() => {
@@ -137,6 +131,8 @@ export default function DetalleAnuncio() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setFotoActiva(0);
+    // Resetear el ref cuando cambia el anuncio
+    visitaRegistradaRef.current = false;
   }, [anuncio?.id]);
 
   const siguienteFoto = () => {
@@ -209,8 +205,6 @@ export default function DetalleAnuncio() {
 
     const texto = `Hola, me interesa tu ${anuncio.marca} ${anuncio.modelo} (${anuncio.anio}). ¿Sigue disponible?`;
 
-    // Si el visitante inició sesión, registramos el contacto en su historial
-    // (canal WhatsApp) antes de abrir la conversación.
     if (usuario && !esPropietario) {
       try {
         await crearLead.mutateAsync({
@@ -261,7 +255,6 @@ export default function DetalleAnuncio() {
     anuncio.precioAnterior != null &&
     anuncio.precioAnterior > anuncio.precio;
 
-  // Estado de favorito: solo aplica a compradores autenticados que no sean dueños.
   const favoritosQuery = useMisFavoritos(
     usuario != null && anuncio != null && !esPropietario,
   );
@@ -275,9 +268,14 @@ export default function DetalleAnuncio() {
   // Registra la visita en el historial del comprador (sin bloquear la página).
   useEffect(() => {
     if (!anuncio || !usuario || esPropietario) return;
+
+    // Solo registrar una vez por anuncio+usuario en este ciclo de vida
+    if (visitaRegistradaRef.current) return;
+    visitaRegistradaRef.current = true;
+
     registrarVisita.mutate(anuncio.id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [anuncio, usuario, esPropietario]);
+  }, [anuncio?.id, usuario?.usuarioId, esPropietario]);
 
   const toggleFavorito = () => {
     if (!authService.isAuthenticated()) {
@@ -330,7 +328,9 @@ export default function DetalleAnuncio() {
         ) : (errorCarga || !idValido) && !anuncio ? (
           <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-12 text-center">
             <FaCar className="mx-auto text-5xl text-red-400/60" />
-            <h2 className="mt-4 text-lg font-semibold">Vehículo no disponible</h2>
+            <h2 className="mt-4 text-lg font-semibold">
+              Vehículo no disponible
+            </h2>
             <p className="mt-2 text-sm text-[#9aa1b1]">
               {!idValido
                 ? "No se indicó el vehículo a consultar."
@@ -592,7 +592,9 @@ export default function DetalleAnuncio() {
                 <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-4 text-sm">
                   {propsMostradas.map((fila) => (
                     <div key={fila.etiqueta}>
-                      <dt className="text-xs text-[#9aa1b1]">{fila.etiqueta}</dt>
+                      <dt className="text-xs text-[#9aa1b1]">
+                        {fila.etiqueta}
+                      </dt>
                       <dd className="mt-0.5 font-medium text-[#e8eaf0]">
                         {fila.valor}
                       </dd>
@@ -630,7 +632,9 @@ export default function DetalleAnuncio() {
               ) : (
                 <div className="rounded-2xl border border-white/10 bg-[#13161d] p-6">
                   <h2 className="text-lg font-bold">
-                    {esVendedorParticular ? "Contactar vendedor" : "Contactar agencia"}
+                    {esVendedorParticular
+                      ? "Contactar vendedor"
+                      : "Contactar agencia"}
                   </h2>
                   {anuncio.nombreVendedor && (
                     <p className="mt-1 text-sm font-medium text-[#c3c9d4]">
@@ -646,7 +650,9 @@ export default function DetalleAnuncio() {
                           : "bg-blue-500/15 text-blue-300"
                       }`}
                     >
-                      {esVendedorParticular ? "Vendedor particular" : "Dealer (agencia)"}
+                      {esVendedorParticular
+                        ? "Vendedor particular"
+                        : "Dealer (agencia)"}
                     </span>
 
                     <Link
@@ -680,7 +686,7 @@ export default function DetalleAnuncio() {
                           setError("");
                           if (!mensaje.trim()) {
                             setMensaje(
-                              `Hola, me interesa tu ${anuncio.marca} ${anuncio.modelo} (${anuncio.anio}). ¿Sigue disponible?`
+                              `Hola, me interesa tu ${anuncio.marca} ${anuncio.modelo} (${anuncio.anio}). ¿Sigue disponible?`,
                             );
                           }
                         }}
@@ -694,92 +700,92 @@ export default function DetalleAnuncio() {
 
                   {mostrarFormulario && (
                     <form onSubmit={handleEnviar} className="mt-5 space-y-4">
-                    {usuario ? (
-                      <div className="rounded-lg border border-white/10 bg-[#0c101b] px-3 py-2.5 text-xs text-[#9aa1b1]">
-                        Enviarás este mensaje con los datos de tu cuenta:{" "}
-                        <span className="font-medium text-[#c3c9d4]">
-                          {nombre} · {email}
-                          {telefono ? ` · ${telefono}` : ""}
-                        </span>
-                      </div>
-                    ) : (
-                      <>
-                    <div>
-                      <label className="mb-1 block text-xs font-medium text-[#9aa1b1]">
-                        Nombre *
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        maxLength={100}
-                        value={nombre}
-                        onChange={(e) => setNombre(e.target.value)}
-                        placeholder="Tu nombre"
-                        className="w-full rounded-lg border border-white/10 bg-[#0c101b] px-3 py-2.5 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
-                      />
-                    </div>
+                      {usuario ? (
+                        <div className="rounded-lg border border-white/10 bg-[#0c101b] px-3 py-2.5 text-xs text-[#9aa1b1]">
+                          Enviarás este mensaje con los datos de tu cuenta:{" "}
+                          <span className="font-medium text-[#c3c9d4]">
+                            {nombre} · {email}
+                            {telefono ? ` · ${telefono}` : ""}
+                          </span>
+                        </div>
+                      ) : (
+                        <>
+                          <div>
+                            <label className="mb-1 block text-xs font-medium text-[#9aa1b1]">
+                              Nombre *
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              maxLength={100}
+                              value={nombre}
+                              onChange={(e) => setNombre(e.target.value)}
+                              placeholder="Tu nombre"
+                              className="w-full rounded-lg border border-white/10 bg-[#0c101b] px-3 py-2.5 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
+                            />
+                          </div>
 
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <div>
+                              <label className="mb-1 block text-xs font-medium text-[#9aa1b1]">
+                                Email
+                              </label>
+                              <input
+                                type="email"
+                                maxLength={150}
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="tucorreo@ejemplo.com"
+                                className="w-full rounded-lg border border-white/10 bg-[#0c101b] px-3 py-2.5 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
+                              />
+                            </div>
+                            <div>
+                              <label className="mb-1 block text-xs font-medium text-[#9aa1b1]">
+                                Teléfono
+                              </label>
+                              <input
+                                type="tel"
+                                maxLength={20}
+                                value={telefono}
+                                onChange={(e) => setTelefono(e.target.value)}
+                                placeholder="809-000-0000"
+                                className="w-full rounded-lg border border-white/10 bg-[#0c101b] px-3 py-2.5 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
+                              />
+                            </div>
+                          </div>
+                        </>
+                      )}
+
                       <div>
                         <label className="mb-1 block text-xs font-medium text-[#9aa1b1]">
-                          Email
+                          Mensaje *
                         </label>
-                        <input
-                          type="email"
-                          maxLength={150}
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          placeholder="tucorreo@ejemplo.com"
+                        <textarea
+                          required
+                          maxLength={1000}
+                          rows={4}
+                          value={mensaje}
+                          onChange={(e) => setMensaje(e.target.value)}
+                          placeholder="Hola, me interesa este vehículo. ¿Sigue disponible?"
                           className="w-full rounded-lg border border-white/10 bg-[#0c101b] px-3 py-2.5 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
                         />
                       </div>
-                      <div>
-                        <label className="mb-1 block text-xs font-medium text-[#9aa1b1]">
-                          Teléfono
-                        </label>
-                        <input
-                          type="tel"
-                          maxLength={20}
-                          value={telefono}
-                          onChange={(e) => setTelefono(e.target.value)}
-                          placeholder="809-000-0000"
-                          className="w-full rounded-lg border border-white/10 bg-[#0c101b] px-3 py-2.5 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
-                        />
-                      </div>
-                    </div>
-                      </>
-                    )}
 
-                    <div>
-                      <label className="mb-1 block text-xs font-medium text-[#9aa1b1]">
-                        Mensaje *
-                      </label>
-                      <textarea
-                        required
-                        maxLength={1000}
-                        rows={4}
-                        value={mensaje}
-                        onChange={(e) => setMensaje(e.target.value)}
-                        placeholder="Hola, me interesa este vehículo. ¿Sigue disponible?"
-                        className="w-full rounded-lg border border-white/10 bg-[#0c101b] px-3 py-2.5 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
-                      />
-                    </div>
+                      {error && (
+                        <p className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-400">
+                          {error}
+                        </p>
+                      )}
 
-                    {error && (
-                      <p className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-400">
-                        {error}
-                      </p>
-                    )}
-
-                    <button
-                      type="submit"
-                      disabled={enviando}
-                      className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg bg-blue-500 px-6 py-3 text-sm font-semibold transition-colors hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed"
-                    >
-                      <FaPaperPlane />
-                      {enviando ? "Enviando..." : "Enviar mensaje"}
-                    </button>
-                  </form>
+                      <button
+                        type="submit"
+                        disabled={enviando}
+                        className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg bg-blue-500 px-6 py-3 text-sm font-semibold transition-colors hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed"
+                      >
+                        <FaPaperPlane />
+                        {enviando ? "Enviando..." : "Enviar mensaje"}
+                      </button>
+                    </form>
                   )}
 
                   <div className="mt-5 border-t border-white/10 pt-4 text-center text-[10px] text-[#6b7280]">
@@ -856,9 +862,7 @@ export default function DetalleAnuncio() {
                 <span
                   key={i}
                   className={`h-1.5 rounded-full transition-all ${
-                    i === fotoActiva
-                      ? "w-5 bg-blue-500"
-                      : "w-1.5 bg-white/40"
+                    i === fotoActiva ? "w-5 bg-blue-500" : "w-1.5 bg-white/40"
                   }`}
                 />
               ))}

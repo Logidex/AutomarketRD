@@ -139,6 +139,12 @@ function App() {
             {/* /vendedor/interesados */}
             <Route path="interesados" element={<InteresadosVendedor />} />
 
+            {/* /vendedor/contactados */}
+            <Route
+              path="contactados"
+              element={<Contactados tema="claro" rutaVolver="/vendedor" />}
+            />
+
             {/* /vendedor/ascender */}
             <Route path="ascender" element={<AscenderVendedor />} />
 
@@ -181,6 +187,12 @@ function App() {
             <Route
               path="leads"
               element={<Leads />}
+            />
+
+            {/* /dashboard/contactados */}
+            <Route
+              path="contactados"
+              element={<Contactados tema="claro" rutaVolver="/dashboard" />}
             />
 
             {/* /dashboard/mi-perfil */}

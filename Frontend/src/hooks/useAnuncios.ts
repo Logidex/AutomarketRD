@@ -122,9 +122,3 @@ export const useMisAnuncios = (usuarioId: number, enabled = true) => {
 
   return { ...query, invalidate };
 };
-
-export const useRegistrarVista = () => {
-  return useMutation({
-    mutationFn: (id: number) => anuncioService.registrarVista(id),
-  });
-};

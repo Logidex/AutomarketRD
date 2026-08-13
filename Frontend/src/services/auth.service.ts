@@ -22,7 +22,13 @@ export const authService = {
   // Guarda token + usuario en localStorage (usado en login y ascenso de rol)
   guardarSesion(authData: AuthResponse) {
     if (authData.token) {
-      localStorage.setItem('token', authData.token);
+      // Almacenar token con marca de tiempo para tracking de expiración
+      const expiringAt = Date.now() + (24 * 60 * 60 * 1000); // Default 24h en ms
+      const tokenData = {
+        token: authData.token,
+        expiringAt,
+      };
+      localStorage.setItem('token', JSON.stringify(tokenData));
     }
 
     if (authData.usuario) {
@@ -81,7 +87,24 @@ export const authService = {
   },
 
   isAuthenticated(): boolean {
-    return !!localStorage.getItem('token');
+    const tokenData = this.getTokenData();
+    if (!tokenData) return false;
+    
+    // Verificar si el token aún no expira
+    return Date.now() < tokenData.expiringAt;
+  },
+
+  getTokenData(): { token: string; expiringAt: number } | null {
+    const tokenStr = localStorage.getItem('token');
+    if (!tokenStr) return null;
+
+    try {
+      const tokenData = JSON.parse(tokenStr) as { token: string; expiringAt: number };
+      return tokenData;
+    } catch {
+      localStorage.removeItem('token');
+      return null;
+    }
   },
 
   getCurrentUser(): UsuarioAuth | null {

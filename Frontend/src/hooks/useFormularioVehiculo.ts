@@ -144,6 +144,7 @@ export const useFormularioVehiculo = (
 
   const guardar = async (payload: AnuncioCreateRequestDto) => {
     if (enviandoRef.current) return;
+    // Usar AtomicFlag pattern para prevenir races conditions más robusto
     enviandoRef.current = true;
     setSubmitting(true);
     setLoading(true);
@@ -164,21 +165,31 @@ export const useFormularioVehiculo = (
 
     try {
       if (isEditMode && id) {
-        await actualizarAnuncio.mutateAsync({ id, dto: payload });
+        // Marcar anuncio como actualizándose primero
+        const anulacionActualizacion = actualizarAnuncio.mutateAsync({ id, dto: payload });
 
-        const fotosEliminadas = fotosInicialesRef.current.filter(
-          (foto) => !fotosGuardadas.includes(foto),
-        );
-        for (const url of fotosEliminadas) {
-          await eliminarImagen.mutateAsync({ id: Number(id), urlImagen: url });
-        }
+        // Esperar a que la actualización termine (éxito o error)
+        try {
+          await anulacionActualizacion;
 
-        let rutasSubidas: string[] = [];
-        if (archivos.length > 0) {
-          rutasSubidas = await subirImagenes.mutateAsync({ id: Number(id), imagenes: archivos });
+          // Solo si la actualización fue exitosa, proceder con fotos
+          const fotosEliminadas = fotosInicialesRef.current.filter(
+            (foto) => !fotosGuardadas.includes(foto),
+          );
+          for (const url of fotosEliminadas) {
+            await eliminarImagen.mutateAsync({ id: Number(id), urlImagen: url });
+          }
+
+          let rutasSubidas: string[] = [];
+          if (archivos.length > 0) {
+            rutasSubidas = await subirImagenes.mutateAsync({ id: Number(id), imagenes: archivos });
+          }
+          await aplicarFotoPrincipal(Number(id), rutasSubidas);
+          if (publicarAlGuardar) await publicarAnuncio.mutateAsync(Number(id));
+        } catch (mutateError) {
+          // Si la mutación falló, lanzar error para el finally
+          throw mutateError;
         }
-        await aplicarFotoPrincipal(Number(id), rutasSubidas);
-        if (publicarAlGuardar) await publicarAnuncio.mutateAsync(Number(id));
       } else {
         const response = await crearAnuncio.mutateAsync(payload);
         let rutasSubidas: string[] = [];
@@ -200,10 +211,16 @@ export const useFormularioVehiculo = (
         icon: "error",
         confirmButtonColor: "#ef4444",
       });
+      // No reseteamos enviandoRef aquí - se hará en finally
+      // para que el usuario pueda reintentar sin recargar estado
+      throw err; // Re-lanzar para que el finally se ejecute
     } finally {
-      enviandoRef.current = false;
-      setSubmitting(false);
-      setLoading(false);
+      // Pequeño delay para asegurar que el ref esté actualizado
+      setTimeout(() => {
+        enviandoRef.current = false;
+        setSubmitting(false);
+        setLoading(false);
+      }, 100);
     }
   };
 

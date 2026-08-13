@@ -1,7 +1,7 @@
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 
-import { FaCar, FaHome, FaPlusCircle, FaChartPie, FaSignOutAlt, FaEnvelope, FaStore, FaCreditCard } from "react-icons/fa";
+import { FaCar, FaHome, FaPlusCircle, FaChartPie, FaSignOutAlt, FaEnvelope, FaStore, FaCreditCard, FaPaperPlane } from "react-icons/fa";
 
 import { authService } from "../../services/auth.service";
 import { suscripcionService, type SuscripcionDealer } from "../../services/suscripcion.service";
@@ -60,6 +60,11 @@ export default function DashboardLayout() {
       path: "/dashboard/leads",
       label: "Leads",
       icon: <FaEnvelope />,
+    },
+    {
+      path: "/dashboard/contactados",
+      label: "Contactados",
+      icon: <FaPaperPlane />,
     },
     {
       path: "/dashboard/mi-perfil",
