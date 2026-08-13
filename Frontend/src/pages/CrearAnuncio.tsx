@@ -7,7 +7,8 @@ export default function CrearAnuncio() {
     formData, kilometraje, setKilometraje, accesoriosTexto, setAccesoriosTexto,
     mostrarTransmisionPersonalizada, transmisionPersonalizada, setTransmisionPersonalizada,
     archivos, fotosGuardadas, handleChange, handleImageChange,
-    handleEliminarArchivo, handleEliminarFotoGuardada, guardar, submitting
+    handleEliminarArchivo, handleEliminarFotoGuardada, guardar, submitting,
+    publicarAlGuardar, setPublicarAlGuardar
   } = useFormularioVehiculo(false);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -36,6 +37,8 @@ export default function CrearAnuncio() {
           onKilometrajeChange={(e) => setKilometraje(e.target.value)}
           onAccesoriosChange={(e) => setAccesoriosTexto(e.target.value)}
           onTransmisionPersonalizadaChange={(e) => setTransmisionPersonalizada(e.target.value)}
+          publicarAlGuardar={publicarAlGuardar}
+          onPublicarAlGuardarChange={(e) => setPublicarAlGuardar(e.target.checked)}
         />
         <GestorImagenes
           archivos={archivos}

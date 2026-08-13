@@ -9,6 +9,7 @@ import {
   useActualizarAnuncio,
   useSubirImagenesAnuncio,
   useEliminarImagenAnuncio,
+  usePublicarAnuncio,
 } from './useAnuncios';
 
 export const useFormularioVehiculo = (
@@ -23,6 +24,7 @@ export const useFormularioVehiculo = (
   const actualizarAnuncio = useActualizarAnuncio();
   const subirImagenes = useSubirImagenesAnuncio();
   const eliminarImagen = useEliminarImagenAnuncio();
+  const publicarAnuncio = usePublicarAnuncio();
 
   const MINIMO_IMAGENES = 5;
   const MAXIMO_IMAGENES = 10;
@@ -30,6 +32,7 @@ export const useFormularioVehiculo = (
   const enviandoRef = useRef(false);
   const fotosInicialesRef = useRef<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [publicarAlGuardar, setPublicarAlGuardar] = useState(false);
 
   const [archivos, setArchivos] = useState<File[]>([]);
   const [fotosGuardadas, setFotosGuardadas] = useState<string[]>([]);
@@ -147,10 +150,12 @@ export const useFormularioVehiculo = (
         }
 
         if (archivos.length > 0) await subirImagenes.mutateAsync({ id: Number(id), imagenes: archivos });
+        if (publicarAlGuardar) await publicarAnuncio.mutateAsync(Number(id));
       } else {
         const response = await crearAnuncio.mutateAsync(payload);
         if (archivos.length > 0) await subirImagenes.mutateAsync({ id: response.id, imagenes: archivos });
-        Swal.fire("Éxito", "Creado correctamente", "success");
+        if (publicarAlGuardar) await publicarAnuncio.mutateAsync(response.id);
+        Swal.fire("Éxito", publicarAlGuardar ? "Publicado correctamente" : "Creado correctamente", "success");
       }
       navigate(destino);
     } catch (err) {
@@ -177,6 +182,7 @@ export const useFormularioVehiculo = (
     mostrarTransmisionPersonalizada,
     transmisionPersonalizada, setTransmisionPersonalizada,
     archivos, fotosGuardadas, handleChange, handleImageChange, 
-    handleEliminarArchivo, handleEliminarFotoGuardada, guardar, submitting
+    handleEliminarArchivo, handleEliminarFotoGuardada, guardar, submitting,
+    publicarAlGuardar, setPublicarAlGuardar
   };
 };

@@ -10,7 +10,8 @@ export default function EditarVehiculoVendedor() {
     formData, kilometraje, setKilometraje, accesoriosTexto, setAccesoriosTexto,
     mostrarTransmisionPersonalizada, transmisionPersonalizada, setTransmisionPersonalizada,
     archivos, fotosGuardadas, handleChange, handleImageChange,
-    handleEliminarArchivo, handleEliminarFotoGuardada, guardar, submitting
+    handleEliminarArchivo, handleEliminarFotoGuardada, guardar, submitting,
+    publicarAlGuardar, setPublicarAlGuardar
   } = useFormularioVehiculo(true, "/vendedor");
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -45,6 +46,8 @@ export default function EditarVehiculoVendedor() {
           onKilometrajeChange={(e) => setKilometraje(e.target.value)}
           onAccesoriosChange={(e) => setAccesoriosTexto(e.target.value)}
           onTransmisionPersonalizadaChange={(e) => setTransmisionPersonalizada(e.target.value)}
+          publicarAlGuardar={publicarAlGuardar}
+          onPublicarAlGuardarChange={(e) => setPublicarAlGuardar(e.target.checked)}
         />
         <GestorImagenes
           archivos={archivos}

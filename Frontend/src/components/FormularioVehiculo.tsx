@@ -29,6 +29,8 @@ interface FormularioVehiculoProps {
   accesoriosTexto: string;
   mostrarTransmisionPersonalizada: boolean;
   transmisionPersonalizada: string;
+  publicarAlGuardar: boolean;
+  onPublicarAlGuardarChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onChange: (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => void;
@@ -43,6 +45,8 @@ export default function FormularioVehiculo({
   accesoriosTexto,
   mostrarTransmisionPersonalizada,
   transmisionPersonalizada,
+  publicarAlGuardar,
+  onPublicarAlGuardarChange,
   onChange,
   onKilometrajeChange,
   onAccesoriosChange,
@@ -355,6 +359,26 @@ export default function FormularioVehiculo({
             {formData.descripcion.length}/5000 caracteres
           </p>
         </div>
+      </div>
+
+      {/* PUBLICAR AL GUARDAR */}
+      <div className="flex items-center gap-3 border-t border-gray-100 pt-4">
+        <input
+          id="publicarAlGuardar"
+          type="checkbox"
+          checked={publicarAlGuardar}
+          onChange={onPublicarAlGuardarChange}
+          className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+        />
+        <label
+          htmlFor="publicarAlGuardar"
+          className="text-sm font-medium text-gray-700"
+        >
+          Publicar al guardar
+        </label>
+        <span className="text-xs text-gray-500">
+          El vehículo aparecerá de inmediato en la vitrina pública.
+        </span>
       </div>
     </div>
   );
