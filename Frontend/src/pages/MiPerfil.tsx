@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import {
   FaStore,
@@ -59,7 +59,7 @@ function usePerfil() {
   const [camposGuardados, setCamposGuardados] = useState(CAMPOS_VACIOS);
   const [form, setForm] = useState(CAMPOS_VACIOS);
 
-  const logoUrlGuardadoRef = useRef("");
+  const [logoUrlGuardado, setLogoUrlGuardado] = useState("");
   const [logo, setLogo] = useState<File | null>(null);
   const objectUrl = useObjectUrl(logo);
 
@@ -77,7 +77,7 @@ function usePerfil() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setForm(valores);
     setCamposGuardados(valores);
-    logoUrlGuardadoRef.current = perfil.logoUrl ?? "";
+    setLogoUrlGuardado(perfil.logoUrl ?? "");
     setPerfilExiste(true);
   }, [perfil]);
 
@@ -129,39 +129,30 @@ function usePerfil() {
     if (!modoEdicion || !hayCambios) return;
 
     setLoading(true);
-    try {
-      const data = await actualizarPerfil.mutateAsync({
-        ...form,
-        logo: logo ?? undefined,
-      });
+    const data = await actualizarPerfil.mutateAsync({
+      ...form,
+      logo: logo ?? undefined,
+    });
 
-      const valores = mapearCampos(data);
-      setCamposGuardados(valores);
-      setForm(valores);
-      logoUrlGuardadoRef.current = data.logoUrl ?? "";
-      setLogo(null);
-      setPerfilExiste(true);
-      setModoEdicion(false);
+    const valores = mapearCampos(data);
+    setCamposGuardados(valores);
+    setForm(valores);
+    setLogoUrlGuardado(data.logoUrl ?? "");
+    setLogo(null);
+    setPerfilExiste(true);
+    setModoEdicion(false);
 
-      Swal.fire({
-        title: "Guardado",
-        text: "Tu perfil se actualizó correctamente.",
-        icon: "success",
-        confirmButtonColor: "#2563eb",
-      });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      console.error(error);
-      Swal.fire({
-        title: "Error",
-        text: error.message || "No se pudo actualizar el perfil.",
-        icon: "error",
-        confirmButtonColor: "#ef4444",
-      });
-    } finally {
-      setLoading(false);
-    }
+    Swal.fire({
+      title: "Guardado",
+      text: "Tu perfil se actualizó correctamente.",
+      icon: "success",
+      confirmButtonColor: "#2563eb",
+    });
+
+    setLoading(false);
   };
+
+  const logoPreview = logo ? objectUrl : logoUrlGuardado;
 
   return {
     usuarioId,
@@ -170,7 +161,7 @@ function usePerfil() {
     modoEdicion,
     form,
     logo,
-    logoPreview: logo ? objectUrl : logoUrlGuardadoRef.current,
+    logoPreview,
     hayCambios,
     handleChange,
     handleLogo,

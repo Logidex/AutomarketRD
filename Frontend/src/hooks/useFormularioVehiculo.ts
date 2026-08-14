@@ -169,33 +169,25 @@ if (!["Automatica", "Manual", "Secuencial", "CVT", "DobleEmbrague"].includes(dat
     try {
       if (isEditMode && id) {
         // Marcar anuncio como actualizándose primero
-        const anulacionActualizacion = actualizarAnuncio.mutateAsync({ id, dto: payload });
+        await actualizarAnuncio.mutateAsync({ id, dto: payload });
 
-        // Esperar a que la actualización termine (éxito o error)
-        try {
-          await anulacionActualizacion;
+        // Solo si la actualización fue exitosa, proceder con fotos
+        const fotosGuardadasSet = new Set(fotosGuardadas);
+        const fotosEliminadas = fotosInicialesRef.current.filter(
+          (foto) => !fotosGuardadasSet.has(foto),
+        );
+        await Promise.all(
+          fotosEliminadas.map((url) =>
+            eliminarImagen.mutateAsync({ id: Number(id), urlImagen: url }),
+          ),
+        );
 
-          // Solo si la actualización fue exitosa, proceder con fotos
-          const fotosGuardadasSet = new Set(fotosGuardadas);
-          const fotosEliminadas = fotosInicialesRef.current.filter(
-            (foto) => !fotosGuardadasSet.has(foto),
-          );
-          await Promise.all(
-            fotosEliminadas.map((url) =>
-              eliminarImagen.mutateAsync({ id: Number(id), urlImagen: url }),
-            ),
-          );
-
-          let rutasSubidas: string[] = [];
-          if (archivos.length > 0) {
-            rutasSubidas = await subirImagenes.mutateAsync({ id: Number(id), imagenes: archivos });
-          }
-          await aplicarFotoPrincipal(Number(id), rutasSubidas);
-          if (publicarAlGuardar) await publicarAnuncio.mutateAsync(Number(id));
-        } catch (mutateError) {
-          // Si la mutación falló, lanzar error para el finally
-          throw mutateError;
+        let rutasSubidas: string[] = [];
+        if (archivos.length > 0) {
+          rutasSubidas = await subirImagenes.mutateAsync({ id: Number(id), imagenes: archivos });
         }
+        await aplicarFotoPrincipal(Number(id), rutasSubidas);
+        if (publicarAlGuardar) await publicarAnuncio.mutateAsync(Number(id));
       } else {
         const response = await crearAnuncio.mutateAsync(payload);
         let rutasSubidas: string[] = [];
