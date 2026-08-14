@@ -97,7 +97,7 @@ export default function Favoritos() {
             {favoritos.map((favorito) => (
               <div
                 key={favorito.id}
-                className="group flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#13161d] transition-all hover:border-red-500/30 hover:shadow-lg"
+                className="group flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#13161d] transition-[border-color,box-shadow] hover:border-red-500/30 hover:shadow-lg"
               >
                 <button
                   type="button"

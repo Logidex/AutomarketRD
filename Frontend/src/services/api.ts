@@ -10,29 +10,19 @@ const baseURL = envUrl?.replace(/\/api\/?$/i, "") ?? "";
 
 const api = axios.create({
   ...(baseURL ? { baseURL } : {}),
-  withCredentials: false,
+  // El JWT viaja como cookie HttpOnly; las solicitudes deben enviar credenciales.
+  withCredentials: true,
 });
 
 export const API_BASE_URL = baseURL;
-
-// Agregar el token JWT a cada solicitud
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-
-  return config;
-});
 
 // Manejar respuestas y errores
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Sesión expirada o token inválido
+    // Sesión expirada o cookie inválida
     if (error.response?.status === 401) {
-      localStorage.removeItem("token");
+      localStorage.removeItem("user:v1");
       localStorage.removeItem("user");
 
       if (!window.location.pathname.startsWith("/login")) {

@@ -24,7 +24,7 @@ import {
 
 const PASSWORD_MIN = 6;
 
-export default function EditarCuenta() {
+function useEditarCuenta() {
   const { data: cuenta, isLoading: cargando } = useUsuarioCuenta();
   const actualizarDatos = useActualizarDatos();
   const cambiarPassword = useCambiarPassword();
@@ -61,6 +61,7 @@ export default function EditarCuenta() {
   }, [cuenta]);
 
   const guardarDatos = async () => {
+    if (actualizarDatos.isPending) return;
     if (nombre.trim().length === 0 || apellido.trim().length === 0) {
       Swal.fire(
         'Datos incompletos',
@@ -96,6 +97,7 @@ export default function EditarCuenta() {
   };
 
   const solicitarCodigoPassword = async () => {
+    if (cambiarPassword.isPending) return;
     if (!passwordActual || !nuevaPassword) {
       Swal.fire(
         'Campos incompletos',
@@ -145,6 +147,7 @@ export default function EditarCuenta() {
   };
 
   const confirmarCodigoPassword = async () => {
+    if (confirmarCambioPassword.isPending) return;
     if (codigoPassword.trim().length < 6) {
       Swal.fire(
         'Código incompleto',
@@ -179,6 +182,7 @@ export default function EditarCuenta() {
   };
 
   const solicitarCodigo = async () => {
+    if (solicitarCambioEmail.isPending) return;
     if (!passwordEmail || !nuevoEmail) {
       Swal.fire(
         'Campos incompletos',
@@ -215,6 +219,7 @@ export default function EditarCuenta() {
   };
 
   const confirmarCodigo = async () => {
+    if (confirmarCambioEmail.isPending) return;
     if (codigo.trim().length < 6) {
       Swal.fire(
         'Código incompleto',
@@ -251,13 +256,422 @@ export default function EditarCuenta() {
     }
   };
 
+  return {
+    cuenta,
+    cargando,
+    enviando,
+    nombre,
+    apellido,
+    telefono,
+    passwordActual,
+    nuevaPassword,
+    repetirPassword,
+    pasoCodigoPassword,
+    codigoPassword,
+    pasoCodigo,
+    passwordEmail,
+    nuevoEmail,
+    codigo,
+    setNombre,
+    setApellido,
+    setTelefono,
+    setPasswordActual,
+    setNuevaPassword,
+    setRepetirPassword,
+    setPasoCodigoPassword,
+    setCodigoPassword,
+    setPasoCodigo,
+    setPasswordEmail,
+    setNuevoEmail,
+    setCodigo,
+    guardarDatos,
+    solicitarCodigoPassword,
+    confirmarCodigoPassword,
+    solicitarCodigo,
+    confirmarCodigo,
+  };
+}
+
+const inputClase =
+  'w-full rounded-lg border border-white/10 bg-[#0c101b] px-3 py-2.5 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none';
+const labelClase = 'mb-1 block text-xs font-medium text-[#9aa1b1]';
+
+interface PropsDatos {
+  nombre: string;
+  apellido: string;
+  telefono: string;
+  enviando: boolean;
+  onChangeNombre: (valor: string) => void;
+  onChangeApellido: (valor: string) => void;
+  onChangeTelefono: (valor: string) => void;
+  onGuardar: () => void;
+}
+
+function SeccionDatosPersonales({
+  nombre,
+  apellido,
+  telefono,
+  enviando,
+  onChangeNombre,
+  onChangeApellido,
+  onChangeTelefono,
+  onGuardar,
+}: PropsDatos) {
+  return (
+    <section className="rounded-2xl border border-white/10 bg-[#13161d] p-6">
+      <h2 className="flex items-center gap-2 text-lg font-bold">
+        <FaUser className="text-blue-400" />
+        Datos personales
+      </h2>
+
+      <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div>
+          <label htmlFor="nombre" className={labelClase}>Nombre *</label>
+          <input
+            id="nombre"
+            type="text"
+            maxLength={100}
+            value={nombre}
+            onChange={(e) => onChangeNombre(e.target.value)}
+            className={inputClase}
+          />
+        </div>
+        <div>
+          <label htmlFor="apellido" className={labelClase}>Apellido *</label>
+          <input
+            id="apellido"
+            type="text"
+            maxLength={100}
+            value={apellido}
+            onChange={(e) => onChangeApellido(e.target.value)}
+            className={inputClase}
+          />
+        </div>
+        <div>
+          <label htmlFor="telefono" className={labelClase}>Teléfono</label>
+          <input
+            id="telefono"
+            type="tel"
+            maxLength={20}
+            value={telefono}
+            onChange={(e) => onChangeTelefono(e.target.value)}
+            className={inputClase}
+          />
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={onGuardar}
+        disabled={enviando}
+        className="mt-5 inline-flex items-center gap-2 rounded-lg bg-blue-500 px-6 py-2.5 text-sm font-semibold transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        <FaSave />
+        Guardar cambios
+      </button>
+    </section>
+  );
+}
+
+interface PropsPassword {
+  pasoCodigo: boolean;
+  passwordActual: string;
+  nuevaPassword: string;
+  repetirPassword: string;
+  codigo: string;
+  enviando: boolean;
+  onChangePasswordActual: (valor: string) => void;
+  onChangeNuevaPassword: (valor: string) => void;
+  onChangeRepetirPassword: (valor: string) => void;
+  onChangeCodigo: (valor: string) => void;
+  onSolicitar: () => void;
+  onConfirmar: () => void;
+  onVolver: () => void;
+}
+
+function SeccionPassword({
+  pasoCodigo,
+  passwordActual,
+  nuevaPassword,
+  repetirPassword,
+  codigo,
+  enviando,
+  onChangePasswordActual,
+  onChangeNuevaPassword,
+  onChangeRepetirPassword,
+  onChangeCodigo,
+  onSolicitar,
+  onConfirmar,
+  onVolver,
+}: PropsPassword) {
+  return (
+    <section className="mt-6 rounded-2xl border border-white/10 bg-[#13161d] p-6">
+      <h2 className="flex items-center gap-2 text-lg font-bold">
+        <FaKey className="text-yellow-400" />
+        Cambiar contraseña
+      </h2>
+      <p className="mt-1 text-sm text-[#9aa1b1]">
+        {pasoCodigo
+          ? 'Paso 2 de 2: ingresa el código que enviamos a tu correo.'
+          : 'Paso 1 de 2: confirma con tu contraseña actual. Recibirás un código en tu correo.'}
+      </p>
+
+      {!pasoCodigo ? (
+        <div className="mt-5 space-y-4">
+          <div>
+            <label htmlFor="passwordActual" className={labelClase}>Contraseña actual *</label>
+            <input
+              id="passwordActual"
+              type="password"
+              value={passwordActual}
+              onChange={(e) => onChangePasswordActual(e.target.value)}
+              className={inputClase}
+            />
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label htmlFor="nuevaPassword" className={labelClase}>Nueva contraseña *</label>
+              <input
+                id="nuevaPassword"
+                type="password"
+                value={nuevaPassword}
+                onChange={(e) => onChangeNuevaPassword(e.target.value)}
+                className={inputClase}
+              />
+            </div>
+            <div>
+              <label htmlFor="repetirPassword" className={labelClase}>Repetir nueva contraseña *</label>
+              <input
+                id="repetirPassword"
+                type="password"
+                value={repetirPassword}
+                onChange={(e) => onChangeRepetirPassword(e.target.value)}
+                className={inputClase}
+              />
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={onSolicitar}
+            disabled={enviando}
+            className="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-6 py-2.5 text-sm font-semibold transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <FaEnvelopeOpenText />
+            Enviar código a mi correo
+          </button>
+        </div>
+      ) : (
+        <div className="mt-5 space-y-4">
+          <div>
+            <label htmlFor="codigoPassword" className={labelClase}>
+              Código de confirmación (6 dígitos) *
+            </label>
+            <input
+              id="codigoPassword"
+              type="text"
+              inputMode="numeric"
+              maxLength={6}
+              value={codigo}
+              onChange={(e) => onChangeCodigo(e.target.value.replace(/\D/g, ''))}
+              className={`${inputClase} tracking-[0.5em]`}
+            />
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={onConfirmar}
+              disabled={enviando}
+              className="inline-flex items-center gap-2 rounded-lg bg-green-500 px-6 py-2.5 text-sm font-semibold transition-colors hover:bg-green-600 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <FaLock />
+              Confirmar cambio
+            </button>
+            <button
+              type="button"
+              onClick={onVolver}
+              disabled={enviando}
+              className="rounded-lg border border-white/10 px-5 py-2.5 text-sm text-[#9aa1b1] transition-colors hover:text-white"
+            >
+              Volver
+            </button>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+interface PropsCorreo {
+  cuentaEmail: string | undefined;
+  emailConfirmado: boolean;
+  pasoCodigo: boolean;
+  passwordEmail: string;
+  nuevoEmail: string;
+  codigo: string;
+  enviando: boolean;
+  onChangePasswordEmail: (valor: string) => void;
+  onChangeNuevoEmail: (valor: string) => void;
+  onChangeCodigo: (valor: string) => void;
+  onSolicitar: () => void;
+  onConfirmar: () => void;
+  onVolver: () => void;
+}
+
+function SeccionCorreo({
+  cuentaEmail,
+  emailConfirmado,
+  pasoCodigo,
+  passwordEmail,
+  nuevoEmail,
+  codigo,
+  enviando,
+  onChangePasswordEmail,
+  onChangeNuevoEmail,
+  onChangeCodigo,
+  onSolicitar,
+  onConfirmar,
+  onVolver,
+}: PropsCorreo) {
+  return (
+    <section className="mt-6 rounded-2xl border border-white/10 bg-[#13161d] p-6">
+      <h2 className="flex items-center gap-2 text-lg font-bold">
+        <FaEnvelope className="text-green-400" />
+        Cambiar correo electrónico
+      </h2>
+      <p className="mt-1 text-sm text-[#9aa1b1]">
+        {pasoCodigo
+          ? 'Paso 2 de 2: ingresa el código que enviamos al nuevo correo.'
+          : 'Paso 1 de 2: confirma con tu contraseña y recibe un código en el nuevo correo.'}
+      </p>
+      <p className="mt-1 text-sm text-[#9aa1b1]">
+        Correo actual: <strong className="text-gray-200">{cuentaEmail}</strong>
+        {emailConfirmado ? (
+          <span className="ml-2 rounded-full bg-green-500/10 px-2 py-0.5 text-xs text-green-400">
+            confirmado
+          </span>
+        ) : (
+          <span className="ml-2 rounded-full bg-yellow-500/10 px-2 py-0.5 text-xs text-yellow-400">
+            sin confirmar
+          </span>
+        )}
+      </p>
+
+      <div className="mt-5 space-y-4">
+        {!pasoCodigo ? (
+          <>
+            <div>
+              <label htmlFor="passwordEmail" className={labelClase}>Contraseña actual *</label>
+              <input
+                id="passwordEmail"
+                type="password"
+                value={passwordEmail}
+                onChange={(e) => onChangePasswordEmail(e.target.value)}
+                className={inputClase}
+              />
+            </div>
+            <div>
+              <label htmlFor="nuevoEmail" className={labelClase}>Nuevo correo *</label>
+              <input
+                id="nuevoEmail"
+                type="email"
+                maxLength={150}
+                value={nuevoEmail}
+                onChange={(e) => onChangeNuevoEmail(e.target.value)}
+                className={inputClase}
+              />
+            </div>
+            <button
+              type="button"
+              onClick={onSolicitar}
+              disabled={enviando}
+              className="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-6 py-2.5 text-sm font-semibold transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <FaEnvelopeOpenText />
+              Enviar código al nuevo correo
+            </button>
+          </>
+        ) : (
+          <>
+            <div>
+              <label htmlFor="codigoEmail" className={labelClase}>
+                Código de confirmación (6 dígitos) *
+              </label>
+              <input
+                id="codigoEmail"
+                type="text"
+                inputMode="numeric"
+                maxLength={6}
+                value={codigo}
+                onChange={(e) => onChangeCodigo(e.target.value.replace(/\D/g, ''))}
+                className={`${inputClase} tracking-[0.5em]`}
+              />
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={onConfirmar}
+                disabled={enviando}
+                className="inline-flex items-center gap-2 rounded-lg bg-green-500 px-6 py-2.5 text-sm font-semibold transition-colors hover:bg-green-600 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <FaLock />
+                Confirmar cambio
+              </button>
+              <button
+                type="button"
+                onClick={onVolver}
+                disabled={enviando}
+                className="rounded-lg border border-white/10 px-5 py-2.5 text-sm text-[#9aa1b1] transition-colors hover:text-white"
+              >
+                Volver
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </section>
+  );
+}
+
+export default function EditarCuenta() {
+  const {
+    cuenta,
+    cargando,
+    enviando,
+    nombre,
+    apellido,
+    telefono,
+    passwordActual,
+    nuevaPassword,
+    repetirPassword,
+    pasoCodigoPassword,
+    codigoPassword,
+    pasoCodigo,
+    passwordEmail,
+    nuevoEmail,
+    codigo,
+    setNombre,
+    setApellido,
+    setTelefono,
+    setPasswordActual,
+    setNuevaPassword,
+    setRepetirPassword,
+    setPasoCodigoPassword,
+    setCodigoPassword,
+    setPasoCodigo,
+    setPasswordEmail,
+    setNuevoEmail,
+    setCodigo,
+    guardarDatos,
+    solicitarCodigoPassword,
+    confirmarCodigoPassword,
+    solicitarCodigo,
+    confirmarCodigo,
+  } = useEditarCuenta();
+
   if (cargando) {
     return <Spinner />;
   }
-
-  const inputClase =
-    'w-full rounded-lg border border-white/10 bg-[#0c101b] px-3 py-2.5 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none';
-  const labelClase = 'mb-1 block text-xs font-medium text-[#9aa1b1]';
 
   return (
     <div className="min-h-screen bg-[#0c101b] text-white">
@@ -282,251 +696,54 @@ export default function EditarCuenta() {
           </p>
         </div>
 
-        {/* SECCIÓN 1: DATOS PERSONALES */}
-        <section className="rounded-2xl border border-white/10 bg-[#13161d] p-6">
-          <h2 className="flex items-center gap-2 text-lg font-bold">
-            <FaUser className="text-blue-400" />
-            Datos personales
-          </h2>
+        <SeccionDatosPersonales
+          nombre={nombre}
+          apellido={apellido}
+          telefono={telefono}
+          enviando={enviando}
+          onChangeNombre={setNombre}
+          onChangeApellido={setApellido}
+          onChangeTelefono={setTelefono}
+          onGuardar={guardarDatos}
+        />
 
-          <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label className={labelClase}>Nombre *</label>
-              <input
-                type="text"
-                maxLength={100}
-                value={nombre}
-                onChange={(e) => setNombre(e.target.value)}
-                className={inputClase}
-              />
-            </div>
-            <div>
-              <label className={labelClase}>Apellido *</label>
-              <input
-                type="text"
-                maxLength={100}
-                value={apellido}
-                onChange={(e) => setApellido(e.target.value)}
-                className={inputClase}
-              />
-            </div>
-            <div>
-              <label className={labelClase}>Teléfono</label>
-              <input
-                type="tel"
-                maxLength={20}
-                value={telefono}
-                onChange={(e) => setTelefono(e.target.value)}
-                className={inputClase}
-              />
-            </div>
-          </div>
+        <SeccionPassword
+          pasoCodigo={pasoCodigoPassword}
+          passwordActual={passwordActual}
+          nuevaPassword={nuevaPassword}
+          repetirPassword={repetirPassword}
+          codigo={codigoPassword}
+          enviando={enviando}
+          onChangePasswordActual={setPasswordActual}
+          onChangeNuevaPassword={setNuevaPassword}
+          onChangeRepetirPassword={setRepetirPassword}
+          onChangeCodigo={setCodigoPassword}
+          onSolicitar={solicitarCodigoPassword}
+          onConfirmar={confirmarCodigoPassword}
+          onVolver={() => {
+            setPasoCodigoPassword(false);
+            setCodigoPassword('');
+          }}
+        />
 
-          <button
-            type="button"
-            onClick={guardarDatos}
-            disabled={enviando}
-            className="mt-5 inline-flex items-center gap-2 rounded-lg bg-blue-500 px-6 py-2.5 text-sm font-semibold transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <FaSave />
-            Guardar cambios
-          </button>
-        </section>
-
-        {/* SECCIÓN 2: CONTRASEÑA */}
-        <section className="mt-6 rounded-2xl border border-white/10 bg-[#13161d] p-6">
-          <h2 className="flex items-center gap-2 text-lg font-bold">
-            <FaKey className="text-yellow-400" />
-            Cambiar contraseña
-          </h2>
-          <p className="mt-1 text-sm text-[#9aa1b1]">
-            {pasoCodigoPassword
-              ? 'Paso 2 de 2: ingresa el código que enviamos a tu correo.'
-              : 'Paso 1 de 2: confirma con tu contraseña actual. Recibirás un código en tu correo.'}
-          </p>
-
-          {!pasoCodigoPassword ? (
-            <div className="mt-5 space-y-4">
-              <div>
-                <label className={labelClase}>Contraseña actual *</label>
-                <input
-                  type="password"
-                  value={passwordActual}
-                  onChange={(e) => setPasswordActual(e.target.value)}
-                  className={inputClase}
-                />
-              </div>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div>
-                  <label className={labelClase}>Nueva contraseña *</label>
-                  <input
-                    type="password"
-                    value={nuevaPassword}
-                    onChange={(e) => setNuevaPassword(e.target.value)}
-                    className={inputClase}
-                  />
-                </div>
-                <div>
-                  <label className={labelClase}>Repetir nueva contraseña *</label>
-                  <input
-                    type="password"
-                    value={repetirPassword}
-                    onChange={(e) => setRepetirPassword(e.target.value)}
-                    className={inputClase}
-                  />
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={solicitarCodigoPassword}
-                disabled={enviando}
-                className="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-6 py-2.5 text-sm font-semibold transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <FaEnvelopeOpenText />
-                Enviar código a mi correo
-              </button>
-            </div>
-          ) : (
-            <div className="mt-5 space-y-4">
-              <div>
-                <label className={labelClase}>
-                  Código de confirmación (6 dígitos) *
-                </label>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={6}
-                  value={codigoPassword}
-                  onChange={(e) =>
-                    setCodigoPassword(e.target.value.replace(/\D/g, ''))
-                  }
-                  className={`${inputClase} tracking-[0.5em]`}
-                />
-              </div>
-              <div className="flex flex-wrap gap-3">
-                <button
-                  type="button"
-                  onClick={confirmarCodigoPassword}
-                  disabled={enviando}
-                  className="inline-flex items-center gap-2 rounded-lg bg-green-500 px-6 py-2.5 text-sm font-semibold transition-colors hover:bg-green-600 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <FaLock />
-                  Confirmar cambio
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setPasoCodigoPassword(false);
-                    setCodigoPassword('');
-                  }}
-                  disabled={enviando}
-                  className="rounded-lg border border-white/10 px-5 py-2.5 text-sm text-[#9aa1b1] transition-colors hover:text-white"
-                >
-                  Volver
-                </button>
-              </div>
-            </div>
-          )}
-        </section>
-
-        {/* SECCIÓN 3: CORREO (DOS PASOS) */}
-        <section className="mt-6 rounded-2xl border border-white/10 bg-[#13161d] p-6">
-          <h2 className="flex items-center gap-2 text-lg font-bold">
-            <FaEnvelope className="text-green-400" />
-            Cambiar correo electrónico
-          </h2>
-          <p className="mt-1 text-sm text-[#9aa1b1]">
-            {pasoCodigo
-              ? 'Paso 2 de 2: ingresa el código que enviamos al nuevo correo.'
-              : 'Paso 1 de 2: confirma con tu contraseña y recibe un código en el nuevo correo.'}
-          </p>
-          <p className="mt-1 text-sm text-[#9aa1b1]">
-            Correo actual: <strong className="text-gray-200">{cuenta?.email}</strong>
-            {cuenta?.emailConfirmado ? (
-              <span className="ml-2 rounded-full bg-green-500/10 px-2 py-0.5 text-xs text-green-400">
-                confirmado
-              </span>
-            ) : (
-              <span className="ml-2 rounded-full bg-yellow-500/10 px-2 py-0.5 text-xs text-yellow-400">
-                sin confirmar
-              </span>
-            )}
-          </p>
-
-          <div className="mt-5 space-y-4">
-            {!pasoCodigo ? (
-              <>
-                <div>
-                  <label className={labelClase}>Contraseña actual *</label>
-                  <input
-                    type="password"
-                    value={passwordEmail}
-                    onChange={(e) => setPasswordEmail(e.target.value)}
-                    className={inputClase}
-                  />
-                </div>
-                <div>
-                  <label className={labelClase}>Nuevo correo *</label>
-                  <input
-                    type="email"
-                    maxLength={150}
-                    value={nuevoEmail}
-                    onChange={(e) => setNuevoEmail(e.target.value)}
-                    className={inputClase}
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={solicitarCodigo}
-                  disabled={enviando}
-                  className="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-6 py-2.5 text-sm font-semibold transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <FaEnvelopeOpenText />
-                  Enviar código al nuevo correo
-                </button>
-              </>
-            ) : (
-              <>
-                <div>
-                  <label className={labelClase}>
-                    Código de confirmación (6 dígitos) *
-                  </label>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={6}
-                    value={codigo}
-                    onChange={(e) => setCodigo(e.target.value.replace(/\D/g, ''))}
-                    className={`${inputClase} tracking-[0.5em]`}
-                  />
-                </div>
-                <div className="flex flex-wrap gap-3">
-                  <button
-                    type="button"
-                    onClick={confirmarCodigo}
-                    disabled={enviando}
-                    className="inline-flex items-center gap-2 rounded-lg bg-green-500 px-6 py-2.5 text-sm font-semibold transition-colors hover:bg-green-600 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    <FaLock />
-                    Confirmar cambio
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPasoCodigo(false);
-                      setCodigo('');
-                    }}
-                    disabled={enviando}
-                    className="rounded-lg border border-white/10 px-5 py-2.5 text-sm text-[#9aa1b1] transition-colors hover:text-white"
-                  >
-                    Volver
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        </section>
+        <SeccionCorreo
+          cuentaEmail={cuenta?.email}
+          emailConfirmado={cuenta?.emailConfirmado === true}
+          pasoCodigo={pasoCodigo}
+          passwordEmail={passwordEmail}
+          nuevoEmail={nuevoEmail}
+          codigo={codigo}
+          enviando={enviando}
+          onChangePasswordEmail={setPasswordEmail}
+          onChangeNuevoEmail={setNuevoEmail}
+          onChangeCodigo={setCodigo}
+          onSolicitar={solicitarCodigo}
+          onConfirmar={confirmarCodigo}
+          onVolver={() => {
+            setPasoCodigo(false);
+            setCodigo('');
+          }}
+        />
       </main>
     </div>
   );

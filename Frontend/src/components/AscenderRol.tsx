@@ -157,10 +157,14 @@ export default function AscenderRol() {
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-1 block text-xs font-medium text-[#9aa1b1]">
+              <label
+                htmlFor="nombreAgencia"
+                className="mb-1 block text-xs font-medium text-[#9aa1b1]"
+              >
                 Nombre de la Agencia *
               </label>
               <input
+                id="nombreAgencia"
                 type="text"
                 required
                 value={agencia.nombreAgencia}
@@ -172,10 +176,14 @@ export default function AscenderRol() {
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-[#9aa1b1]">
+              <label
+                htmlFor="agenciaRNC"
+                className="mb-1 block text-xs font-medium text-[#9aa1b1]"
+              >
                 RNC de la Agencia *
               </label>
               <input
+                id="agenciaRNC"
                 type="text"
                 required
                 value={agencia.agenciaRNC}
@@ -187,10 +195,14 @@ export default function AscenderRol() {
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-[#9aa1b1]">
+              <label
+                htmlFor="ubicacionAgencia"
+                className="mb-1 block text-xs font-medium text-[#9aa1b1]"
+              >
                 Ubicación de la Agencia
               </label>
               <input
+                id="ubicacionAgencia"
                 type="text"
                 value={agencia.ubicacionAgencia}
                 onChange={(e) =>
@@ -204,10 +216,14 @@ export default function AscenderRol() {
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-[#9aa1b1]">
+              <label
+                htmlFor="telefonoAgencia"
+                className="mb-1 block text-xs font-medium text-[#9aa1b1]"
+              >
                 Teléfono de la Agencia
               </label>
               <input
+                id="telefonoAgencia"
                 type="tel"
                 value={agencia.telefonoAgencia}
                 onChange={(e) =>

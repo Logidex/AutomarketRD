@@ -53,10 +53,13 @@ export const useFormularioVehiculo = (
 
   useEffect(() => {
     if (isEditMode && id) {
+      let activo = true;
       const cargarAnuncio = async () => {
         setLoading(true);
         try {
+          if (!activo) return;
           const datos = await anuncioService.obtenerPorId(id);
+          if (!activo) return;
           setFormData({
             marca: datos.marca, modelo: datos.modelo, version: datos.version,
             tipoVehiculo: datos.tipoVehiculo, motor: datos.motor, traccion: datos.traccion,
@@ -73,19 +76,23 @@ export const useFormularioVehiculo = (
           setFotosGuardadas(datos.fotos || []);
           fotosInicialesRef.current = datos.fotos || [];
 
-          if (!["Automatica", "Manual", "Secuencial", "CVT", "DobleEmbrague"].includes(datos.transmision)) {
+if (!["Automatica", "Manual", "Secuencial", "CVT", "DobleEmbrague"].includes(datos.transmision)) {
             setFormData((prev) => ({ ...prev, transmision: "Otra" }));
             setTransmisionPersonalizada(datos.transmision);
             setMostrarTransmisionPersonalizada(true);
           }
         } catch {
+          if (!activo) return;
           Swal.fire("Error", "No se cargaron los datos", "error");
           navigate(destino);
         } finally {
-          setLoading(false);
+          if (activo) setLoading(false);
         }
       };
       cargarAnuncio();
+      return () => {
+        activo = false;
+      };
     }
   }, [id, isEditMode, navigate, setLoading, destino]);
 
@@ -117,19 +124,15 @@ export const useFormularioVehiculo = (
   };
 
   const handleEliminarArchivo = (indice: number) => {
-    setArchivos((prev) => {
-      const eliminado = prev[indice];
-      if (fotoPrincipal === eliminado) setFotoPrincipal(null);
-      return prev.filter((_, i) => i !== indice);
-    });
+    const eliminado = archivos[indice];
+    if (fotoPrincipal === eliminado) setFotoPrincipal(null);
+    setArchivos((prev) => prev.filter((_, i) => i !== indice));
   };
 
   const handleEliminarFotoGuardada = (indice: number) => {
-    setFotosGuardadas((prev) => {
-      const eliminado = prev[indice];
-      if (fotoPrincipal === eliminado) setFotoPrincipal(null);
-      return prev.filter((_, i) => i !== indice);
-    });
+    const eliminado = fotosGuardadas[indice];
+    if (fotoPrincipal === eliminado) setFotoPrincipal(null);
+    setFotosGuardadas((prev) => prev.filter((_, i) => i !== indice));
   };
 
   const handleEstablecerPrincipal = (tipo: "archivo" | "guardada", indice: number) => {
@@ -173,12 +176,15 @@ export const useFormularioVehiculo = (
           await anulacionActualizacion;
 
           // Solo si la actualización fue exitosa, proceder con fotos
+          const fotosGuardadasSet = new Set(fotosGuardadas);
           const fotosEliminadas = fotosInicialesRef.current.filter(
-            (foto) => !fotosGuardadas.includes(foto),
+            (foto) => !fotosGuardadasSet.has(foto),
           );
-          for (const url of fotosEliminadas) {
-            await eliminarImagen.mutateAsync({ id: Number(id), urlImagen: url });
-          }
+          await Promise.all(
+            fotosEliminadas.map((url) =>
+              eliminarImagen.mutateAsync({ id: Number(id), urlImagen: url }),
+            ),
+          );
 
           let rutasSubidas: string[] = [];
           if (archivos.length > 0) {

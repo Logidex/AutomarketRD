@@ -20,7 +20,7 @@ const COLOR_ROL: Record<string, string> = {
   Comprador: "bg-emerald-100 text-emerald-700",
 };
 
-export default function AdminUsuarios() {
+function useAdminUsuariosPage() {
   const { data: usuarios = [], isLoading: loading } = useAdminUsuarios();
   const [procesando, setProcesando] = useState<number | null>(null);
 
@@ -271,6 +271,150 @@ export default function AdminUsuarios() {
     }
   };
 
+  return {
+    loading,
+    usuarios,
+    procesando,
+    toggleEstado,
+    cambiarPlanDealer,
+    renovarDealer,
+    cambiarRolUsuario,
+  };
+}
+
+interface PropsTabla {
+  usuarios: UsuarioAdmin[];
+  procesando: number | null;
+  onToggleEstado: (usuario: UsuarioAdmin) => void;
+  onCambiarPlan: (usuario: UsuarioAdmin) => void;
+  onRenovar: (usuario: UsuarioAdmin) => void;
+  onCambiarRol: (usuario: UsuarioAdmin) => void;
+}
+
+function TablaUsuarios({
+  usuarios,
+  procesando,
+  onToggleEstado,
+  onCambiarPlan,
+  onRenovar,
+  onCambiarRol,
+}: PropsTabla) {
+  return (
+    <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white shadow-sm">
+      <table className="w-full text-left text-sm">
+        <thead className="border-b border-gray-200 bg-gray-50 text-xs uppercase text-gray-500">
+          <tr>
+            <th className="px-4 py-3">Usuario</th>
+            <th className="px-4 py-3">Correo</th>
+            <th className="px-4 py-3">Rol</th>
+            <th className="px-4 py-3">Registro</th>
+            <th className="px-4 py-3">Estado</th>
+            <th className="px-4 py-3 text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-100">
+          {usuarios.map((usuario) => (
+            <tr key={usuario.usuarioId} className="hover:bg-gray-50">
+              <td className="px-4 py-3 font-medium text-gray-900">
+                {usuario.nombre} {usuario.apellido}
+              </td>
+              <td className="px-4 py-3 text-gray-600">{usuario.email}</td>
+              <td className="px-4 py-3">
+                <span
+                  className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                    COLOR_ROL[usuario.rol] ?? "bg-gray-100 text-gray-700"
+                  }`}
+                >
+                  {usuario.rol}
+                </span>
+              </td>
+              <td className="px-4 py-3 text-gray-600">
+                {formatearFecha(usuario.fechaRegistro)}
+              </td>
+              <td className="px-4 py-3">
+                {usuario.isActivo ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-semibold text-green-700">
+                    <FaCheckCircle /> Activo
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-semibold text-red-700">
+                    <FaBan /> Suspendido
+                  </span>
+                )}
+              </td>
+              <td className="px-4 py-3">
+                <div className="flex items-center justify-end gap-2">
+                  {usuario.rol === "Dealer" && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => onCambiarPlan(usuario)}
+                        disabled={procesando !== null}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-violet-200 bg-white px-3 py-1.5 text-xs font-semibold text-violet-700 transition-colors hover:bg-violet-50 disabled:opacity-50"
+                      >
+                        <FaCoins />
+                        Plan
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onRenovar(usuario)}
+                        disabled={procesando !== null}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-white px-3 py-1.5 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-50 disabled:opacity-50"
+                      >
+                        <FaRedoAlt />
+                        Renovar
+                      </button>
+                    </>
+                  )}
+
+                  {usuario.rol !== "Admin" && (
+                    <button
+                      type="button"
+                      onClick={() => onCambiarRol(usuario)}
+                      disabled={procesando !== null}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-amber-200 bg-white px-3 py-1.5 text-xs font-semibold text-amber-700 transition-colors hover:bg-amber-50 disabled:opacity-50"
+                    >
+                      <FaUserTag />
+                      Rol
+                    </button>
+                  )}
+
+                  {usuario.rol !== "Admin" && (
+                    <button
+                      type="button"
+                      onClick={() => onToggleEstado(usuario)}
+                      disabled={procesando !== null}
+                      className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors disabled:opacity-50 ${
+                        usuario.isActivo
+                          ? "border-red-200 bg-white text-red-700 hover:bg-red-50"
+                          : "border-green-200 bg-white text-green-700 hover:bg-green-50"
+                      }`}
+                    >
+                      {usuario.isActivo ? <FaBan /> : <FaCheckCircle />}
+                      {usuario.isActivo ? "Suspender" : "Reactivar"}
+                    </button>
+                  )}
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+export default function AdminUsuarios() {
+  const {
+    loading,
+    usuarios,
+    procesando,
+    toggleEstado,
+    cambiarPlanDealer,
+    renovarDealer,
+    cambiarRolUsuario,
+  } = useAdminUsuariosPage();
+
   if (loading) {
     return <Spinner />;
   }
@@ -283,107 +427,14 @@ export default function AdminUsuarios() {
         </h2>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white shadow-sm">
-        <table className="w-full text-left text-sm">
-          <thead className="border-b border-gray-200 bg-gray-50 text-xs uppercase text-gray-500">
-            <tr>
-              <th className="px-4 py-3">Usuario</th>
-              <th className="px-4 py-3">Correo</th>
-              <th className="px-4 py-3">Rol</th>
-              <th className="px-4 py-3">Registro</th>
-              <th className="px-4 py-3">Estado</th>
-              <th className="px-4 py-3 text-right">Acciones</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {usuarios.map((usuario) => (
-              <tr key={usuario.usuarioId} className="hover:bg-gray-50">
-                <td className="px-4 py-3 font-medium text-gray-900">
-                  {usuario.nombre} {usuario.apellido}
-                </td>
-                <td className="px-4 py-3 text-gray-600">{usuario.email}</td>
-                <td className="px-4 py-3">
-                  <span
-                    className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                      COLOR_ROL[usuario.rol] ?? "bg-gray-100 text-gray-700"
-                    }`}
-                  >
-                    {usuario.rol}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-gray-600">
-                  {formatearFecha(usuario.fechaRegistro)}
-                </td>
-                <td className="px-4 py-3">
-                  {usuario.isActivo ? (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-semibold text-green-700">
-                      <FaCheckCircle /> Activo
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-semibold text-red-700">
-                      <FaBan /> Suspendido
-                    </span>
-                  )}
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex items-center justify-end gap-2">
-                    {usuario.rol === "Dealer" && (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => cambiarPlanDealer(usuario)}
-                          disabled={procesando !== null}
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-violet-200 bg-white px-3 py-1.5 text-xs font-semibold text-violet-700 transition-colors hover:bg-violet-50 disabled:opacity-50"
-                        >
-                          <FaCoins />
-                          Plan
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => renovarDealer(usuario)}
-                          disabled={procesando !== null}
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-white px-3 py-1.5 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-50 disabled:opacity-50"
-                        >
-                          <FaRedoAlt />
-                          Renovar
-                        </button>
-                      </>
-                    )}
-
-                    {usuario.rol !== "Admin" && (
-                      <button
-                        type="button"
-                        onClick={() => cambiarRolUsuario(usuario)}
-                        disabled={procesando !== null}
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-amber-200 bg-white px-3 py-1.5 text-xs font-semibold text-amber-700 transition-colors hover:bg-amber-50 disabled:opacity-50"
-                      >
-                        <FaUserTag />
-                        Rol
-                      </button>
-                    )}
-
-                    {usuario.rol !== "Admin" && (
-                      <button
-                        type="button"
-                        onClick={() => toggleEstado(usuario)}
-                        disabled={procesando !== null}
-                        className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors disabled:opacity-50 ${
-                          usuario.isActivo
-                            ? "border-red-200 bg-white text-red-700 hover:bg-red-50"
-                            : "border-green-200 bg-white text-green-700 hover:bg-green-50"
-                        }`}
-                      >
-                        {usuario.isActivo ? <FaBan /> : <FaCheckCircle />}
-                        {usuario.isActivo ? "Suspender" : "Reactivar"}
-                      </button>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <TablaUsuarios
+        usuarios={usuarios}
+        procesando={procesando}
+        onToggleEstado={toggleEstado}
+        onCambiarPlan={cambiarPlanDealer}
+        onRenovar={renovarDealer}
+        onCambiarRol={cambiarRolUsuario}
+      />
     </div>
   );
 }

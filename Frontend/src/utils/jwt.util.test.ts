@@ -10,36 +10,39 @@ vi.stubGlobal('localStorage', {
   clear: () => storage.clear(),
 });
 
-const b64 = (obj: Record<string, unknown>) =>
-  btoa(JSON.stringify(obj));
-
 describe('getUserIdFromToken', () => {
   beforeEach(() => storage.clear());
 
-  it('devuelve null sin token', () => {
+  it('devuelve null sin usuario guardado', () => {
     expect(getUserIdFromToken()).toBeNull();
   });
 
-  it('extrae el id del claim nameid', () => {
-    const token = `header.${b64({ nameid: 42, exp: 9999999999 })}.sig`;
-    localStorage.setItem('token', token);
+  it('extrae el id del usuario guardado (user:v1)', () => {
+    localStorage.setItem(
+      'user:v1',
+      JSON.stringify({ usuarioId: 42, nombre: 'Juan' }),
+    );
     expect(getUserIdFromToken()).toBe(42);
   });
 
-  it('extrae el id del claim sub', () => {
-    const token = `header.${b64({ sub: '7' })}.sig`;
-    localStorage.setItem('token', token);
+  it('falla a la clave legacy "user" si no existe user:v1', () => {
+    localStorage.setItem(
+      'user',
+      JSON.stringify({ usuarioId: 7, nombre: 'Ana' }),
+    );
     expect(getUserIdFromToken()).toBe(7);
   });
 
   it('devuelve null si el id no es numérico', () => {
-    const token = `header.${b64({ sub: 'abc' })}.sig`;
-    localStorage.setItem('token', token);
+    localStorage.setItem(
+      'user:v1',
+      JSON.stringify({ usuarioId: 'abc', nombre: 'Juan' }),
+    );
     expect(getUserIdFromToken()).toBeNull();
   });
 
-  it('devuelve null si el payload no es JSON válido', () => {
-    localStorage.setItem('token', 'a.badsig.c');
+  it('devuelve null si el JSON es inválido', () => {
+    localStorage.setItem('user:v1', 'no-es-json');
     expect(getUserIdFromToken()).toBeNull();
   });
 });

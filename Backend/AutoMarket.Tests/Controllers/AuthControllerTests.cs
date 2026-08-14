@@ -1,7 +1,10 @@
+using AutoMarket.API.Helpers;
 using AutoMarket.Application.DTOs;
 using AutoMarket.Application.DTOs.Auth;
 using AutoMarket.Application.DTOs.Usuario;
 using AutoMarket.Application.Interfaces;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Xunit;
@@ -12,11 +15,24 @@ public class AuthControllerTests
 {
     private readonly Mock<IAuthService> _mockAuthService;
     private readonly AuthController _controller;
+    private readonly DefaultHttpContext _httpContext;
 
     public AuthControllerTests()
     {
         _mockAuthService = new Mock<IAuthService>();
-        _controller = new AuthController(_mockAuthService.Object);
+
+        var env = new Mock<IWebHostEnvironment>();
+        env.Setup(e => e.EnvironmentName).Returns("Development");
+
+        _controller = new AuthController(
+            _mockAuthService.Object,
+            env.Object);
+
+        _httpContext = new DefaultHttpContext();
+        _controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = _httpContext
+        };
     }
 
     [Fact]
@@ -78,7 +94,7 @@ public class AuthControllerTests
     }
 
     [Fact]
-    public async Task Login_CuandoCredencialesSonValidas_DebeRetornarOkConMensajeYToken()
+    public async Task Login_CuandoCredencialesSonValidas_DebeEstablecerCookieHttpOnlyYNoDevolverToken()
     {
         var dto = new LoginDto
         {
@@ -92,7 +108,14 @@ public class AuthControllerTests
             {
                 Exito = true,
                 Mensaje = "Inicio de sesión exitoso.",
-                Token = "token-jwt-demo"
+                Token = "token-jwt-demo",
+                Usuario = new UsuarioAuthDto
+                {
+                    UsuarioId = 1,
+                    Nombre = "Juan",
+                    Email = "juan@test.com",
+                    Rol = "Comprador"
+                }
             });
 
         var resultado = await _controller.Login(dto);
@@ -102,10 +125,26 @@ public class AuthControllerTests
 
         var tipo = ok.Value!.GetType();
         var mensaje = tipo.GetProperty("Mensaje")?.GetValue(ok.Value)?.ToString();
-        var token = tipo.GetProperty("Token")?.GetValue(ok.Value)?.ToString();
 
         Assert.Equal("Inicio de sesión exitoso.", mensaje);
-        Assert.Equal("token-jwt-demo", token);
+
+        // El token no debe viajar en el cuerpo de la respuesta
+        Assert.Null(tipo.GetProperty("Token"));
+
+        // El token viaja como cookie HttpOnly
+        var setCookie = _httpContext.Response.Headers["Set-Cookie"].ToString();
+        Assert.Contains(
+            AuthCookieHelper.CookieName,
+            setCookie,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(
+            "HttpOnly",
+            setCookie,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(
+            "SameSite=Lax",
+            setCookie,
+            StringComparison.OrdinalIgnoreCase);
 
         _mockAuthService.Verify(s => s.LoginAsync(dto), Times.Once);
     }
@@ -140,5 +179,23 @@ public class AuthControllerTests
         Assert.Equal("Credenciales incorrectas.", propMensaje);
 
         _mockAuthService.Verify(s => s.LoginAsync(dto), Times.Once);
+    }
+
+    [Fact]
+    public void Logout_DebeEliminarLaCookieDelToken()
+    {
+        var resultado = _controller.Logout();
+
+        Assert.IsType<OkObjectResult>(resultado);
+
+        var setCookie = _httpContext.Response.Headers["Set-Cookie"].ToString();
+        Assert.Contains(
+            AuthCookieHelper.CookieName,
+            setCookie,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(
+            "expires=",
+            setCookie,
+            StringComparison.OrdinalIgnoreCase);
     }
 }

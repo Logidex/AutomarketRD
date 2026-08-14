@@ -104,7 +104,10 @@ export default function GestorImagenes({
   return (
     <div className="border-t border-gray-100 pt-4">
       <div className="mb-2 flex items-center justify-between">
-        <label className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor="fotosVehiculo"
+          className="block text-sm font-medium text-gray-700"
+        >
           Fotos del Vehículo
         </label>
 
@@ -114,6 +117,7 @@ export default function GestorImagenes({
       </div>
 
       <input
+        id="fotosVehiculo"
         type="file"
         multiple
         accept="image/png, image/jpeg"

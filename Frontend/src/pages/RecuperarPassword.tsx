@@ -148,12 +148,16 @@ export default function RecuperarPassword() {
 
               <form onSubmit={enviarCodigo} className="space-y-5">
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-600">
+                  <label
+                    htmlFor="emailRecuperacion"
+                    className="mb-2 block text-sm font-medium text-gray-600"
+                  >
                     Email
                   </label>
                   <div className="relative">
                     <FaEnvelope className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                     <input
+                      id="emailRecuperacion"
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
@@ -185,12 +189,16 @@ export default function RecuperarPassword() {
 
               <form onSubmit={restablecer} className="space-y-5">
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-600">
+                  <label
+                    htmlFor="codigoRecuperacion"
+                    className="mb-2 block text-sm font-medium text-gray-600"
+                  >
                     Código de confirmación (6 dígitos)
                   </label>
                   <div className="relative">
                     <FaKey className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                     <input
+                      id="codigoRecuperacion"
                       type="text"
                       inputMode="numeric"
                       maxLength={6}
@@ -204,12 +212,16 @@ export default function RecuperarPassword() {
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-600">
+                  <label
+                    htmlFor="nuevaPassword"
+                    className="mb-2 block text-sm font-medium text-gray-600"
+                  >
                     Nueva contraseña
                   </label>
                   <div className="relative">
                     <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                     <input
+                      id="nuevaPassword"
                       type={mostrarNueva ? "text" : "password"}
                       value={nuevaPassword}
                       onChange={(e) => setNuevaPassword(e.target.value)}
@@ -229,11 +241,15 @@ export default function RecuperarPassword() {
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-600">
+                  <label
+                    htmlFor="repetirPassword"
+                    className="mb-2 block text-sm font-medium text-gray-600"
+                  >
                     Repetir nueva contraseña
                   </label>
                   <div className="relative">
                     <input
+                      id="repetirPassword"
                       type={mostrarRepetir ? "text" : "password"}
                       value={repetirPassword}
                       onChange={(e) => setRepetirPassword(e.target.value)}

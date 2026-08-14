@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import Swal from "sweetalert2";
 import { FaEnvelopeOpenText, FaLock, FaCopyright } from "react-icons/fa";
 import { authService } from "../services/auth.service";
@@ -8,16 +8,59 @@ import Spinner from "./Spinner";
 const emailValido = (email: string) =>
   /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
+interface CambioCorreoState {
+  pasoCodigo: boolean;
+  password: string;
+  nuevoEmail: string;
+  codigo: string;
+}
+
+const CAMBIO_CORREO_INICIAL: CambioCorreoState = {
+  pasoCodigo: false,
+  password: "",
+  nuevoEmail: "",
+  codigo: "",
+};
+
+type CambioCorreoAction =
+  | { type: "password"; valor: string }
+  | { type: "nuevoEmail"; valor: string }
+  | { type: "codigo"; valor: string }
+  | { type: "pasoCodigo" }
+  | { type: "volver" }
+  | { type: "reiniciar" };
+
+function reducerCambioCorreo(
+  estado: CambioCorreoState,
+  accion: CambioCorreoAction,
+): CambioCorreoState {
+  switch (accion.type) {
+    case "password":
+      return { ...estado, password: accion.valor };
+    case "nuevoEmail":
+      return { ...estado, nuevoEmail: accion.valor };
+    case "codigo":
+      return { ...estado, codigo: accion.valor };
+    case "pasoCodigo":
+      return { ...estado, pasoCodigo: true };
+    case "volver":
+      return { ...estado, pasoCodigo: false, codigo: "" };
+    case "reiniciar":
+      return CAMBIO_CORREO_INICIAL;
+  }
+}
+
 export default function SeccionCambiarCorreo() {
   const [cargandoCuenta, setCargandoCuenta] = useState(true);
   const [emailActual, setEmailActual] = useState("");
   const [emailConfirmado, setEmailConfirmado] = useState(false);
-
-  const [pasoCodigo, setPasoCodigo] = useState(false);
-  const [password, setPassword] = useState("");
-  const [nuevoEmail, setNuevoEmail] = useState("");
-  const [codigo, setCodigo] = useState("");
   const [enviando, setEnviando] = useState(false);
+
+  const [cambioCorreo, dispatchCambioCorreo] = useReducer(
+    reducerCambioCorreo,
+    CAMBIO_CORREO_INICIAL,
+  );
+  const { pasoCodigo, password, nuevoEmail, codigo } = cambioCorreo;
 
   useEffect(() => {
     let activo = true;
@@ -61,7 +104,7 @@ export default function SeccionCambiarCorreo() {
         nuevoEmail.trim(),
       );
       Swal.fire("Código enviado", resultado.mensaje, "success");
-      setPasoCodigo(true);
+      dispatchCambioCorreo({ type: "pasoCodigo" });
     } catch (err) {
       Swal.fire(
         "Error",
@@ -93,10 +136,7 @@ export default function SeccionCambiarCorreo() {
       setEmailConfirmado(true);
 
       Swal.fire("Correo actualizado", resultado.mensaje, "success");
-      setPasoCodigo(false);
-      setCodigo("");
-      setPassword("");
-      setNuevoEmail("");
+      dispatchCambioCorreo({ type: "reiniciar" });
     } catch (err) {
       Swal.fire(
         "Error",
@@ -148,25 +188,37 @@ export default function SeccionCambiarCorreo() {
         {!pasoCodigo ? (
           <>
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="passwordActual"
+                className="mb-1 block text-sm font-medium text-gray-700"
+              >
                 Contraseña actual *
               </label>
               <input
+                id="passwordActual"
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) =>
+                  dispatchCambioCorreo({ type: "password", valor: e.target.value })
+                }
                 className={inputClase}
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="nuevoEmail"
+                className="mb-1 block text-sm font-medium text-gray-700"
+              >
                 Nuevo correo *
               </label>
               <input
+                id="nuevoEmail"
                 type="email"
                 maxLength={150}
                 value={nuevoEmail}
-                onChange={(e) => setNuevoEmail(e.target.value)}
+                onChange={(e) =>
+                  dispatchCambioCorreo({ type: "nuevoEmail", valor: e.target.value })
+                }
                 className={inputClase}
               />
             </div>
@@ -183,15 +235,24 @@ export default function SeccionCambiarCorreo() {
         ) : (
           <>
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="codigoConfirmacion"
+                className="mb-1 block text-sm font-medium text-gray-700"
+              >
                 Código de confirmación (6 dígitos) *
               </label>
               <input
+                id="codigoConfirmacion"
                 type="text"
                 inputMode="numeric"
                 maxLength={6}
                 value={codigo}
-                onChange={(e) => setCodigo(e.target.value.replace(/\D/g, ""))}
+                onChange={(e) =>
+                  dispatchCambioCorreo({
+                    type: "codigo",
+                    valor: e.target.value.replace(/\D/g, ""),
+                  })
+                }
                 className={`${inputClase} tracking-[0.5em]`}
               />
             </div>
@@ -207,10 +268,7 @@ export default function SeccionCambiarCorreo() {
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  setPasoCodigo(false);
-                  setCodigo("");
-                }}
+                onClick={() => dispatchCambioCorreo({ type: "volver" })}
                 disabled={enviando}
                 className="rounded-lg border border-gray-300 px-5 py-2.5 text-sm text-gray-600 transition-colors hover:bg-gray-50"
               >

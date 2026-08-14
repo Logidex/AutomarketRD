@@ -40,12 +40,13 @@ const FILTROS_INICIALES: Filtros = {
   precioMaximo: "",
 };
 
-export default function Home() {
+const fotoPrincipal = (anuncio: AnuncioListado): string =>
+  urlImagen(anuncio.fotos?.[0]) || "https://via.placeholder.com/600x400?text=Sin+Foto";
+
+function useBusquedaVehiculos() {
   const [pagina, setPagina] = useState(1);
   const [filtros, setFiltros] = useState<Filtros>(FILTROS_INICIALES);
   const [filtrosAplicados, setFiltrosAplicados] = useState<Filtros>(FILTROS_INICIALES);
-
-  const navigate = useNavigate();
 
   const {
     data,
@@ -75,6 +76,13 @@ export default function Home() {
 
   const cargando = isLoading || isFetching;
 
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
+    const { name, value } = e.target;
+    setFiltros((prev) => ({ ...prev, [name]: value }));
+  };
+
   const aplicarBusqueda = (e: React.FormEvent) => {
     e.preventDefault();
     setPagina(1);
@@ -93,9 +101,363 @@ export default function Home() {
     setPagina(p);
   };
 
-  const fotoPrincipal = (anuncio: AnuncioListado): string =>
-    urlImagen(anuncio.fotos?.[0]) ||
-    "https://via.placeholder.com/600x400?text=Sin+Foto";
+  return {
+    filtros,
+    pagina,
+    cargando,
+    anuncios,
+    totalRegistros,
+    totalPaginas,
+    isLoading,
+    isError,
+    error,
+    refetch,
+    handleChange,
+    aplicarBusqueda,
+    limpiarFiltros,
+    irAPagina,
+  };
+}
+
+interface PropsHero {
+  filtros: Filtros;
+  cargando: boolean;
+  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
+  onSubmit: (e: React.FormEvent) => void;
+}
+
+function HeroBusqueda({ filtros, cargando, onChange, onSubmit }: PropsHero) {
+  return (
+    <section className="border-b border-white/10 bg-gradient-to-b from-[#11161f] to-[#0c101b]">
+      <div className="mx-auto max-w-6xl px-6 py-14 text-center sm:px-8">
+        <h1 className="text-4xl font-bold sm:text-5xl">
+          Compra y vende vehículos
+          <span className="block text-blue-500">en República Dominicana</span>
+        </h1>
+        <p className="mx-auto mt-4 max-w-2xl text-[#9aa1b1]">
+          Explora el inventario de agencias y vendedores particulares. Encuentra
+          el vehículo que buscas y contacta al vendedor directamente.
+        </p>
+
+        <form onSubmit={onSubmit} className="mx-auto mt-10 max-w-5xl">
+          <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-[#13161d] p-4 sm:flex-row">
+            <div className="relative flex-1">
+              <FaSearch className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+              <label
+                htmlFor="buscarMarca"
+                className="sr-only"
+              >
+                Buscar por marca o modelo
+              </label>
+              <input
+                id="buscarMarca"
+                name="marca"
+                type="text"
+                value={filtros.marca}
+                onChange={onChange}
+                placeholder="Buscar por marca o modelo..."
+                className="w-full rounded-xl border border-white/10 bg-[#0c101b] py-3 pl-12 pr-4 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={cargando}
+              className="rounded-xl bg-blue-500 px-8 py-3 text-sm font-semibold transition-colors hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed"
+            >
+              {cargando ? "Buscando..." : "Buscar"}
+            </button>
+          </div>
+
+          <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+            <label htmlFor="homeFiltroTipoVehiculo" className="sr-only">
+              Tipo de vehículo
+            </label>
+            <select
+              id="homeFiltroTipoVehiculo"
+              name="tipoVehiculo"
+              value={filtros.tipoVehiculo}
+              onChange={onChange}
+              className="rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm text-gray-200 transition-colors focus:border-blue-500 focus:outline-none"
+            >
+              <option value="">Tipo de vehículo</option>
+              {TIPOS_VEHICULO.map((opcion) => (
+                <option key={opcion.valor} value={opcion.valor}>
+                  {opcion.etiqueta}
+                </option>
+              ))}
+            </select>
+
+            <label htmlFor="homeFiltroTransmision" className="sr-only">
+              Transmisión
+            </label>
+            <select
+              id="homeFiltroTransmision"
+              name="transmision"
+              value={filtros.transmision}
+              onChange={onChange}
+              className="rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm text-gray-200 transition-colors focus:border-blue-500 focus:outline-none"
+            >
+              <option value="">Transmisión</option>
+              {TRANSMISIONES.map((opcion) => (
+                <option key={opcion.valor} value={opcion.valor}>
+                  {opcion.etiqueta}
+                </option>
+              ))}
+            </select>
+
+            <label htmlFor="homeFiltroCombustible" className="sr-only">
+              Combustible
+            </label>
+            <select
+              id="homeFiltroCombustible"
+              name="combustible"
+              value={filtros.combustible}
+              onChange={onChange}
+              className="rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm text-gray-200 transition-colors focus:border-blue-500 focus:outline-none"
+            >
+              <option value="">Combustible</option>
+              {COMBUSTIBLES.map((opcion) => (
+                <option key={opcion.valor} value={opcion.valor}>
+                  {opcion.etiqueta}
+                </option>
+              ))}
+            </select>
+
+            <div className="flex items-center gap-2">
+              <label
+                htmlFor="precioMinimo"
+                className="sr-only"
+              >
+                Precio mínimo
+              </label>
+              <input
+                id="precioMinimo"
+                name="precioMinimo"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={filtros.precioMinimo}
+                onChange={onChange}
+                placeholder="Precio mín."
+                className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
+              />
+              <span className="text-gray-500">-</span>
+              <label
+                htmlFor="precioMaximo"
+                className="sr-only"
+              >
+                Precio máximo
+              </label>
+              <input
+                id="precioMaximo"
+                name="precioMaximo"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={filtros.precioMaximo}
+                onChange={onChange}
+                placeholder="Precio máx."
+                className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
+              />
+            </div>
+          </div>
+        </form>
+      </div>
+    </section>
+  );
+}
+
+interface PropsTarjeta {
+  anuncio: AnuncioListado;
+  onAbrir: () => void;
+}
+
+function TarjetaAnuncioHome({ anuncio, onAbrir }: PropsTarjeta) {
+  return (
+    <button
+      type="button"
+      onClick={onAbrir}
+      className="group flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#13161d] text-left transition-[border-color,box-shadow] hover:border-blue-500/40 hover:shadow-lg"
+    >
+      <div className="relative aspect-[16/10] overflow-hidden">
+        <img
+          src={fotoPrincipal(anuncio)}
+          alt={`${anuncio.marca} ${anuncio.modelo}`}
+          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+        />
+      </div>
+
+      <div className="flex flex-1 flex-col p-5">
+        <div className="flex items-start justify-between gap-3">
+          <h3 className="truncate text-lg font-bold">
+            {anuncio.marca} {anuncio.modelo}
+            <span className="ml-2 text-sm font-normal text-gray-400">
+              {anuncio.version}
+            </span>
+          </h3>
+          <span className="shrink-0 rounded-full bg-green-500/10 px-3 py-1 text-xs font-semibold text-green-400">
+            {anuncio.anio}
+          </span>
+        </div>
+
+        <p className="mt-2 text-xl font-bold text-blue-500">
+          {formatearPrecio(anuncio.precio, anuncio.moneda)}
+        </p>
+
+        <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 border-t border-white/10 pt-4 text-xs text-[#9aa1b1]">
+          <span className="inline-flex items-center gap-1.5">
+            <FaTachometerAlt className="text-gray-500" />
+            {anuncio.kilometraje.toLocaleString("es-DO")} km
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <FaCalendarAlt className="text-gray-500" />
+            {anuncio.anio}
+          </span>
+          {anuncio.ubicacion && (
+            <span className="inline-flex items-center gap-1.5">
+              <FaMapMarkerAlt className="text-gray-500" />
+              {anuncio.ubicacion}
+            </span>
+          )}
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          {anuncio.tipoVehiculo && (
+            <span className="rounded-full bg-blue-500/10 px-3 py-1 text-xs font-medium text-blue-400">
+              {etiquetaDe(anuncio.tipoVehiculo, TIPOS_VEHICULO)}
+            </span>
+          )}
+          {anuncio.combustible && (
+            <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-gray-300">
+              {etiquetaDe(anuncio.combustible, COMBUSTIBLES)}
+            </span>
+          )}
+          {anuncio.transmision && (
+            <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-gray-300">
+              {etiquetaDe(anuncio.transmision, TRANSMISIONES)}
+            </span>
+          )}
+        </div>
+      </div>
+    </button>
+  );
+}
+
+interface PropsPaginacion {
+  pagina: number;
+  totalPaginas: number;
+  cargando: boolean;
+  isError: boolean;
+  onIrAPagina: (p: number) => void;
+}
+
+function PaginacionHome({
+  pagina,
+  totalPaginas,
+  cargando,
+  isError,
+  onIrAPagina,
+}: PropsPaginacion) {
+  if (cargando || isError || totalPaginas <= 1) return null;
+
+  return (
+    <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
+      <button
+        type="button"
+        onClick={() => onIrAPagina(pagina - 1)}
+        disabled={pagina <= 1}
+        className="rounded-lg border border-white/10 px-4 py-2 text-sm font-medium transition-colors hover:border-white/30 disabled:cursor-not-allowed disabled:opacity-40"
+      >
+        Anterior
+      </button>
+
+      {(() => {
+        const paginas: number[] = [];
+        for (let p = 1; p <= totalPaginas; p++) {
+          if (
+            totalPaginas > 7 &&
+            p !== 1 &&
+            p !== totalPaginas &&
+            Math.abs(p - pagina) > 2
+          )
+            continue;
+          paginas.push(p);
+        }
+        return paginas.map((p) => (
+          <button
+            key={p}
+            type="button"
+            onClick={() => onIrAPagina(p)}
+            className={`min-w-10 rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${
+              p === pagina
+                ? "bg-blue-500 text-white"
+                : "border border-white/10 hover:border-white/30"
+            }`}
+          >
+            {p}
+          </button>
+        ));
+      })()}
+
+      <button
+        type="button"
+        onClick={() => onIrAPagina(pagina + 1)}
+        disabled={pagina >= totalPaginas}
+        className="rounded-lg border border-white/10 px-4 py-2 text-sm font-medium transition-colors hover:border-white/30 disabled:cursor-not-allowed disabled:opacity-40"
+      >
+        Siguiente
+      </button>
+    </div>
+  );
+}
+
+function PiePaginaHome() {
+  return (
+    <footer className="border-t border-white/10 py-8">
+      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 text-sm text-[#9aa1b1] sm:flex-row sm:px-8">
+        <span>© 2026 AutoMarket RD. Todos los derechos reservados.</span>
+        <nav className="flex flex-wrap items-center justify-center gap-4">
+          <Link to="/terminos" className="transition-colors hover:text-white">
+            Términos
+          </Link>
+          <Link to="/privacidad" className="transition-colors hover:text-white">
+            Privacidad
+          </Link>
+          <Link to="/reembolso" className="transition-colors hover:text-white">
+            Reembolsos
+          </Link>
+          <Link to="/contacto" className="transition-colors hover:text-white">
+            Contacto
+          </Link>
+          <Link to="/precios" className="transition-colors hover:text-white">
+            Planes y precios
+          </Link>
+        </nav>
+      </div>
+    </footer>
+  );
+}
+
+export default function Home() {
+  const navigate = useNavigate();
+
+  const {
+    filtros,
+    pagina,
+    cargando,
+    anuncios,
+    totalRegistros,
+    totalPaginas,
+    isLoading,
+    isError,
+    error,
+    refetch,
+    handleChange,
+    aplicarBusqueda,
+    limpiarFiltros,
+    irAPagina,
+  } = useBusquedaVehiculos();
 
   return (
     <div className="min-h-screen bg-[#0c101b] text-white">
@@ -113,116 +475,12 @@ export default function Home() {
       </header>
 
       {/* HERO + BÚSQUEDA */}
-      <section className="border-b border-white/10 bg-gradient-to-b from-[#11161f] to-[#0c101b]">
-        <div className="mx-auto max-w-6xl px-6 py-14 text-center sm:px-8">
-          <h1 className="text-4xl font-bold sm:text-5xl">
-            Compra y vende vehículos
-            <span className="block text-blue-500">en República Dominicana</span>
-          </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-[#9aa1b1]">
-            Explora el inventario de agencias y vendedores particulares. Encuentra
-            el vehículo que buscas y contacta al vendedor directamente.
-          </p>
-
-          <form onSubmit={aplicarBusqueda} className="mx-auto mt-10 max-w-5xl">
-            <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-[#13161d] p-4 sm:flex-row">
-              <div className="relative flex-1">
-                <FaSearch className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
-                <input
-                  type="text"
-                  value={filtros.marca}
-                  onChange={(e) =>
-                    setFiltros({ ...filtros, marca: e.target.value })
-                  }
-                  placeholder="Buscar por marca o modelo..."
-                  className="w-full rounded-xl border border-white/10 bg-[#0c101b] py-3 pl-12 pr-4 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={cargando}
-                className="rounded-xl bg-blue-500 px-8 py-3 text-sm font-semibold transition-colors hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed"
-              >
-                {cargando ? "Buscando..." : "Buscar"}
-              </button>
-            </div>
-
-            <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
-              <select
-                value={filtros.tipoVehiculo}
-                onChange={(e) =>
-                  setFiltros({ ...filtros, tipoVehiculo: e.target.value })
-                }
-                className="rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm text-gray-200 transition-colors focus:border-blue-500 focus:outline-none"
-              >
-                <option value="">Tipo de vehículo</option>
-                {TIPOS_VEHICULO.map((opcion) => (
-                  <option key={opcion.valor} value={opcion.valor}>
-                    {opcion.etiqueta}
-                  </option>
-                ))}
-              </select>
-
-              <select
-                value={filtros.transmision}
-                onChange={(e) =>
-                  setFiltros({ ...filtros, transmision: e.target.value })
-                }
-                className="rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm text-gray-200 transition-colors focus:border-blue-500 focus:outline-none"
-              >
-                <option value="">Transmisión</option>
-                {TRANSMISIONES.map((opcion) => (
-                  <option key={opcion.valor} value={opcion.valor}>
-                    {opcion.etiqueta}
-                  </option>
-                ))}
-              </select>
-
-              <select
-                value={filtros.combustible}
-                onChange={(e) =>
-                  setFiltros({ ...filtros, combustible: e.target.value })
-                }
-                className="rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm text-gray-200 transition-colors focus:border-blue-500 focus:outline-none"
-              >
-                <option value="">Combustible</option>
-                {COMBUSTIBLES.map((opcion) => (
-                  <option key={opcion.valor} value={opcion.valor}>
-                    {opcion.etiqueta}
-                  </option>
-                ))}
-              </select>
-
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  value={filtros.precioMinimo}
-                  onChange={(e) =>
-                    setFiltros({ ...filtros, precioMinimo: e.target.value })
-                  }
-                  placeholder="Precio mín."
-                  className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
-                />
-                <span className="text-gray-500">-</span>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  value={filtros.precioMaximo}
-                  onChange={(e) =>
-                    setFiltros({ ...filtros, precioMaximo: e.target.value })
-                  }
-                  placeholder="Precio máx."
-                  className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
-                />
-              </div>
-            </div>
-          </form>
-        </div>
-      </section>
+      <HeroBusqueda
+        filtros={filtros}
+        cargando={cargando}
+        onChange={handleChange}
+        onSubmit={aplicarBusqueda}
+      />
 
       {/* VITRINA */}
       <main className="mx-auto max-w-6xl px-6 py-10 sm:px-8">
@@ -276,150 +534,27 @@ export default function Home() {
         ) : (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {anuncios.map((anuncio) => (
-              <button
+              <TarjetaAnuncioHome
                 key={anuncio.id}
-                type="button"
-                onClick={() => navigate(`/anuncio/${anuncio.id}`)}
-                className="group flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#13161d] text-left transition-all hover:border-blue-500/40 hover:shadow-lg"
-              >
-                <div className="relative aspect-[16/10] overflow-hidden">
-                  <img
-                    src={fotoPrincipal(anuncio)}
-                    alt={`${anuncio.marca} ${anuncio.modelo}`}
-                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                </div>
-
-                <div className="flex flex-1 flex-col p-5">
-                  <div className="flex items-start justify-between gap-3">
-                    <h3 className="truncate text-lg font-bold">
-                      {anuncio.marca} {anuncio.modelo}
-                      <span className="ml-2 text-sm font-normal text-gray-400">
-                        {anuncio.version}
-                      </span>
-                    </h3>
-                    <span className="shrink-0 rounded-full bg-green-500/10 px-3 py-1 text-xs font-semibold text-green-400">
-                      {anuncio.anio}
-                    </span>
-                  </div>
-
-                  <p className="mt-2 text-xl font-bold text-blue-500">
-                    {formatearPrecio(anuncio.precio, anuncio.moneda)}
-                  </p>
-
-                  <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 border-t border-white/10 pt-4 text-xs text-[#9aa1b1]">
-                    <span className="inline-flex items-center gap-1.5">
-                      <FaTachometerAlt className="text-gray-500" />
-                      {anuncio.kilometraje.toLocaleString("es-DO")} km
-                    </span>
-                    <span className="inline-flex items-center gap-1.5">
-                      <FaCalendarAlt className="text-gray-500" />
-                      {anuncio.anio}
-                    </span>
-                    {anuncio.ubicacion && (
-                      <span className="inline-flex items-center gap-1.5">
-                        <FaMapMarkerAlt className="text-gray-500" />
-                        {anuncio.ubicacion}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {anuncio.tipoVehiculo && (
-                      <span className="rounded-full bg-blue-500/10 px-3 py-1 text-xs font-medium text-blue-400">
-                        {etiquetaDe(anuncio.tipoVehiculo, TIPOS_VEHICULO)}
-                      </span>
-                    )}
-                    {anuncio.combustible && (
-                      <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-gray-300">
-                        {etiquetaDe(anuncio.combustible, COMBUSTIBLES)}
-                      </span>
-                    )}
-                    {anuncio.transmision && (
-                      <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-gray-300">
-                        {etiquetaDe(anuncio.transmision, TRANSMISIONES)}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </button>
+                anuncio={anuncio}
+                onAbrir={() => navigate(`/anuncio/${anuncio.id}`)}
+              />
             ))}
           </div>
         )}
 
         {/* PAGINACIÓN */}
-        {!cargando && !isError && totalPaginas > 1 && (
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
-            <button
-              type="button"
-              onClick={() => irAPagina(pagina - 1)}
-              disabled={pagina <= 1}
-              className="rounded-lg border border-white/10 px-4 py-2 text-sm font-medium transition-colors hover:border-white/30 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              Anterior
-            </button>
-
-            {Array.from({ length: totalPaginas }, (_, i) => i + 1)
-              .filter((p) => {
-                if (
-                  totalPaginas > 7 &&
-                  p !== 1 &&
-                  p !== totalPaginas &&
-                  Math.abs(p - pagina) > 2
-                )
-                  return false;
-                return true;
-              })
-              .map((p) => (
-                <button
-                  key={p}
-                  type="button"
-                  onClick={() => irAPagina(p)}
-                  className={`min-w-10 rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${
-                    p === pagina
-                      ? "bg-blue-500 text-white"
-                      : "border border-white/10 hover:border-white/30"
-                  }`}
-                >
-                  {p}
-                </button>
-              ))}
-
-            <button
-              type="button"
-              onClick={() => irAPagina(pagina + 1)}
-              disabled={pagina >= totalPaginas}
-              className="rounded-lg border border-white/10 px-4 py-2 text-sm font-medium transition-colors hover:border-white/30 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              Siguiente
-            </button>
-          </div>
-        )}
+        <PaginacionHome
+          pagina={pagina}
+          totalPaginas={totalPaginas}
+          cargando={cargando}
+          isError={isError}
+          onIrAPagina={irAPagina}
+        />
       </main>
 
       {/* FOOTER */}
-      <footer className="border-t border-white/10 py-8">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 text-sm text-[#9aa1b1] sm:flex-row sm:px-8">
-          <span>© 2026 AutoMarket RD. Todos los derechos reservados.</span>
-          <nav className="flex flex-wrap items-center justify-center gap-4">
-            <Link to="/terminos" className="transition-colors hover:text-white">
-              Términos
-            </Link>
-            <Link to="/privacidad" className="transition-colors hover:text-white">
-              Privacidad
-            </Link>
-            <Link to="/reembolso" className="transition-colors hover:text-white">
-              Reembolsos
-            </Link>
-            <Link to="/contacto" className="transition-colors hover:text-white">
-              Contacto
-            </Link>
-            <Link to="/precios" className="transition-colors hover:text-white">
-              Planes y precios
-            </Link>
-          </nav>
-        </div>
-      </footer>
+      <PiePaginaHome />
     </div>
   );
 }

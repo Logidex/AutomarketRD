@@ -3,12 +3,13 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
   type ReactNode,
 } from "react";
 
 const MAX_VEHICULOS = 4;
-const CLAVE_LOCAL_STORAGE = "automarket.comparador";
+const CLAVE_LOCAL_STORAGE = "automarket.comparador:v1";
 
 interface ComparadorContextValue {
   seleccionados: number[];
@@ -21,16 +22,24 @@ interface ComparadorContextValue {
 
 const ComparadorContext = createContext<ComparadorContextValue | null>(null);
 
+function normalizarIds(valores: unknown[]): number[] {
+  const resultado: number[] = [];
+  for (const valor of valores) {
+    const numero = Number(valor);
+    if (Number.isFinite(numero) && resultado.length < MAX_VEHICULOS) {
+      resultado.push(numero);
+    }
+  }
+  return resultado;
+}
+
 function leerSeleccionGuardada(): number[] {
   try {
     const crudo = localStorage.getItem(CLAVE_LOCAL_STORAGE);
     if (!crudo) return [];
     const ids = JSON.parse(crudo);
     if (!Array.isArray(ids)) return [];
-    return ids
-      .map(Number)
-      .filter(Number.isFinite)
-      .slice(0, MAX_VEHICULOS);
+    return normalizarIds(ids);
   } catch {
     return [];
   }
@@ -63,20 +72,25 @@ export function ComparadorProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const reemplazar = useCallback((ids: number[]) => {
-    setSeleccionados(
-      Array.from(new Set(ids))
-        .map(Number)
-        .filter(Number.isFinite)
-        .slice(0, MAX_VEHICULOS),
-    );
+    setSeleccionados(normalizarIds(Array.from(new Set(ids))));
   }, []);
 
   const limpiar = useCallback(() => setSeleccionados([]), []);
 
+  const value = useMemo(
+    () => ({
+      seleccionados,
+      esSeleccionado,
+      toggle,
+      reemplazar,
+      limpiar,
+      maxVehiculos: MAX_VEHICULOS,
+    }),
+    [seleccionados, esSeleccionado, toggle, reemplazar, limpiar],
+  );
+
   return (
-    <ComparadorContext.Provider
-      value={{ seleccionados, esSeleccionado, toggle, reemplazar, limpiar, maxVehiculos: MAX_VEHICULOS }}
-    >
+    <ComparadorContext.Provider value={value}>
       {children}
     </ComparadorContext.Provider>
   );

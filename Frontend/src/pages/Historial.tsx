@@ -86,7 +86,7 @@ export default function Historial() {
                 key={`${anuncio.id}-${anuncio.vistoEnUtc}`}
                 type="button"
                 onClick={() => navigate(`/anuncio/${anuncio.id}`)}
-                className="group flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#13161d] text-left transition-all hover:border-blue-500/40 hover:shadow-lg"
+                className="group flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#13161d] text-left transition-[border-color,box-shadow] hover:border-blue-500/40 hover:shadow-lg"
               >
                 <div className="relative aspect-[16/10] overflow-hidden">
                   <img

@@ -5,8 +5,116 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { authService } from "../services/auth.service";
 import logo from "../assets/AutoMarketRD_Logo.svg";
 
+interface RegistroFormData {
+  nombre: string;
+  apellido: string;
+  email: string;
+  password: string;
+  rol: string;
+  telefonoPersonal: string;
+  nombreAgencia: string;
+  agenciaRNC: string;
+  ubicacionAgencia: string;
+  telefonoAgencia: string;
+}
+
+interface CamposDealerProps {
+  formData: RegistroFormData;
+  handleChange: (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => void;
+}
+
+function CamposDealer({ formData, handleChange }: CamposDealerProps) {
+  return (
+    <div className="border-t border-[#e1e7f0] pt-5 mt-3">
+      <h3 className="text-lg font-semibold text-blue-500 mb-4">
+        Información de la Agencia
+      </h3>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label
+            htmlFor="nombreAgencia"
+            className="block text-sm font-medium text-gray-600 mb-2"
+          >
+            Nombre de la Agencia <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="nombreAgencia"
+            type="text"
+            name="nombreAgencia"
+            value={formData.nombreAgencia}
+            onChange={handleChange}
+            placeholder="AutoVentas RD"
+            className="w-full px-4 py-3 bg-[#f7f9fc] border border-[#e1e7f0] rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+            required
+          />
+        </div>
+        <div>
+          <label
+            htmlFor="agenciaRNC"
+            className="block text-sm font-medium text-gray-600 mb-2"
+          >
+            RNC de la Agencia <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="agenciaRNC"
+            type="text"
+            name="agenciaRNC"
+            value={formData.agenciaRNC}
+            onChange={handleChange}
+            placeholder="1-30-12345-6"
+            className="w-full px-4 py-3 bg-[#f7f9fc] border border-[#e1e7f0] rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+            required
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+        <div>
+          <label
+            htmlFor="ubicacionAgencia"
+            className="block text-sm font-medium text-gray-600 mb-2"
+          >
+            Ubicación de la Agencia <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="ubicacionAgencia"
+            type="text"
+            name="ubicacionAgencia"
+            value={formData.ubicacionAgencia}
+            onChange={handleChange}
+            placeholder="Santo Domingo"
+            className="w-full px-4 py-3 bg-[#f7f9fc] border border-[#e1e7f0] rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+            required
+          />
+        </div>
+        <div>
+          <label
+            htmlFor="telefonoAgencia"
+            className="block text-sm font-medium text-gray-600 mb-2"
+          >
+            Teléfono de la Agencia <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="telefonoAgencia"
+            type="tel"
+            name="telefonoAgencia"
+            value={formData.telefonoAgencia}
+            onChange={handleChange}
+            placeholder="809-555-5555"
+            className="w-full px-4 py-3 bg-[#f7f9fc] border border-[#e1e7f0] rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+            required
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Registro() {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<RegistroFormData>({
     nombre: "",
     apellido: "",
     email: "",
@@ -93,7 +201,7 @@ export default function Registro() {
   return (
     <div className="min-h-screen bg-[#0c101b] flex items-center justify-center p-4">
       <div className="w-full max-w-[950px] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row">
-        
+
         {/* Columna Izquierda - Visual */}
         <div className="md:flex-1 bg-[#0e1422] p-12 text-white flex flex-col">
           <div className="mb-10">
@@ -131,10 +239,14 @@ export default function Registro() {
             {/* Nombre y Apellido */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-2">
+                <label
+                  htmlFor="nombre"
+                  className="block text-sm font-medium text-gray-600 mb-2"
+                >
                   Nombre
                 </label>
                 <input
+                  id="nombre"
                   type="text"
                   name="nombre"
                   value={formData.nombre}
@@ -145,10 +257,14 @@ export default function Registro() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-2">
+                <label
+                  htmlFor="apellido"
+                  className="block text-sm font-medium text-gray-600 mb-2"
+                >
                   Apellido
                 </label>
                 <input
+                  id="apellido"
                   type="text"
                   name="apellido"
                   value={formData.apellido}
@@ -163,10 +279,14 @@ export default function Registro() {
             {/* Email y Teléfono */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-2">
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-600 mb-2"
+                >
                   Email
                 </label>
                 <input
+                  id="email"
                   type="email"
                   name="email"
                   value={formData.email}
@@ -177,10 +297,14 @@ export default function Registro() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-2">
+                <label
+                  htmlFor="telefonoPersonal"
+                  className="block text-sm font-medium text-gray-600 mb-2"
+                >
                   Teléfono Personal
                 </label>
                 <input
+                  id="telefonoPersonal"
                   type="tel"
                   name="telefonoPersonal"
                   value={formData.telefonoPersonal}
@@ -194,11 +318,15 @@ export default function Registro() {
             {/* Contraseña y Rol */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-2">
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-600 mb-2"
+                >
                   Contraseña
                 </label>
                 <div className="relative">
                   <input
+                    id="password"
                     type={mostrarPassword ? "text" : "password"}
                     name="password"
                     value={formData.password}
@@ -219,10 +347,14 @@ export default function Registro() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-2">
+                <label
+                  htmlFor="rol"
+                  className="block text-sm font-medium text-gray-600 mb-2"
+                >
                   Tipo de Cuenta
                 </label>
                 <select
+                  id="rol"
                   name="rol"
                   value={formData.rol}
                   onChange={handleChange}
@@ -238,73 +370,7 @@ export default function Registro() {
 
             {/* Campos exclusivos para Dealer */}
             {esDealer && (
-              <div className="border-t border-[#e1e7f0] pt-5 mt-3">
-                <h3 className="text-lg font-semibold text-blue-500 mb-4">
-                  Información de la Agencia
-                </h3>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-2">
-                      Nombre de la Agencia <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="nombreAgencia"
-                      value={formData.nombreAgencia}
-                      onChange={handleChange}
-                      placeholder="AutoVentas RD"
-                      className="w-full px-4 py-3 bg-[#f7f9fc] border border-[#e1e7f0] rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
-                      required={esDealer}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-2">
-                      RNC de la Agencia <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="agenciaRNC"
-                      value={formData.agenciaRNC}
-                      onChange={handleChange}
-                      placeholder="1-30-12345-6"
-                      className="w-full px-4 py-3 bg-[#f7f9fc] border border-[#e1e7f0] rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
-                      required={esDealer}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-2">
-                      Ubicación de la Agencia <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="ubicacionAgencia"
-                      value={formData.ubicacionAgencia}
-                      onChange={handleChange}
-                      placeholder="Santo Domingo"
-                      className="w-full px-4 py-3 bg-[#f7f9fc] border border-[#e1e7f0] rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
-                      required={esDealer}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-2">
-                      Teléfono de la Agencia <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="tel"
-                      name="telefonoAgencia"
-                      value={formData.telefonoAgencia}
-                      onChange={handleChange}
-                      placeholder="809-555-5555"
-                      className="w-full px-4 py-3 bg-[#f7f9fc] border border-[#e1e7f0] rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
-                      required={esDealer}
-                    />
-                  </div>
-                </div>
-              </div>
+              <CamposDealer formData={formData} handleChange={handleChange} />
             )}
 
             <button

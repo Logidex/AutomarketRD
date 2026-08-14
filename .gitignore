@@ -29,6 +29,9 @@ logs/
 Codigo.txt
 session-*.md
 
+# Herramienta local de reset de password en staging (contiene credenciales)
+ResetPassStaging/
+
 # OS
 .DS_Store
 Thumbs.db

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Swal from "sweetalert2";
 import {
   FaStore,
@@ -37,7 +37,19 @@ function mapearCampos(data: PerfilDealer) {
   };
 }
 
-export default function MiPerfil() {
+function useObjectUrl(archivo: File | null): string {
+  const [url, setUrl] = useState("");
+  useEffect(() => {
+    if (!archivo) return;
+    const nueva = URL.createObjectURL(archivo);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setUrl(nueva);
+    return () => URL.revokeObjectURL(nueva);
+  }, [archivo]);
+  return url;
+}
+
+function usePerfil() {
   const usuarioId = getUserIdFromToken();
   const { setLoading } = useLoading();
 
@@ -47,9 +59,9 @@ export default function MiPerfil() {
   const [camposGuardados, setCamposGuardados] = useState(CAMPOS_VACIOS);
   const [form, setForm] = useState(CAMPOS_VACIOS);
 
-  const [logoUrlGuardado, setLogoUrlGuardado] = useState("");
+  const logoUrlGuardadoRef = useRef("");
   const [logo, setLogo] = useState<File | null>(null);
-  const [logoPreview, setLogoPreview] = useState("");
+  const objectUrl = useObjectUrl(logo);
 
   const { data: perfil, isLoading: cargando, isError, error } = usePerfilDealer(usuarioId);
   const actualizarPerfil = useActualizarPerfilDealer();
@@ -59,15 +71,13 @@ export default function MiPerfil() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (error as any).response?.status === 404;
 
-  // Sincroniza el formulario cuando el perfil llega del servidor.
   useEffect(() => {
     if (!perfil) return;
     const valores = mapearCampos(perfil);
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setForm(valores);
     setCamposGuardados(valores);
-    setLogoUrlGuardado(perfil.logoUrl ?? "");
-    setLogoPreview(perfil.logoUrl ?? "");
+    logoUrlGuardadoRef.current = perfil.logoUrl ?? "";
     setPerfilExiste(true);
   }, [perfil]);
 
@@ -97,9 +107,7 @@ export default function MiPerfil() {
   const handleLogo = (e: React.ChangeEvent<HTMLInputElement>) => {
     const archivo = e.target.files?.[0];
     if (!archivo) return;
-
     setLogo(archivo);
-    setLogoPreview(URL.createObjectURL(archivo));
   };
 
   const comenzarEnEdicion = () => setModoEdicion(true);
@@ -107,12 +115,15 @@ export default function MiPerfil() {
   const cancelarEdicion = () => {
     setForm(camposGuardados);
     setLogo(null);
-    setLogoPreview(logoUrlGuardado);
     setModoEdicion(false);
   };
 
+  const quitarLogoNuevo = () => setLogo(null);
+
   const handleGuardar = async (event: React.FormEvent) => {
     event.preventDefault();
+
+    if (actualizarPerfil.isPending) return;
 
     if (usuarioId === null) return;
     if (!modoEdicion || !hayCambios) return;
@@ -127,8 +138,7 @@ export default function MiPerfil() {
       const valores = mapearCampos(data);
       setCamposGuardados(valores);
       setForm(valores);
-      setLogoUrlGuardado(data.logoUrl ?? "");
-      setLogoPreview(data.logoUrl ?? "");
+      logoUrlGuardadoRef.current = data.logoUrl ?? "";
       setLogo(null);
       setPerfilExiste(true);
       setModoEdicion(false);
@@ -152,6 +162,266 @@ export default function MiPerfil() {
       setLoading(false);
     }
   };
+
+  return {
+    usuarioId,
+    cargando,
+    perfilExiste,
+    modoEdicion,
+    form,
+    logo,
+    logoPreview: logo ? objectUrl : logoUrlGuardadoRef.current,
+    hayCambios,
+    handleChange,
+    handleLogo,
+    handleGuardar,
+    comenzarEnEdicion,
+    cancelarEdicion,
+    quitarLogoNuevo,
+  };
+}
+
+interface PropsFormulario {
+  form: typeof CAMPOS_VACIOS;
+  logo: File | null;
+  logoPreview: string;
+  modoEdicion: boolean;
+  hayCambios: boolean;
+  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  onLogo: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onGuardar: (e: React.FormEvent) => void;
+  onCancelar: () => void;
+  onQuitarLogo: () => void;
+}
+
+function FormularioPerfil({
+  form,
+  logo,
+  logoPreview,
+  modoEdicion,
+  hayCambios,
+  onChange,
+  onLogo,
+  onGuardar,
+  onCancelar,
+  onQuitarLogo,
+}: PropsFormulario) {
+  return (
+    <form
+      onSubmit={onGuardar}
+      className="space-y-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm"
+    >
+      {/* LOGO */}
+      <div>
+        <label
+          htmlFor="logoAgencia"
+          className="mb-2 block text-sm font-medium text-gray-700"
+        >
+          Logo de la agencia
+        </label>
+
+        <div className="flex items-center gap-4">
+          <div className="h-24 w-24 overflow-hidden rounded-xl border border-gray-200 bg-gray-100">
+            {logoPreview ? (
+              <img
+                src={logo ? logoPreview : urlImagen(logoPreview)}
+                alt="Logo"
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-3xl text-gray-300">
+                <FaImage />
+              </div>
+            )}
+          </div>
+
+          {modoEdicion && (
+            <label
+              htmlFor="logoAgencia"
+              className="cursor-pointer rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+            >
+              {logo ? "Cambiar logo seleccionado" : "Subir nuevo logo"}
+              <input
+                id="logoAgencia"
+                type="file"
+                accept="image/png, image/jpeg, image/webp"
+                onChange={onLogo}
+                className="hidden"
+              />
+            </label>
+          )}
+
+          {logo && (
+            <button
+              type="button"
+              onClick={onQuitarLogo}
+              className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+            >
+              Quitar logo nuevo
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* CAMPOS */}
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+        <div>
+          <label
+            htmlFor="nombreAgencia"
+            className="mb-1 block text-sm font-medium text-gray-700"
+          >
+            Nombre de la agencia
+          </label>
+          <input
+            id="nombreAgencia"
+            type="text"
+            name="nombreAgencia"
+            value={form.nombreAgencia}
+            onChange={onChange}
+            disabled={!modoEdicion}
+            required
+            className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-gray-50 disabled:text-gray-600"
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="ubicacion"
+            className="mb-1 block text-sm font-medium text-gray-700"
+          >
+            Ubicación
+          </label>
+          <input
+            id="ubicacion"
+            type="text"
+            name="ubicacion"
+            value={form.ubicacion}
+            onChange={onChange}
+            disabled={!modoEdicion}
+            required
+            className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-gray-50 disabled:text-gray-600"
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="telefonoAgencia"
+            className="mb-1 block text-sm font-medium text-gray-700"
+          >
+            Teléfono
+          </label>
+          <input
+            id="telefonoAgencia"
+            type="tel"
+            name="telefonoAgencia"
+            value={form.telefonoAgencia}
+            onChange={onChange}
+            disabled={!modoEdicion}
+            required
+            className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-gray-50 disabled:text-gray-600"
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="whatsApp"
+            className="mb-1 flex items-center gap-1.5 text-sm font-medium text-gray-700"
+          >
+            <FaWhatsapp className="text-green-600" />
+            WhatsApp
+          </label>
+          <input
+            id="whatsApp"
+            type="text"
+            name="whatsApp"
+            value={form.whatsApp}
+            onChange={onChange}
+            disabled={!modoEdicion}
+            placeholder="+1 809 000 0000"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-gray-50 disabled:text-gray-600"
+          />
+        </div>
+
+        <div className="md:col-span-2">
+          <label
+            htmlFor="horarios"
+            className="mb-1 block text-sm font-medium text-gray-700"
+          >
+            Horarios de atención
+          </label>
+          <input
+            id="horarios"
+            type="text"
+            name="horarios"
+            value={form.horarios}
+            onChange={onChange}
+            disabled={!modoEdicion}
+            placeholder="Lunes a Sábado, 9:00 AM - 6:00 PM"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-gray-50 disabled:text-gray-600"
+          />
+        </div>
+
+        <div className="md:col-span-2">
+          <label
+            htmlFor="descripcion"
+            className="mb-1 block text-sm font-medium text-gray-700"
+          >
+            Descripción
+          </label>
+          <textarea
+            id="descripcion"
+            name="descripcion"
+            value={form.descripcion}
+            onChange={onChange}
+            disabled={!modoEdicion}
+            rows={4}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-gray-50 disabled:text-gray-600"
+          />
+        </div>
+      </div>
+
+      {modoEdicion && (
+        <div className="flex flex-col gap-3 border-t border-gray-100 pt-4 sm:flex-row sm:justify-end">
+          <button
+            type="button"
+            onClick={onCancelar}
+            className="flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-6 py-2.5 font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+          >
+            <FaTimes />
+            Cancelar
+          </button>
+
+          <button
+            type="submit"
+            className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+            disabled={!hayCambios}
+          >
+            <FaSave />
+            {hayCambios ? "Guardar cambios" : "Sin cambios"}
+          </button>
+        </div>
+      )}
+    </form>
+  );
+}
+
+export default function MiPerfil() {
+  const {
+    usuarioId,
+    cargando,
+    perfilExiste,
+    modoEdicion,
+    form,
+    logo,
+    logoPreview,
+    hayCambios,
+    handleChange,
+    handleLogo,
+    handleGuardar,
+    comenzarEnEdicion,
+    cancelarEdicion,
+    quitarLogoNuevo,
+  } = usePerfil();
 
   if (usuarioId === null) {
     return (
@@ -235,173 +505,18 @@ export default function MiPerfil() {
         )}
       </div>
 
-      <form
-        onSubmit={handleGuardar}
-        className="space-y-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm"
-      >
-        {/* LOGO */}
-        <div>
-          <label className="mb-2 block text-sm font-medium text-gray-700">
-            Logo de la agencia
-          </label>
-
-          <div className="flex items-center gap-4">
-            <div className="h-24 w-24 overflow-hidden rounded-xl border border-gray-200 bg-gray-100">
-              {logoPreview ? (
-                <img
-                  src={logo ? logoPreview : urlImagen(logoPreview)}
-                  alt="Logo"
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center text-3xl text-gray-300">
-                  <FaImage />
-                </div>
-              )}
-            </div>
-
-            {modoEdicion && (
-              <label className="cursor-pointer rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50">
-                {logo ? "Cambiar logo seleccionado" : "Subir nuevo logo"}
-                <input
-                  type="file"
-                  accept="image/png, image/jpeg, image/webp"
-                  onChange={handleLogo}
-                  className="hidden"
-                />
-              </label>
-            )}
-
-            {logo && (
-              <button
-                type="button"
-                onClick={() => {
-                  setLogo(null);
-                  setLogoPreview(logoUrlGuardado);
-                }}
-                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
-              >
-                Quitar logo nuevo
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* CAMPOS */}
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Nombre de la agencia
-            </label>
-            <input
-              type="text"
-              name="nombreAgencia"
-              value={form.nombreAgencia}
-              onChange={handleChange}
-              disabled={!modoEdicion}
-              required
-              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-gray-50 disabled:text-gray-600"
-            />
-          </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Ubicación
-            </label>
-            <input
-              type="text"
-              name="ubicacion"
-              value={form.ubicacion}
-              onChange={handleChange}
-              disabled={!modoEdicion}
-              required
-              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-gray-50 disabled:text-gray-600"
-            />
-          </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Teléfono
-            </label>
-            <input
-              type="tel"
-              name="telefonoAgencia"
-              value={form.telefonoAgencia}
-              onChange={handleChange}
-              disabled={!modoEdicion}
-              required
-              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-gray-50 disabled:text-gray-600"
-            />
-          </div>
-
-          <div>
-            <label className="mb-1 flex items-center gap-1.5 text-sm font-medium text-gray-700">
-              <FaWhatsapp className="text-green-600" />
-              WhatsApp
-            </label>
-            <input
-              type="text"
-              name="whatsApp"
-              value={form.whatsApp}
-              onChange={handleChange}
-              disabled={!modoEdicion}
-              placeholder="+1 809 000 0000"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-gray-50 disabled:text-gray-600"
-            />
-          </div>
-
-          <div className="md:col-span-2">
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Horarios de atención
-            </label>
-            <input
-              type="text"
-              name="horarios"
-              value={form.horarios}
-              onChange={handleChange}
-              disabled={!modoEdicion}
-              placeholder="Lunes a Sábado, 9:00 AM - 6:00 PM"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-gray-50 disabled:text-gray-600"
-            />
-          </div>
-
-          <div className="md:col-span-2">
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Descripción
-            </label>
-            <textarea
-              name="descripcion"
-              value={form.descripcion}
-              onChange={handleChange}
-              disabled={!modoEdicion}
-              rows={4}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-gray-50 disabled:text-gray-600"
-            />
-          </div>
-        </div>
-
-        {modoEdicion && (
-          <div className="flex flex-col gap-3 border-t border-gray-100 pt-4 sm:flex-row sm:justify-end">
-            <button
-              type="button"
-              onClick={cancelarEdicion}
-              className="flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-6 py-2.5 font-semibold text-gray-700 transition-colors hover:bg-gray-50"
-            >
-              <FaTimes />
-              Cancelar
-            </button>
-
-            <button
-              type="submit"
-              className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
-              disabled={!hayCambios}
-            >
-              <FaSave />
-              {hayCambios ? "Guardar cambios" : "Sin cambios"}
-            </button>
-          </div>
-        )}
-      </form>
+      <FormularioPerfil
+        form={form}
+        logo={logo}
+        logoPreview={logoPreview}
+        modoEdicion={modoEdicion}
+        hayCambios={hayCambios}
+        onChange={handleChange}
+        onLogo={handleLogo}
+        onGuardar={handleGuardar}
+        onCancelar={cancelarEdicion}
+        onQuitarLogo={quitarLogoNuevo}
+      />
 
       {/* SECCIÓN DE CUENTA: CAMBIO DE CORREO */}
       <div className="mt-6">

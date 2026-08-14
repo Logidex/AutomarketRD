@@ -7,7 +7,7 @@ export const useCompararVehiculos = (ids: number[], enabled = true) => {
   const activos = Array.from(new Set(ids)).filter((id) => id > 0);
 
   return useQuery<VehiculoComparador[]>({
-    queryKey: ['comparar', [...activos].sort((a, b) => a - b)],
+    queryKey: ['comparar', activos.toSorted((a, b) => a - b)],
     queryFn: () => comparadorService.comparar(activos),
     enabled: enabled && activos.length >= 2,
     staleTime: 1000 * 60 * 5,

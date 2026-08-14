@@ -31,6 +31,7 @@ export default function MiVehiculoVendedor() {
   }
 
   const handlePublicar = async () => {
+    if (publicar.isPending) return;
     if (!anuncio) return;
     setAccion("publicar");
     try {
@@ -52,6 +53,7 @@ export default function MiVehiculoVendedor() {
   };
 
   const handleEliminar = async () => {
+    if (eliminar.isPending) return;
     if (!anuncio) return;
 
     const resultado = await Swal.fire({
@@ -236,18 +238,18 @@ export default function MiVehiculoVendedor() {
   );
 }
 
-function BadgeEstado({ estado }: { estado: string }) {
-  const clases: Record<string, string> = {
-    Publicado: "bg-emerald-50 text-emerald-700",
-    Borrador: "bg-gray-100 text-gray-600",
-    Vendido: "bg-blue-50 text-blue-700",
-    Pausado: "bg-amber-50 text-amber-700",
-  };
+const CLASES_ESTADO: Record<string, string> = {
+  Publicado: "bg-emerald-50 text-emerald-700",
+  Borrador: "bg-gray-100 text-gray-600",
+  Vendido: "bg-blue-50 text-blue-700",
+  Pausado: "bg-amber-50 text-amber-700",
+};
 
+function BadgeEstado({ estado }: { estado: string }) {
   return (
     <span
       className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-        clases[estado] ?? "bg-gray-100 text-gray-600"
+        CLASES_ESTADO[estado] ?? "bg-gray-100 text-gray-600"
       }`}
     >
       {estado}

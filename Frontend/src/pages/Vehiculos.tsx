@@ -92,6 +92,519 @@ function paramsDesdeFiltros(filtros: Filtros): URLSearchParams {
   return params;
 }
 
+const fotoPrincipal = (anuncio: AnuncioListado): string =>
+  urlImagen(anuncio.fotos?.[0]) || "https://via.placeholder.com/600x400?text=Sin+Foto";
+
+interface PropsFormularioFiltros {
+  filtros: Filtros;
+  cargando: boolean;
+  onChangeFiltros: (filtros: Filtros) => void;
+  onBuscar: (e: React.FormEvent) => void;
+  onLimpiar: () => void;
+}
+
+function FormularioFiltros({
+  filtros,
+  cargando,
+  onChangeFiltros,
+  onBuscar,
+  onLimpiar,
+}: PropsFormularioFiltros) {
+  const actualizar = (campo: keyof Filtros, valor: string) =>
+    onChangeFiltros({ ...filtros, [campo]: valor });
+
+  return (
+    <form onSubmit={onBuscar} className="mt-8">
+      <div className="grid grid-cols-1 gap-3 rounded-2xl border border-white/10 bg-[#13161d] p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="relative">
+          <FaSearch className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+          <label htmlFor="filtroMarca" className="sr-only">
+            Buscar por marca
+          </label>
+          <input
+            id="filtroMarca"
+            type="text"
+            value={filtros.marca}
+            onChange={(e) => actualizar("marca", e.target.value)}
+            placeholder="Marca (ej. Toyota)"
+            className="w-full rounded-xl border border-white/10 bg-[#0c101b] py-3 pl-12 pr-4 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
+          />
+        </div>
+
+        <label htmlFor="filtroModelo" className="sr-only">
+          Buscar por modelo
+        </label>
+        <input
+          id="filtroModelo"
+          type="text"
+          value={filtros.modelo}
+          onChange={(e) => actualizar("modelo", e.target.value)}
+          placeholder="Modelo"
+          className="w-full rounded-xl border border-white/10 bg-[#0c101b] px-4 py-3 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
+        />
+
+        <label htmlFor="filtroCondicion" className="sr-only">
+          Condición
+        </label>
+        <select
+          id="filtroCondicion"
+          value={filtros.condicion}
+          onChange={(e) => actualizar("condicion", e.target.value)}
+          className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm text-gray-200 transition-colors focus:border-blue-500 focus:outline-none"
+        >
+          <option value="">Condición</option>
+          <option value="Nuevo">Nuevo</option>
+          <option value="Usado">Usado</option>
+        </select>
+
+        <label htmlFor="filtroEnOferta" className="sr-only">
+          Ofertas
+        </label>
+        <select
+          id="filtroEnOferta"
+          value={filtros.enOferta}
+          onChange={(e) => actualizar("enOferta", e.target.value)}
+          className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm text-gray-200 transition-colors focus:border-blue-500 focus:outline-none"
+        >
+          <option value="">Ofertas</option>
+          <option value="true">En oferta</option>
+        </select>
+
+        <label htmlFor="filtroTipoVehiculo" className="sr-only">
+          Tipo de vehículo
+        </label>
+        <select
+          id="filtroTipoVehiculo"
+          value={filtros.tipoVehiculo}
+          onChange={(e) => actualizar("tipoVehiculo", e.target.value)}
+          className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm text-gray-200 transition-colors focus:border-blue-500 focus:outline-none"
+        >
+          <option value="">Tipo de vehículo</option>
+          {TIPOS_VEHICULO.map((opcion) => (
+            <option key={opcion.valor} value={opcion.valor}>
+              {opcion.etiqueta}
+            </option>
+          ))}
+        </select>
+
+        <label htmlFor="filtroTransmision" className="sr-only">
+          Transmisión
+        </label>
+        <select
+          id="filtroTransmision"
+          value={filtros.transmision}
+          onChange={(e) => actualizar("transmision", e.target.value)}
+          className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm text-gray-200 transition-colors focus:border-blue-500 focus:outline-none"
+        >
+          <option value="">Transmisión</option>
+          {TRANSMISIONES.map((opcion) => (
+            <option key={opcion.valor} value={opcion.valor}>
+              {opcion.etiqueta}
+            </option>
+          ))}
+        </select>
+
+        <label htmlFor="filtroCombustible" className="sr-only">
+          Combustible
+        </label>
+        <select
+          id="filtroCombustible"
+          value={filtros.combustible}
+          onChange={(e) => actualizar("combustible", e.target.value)}
+          className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm text-gray-200 transition-colors focus:border-blue-500 focus:outline-none"
+        >
+          <option value="">Combustible</option>
+          {COMBUSTIBLES.map((opcion) => (
+            <option key={opcion.valor} value={opcion.valor}>
+              {opcion.etiqueta}
+            </option>
+          ))}
+        </select>
+
+        <label htmlFor="filtroUbicacion" className="sr-only">
+          Buscar por ubicación
+        </label>
+        <input
+          id="filtroUbicacion"
+          type="text"
+          value={filtros.ubicacion}
+          onChange={(e) => actualizar("ubicacion", e.target.value)}
+          placeholder="Ubicación (ej. Santo Domingo)"
+          className="w-full rounded-xl border border-white/10 bg-[#0c101b] px-4 py-3 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
+        />
+
+        <div className="flex items-center gap-2">
+          <label htmlFor="filtroAnioDesde" className="sr-only">
+            Año desde
+          </label>
+          <select
+            id="filtroAnioDesde"
+            value={filtros.anioDesde}
+            onChange={(e) => actualizar("anioDesde", e.target.value)}
+            className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm text-gray-200 transition-colors focus:border-blue-500 focus:outline-none"
+          >
+            <option value="">Año desde</option>
+            {Array.from(
+              { length: ANIO_ACTUAL - 1969 },
+              (_, i) => ANIO_ACTUAL - i,
+            ).map((anio) => (
+              <option key={anio} value={anio}>
+                {anio}
+              </option>
+            ))}
+          </select>
+          <span className="text-gray-500">-</span>
+          <label htmlFor="filtroAnioHasta" className="sr-only">
+            Año hasta
+          </label>
+          <select
+            id="filtroAnioHasta"
+            value={filtros.anioHasta}
+            onChange={(e) => actualizar("anioHasta", e.target.value)}
+            className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm text-gray-200 transition-colors focus:border-blue-500 focus:outline-none"
+          >
+            <option value="">Año hasta</option>
+            {Array.from(
+              { length: ANIO_ACTUAL - 1969 },
+              (_, i) => ANIO_ACTUAL - i,
+            ).map((anio) => (
+              <option key={anio} value={anio}>
+                {anio}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <label htmlFor="filtroPrecioMinimo" className="sr-only">
+            Precio mínimo
+          </label>
+          <input
+            id="filtroPrecioMinimo"
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            value={filtros.precioMinimo}
+            onChange={(e) => actualizar("precioMinimo", e.target.value)}
+            placeholder="Precio mín."
+            className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
+          />
+          <span className="text-gray-500">-</span>
+          <label htmlFor="filtroPrecioMaximo" className="sr-only">
+            Precio máximo
+          </label>
+          <input
+            id="filtroPrecioMaximo"
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            value={filtros.precioMaximo}
+            onChange={(e) => actualizar("precioMaximo", e.target.value)}
+            placeholder="Precio máx."
+            className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
+          />
+        </div>
+
+        <label htmlFor="filtroKilometrajeMaximo" className="sr-only">
+          Kilometraje máximo
+        </label>
+        <input
+          id="filtroKilometrajeMaximo"
+          type="text"
+          inputMode="numeric"
+          pattern="[0-9]*"
+          value={filtros.kilometrajeMaximo}
+          onChange={(e) => actualizar("kilometrajeMaximo", e.target.value)}
+          placeholder="Kilometraje máx. (km)"
+          className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
+        />
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        <button
+          type="submit"
+          disabled={cargando}
+          className="rounded-xl bg-blue-500 px-8 py-3 text-sm font-semibold transition-colors hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed"
+        >
+          {cargando ? "Buscando..." : "Buscar"}
+        </button>
+        <button
+          type="button"
+          onClick={onLimpiar}
+          disabled={cargando}
+          className="rounded-xl border border-white/10 px-6 py-3 text-sm font-medium text-[#9aa1b1] transition-colors hover:border-white/30 hover:text-white disabled:opacity-50"
+        >
+          Limpiar filtros
+        </button>
+      </div>
+    </form>
+  );
+}
+
+interface PropsTarjeta {
+  anuncio: AnuncioListado;
+  esSeleccionado: (id: number) => boolean;
+  onNavegar: (id: number) => void;
+  onToggleComparar: (id: number) => void;
+}
+
+function TarjetaAnuncio({
+  anuncio,
+  esSeleccionado,
+  onNavegar,
+  onToggleComparar,
+}: PropsTarjeta) {
+  const seleccionado = esSeleccionado(anuncio.id);
+
+  return (
+    <div
+      className={`group relative flex flex-col overflow-hidden rounded-2xl border text-left transition-all hover:shadow-lg ${
+        seleccionado
+          ? "border-blue-500 bg-[#16202e]"
+          : "border-white/10 bg-[#13161d] hover:border-blue-500/40"
+      }`}
+    >
+      <button
+        type="button"
+        onClick={() => onNavegar(anuncio.id)}
+        className="flex flex-col text-left"
+      >
+        <div className="relative aspect-[16/10] overflow-hidden">
+          <img
+            src={fotoPrincipal(anuncio)}
+            alt={`${anuncio.marca} ${anuncio.modelo}`}
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        </div>
+
+        <div className="flex flex-1 flex-col p-5">
+          <div className="flex items-start justify-between gap-3">
+            <h3 className="truncate text-lg font-bold">
+              {anuncio.marca} {anuncio.modelo}
+              <span className="ml-2 text-sm font-normal text-gray-400">
+                {anuncio.version}
+              </span>
+            </h3>
+            <span className="shrink-0 rounded-full bg-green-500/10 px-3 py-1 text-xs font-semibold text-green-400">
+              {anuncio.anio}
+            </span>
+          </div>
+
+          <p className="mt-2 text-xl font-bold text-blue-500">
+            {formatearPrecio(anuncio.precio, anuncio.moneda)}
+          </p>
+
+          {anuncio.enOferta && anuncio.precioAnterior != null && (
+            <p className="text-sm text-[#9aa1b1]">
+              <span className="mr-2 line-through">
+                {formatearPrecio(anuncio.precioAnterior, anuncio.moneda)}
+              </span>
+              <span className="font-semibold text-green-400">Oferta</span>
+            </p>
+          )}
+
+          <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 border-t border-white/10 pt-4 text-xs text-[#9aa1b1]">
+            <span className="inline-flex items-center gap-1.5">
+              {anuncio.condicion === "Nuevo" ? (
+                <span className="rounded-full bg-blue-500/10 px-3 py-1 text-xs font-semibold text-blue-400">
+                  Nuevo
+                </span>
+              ) : (
+                <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-gray-300">
+                  Usado
+                </span>
+              )}
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <FaTachometerAlt className="text-gray-500" />
+              {anuncio.kilometraje.toLocaleString("es-DO")} km
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <FaCalendarAlt className="text-gray-500" />
+              {anuncio.anio}
+            </span>
+            {anuncio.ubicacion && (
+              <span className="inline-flex items-center gap-1.5">
+                <FaMapMarkerAlt className="text-gray-500" />
+                {anuncio.ubicacion}
+              </span>
+            )}
+          </div>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            {anuncio.tipoVehiculo && (
+              <span className="rounded-full bg-blue-500/10 px-3 py-1 text-xs font-medium text-blue-400">
+                {etiquetaDe(anuncio.tipoVehiculo, TIPOS_VEHICULO)}
+              </span>
+            )}
+            {anuncio.combustible && (
+              <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-gray-300">
+                {etiquetaDe(anuncio.combustible, COMBUSTIBLES)}
+              </span>
+            )}
+            {anuncio.transmision && (
+              <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-gray-300">
+                {etiquetaDe(anuncio.transmision, TRANSMISIONES)}
+              </span>
+            )}
+          </div>
+        </div>
+      </button>
+
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggleComparar(anuncio.id);
+        }}
+        className={`mt-0 border-t px-5 py-3 text-left text-sm font-medium transition-colors ${
+          seleccionado
+            ? "border-blue-500/40 bg-blue-500/10 text-blue-400"
+            : "border-white/10 text-[#9aa1b1] hover:text-white"
+        }`}
+      >
+        {seleccionado ? <>Quitar de comparar</> : <>+ Agregar a comparar</>}
+      </button>
+    </div>
+  );
+}
+
+interface PropsPaginacion {
+  pagina: number;
+  totalPaginas: number;
+  cargando: boolean;
+  isError: boolean;
+  onCambiarPagina: (pagina: number) => void;
+}
+
+function Paginacion({
+  pagina,
+  totalPaginas,
+  cargando,
+  isError,
+  onCambiarPagina,
+}: PropsPaginacion) {
+  if (cargando || isError || totalPaginas <= 1) return null;
+
+  const paginasVisibles = Array.from(
+    { length: totalPaginas },
+    (_, i) => i + 1,
+  ).filter((p) => {
+    if (
+      totalPaginas > 7 &&
+      p !== 1 &&
+      p !== totalPaginas &&
+      Math.abs(p - pagina) > 2
+    )
+      return false;
+    return true;
+  });
+
+  return (
+    <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
+      <button
+        type="button"
+        onClick={() => onCambiarPagina(pagina - 1)}
+        disabled={pagina <= 1}
+        className="rounded-lg border border-white/10 px-4 py-2 text-sm font-medium transition-colors hover:border-white/30 disabled:cursor-not-allowed disabled:opacity-40"
+      >
+        Anterior
+      </button>
+
+      {paginasVisibles.map((p) => (
+        <button
+          key={p}
+          type="button"
+          onClick={() => onCambiarPagina(p)}
+          className={`min-w-10 rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${
+            p === pagina
+              ? "bg-blue-500 text-white"
+              : "border border-white/10 hover:border-white/30"
+          }`}
+        >
+          {p}
+        </button>
+      ))}
+
+      <button
+        type="button"
+        onClick={() => onCambiarPagina(pagina + 1)}
+        disabled={pagina >= totalPaginas}
+        className="rounded-lg border border-white/10 px-4 py-2 text-sm font-medium transition-colors hover:border-white/30 disabled:cursor-not-allowed disabled:opacity-40"
+      >
+        Siguiente
+      </button>
+    </div>
+  );
+}
+
+interface PropsBarraComparador {
+  seleccionados: number[];
+  maxVehiculos: number;
+  onLimpiar: () => void;
+  onComparar: () => void;
+}
+
+function BarraComparador({
+  seleccionados,
+  maxVehiculos,
+  onLimpiar,
+  onComparar,
+}: PropsBarraComparador) {
+  const cantidad = seleccionados.length;
+
+  return (
+    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-blue-500/40 bg-[#0d1117]/95 px-6 py-4 backdrop-blur">
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 sm:px-8">
+        <div className="flex flex-wrap items-center gap-2 text-sm text-[#9aa1b1]">
+          {cantidad === 0 ? (
+            <span className="inline-flex items-center gap-2">
+              <FaBalanceScale className="text-blue-500" />
+              Selecciona 2 o más vehículos para compararlos
+            </span>
+          ) : (
+            <>
+              <span className="font-semibold text-white">
+                {cantidad} seleccionado{cantidad !== 1 && "s"}
+              </span>
+              {cantidad >= maxVehiculos && (
+                <span className="text-xs text-amber-400">
+                  Máximo {maxVehiculos} vehículos
+                </span>
+              )}
+            </>
+          )}
+          {cantidad > 0 && (
+            <button
+              type="button"
+              onClick={onLimpiar}
+              className="text-xs text-[#9aa1b1] underline-offset-2 transition-colors hover:text-white hover:underline"
+            >
+              Limpiar
+            </button>
+          )}
+        </div>
+
+        <button
+          type="button"
+          onClick={onComparar}
+          disabled={cantidad < 2}
+          className={`inline-flex items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-semibold transition-colors ${
+            cantidad < 2
+              ? "cursor-not-allowed bg-blue-500/40 text-white/60"
+              : "bg-blue-500 text-white hover:bg-blue-600"
+          }`}
+        >
+          <FaBalanceScale />
+          {cantidad < 2
+            ? `Faltan ${2 - cantidad}`
+            : `Comparar (${cantidad})`}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function Vehiculos() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -180,9 +693,7 @@ export default function Vehiculos() {
     setPagina(p);
   };
 
-  const fotoPrincipal = (anuncio: AnuncioListado): string =>
-    urlImagen(anuncio.fotos?.[0]) ||
-    "https://via.placeholder.com/600x400?text=Sin+Foto";
+
 
   return (
     <div className="min-h-screen bg-[#0c101b] text-white">
@@ -215,204 +726,13 @@ export default function Vehiculos() {
             encontrar tu próximo vehículo.
           </p>
 
-          <form onSubmit={aplicarBusqueda} className="mt-8">
-            <div className="grid grid-cols-1 gap-3 rounded-2xl border border-white/10 bg-[#13161d] p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              <div className="relative">
-                <FaSearch className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
-                <input
-                  type="text"
-                  value={filtros.marca}
-                  onChange={(e) =>
-                    setFiltros({ ...filtros, marca: e.target.value })
-                  }
-                  placeholder="Marca (ej. Toyota)"
-                  className="w-full rounded-xl border border-white/10 bg-[#0c101b] py-3 pl-12 pr-4 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
-                />
-              </div>
-
-              <input
-                type="text"
-                value={filtros.modelo}
-                onChange={(e) =>
-                  setFiltros({ ...filtros, modelo: e.target.value })
-                }
-                placeholder="Modelo"
-                className="w-full rounded-xl border border-white/10 bg-[#0c101b] px-4 py-3 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
-              />
-
-              <select
-                value={filtros.condicion}
-                onChange={(e) =>
-                  setFiltros({ ...filtros, condicion: e.target.value })
-                }
-                className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm text-gray-200 transition-colors focus:border-blue-500 focus:outline-none"
-              >
-                <option value="">Condición</option>
-                <option value="Nuevo">Nuevo</option>
-                <option value="Usado">Usado</option>
-              </select>
-
-              <select
-                value={filtros.enOferta}
-                onChange={(e) =>
-                  setFiltros({ ...filtros, enOferta: e.target.value })
-                }
-                className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm text-gray-200 transition-colors focus:border-blue-500 focus:outline-none"
-              >
-                <option value="">Ofertas</option>
-                <option value="true">En oferta</option>
-              </select>
-
-              <select
-                value={filtros.tipoVehiculo}
-                onChange={(e) =>
-                  setFiltros({ ...filtros, tipoVehiculo: e.target.value })
-                }
-                className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm text-gray-200 transition-colors focus:border-blue-500 focus:outline-none"
-              >
-                <option value="">Tipo de vehículo</option>
-                {TIPOS_VEHICULO.map((opcion) => (
-                  <option key={opcion.valor} value={opcion.valor}>
-                    {opcion.etiqueta}
-                  </option>
-                ))}
-              </select>
-
-              <select
-                value={filtros.transmision}
-                onChange={(e) =>
-                  setFiltros({ ...filtros, transmision: e.target.value })
-                }
-                className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm text-gray-200 transition-colors focus:border-blue-500 focus:outline-none"
-              >
-                <option value="">Transmisión</option>
-                {TRANSMISIONES.map((opcion) => (
-                  <option key={opcion.valor} value={opcion.valor}>
-                    {opcion.etiqueta}
-                  </option>
-                ))}
-              </select>
-
-              <select
-                value={filtros.combustible}
-                onChange={(e) =>
-                  setFiltros({ ...filtros, combustible: e.target.value })
-                }
-                className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm text-gray-200 transition-colors focus:border-blue-500 focus:outline-none"
-              >
-                <option value="">Combustible</option>
-                {COMBUSTIBLES.map((opcion) => (
-                  <option key={opcion.valor} value={opcion.valor}>
-                    {opcion.etiqueta}
-                  </option>
-                ))}
-              </select>
-
-              <input
-                type="text"
-                value={filtros.ubicacion}
-                onChange={(e) =>
-                  setFiltros({ ...filtros, ubicacion: e.target.value })
-                }
-                placeholder="Ubicación (ej. Santo Domingo)"
-                className="w-full rounded-xl border border-white/10 bg-[#0c101b] px-4 py-3 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
-              />
-
-              <div className="flex items-center gap-2">
-                <select
-                  value={filtros.anioDesde}
-                  onChange={(e) =>
-                    setFiltros({ ...filtros, anioDesde: e.target.value })
-                  }
-                  className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm text-gray-200 transition-colors focus:border-blue-500 focus:outline-none"
-                >
-                  <option value="">Año desde</option>
-                  {Array.from(
-                    { length: ANIO_ACTUAL - 1969 },
-                    (_, i) => ANIO_ACTUAL - i,
-                  ).map((anio) => (
-                    <option key={anio} value={anio}>
-                      {anio}
-                    </option>
-                  ))}
-                </select>
-                <span className="text-gray-500">-</span>
-                <select
-                  value={filtros.anioHasta}
-                  onChange={(e) =>
-                    setFiltros({ ...filtros, anioHasta: e.target.value })
-                  }
-                  className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm text-gray-200 transition-colors focus:border-blue-500 focus:outline-none"
-                >
-                  <option value="">Año hasta</option>
-                  {Array.from(
-                    { length: ANIO_ACTUAL - 1969 },
-                    (_, i) => ANIO_ACTUAL - i,
-                  ).map((anio) => (
-                    <option key={anio} value={anio}>
-                      {anio}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  value={filtros.precioMinimo}
-                  onChange={(e) =>
-                    setFiltros({ ...filtros, precioMinimo: e.target.value })
-                  }
-                  placeholder="Precio mín."
-                  className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
-                />
-                <span className="text-gray-500">-</span>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  value={filtros.precioMaximo}
-                  onChange={(e) =>
-                    setFiltros({ ...filtros, precioMaximo: e.target.value })
-                  }
-                  placeholder="Precio máx."
-                  className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
-                />
-              </div>
-
-              <input
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                value={filtros.kilometrajeMaximo}
-                onChange={(e) =>
-                  setFiltros({ ...filtros, kilometrajeMaximo: e.target.value })
-                }
-                placeholder="Kilometraje máx. (km)"
-                className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
-              />
-            </div>
-
-            <div className="mt-4 flex flex-wrap items-center gap-3">
-              <button
-                type="submit"
-                disabled={cargando}
-                className="rounded-xl bg-blue-500 px-8 py-3 text-sm font-semibold transition-colors hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed"
-              >
-                {cargando ? "Buscando..." : "Buscar"}
-              </button>
-              <button
-                type="button"
-                onClick={limpiarFiltros}
-                disabled={cargando}
-                className="rounded-xl border border-white/10 px-6 py-3 text-sm font-medium text-[#9aa1b1] transition-colors hover:border-white/30 hover:text-white disabled:opacity-50"
-              >
-                Limpiar filtros
-              </button>
-            </div>
-          </form>
+          <FormularioFiltros
+            filtros={filtros}
+            cargando={cargando}
+            onChangeFiltros={setFiltros}
+            onBuscar={aplicarBusqueda}
+            onLimpiar={limpiarFiltros}
+          />
         </div>
       </section>
 
@@ -448,226 +768,37 @@ export default function Vehiculos() {
         ) : (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {anuncios.map((anuncio) => (
-              <div
+              <TarjetaAnuncio
                 key={anuncio.id}
-                className={`group relative flex flex-col overflow-hidden rounded-2xl border text-left transition-all hover:shadow-lg ${
-                  esSeleccionado(anuncio.id)
-                    ? "border-blue-500 bg-[#16202e]"
-                    : "border-white/10 bg-[#13161d] hover:border-blue-500/40"
-                }`}
-              >
-                <button
-                  type="button"
-                  onClick={() => navigate(`/anuncio/${anuncio.id}`)}
-                  className="flex flex-col text-left"
-                >
-                  <div className="relative aspect-[16/10] overflow-hidden">
-                    <img
-                      src={fotoPrincipal(anuncio)}
-                      alt={`${anuncio.marca} ${anuncio.modelo}`}
-                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                  </div>
-
-                  <div className="flex flex-1 flex-col p-5">
-                    <div className="flex items-start justify-between gap-3">
-                      <h3 className="truncate text-lg font-bold">
-                        {anuncio.marca} {anuncio.modelo}
-                        <span className="ml-2 text-sm font-normal text-gray-400">
-                          {anuncio.version}
-                        </span>
-                      </h3>
-                      <span className="shrink-0 rounded-full bg-green-500/10 px-3 py-1 text-xs font-semibold text-green-400">
-                        {anuncio.anio}
-                      </span>
-                    </div>
-
-                    <p className="mt-2 text-xl font-bold text-blue-500">
-                      {formatearPrecio(anuncio.precio, anuncio.moneda)}
-                    </p>
-
-                    {anuncio.enOferta && anuncio.precioAnterior != null && (
-                      <p className="text-sm text-[#9aa1b1]">
-                        <span className="mr-2 line-through">
-                          {formatearPrecio(anuncio.precioAnterior, anuncio.moneda)}
-                        </span>
-                        <span className="font-semibold text-green-400">Oferta</span>
-                      </p>
-                    )}
-
-                    <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 border-t border-white/10 pt-4 text-xs text-[#9aa1b1]">
-                      <span className="inline-flex items-center gap-1.5">
-                        {anuncio.condicion === "Nuevo" ? (
-                          <span className="rounded-full bg-blue-500/10 px-3 py-1 text-xs font-semibold text-blue-400">
-                            Nuevo
-                          </span>
-                        ) : (
-                          <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-gray-300">
-                            Usado
-                          </span>
-                        )}
-                      </span>
-                      <span className="inline-flex items-center gap-1.5">
-                        <FaTachometerAlt className="text-gray-500" />
-                        {anuncio.kilometraje.toLocaleString("es-DO")} km
-                      </span>
-                      <span className="inline-flex items-center gap-1.5">
-                        <FaCalendarAlt className="text-gray-500" />
-                        {anuncio.anio}
-                      </span>
-                      {anuncio.ubicacion && (
-                        <span className="inline-flex items-center gap-1.5">
-                          <FaMapMarkerAlt className="text-gray-500" />
-                          {anuncio.ubicacion}
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {anuncio.tipoVehiculo && (
-                        <span className="rounded-full bg-blue-500/10 px-3 py-1 text-xs font-medium text-blue-400">
-                          {etiquetaDe(anuncio.tipoVehiculo, TIPOS_VEHICULO)}
-                        </span>
-                      )}
-                      {anuncio.combustible && (
-                        <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-gray-300">
-                          {etiquetaDe(anuncio.combustible, COMBUSTIBLES)}
-                        </span>
-                      )}
-                      {anuncio.transmision && (
-                        <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-gray-300">
-                          {etiquetaDe(anuncio.transmision, TRANSMISIONES)}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleComparar(anuncio.id);
-                  }}
-                  className={`mt-0 border-t px-5 py-3 text-left text-sm font-medium transition-colors ${
-                    esSeleccionado(anuncio.id)
-                      ? "border-blue-500/40 bg-blue-500/10 text-blue-400"
-                      : "border-white/10 text-[#9aa1b1] hover:text-white"
-                  }`}
-                >
-                  {esSeleccionado(anuncio.id) ? (
-                    <>Quitar de comparar</>
-                  ) : (
-                    <>+ Agregar a comparar</>
-                  )}
-                </button>
-              </div>
+                anuncio={anuncio}
+                esSeleccionado={esSeleccionado}
+                onNavegar={(id) => navigate(`/anuncio/${id}`)}
+                onToggleComparar={toggleComparar}
+              />
             ))}
           </div>
         )}
 
         {/* PAGINACIÓN */}
-        {!cargando && !isError && totalPaginas > 1 && (
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
-            <button
-              type="button"
-              onClick={() => irAPagina(pagina - 1)}
-              disabled={pagina <= 1}
-              className="rounded-lg border border-white/10 px-4 py-2 text-sm font-medium transition-colors hover:border-white/30 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              Anterior
-            </button>
-
-            {Array.from({ length: totalPaginas }, (_, i) => i + 1)
-              .filter((p) => {
-                if (
-                  totalPaginas > 7 &&
-                  p !== 1 &&
-                  p !== totalPaginas &&
-                  Math.abs(p - pagina) > 2
-                )
-                  return false;
-                return true;
-              })
-              .map((p) => (
-                <button
-                  key={p}
-                  type="button"
-                  onClick={() => irAPagina(p)}
-                  className={`min-w-10 rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${
-                    p === pagina
-                      ? "bg-blue-500 text-white"
-                      : "border border-white/10 hover:border-white/30"
-                  }`}
-                >
-                  {p}
-                </button>
-              ))}
-
-            <button
-              type="button"
-              onClick={() => irAPagina(pagina + 1)}
-              disabled={pagina >= totalPaginas}
-              className="rounded-lg border border-white/10 px-4 py-2 text-sm font-medium transition-colors hover:border-white/30 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              Siguiente
-            </button>
-          </div>
-        )}
+        <Paginacion
+          pagina={pagina}
+          totalPaginas={totalPaginas}
+          cargando={cargando}
+          isError={isError}
+          onCambiarPagina={irAPagina}
+        />
       </main>
 
       {/* ESPACIO PARA QUE EL FOOTER NO QUEDE DETRÁS DE LA BARRA FLOTANTE */}
       <div className="h-20" />
 
       {/* BARRA FLOTANTE DE COMPARACIÓN */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-blue-500/40 bg-[#0d1117]/95 px-6 py-4 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 sm:px-8">
-          <div className="flex flex-wrap items-center gap-2 text-sm text-[#9aa1b1]">
-            {seleccionados.length === 0 ? (
-              <span className="inline-flex items-center gap-2">
-                <FaBalanceScale className="text-blue-500" />
-                Selecciona 2 o más vehículos para compararlos
-              </span>
-            ) : (
-              <>
-                <span className="font-semibold text-white">
-                  {seleccionados.length} seleccionado{seleccionados.length !== 1 && "s"}
-                </span>
-                {seleccionados.length >= maxVehiculos && (
-                  <span className="text-xs text-amber-400">
-                    Máximo {maxVehiculos} vehículos
-                  </span>
-                )}
-              </>
-            )}
-            {seleccionados.length > 0 && (
-              <button
-                type="button"
-                onClick={limpiarSeleccion}
-                className="text-xs text-[#9aa1b1] underline-offset-2 transition-colors hover:text-white hover:underline"
-              >
-                Limpiar
-              </button>
-            )}
-          </div>
-
-          <button
-            type="button"
-            onClick={irAComparador}
-            disabled={seleccionados.length < 2}
-            className={`inline-flex items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-semibold transition-colors ${
-              seleccionados.length < 2
-                ? "cursor-not-allowed bg-blue-500/40 text-white/60"
-                : "bg-blue-500 text-white hover:bg-blue-600"
-            }`}
-          >
-            <FaBalanceScale />
-            {seleccionados.length < 2
-              ? `Faltan ${2 - seleccionados.length}`
-              : `Comparar (${seleccionados.length})`}
-          </button>
-        </div>
-      </div>
+      <BarraComparador
+        seleccionados={seleccionados}
+        maxVehiculos={maxVehiculos}
+        onLimpiar={limpiarSeleccion}
+        onComparar={irAComparador}
+      />
 
       {/* FOOTER */}
       <footer className="border-t border-white/10 py-8">

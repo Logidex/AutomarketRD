@@ -26,6 +26,8 @@ export default function Checkout() {
   const precio = plan ? precioCicloDe(plan, ciclo) : 0;
 
   const handlePagar = async () => {
+    if (generarLinkPago.isPending) return;
+
     const usuario = authService.getCurrentUser();
 
     if (!usuario || usuario.rol !== ROLES.DEALER) {

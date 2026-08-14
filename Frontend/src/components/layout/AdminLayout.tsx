@@ -11,6 +11,34 @@ import {
 import { authService } from "../../services/auth.service";
 import logo from "../../assets/AutoMarketRD_Logo.svg";
 
+const menuItems = [
+  {
+    path: "/admin",
+    label: "Resumen",
+    icon: <FaChartPie />,
+  },
+  {
+    path: "/admin/usuarios",
+    label: "Usuarios",
+    icon: <FaUsers />,
+  },
+  {
+    path: "/admin/anuncios",
+    label: "Anuncios",
+    icon: <FaCar />,
+  },
+  {
+    path: "/admin/planes",
+    label: "Planes",
+    icon: <FaCoins />,
+  },
+  {
+    path: "/admin/pagos",
+    label: "Pagos",
+    icon: <FaMoneyCheckAlt />,
+  },
+];
+
 export default function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -29,34 +57,6 @@ export default function AdminLayout() {
     authService.logout();
     navigate("/login", { replace: true });
   };
-
-  const menuItems = [
-    {
-      path: "/admin",
-      label: "Resumen",
-      icon: <FaChartPie />,
-    },
-    {
-      path: "/admin/usuarios",
-      label: "Usuarios",
-      icon: <FaUsers />,
-    },
-    {
-      path: "/admin/anuncios",
-      label: "Anuncios",
-      icon: <FaCar />,
-    },
-    {
-      path: "/admin/planes",
-      label: "Planes",
-      icon: <FaCoins />,
-    },
-    {
-      path: "/admin/pagos",
-      label: "Pagos",
-      icon: <FaMoneyCheckAlt />,
-    },
-  ];
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-[#f4f6f9] font-sans">

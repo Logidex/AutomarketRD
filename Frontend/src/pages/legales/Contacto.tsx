@@ -35,6 +35,7 @@ export default function Contacto() {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (enviarContacto.isPending) return;
     try {
       await enviarContacto.mutateAsync(form);
       await Swal.fire({

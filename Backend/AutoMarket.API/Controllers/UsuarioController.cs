@@ -1,9 +1,11 @@
 using AutoMarket.API.Extensions;
+using AutoMarket.API.Helpers;
 using AutoMarket.Application.DTOs.Usuario;
 using AutoMarket.Application.Interfaces;
 using AutoMarket.Core.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Hosting;
 
 namespace AutoMarket.API.Controllers;
 
@@ -21,13 +23,17 @@ namespace AutoMarket.API.Controllers;
 public class UsuarioController : ControllerBase
 {
     private readonly IUsuarioCuentaService _cuentaService;
+    private readonly IWebHostEnvironment _environment;
 
 /// <summary>
 /// Inicializa una nueva instancia de la clase UsuarioController. Parámetro cuentaService (IUsuarioCuentaService)
 /// </summary>
-    public UsuarioController(IUsuarioCuentaService cuentaService)
+    public UsuarioController(
+        IUsuarioCuentaService cuentaService,
+        IWebHostEnvironment environment)
     {
         _cuentaService = cuentaService;
+        _environment = environment;
     }
 
      /// <summary>
@@ -60,10 +66,11 @@ public class UsuarioController : ControllerBase
 
      /// <summary>
      /// Asciende el rol de la cuenta (Comprador → Vendedor/Dealer, Vendedor → Dealer).
-     /// Devuelve la sesión actualizada (nuevo token con el nuevo rol).
+     /// Rota la cookie HttpOnly con el nuevo token (nuevo rol en los claims);
+     /// el cuerpo no incluye el token.
      /// </summary>
      /// <param name="dto">Datos para ascender el rol.</param>
-     /// <returns>Sesión actualizada con nuevo token.</returns>
+     /// <returns>Sesión actualizada (usuario, sin token en el cuerpo).</returns>
      [HttpPost("ascender-rol")]
      public async Task<IActionResult> AscenderRol([FromBody] AscenderRolDto dto)
      {
@@ -74,7 +81,18 @@ public class UsuarioController : ControllerBase
          {
              var usuarioId = User.ObtenerUsuarioId();
              var sesion = await _cuentaService.AscenderRolAsync(usuarioId, dto);
-             return Ok(sesion);
+
+             AuthCookieHelper.EstablecerTokenCookie(
+                 Response,
+                 sesion.Token!,
+                 _environment);
+
+             return Ok(new
+             {
+                 sesion.Exito,
+                 sesion.Mensaje,
+                 sesion.Usuario
+             });
          }
          catch (BusinessRuleException ex)
          {

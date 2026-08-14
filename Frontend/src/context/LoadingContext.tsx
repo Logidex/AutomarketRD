@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useMemo, useState } from 'react';
 import Spinner from '../components/Spinner';
 
 interface LoadingContextType {
@@ -12,8 +12,10 @@ const LoadingContext = createContext<LoadingContextType>({
 export const LoadingProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(false);
 
+  const value = useMemo(() => ({ setLoading }), []);
+
   return (
-    <LoadingContext.Provider value={{ setLoading }}>
+    <LoadingContext.Provider value={value}>
       {loading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm">
           <Spinner />

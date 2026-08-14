@@ -9,6 +9,44 @@ import { nombrePlan as nombrePlanUtil } from "../../constants/planes";
 import logo from "../../assets/AutoMarketRD_Logo.svg";
 import CampanaNotificaciones from "./CampanaNotificaciones";
 
+const menuItems = [
+  {
+    path: "/dashboard",
+    label: "Resumen",
+    icon: <FaChartPie />,
+  },
+  {
+    path: "/dashboard/mis-anuncios",
+    label: "Mi Inventario",
+    icon: <FaCar />,
+  },
+  {
+    path: "/dashboard/publicar",
+    label: "Publicar Vehículo",
+    icon: <FaPlusCircle />,
+  },
+  {
+    path: "/dashboard/leads",
+    label: "Leads",
+    icon: <FaEnvelope />,
+  },
+  {
+    path: "/dashboard/contactados",
+    label: "Contactados",
+    icon: <FaPaperPlane />,
+  },
+  {
+    path: "/dashboard/mi-perfil",
+    label: "Mi Perfil",
+    icon: <FaStore />,
+  },
+  {
+    path: "/dashboard/suscripcion",
+    label: "Suscripción",
+    icon: <FaCreditCard />,
+  },
+];
+
 export default function DashboardLayout() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -39,44 +77,6 @@ export default function DashboardLayout() {
       replace: true,
     });
   };
-
-  const menuItems = [
-    {
-      path: "/dashboard",
-      label: "Resumen",
-      icon: <FaChartPie />,
-    },
-    {
-      path: "/dashboard/mis-anuncios",
-      label: "Mi Inventario",
-      icon: <FaCar />,
-    },
-    {
-      path: "/dashboard/publicar",
-      label: "Publicar Vehículo",
-      icon: <FaPlusCircle />,
-    },
-    {
-      path: "/dashboard/leads",
-      label: "Leads",
-      icon: <FaEnvelope />,
-    },
-    {
-      path: "/dashboard/contactados",
-      label: "Contactados",
-      icon: <FaPaperPlane />,
-    },
-    {
-      path: "/dashboard/mi-perfil",
-      label: "Mi Perfil",
-      icon: <FaStore />,
-    },
-    {
-      path: "/dashboard/suscripcion",
-      label: "Suscripción",
-      icon: <FaCreditCard />,
-    },
-  ];
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-[#f4f6f9] font-sans">

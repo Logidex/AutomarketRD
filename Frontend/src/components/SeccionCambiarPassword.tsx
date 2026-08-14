@@ -109,11 +109,15 @@ export default function SeccionCambiarPassword() {
       {!pasoCodigo ? (
         <div className="mt-5 space-y-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="passwordActual"
+              className="mb-1 block text-sm font-medium text-gray-700"
+            >
               Contraseña actual *
             </label>
             <div className="relative">
               <input
+                id="passwordActual"
                 type={mostrarActual ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -131,11 +135,15 @@ export default function SeccionCambiarPassword() {
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="nuevaPassword"
+                className="mb-1 block text-sm font-medium text-gray-700"
+              >
                 Nueva contraseña *
               </label>
               <div className="relative">
                 <input
+                  id="nuevaPassword"
                   type={mostrarNueva ? "text" : "password"}
                   value={nuevaPassword}
                   onChange={(e) => setNuevaPassword(e.target.value)}
@@ -152,11 +160,15 @@ export default function SeccionCambiarPassword() {
               </div>
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="repetirPassword"
+                className="mb-1 block text-sm font-medium text-gray-700"
+              >
                 Repetir nueva contraseña *
               </label>
               <div className="relative">
                 <input
+                  id="repetirPassword"
                   type={mostrarRepetir ? "text" : "password"}
                   value={repetirPassword}
                   onChange={(e) => setRepetirPassword(e.target.value)}
@@ -187,10 +199,14 @@ export default function SeccionCambiarPassword() {
       ) : (
         <div className="mt-5 space-y-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="codigoConfirmacion"
+              className="mb-1 block text-sm font-medium text-gray-700"
+            >
               Código de confirmación (6 dígitos) *
             </label>
             <input
+              id="codigoConfirmacion"
               type="text"
               inputMode="numeric"
               maxLength={6}

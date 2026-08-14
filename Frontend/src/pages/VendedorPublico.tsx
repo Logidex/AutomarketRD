@@ -12,15 +12,16 @@ import {
   FaWhatsapp,
 } from "react-icons/fa";
 import type { AnuncioListado } from "../types/anuncio.types";
+import type { PerfilDealerPublico } from "../services/dealer.service";
 import { urlImagen } from "../utils/imagen";
 import { formatearPrecio } from "../utils/formato";
 import Spinner from "../components/Spinner";
 import { usePerfilDealerPublico, useAnunciosVendedor } from "../hooks/usePerfilDealer";
 
-export default function VendedorPublico() {
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
+const fotoPrincipal = (anuncio: AnuncioListado): string =>
+  urlImagen(anuncio.fotos?.[0]) || "https://via.placeholder.com/600x400?text=Sin+Foto";
 
+function useVendedorPublico(id: string | undefined) {
   const vendedorId = Number(id);
   const esIdInvalido = !Number.isInteger(vendedorId) || vendedorId <= 0;
 
@@ -33,10 +34,6 @@ export default function VendedorPublico() {
 
   const cargando = cargandoPerfil || cargandoAnuncios;
 
-  if (cargando && !esIdInvalido) {
-    return <Spinner />;
-  }
-
   const noEncontrado = isError && error instanceof Error && error.message.includes("404");
   const errorGeneral = isError && !noEncontrado ? (error instanceof Error ? error.message : "No se pudo cargar el perfil del vendedor.") : "";
 
@@ -46,18 +43,30 @@ export default function VendedorPublico() {
     ? perfil.whatsApp.replace(/[^\d]/g, "")
     : "";
 
-  const fotoPrincipal = (anuncio: AnuncioListado): string =>
-    urlImagen(anuncio.fotos?.[0]) ||
-    "https://via.placeholder.com/600x400?text=Sin+Foto";
+  return {
+    cargando,
+    esIdInvalido,
+    noEncontrado,
+    errorGeneral,
+    esParticular,
+    perfil,
+    anuncios,
+    inicial,
+    numeroWhatsApp,
+  };
+}
 
-  const renderAnuncioCard = (
-    anuncio: AnuncioListado,
-    destacada?: boolean
-  ) => (
+interface PropsTarjeta {
+  anuncio: AnuncioListado;
+  destacada?: boolean;
+  onAbrir: () => void;
+}
+
+function TarjetaAnuncioVendedor({ anuncio, destacada, onAbrir }: PropsTarjeta) {
+  return (
     <button
-      key={anuncio.id}
       type="button"
-      onClick={() => navigate(`/anuncio/${anuncio.id}`)}
+      onClick={onAbrir}
       className={`group flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#13161d] text-left transition-all hover:border-blue-500/40 hover:shadow-lg ${
         destacada ? "border-violet-500/40" : ""
       }`}
@@ -106,21 +115,28 @@ export default function VendedorPublico() {
       </div>
     </button>
   );
+}
 
-  const renderBotonesContacto = () => (
+interface PropsContacto {
+  telefonoAgencia?: string;
+  whatsApp: string;
+}
+
+function BotonesContacto({ telefonoAgencia, whatsApp }: PropsContacto) {
+  return (
     <div className="flex flex-col gap-3 sm:items-end">
-      {perfil?.telefonoAgencia && (
+      {telefonoAgencia && (
         <a
-          href={`tel:${perfil.telefonoAgencia.replace(/[^\d]/g, "")}`}
+          href={`tel:${telefonoAgencia.replace(/[^\d]/g, "")}`}
           className="inline-flex items-center justify-center gap-2 rounded-lg border border-white/10 px-5 py-2.5 text-sm font-semibold text-gray-200 transition-colors hover:border-white/30"
         >
           <FaPhone className="text-blue-400" />
-          {perfil.telefonoAgencia}
+          {telefonoAgencia}
         </a>
       )}
-      {numeroWhatsApp && (
+      {whatsApp && (
         <a
-          href={`https://wa.me/${numeroWhatsApp}`}
+          href={`https://wa.me/${whatsApp}`}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center justify-center gap-2 rounded-lg bg-green-500 px-5 py-2.5 text-sm font-semibold transition-colors hover:bg-green-600"
@@ -131,6 +147,259 @@ export default function VendedorPublico() {
       )}
     </div>
   );
+}
+
+interface PropsPerfilParticular {
+  perfil: PerfilDealerPublico;
+  anuncios: AnuncioListado[];
+  inicial: string;
+  numeroWhatsApp: string;
+}
+
+function PerfilParticular({ perfil, anuncios, inicial, numeroWhatsApp }: PropsPerfilParticular) {
+  return (
+    <section className="rounded-2xl border border-violet-500/30 bg-gradient-to-br from-[#1b1630] to-[#0c101b] p-6 sm:p-8">
+      <span className="inline-flex items-center gap-2 rounded-full bg-violet-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-violet-300">
+        <FaUser className="text-sm" />
+        Vendedor particular
+      </span>
+
+      <div className="mt-5 flex flex-col gap-6 sm:flex-row sm:items-center">
+        <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-violet-500/20 text-3xl font-bold text-violet-300">
+          {inicial}
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <h1 className="truncate text-2xl font-bold sm:text-3xl">
+            {perfil.nombreAgencia}
+          </h1>
+          <p className="mt-1 text-sm text-[#9aa1b1]">
+            Vende de forma particular en AutoMarket RD.
+          </p>
+        </div>
+
+        <BotonesContacto
+          telefonoAgencia={perfil.telefonoAgencia}
+          whatsApp={numeroWhatsApp}
+        />
+      </div>
+
+      <div className="mt-6 flex items-start gap-3 rounded-xl border border-violet-500/20 bg-violet-500/5 p-4 text-sm text-[#c3c9d4]">
+        <FaCar className="mt-0.5 shrink-0 text-lg text-violet-300" />
+        <p>
+          Este vendedor es un <strong>particular</strong>: publica por
+          cuenta propia y actualmente solo tiene{" "}
+          <strong>
+            {anuncios.length === 1
+              ? "un vehículo en venta"
+              : `${anuncios.length} vehículos en venta`}
+          </strong>
+          .
+        </p>
+      </div>
+    </section>
+  );
+}
+
+interface PropsPerfilDealer {
+  perfil: PerfilDealerPublico;
+  anuncios: AnuncioListado[];
+  numeroWhatsApp: string;
+}
+
+function PerfilDealer({ perfil, anuncios, numeroWhatsApp }: PropsPerfilDealer) {
+  return (
+    <section className="relative overflow-hidden rounded-2xl border border-blue-500/30 bg-gradient-to-br from-[#0d1b2e] via-[#13161d] to-[#0c101b] p-6 sm:p-8">
+      <div className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-blue-500/10 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-24 -left-16 h-52 w-52 rounded-full bg-blue-500/5 blur-3xl" />
+
+      <div className="relative">
+        <span className="inline-flex items-center gap-2 rounded-full bg-blue-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-blue-300">
+          <FaStore className="text-sm" />
+          Agencia de vehículos
+        </span>
+
+        <div className="mt-6 flex flex-col gap-6 sm:flex-row sm:items-center">
+          <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-2 border-blue-500/30 bg-white/5 shadow-lg shadow-blue-500/10">
+            {perfil.logoUrl ? (
+              <img
+                src={urlImagen(perfil.logoUrl)}
+                alt={perfil.nombreAgencia}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <FaStore className="text-4xl text-blue-400" />
+            )}
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <h1 className="truncate text-2xl font-extrabold sm:text-3xl">
+              {perfil.nombreAgencia}
+            </h1>
+            <p className="mt-1 text-sm text-[#9aa1b1]">
+              Agencia de venta de vehículos en AutoMarket RD.
+            </p>
+
+            <div className="mt-3 flex flex-wrap gap-2">
+              {perfil.ubicacion && (
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-gray-200">
+                  <FaMapMarkerAlt className="text-blue-400" />
+                  {perfil.ubicacion}
+                </span>
+              )}
+              {perfil.horarios && (
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-gray-200">
+                  <FaClock className="text-blue-400" />
+                  {perfil.horarios}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <BotonesContacto
+            telefonoAgencia={perfil.telefonoAgencia}
+            whatsApp={numeroWhatsApp}
+          />
+        </div>
+
+        <div className="mt-6 grid grid-cols-1 gap-3 rounded-xl border border-blue-500/20 bg-blue-500/5 p-4 sm:grid-cols-3">
+          <div>
+            <p className="text-[11px] uppercase tracking-wide text-[#9aa1b1]">
+              Vehículos publicados
+            </p>
+            <p className="mt-1 text-xl font-bold text-blue-400">
+              {anuncios.length}
+            </p>
+          </div>
+          <div>
+            <p className="text-[11px] uppercase tracking-wide text-[#9aa1b1]">
+              Ubicación
+            </p>
+            <p className="mt-1 truncate text-sm font-semibold text-gray-200">
+              {perfil.ubicacion || "—"}
+            </p>
+          </div>
+          <div>
+            <p className="text-[11px] uppercase tracking-wide text-[#9aa1b1]">
+              Horarios
+            </p>
+            <p className="mt-1 truncate text-sm font-semibold text-gray-200">
+              {perfil.horarios || "—"}
+            </p>
+          </div>
+        </div>
+
+        {perfil.descripcion && (
+          <div className="mt-6 rounded-xl border border-white/10 bg-white/5 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[#9aa1b1]">
+              Sobre la agencia
+            </p>
+            <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-[#c3c9d4]">
+              {perfil.descripcion}
+            </p>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+interface PropsInventario {
+  anuncios: AnuncioListado[];
+  esParticular: boolean;
+  onAbrir: (id: number) => void;
+}
+
+function InventarioVendedor({ anuncios, esParticular, onAbrir }: PropsInventario) {
+  return (
+    <section className="mt-10">
+      <div className="flex items-center gap-3">
+        {!esParticular && (
+          <span className="h-6 w-1 rounded-full bg-gradient-to-b from-blue-400 to-blue-600" />
+        )}
+        <h2 className="text-xl font-bold">
+          {esParticular ? "Su vehículo en venta" : "Inventario de la agencia"}
+          <span className="ml-2 text-sm font-normal text-[#9aa1b1]">
+            ({anuncios.length})
+          </span>
+        </h2>
+      </div>
+      <p className="mt-1 text-sm text-[#9aa1b1]">
+        {esParticular
+          ? "Los vendedores particulares publican un solo vehículo."
+          : "Todos los vehículos disponibles de esta agencia."}
+      </p>
+
+      {anuncios.length === 0 ? (
+        <div className="mt-6 rounded-2xl border border-white/10 bg-[#13161d] p-16 text-center">
+          <FaCar className="mx-auto text-5xl text-gray-600" />
+          <h3 className="mt-4 text-lg font-semibold">
+            Sin vehículos publicados
+          </h3>
+          <p className="mt-2 text-sm text-[#9aa1b1]">
+            Este vendedor no tiene vehículos disponibles en este momento.
+          </p>
+        </div>
+      ) : esParticular ? (
+        <div className="mt-6 mx-auto max-w-2xl">
+          <TarjetaAnuncioVendedor
+            anuncio={anuncios[0]}
+            destacada
+            onAbrir={() => onAbrir(anuncios[0].id)}
+          />
+        </div>
+      ) : (
+        <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {anuncios.map((anuncio) => (
+            <TarjetaAnuncioVendedor
+              key={anuncio.id}
+              anuncio={anuncio}
+              onAbrir={() => onAbrir(anuncio.id)}
+            />
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function NoEncontradoVendedor() {
+  return (
+    <main className="mx-auto max-w-2xl px-6 py-20 text-center sm:px-8">
+      <FaStore className="mx-auto text-5xl text-gray-600" />
+      <h1 className="mt-4 text-2xl font-bold">Vendedor no encontrado</h1>
+      <p className="mt-2 text-sm text-[#9aa1b1]">
+        El perfil que buscas no existe o ya no está disponible.
+      </p>
+      <Link
+        to="/"
+        className="mt-6 inline-block rounded-lg bg-blue-500 px-6 py-2.5 text-sm font-semibold transition-colors hover:bg-blue-600"
+      >
+        Explorar vehículos
+      </Link>
+    </main>
+  );
+}
+
+export default function VendedorPublico() {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+
+  const {
+    cargando,
+    esIdInvalido,
+    noEncontrado,
+    errorGeneral,
+    esParticular,
+    perfil,
+    anuncios,
+    inicial,
+    numeroWhatsApp,
+  } = useVendedorPublico(id);
+
+  if (cargando && !esIdInvalido) {
+    return <Spinner />;
+  }
 
   return (
     <div className="min-h-screen bg-[#0c101b] text-white">
@@ -145,19 +414,7 @@ export default function VendedorPublico() {
       </header>
 
       {noEncontrado || esIdInvalido ? (
-        <main className="mx-auto max-w-2xl px-6 py-20 text-center sm:px-8">
-          <FaStore className="mx-auto text-5xl text-gray-600" />
-          <h1 className="mt-4 text-2xl font-bold">Vendedor no encontrado</h1>
-          <p className="mt-2 text-sm text-[#9aa1b1]">
-            El perfil que buscas no existe o ya no está disponible.
-          </p>
-          <Link
-            to="/"
-            className="mt-6 inline-block rounded-lg bg-blue-500 px-6 py-2.5 text-sm font-semibold transition-colors hover:bg-blue-600"
-          >
-            Explorar vehículos
-          </Link>
-        </main>
+        <NoEncontradoVendedor />
       ) : (
         <main className="mx-auto max-w-6xl px-6 py-10 sm:px-8">
           {errorGeneral ? (
@@ -167,178 +424,31 @@ export default function VendedorPublico() {
           ) : (
             <>
               {/* BLOQUE DEL PERFIL */}
-              {esParticular ? (
-                /* VENDEDOR PARTICULAR: perfil personal, un solo vehículo */
-                <section className="rounded-2xl border border-violet-500/30 bg-gradient-to-br from-[#1b1630] to-[#0c101b] p-6 sm:p-8">
-                  <span className="inline-flex items-center gap-2 rounded-full bg-violet-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-violet-300">
-                    <FaUser className="text-sm" />
-                    Vendedor particular
-                  </span>
-
-                  <div className="mt-5 flex flex-col gap-6 sm:flex-row sm:items-center">
-                    <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-violet-500/20 text-3xl font-bold text-violet-300">
-                      {inicial}
-                    </div>
-
-                    <div className="min-w-0 flex-1">
-                      <h1 className="truncate text-2xl font-bold sm:text-3xl">
-                        {perfil?.nombreAgencia}
-                      </h1>
-                      <p className="mt-1 text-sm text-[#9aa1b1]">
-                        Vende de forma particular en AutoMarket RD.
-                      </p>
-                    </div>
-
-                    {renderBotonesContacto()}
-                  </div>
-
-                  <div className="mt-6 flex items-start gap-3 rounded-xl border border-violet-500/20 bg-violet-500/5 p-4 text-sm text-[#c3c9d4]">
-                    <FaCar className="mt-0.5 shrink-0 text-lg text-violet-300" />
-                    <p>
-                      Este vendedor es un <strong>particular</strong>: publica por
-                      cuenta propia y actualmente solo tiene{" "}
-                      <strong>
-                        {anuncios.length === 1
-                          ? "un vehículo en venta"
-                          : `${anuncios.length} vehículos en venta`}
-                      </strong>
-                      .
-                    </p>
-                  </div>
-                </section>
+              {perfil ? (
+                esParticular ? (
+                  <PerfilParticular
+                    perfil={perfil}
+                    anuncios={anuncios}
+                    inicial={inicial}
+                    numeroWhatsApp={numeroWhatsApp}
+                  />
+                ) : (
+                  <PerfilDealer
+                    perfil={perfil}
+                    anuncios={anuncios}
+                    numeroWhatsApp={numeroWhatsApp}
+                  />
+                )
               ) : (
-                /* DEALER: perfil de agencia premium */
-                <section className="relative overflow-hidden rounded-2xl border border-blue-500/30 bg-gradient-to-br from-[#0d1b2e] via-[#13161d] to-[#0c101b] p-6 sm:p-8">
-                  <div className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-blue-500/10 blur-3xl" />
-                  <div className="pointer-events-none absolute -bottom-24 -left-16 h-52 w-52 rounded-full bg-blue-500/5 blur-3xl" />
-
-                  <div className="relative">
-                    <span className="inline-flex items-center gap-2 rounded-full bg-blue-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-blue-300">
-                      <FaStore className="text-sm" />
-                      Agencia de vehículos
-                    </span>
-
-                    <div className="mt-6 flex flex-col gap-6 sm:flex-row sm:items-center">
-                      <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-2 border-blue-500/30 bg-white/5 shadow-lg shadow-blue-500/10">
-                        {perfil?.logoUrl ? (
-                          <img
-                            src={urlImagen(perfil.logoUrl)}
-                            alt={perfil.nombreAgencia}
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <FaStore className="text-4xl text-blue-400" />
-                        )}
-                      </div>
-
-                      <div className="min-w-0 flex-1">
-                        <h1 className="truncate text-2xl font-extrabold sm:text-3xl">
-                          {perfil?.nombreAgencia}
-                        </h1>
-                        <p className="mt-1 text-sm text-[#9aa1b1]">
-                          Agencia de venta de vehículos en AutoMarket RD.
-                        </p>
-
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          {perfil?.ubicacion && (
-                            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-gray-200">
-                              <FaMapMarkerAlt className="text-blue-400" />
-                              {perfil.ubicacion}
-                            </span>
-                          )}
-                          {perfil?.horarios && (
-                            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-gray-200">
-                              <FaClock className="text-blue-400" />
-                              {perfil.horarios}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      {renderBotonesContacto()}
-                    </div>
-
-                    <div className="mt-6 grid grid-cols-1 gap-3 rounded-xl border border-blue-500/20 bg-blue-500/5 p-4 sm:grid-cols-3">
-                      <div>
-                        <p className="text-[11px] uppercase tracking-wide text-[#9aa1b1]">
-                          Vehículos publicados
-                        </p>
-                        <p className="mt-1 text-xl font-bold text-blue-400">
-                          {anuncios.length}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-[11px] uppercase tracking-wide text-[#9aa1b1]">
-                          Ubicación
-                        </p>
-                        <p className="mt-1 truncate text-sm font-semibold text-gray-200">
-                          {perfil?.ubicacion || "—"}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-[11px] uppercase tracking-wide text-[#9aa1b1]">
-                          Horarios
-                        </p>
-                        <p className="mt-1 truncate text-sm font-semibold text-gray-200">
-                          {perfil?.horarios || "—"}
-                        </p>
-                      </div>
-                    </div>
-
-                    {perfil?.descripcion && (
-                      <div className="mt-6 rounded-xl border border-white/10 bg-white/5 p-4">
-                        <p className="text-xs font-semibold uppercase tracking-wide text-[#9aa1b1]">
-                          Sobre la agencia
-                        </p>
-                        <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-[#c3c9d4]">
-                          {perfil.descripcion}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </section>
+                <NoEncontradoVendedor />
               )}
 
               {/* INVENTARIO */}
-              <section className="mt-10">
-                <div className="flex items-center gap-3">
-                  {!esParticular && (
-                    <span className="h-6 w-1 rounded-full bg-gradient-to-b from-blue-400 to-blue-600" />
-                  )}
-                  <h2 className="text-xl font-bold">
-                    {esParticular ? "Su vehículo en venta" : "Inventario de la agencia"}
-                    <span className="ml-2 text-sm font-normal text-[#9aa1b1]">
-                      ({anuncios.length})
-                    </span>
-                  </h2>
-                </div>
-                <p className="mt-1 text-sm text-[#9aa1b1]">
-                  {esParticular
-                    ? "Los vendedores particulares publican un solo vehículo."
-                    : "Todos los vehículos disponibles de esta agencia."}
-                </p>
-
-                {anuncios.length === 0 ? (
-                  <div className="mt-6 rounded-2xl border border-white/10 bg-[#13161d] p-16 text-center">
-                    <FaCar className="mx-auto text-5xl text-gray-600" />
-                    <h3 className="mt-4 text-lg font-semibold">
-                      Sin vehículos publicados
-                    </h3>
-                    <p className="mt-2 text-sm text-[#9aa1b1]">
-                      Este vendedor no tiene vehículos disponibles en este momento.
-                    </p>
-                  </div>
-                ) : esParticular ? (
-                  /* Un solo vehículo, presentación destacada */
-                  <div className="mt-6 mx-auto max-w-2xl">
-                    {renderAnuncioCard(anuncios[0], true)}
-                  </div>
-                ) : (
-                  <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {anuncios.map((anuncio) => renderAnuncioCard(anuncio))}
-                  </div>
-                )}
-              </section>
+              <InventarioVendedor
+                anuncios={anuncios}
+                esParticular={esParticular}
+                onAbrir={(id) => navigate(`/anuncio/${id}`)}
+              />
             </>
           )}
         </main>

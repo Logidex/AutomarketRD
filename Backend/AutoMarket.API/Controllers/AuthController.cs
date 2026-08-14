@@ -1,3 +1,4 @@
+using AutoMarket.API.Helpers;
 using AutoMarket.Application.DTOs;
 using AutoMarket.Application.DTOs.Usuario;
 using AutoMarket.Application.Interfaces;
@@ -5,6 +6,7 @@ using AutoMarket.Core.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Hosting;
 
 /// <summary>
 /// Controlador para manejar la autenticación de usuarios: registro, inicio de sesión,
@@ -18,13 +20,17 @@ using Microsoft.AspNetCore.RateLimiting;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
+    private readonly IWebHostEnvironment _environment;
 
 /// <summary>
 /// Inicializa una nueva instancia de la clase AuthController. Parámetro authService (IAuthService)
 /// </summary>
-    public AuthController(IAuthService authService)
+    public AuthController(
+        IAuthService authService,
+        IWebHostEnvironment environment)
     {
         _authService = authService;
+        _environment = environment;
     }
 
      /// <summary>
@@ -48,11 +54,12 @@ public class AuthController : ControllerBase
      }
 
      /// <summary>
-     /// Inicia sesión de un usuario y devuelve un token JWT.
-     /// Acceso anónimo permitido. Aplica rate limiting por IP (o intenta por email si se implementa).
+     /// Inicia sesión de un usuario. El JWT se devuelve como cookie HttpOnly
+     /// (no legible por JavaScript); el cuerpo solo incluye datos del usuario.
+     /// Acceso anónimo permitido. Aplica rate limiting por IP.
      /// </summary>
      /// <param name="dto">Credenciales de inicio de sesión.</param>
-     /// <returns>Resultado del login incluyendo token y datos de usuario.</returns>
+     /// <returns>Datos del usuario autenticado (sin token en el cuerpo).</returns>
      [HttpPost("login")]
      [AllowAnonymous]
      [EnableRateLimiting("PoliticaLogin")]
@@ -65,7 +72,30 @@ public class AuthController : ControllerBase
              return BadRequest(new { mensaje = resultado.Mensaje });
          }
 
-         return Ok(resultado);
+         AuthCookieHelper.EstablecerTokenCookie(
+             Response,
+             resultado.Token!,
+             _environment);
+
+         return Ok(new
+         {
+             resultado.Exito,
+             resultado.Mensaje,
+             resultado.Usuario
+         });
+     }
+
+     /// <summary>
+     /// Cierra la sesión eliminando la cookie del token.
+     /// Acceso anónimo permitido (solo invalida la cookie del navegador).
+     /// </summary>
+     /// <returns>Confirmación de cierre de sesión.</returns>
+     [HttpPost("logout")]
+     [AllowAnonymous]
+     public IActionResult Logout()
+     {
+         AuthCookieHelper.LimpiarTokenCookie(Response, _environment);
+         return Ok(new { exito = true, mensaje = "Sesión cerrada." });
      }
 
      /// <summary>

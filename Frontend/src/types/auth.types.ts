@@ -14,7 +14,6 @@ export interface UsuarioAuth {
 export interface AuthResponse {
   exito: boolean;
   mensaje: string;
-  token?: string;
   usuario?: UsuarioAuth;
 }
 

@@ -7,6 +7,9 @@ import type {
   UsuarioAuth
 } from '../types/auth.types';
 
+const USER_KEY = 'user:v1';
+const USER_KEY_V0 = 'user';
+
 export const authService = {
   async login(data: LoginDto): Promise<AuthResponse> {
     const response = await api.post<AuthResponse>(
@@ -19,23 +22,11 @@ export const authService = {
     return response.data;
   },
 
-  // Guarda token + usuario en localStorage (usado en login y ascenso de rol)
+  // El JWT vive en una cookie HttpOnly (el servidor la establece en el login).
+  // Aquí solo se guarda el usuario (metadatos no sensibles) en localStorage.
   guardarSesion(authData: AuthResponse) {
-    if (authData.token) {
-      // Almacenar token con marca de tiempo para tracking de expiración
-      const expiringAt = Date.now() + (24 * 60 * 60 * 1000); // Default 24h en ms
-      const tokenData = {
-        token: authData.token,
-        expiringAt,
-      };
-      localStorage.setItem('token', JSON.stringify(tokenData));
-    }
-
     if (authData.usuario) {
-      localStorage.setItem(
-        'user',
-        JSON.stringify(authData.usuario)
-      );
+      localStorage.setItem(USER_KEY, JSON.stringify(authData.usuario));
     }
   },
 
@@ -71,8 +62,12 @@ export const authService = {
   },
 
   logout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    localStorage.removeItem(USER_KEY);
+    localStorage.removeItem(USER_KEY_V0);
+
+    // Borra la cookie HttpOnly en el servidor (fire-and-forget: el cliente
+    // no necesita esperar para navegar a /login).
+    void api.post('/api/auth/logout').catch(() => {});
   },
 
   // Actualiza solo las partes editadas del usuario guardado (nombre, correo, etc.)
@@ -80,35 +75,27 @@ export const authService = {
     const usuario = this.getCurrentUser();
     if (!usuario) return;
 
-    localStorage.setItem(
-      'user',
-      JSON.stringify({ ...usuario, ...patch })
-    );
+    localStorage.setItem(USER_KEY, JSON.stringify({ ...usuario, ...patch }));
   },
 
   isAuthenticated(): boolean {
-    const tokenData = this.getTokenData();
-    if (!tokenData) return false;
-    
-    // Verificar si el token aún no expira
-    return Date.now() < tokenData.expiringAt;
-  },
-
-  getTokenData(): { token: string; expiringAt: number } | null {
-    const tokenStr = localStorage.getItem('token');
-    if (!tokenStr) return null;
-
-    try {
-      const tokenData = JSON.parse(tokenStr) as { token: string; expiringAt: number };
-      return tokenData;
-    } catch {
-      localStorage.removeItem('token');
-      return null;
-    }
+    // El token está en la cookie HttpOnly (no accesible desde JS).
+    // Se considera autenticado si hay un usuario guardado; la cookie
+    // expira por sí sola y un 401 del servidor limpia el estado local.
+    return this.getCurrentUser() !== null;
   },
 
   getCurrentUser(): UsuarioAuth | null {
-    const user = localStorage.getItem('user');
+    let user = localStorage.getItem(USER_KEY);
+
+    if (!user) {
+      const userV0 = localStorage.getItem(USER_KEY_V0);
+      if (userV0) {
+        user = userV0;
+        localStorage.setItem(USER_KEY, userV0);
+        localStorage.removeItem(USER_KEY_V0);
+      }
+    }
 
     if (!user) {
       return null;
@@ -117,7 +104,7 @@ export const authService = {
     try {
       return JSON.parse(user) as UsuarioAuth;
     } catch {
-      localStorage.removeItem('user');
+      localStorage.removeItem(USER_KEY);
       return null;
     }
   },

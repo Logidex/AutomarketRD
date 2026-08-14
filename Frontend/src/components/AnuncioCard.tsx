@@ -4,6 +4,40 @@ import type { AnuncioListado } from "../types/anuncio.types";
 import { urlImagen } from "../utils/imagen";
 import { formatearPrecio } from "../utils/formato";
 
+const getEstadoStyle = (estado: string) => {
+    const value = estado.trim().toLowerCase();
+
+    switch (value) {
+      case "publicado":
+        return "bg-green-100 text-green-800 border-green-200";
+      case "borrador":
+        return "bg-gray-100 text-gray-700 border-gray-200";
+      case "pausado":
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+      case "vendido":
+        return "bg-blue-100 text-blue-800 border-blue-200";
+      default:
+        return "bg-purple-100 text-purple-800 border-purple-200";
+    }
+};
+
+const getSelectStyle = (estado: string) => {
+    const value = estado.trim().toLowerCase();
+
+    switch (value) {
+      case "publicado":
+        return "border-green-300 bg-green-50 text-green-800 focus:ring-green-500";
+      case "borrador":
+        return "border-gray-300 bg-gray-50 text-gray-700 focus:ring-gray-500";
+      case "pausado":
+        return "border-yellow-300 bg-yellow-50 text-yellow-800 focus:ring-yellow-500";
+      case "vendido":
+        return "border-blue-300 bg-blue-50 text-blue-800 focus:ring-blue-500";
+      default:
+        return "border-purple-300 bg-purple-50 text-purple-800 focus:ring-purple-500";
+    }
+};
+
 interface AnuncioCardProps {
   anuncio: AnuncioListado;
   onPublicar: (id: number) => void;
@@ -34,39 +68,7 @@ export default function AnuncioCard({
   const kilometraje = Number(anuncio.kilometraje ?? 0);
   const navigate = useNavigate();
 
-  const getEstadoStyle = (estado: string) => {
-    const value = estado.trim().toLowerCase();
 
-    switch (value) {
-      case "publicado":
-        return "bg-green-100 text-green-800 border-green-200";
-      case "borrador":
-        return "bg-gray-100 text-gray-700 border-gray-200";
-      case "pausado":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "vendido":
-        return "bg-blue-100 text-blue-800 border-blue-200";
-      default:
-        return "bg-purple-100 text-purple-800 border-purple-200";
-    }
-  };
-
-  const getSelectStyle = (estado: string) => {
-    const value = estado.trim().toLowerCase();
-
-    switch (value) {
-      case "publicado":
-        return "border-green-300 bg-green-50 text-green-800 focus:ring-green-500";
-      case "borrador":
-        return "border-gray-300 bg-gray-50 text-gray-700 focus:ring-gray-500";
-      case "pausado":
-        return "border-yellow-300 bg-yellow-50 text-yellow-800 focus:ring-yellow-500";
-      case "vendido":
-        return "border-blue-300 bg-blue-50 text-blue-800 focus:ring-blue-500";
-      default:
-        return "border-purple-300 bg-purple-50 text-purple-800 focus:ring-purple-500";
-    }
-  };
 
   return (
     <li className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md">
@@ -161,12 +163,16 @@ export default function AnuncioCard({
 
             <div className="flex flex-col gap-3 border-t border-gray-100 pt-4 sm:flex-row sm:items-end sm:justify-between">
               <div className="w-full sm:w-60">
-                <label className="mb-1 block text-xs font-medium text-gray-500">
+                <label
+                  htmlFor="cambiarEstado"
+                  className="mb-1 block text-xs font-medium text-gray-500"
+                >
                   Cambiar estado
                 </label>
 
                 <div className="relative">
                   <select
+                    id="cambiarEstado"
                     value={estadoNormalizado}
                     onChange={(e) => onCambiarEstado(anuncio.id, e.target.value)}
                     className={`w-full appearance-none rounded-lg border px-3 py-2.5 pr-10 text-sm font-medium shadow-sm transition-all focus:outline-none focus:ring-2 focus:border-transparent ${getSelectStyle(

@@ -33,15 +33,20 @@ export default function MisAnuncios() {
   useEffect(() => {
     if (usuarioId === null) return;
 
+    let activo = true;
     const cargarResumen = async () => {
       try {
-        setResumen(await dashboardService.obtenerResumen());
+        const resumen = await dashboardService.obtenerResumen();
+        if (activo) setResumen(resumen);
       } catch {
         // El banner de uso del plan es opcional; no bloquea la lista.
       }
     };
 
     cargarResumen();
+    return () => {
+      activo = false;
+    };
   }, [usuarioId]);
 
   if (usuarioId === null) {

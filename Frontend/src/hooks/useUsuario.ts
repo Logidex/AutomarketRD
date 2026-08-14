@@ -1,12 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { usuarioService, type UsuarioCuenta } from '../services/usuario.service';
 
-export const useUsuarioCuenta = (enabled = true) => {
+export const useUsuarioCuenta = (usuarioId?: number) => {
   return useQuery<UsuarioCuenta>({
-    queryKey: ['usuario-cuenta'],
+    queryKey: ['usuario-cuenta', usuarioId],
     queryFn: () => usuarioService.obtenerCuenta(),
-    enabled,
-    staleTime: 1000 * 60 * 5,
+    enabled: usuarioId != null,
+    staleTime: 0,
     retry: false,
   });
 };

@@ -27,7 +27,7 @@ export default function Login() {
         password,
       });
 
-      if (!response.token || !response.usuario) {
+      if (!response.usuario) {
         await Swal.fire({
           icon: "error",
           title: "Respuesta incompleta",
@@ -166,10 +166,14 @@ export default function Login() {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-600 mb-2">
+              <label
+                htmlFor="loginEmail"
+                className="block text-sm font-medium text-gray-600 mb-2"
+              >
                 Email
               </label>
               <input
+                id="loginEmail"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -180,11 +184,15 @@ export default function Login() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-600 mb-2">
+              <label
+                htmlFor="loginPassword"
+                className="block text-sm font-medium text-gray-600 mb-2"
+              >
                 Contraseña
               </label>
             <div className="relative">
               <input
+                id="loginPassword"
                 type={mostrarPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

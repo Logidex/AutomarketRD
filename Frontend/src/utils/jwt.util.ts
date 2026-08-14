@@ -1,18 +1,13 @@
 export function getUserIdFromToken(): number | null {
-  const token = localStorage.getItem("token");
-  if (!token) return null;
-
+  // El JWT está en una cookie HttpOnly (no accesible desde JS).
+  // El id se lee del usuario (metadatos no sensibles) guardado en localStorage.
   try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
+    const crudo =
+      localStorage.getItem("user:v1") ?? localStorage.getItem("user");
+    if (!crudo) return null;
 
-    const rawId =
-      payload.nameid ??
-      payload.sub ??
-      payload.userId ??
-      payload.userid ??
-      payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
-
-    const parsed = Number(rawId);
+    const usuario = JSON.parse(crudo) as { usuarioId?: unknown };
+    const parsed = Number(usuario?.usuarioId);
     return Number.isFinite(parsed) ? parsed : null;
   } catch {
     return null;
