@@ -102,7 +102,7 @@ export const anuncioService = {
     const response = await api.delete<{ mensaje: string }>(
       `/api/anuncios/${id}/imagenes`,
       {
-        data: { urlImagen }, // El truco de Axios para el DELETE
+        data: { urlImagen },
       },
     );
     return response.data;
@@ -115,6 +115,31 @@ export const anuncioService = {
   async eliminarAnuncio(id: number): Promise<{ mensaje: string }> {
     const response = await api.delete<{ mensaje: string }>(
       `/api/anuncios/${id}`,
+    );
+    return response.data;
+  },
+
+  // Destacados
+  async marcarComoDestacado(id: number): Promise<{ mensaje: string }> {
+    const response = await api.patch<{ mensaje: string }>(
+      `/api/anuncios/${id}/destacar`,
+    );
+    return response.data;
+  },
+
+  async quitarDestacado(id: number): Promise<{ mensaje: string }> {
+    const response = await api.patch<{ mensaje: string }>(
+      `/api/anuncios/${id}/quitar-destacado`,
+    );
+    return response.data;
+  },
+
+  async obtenerDestacados(
+    pagina = 1,
+    tamanoPagina = 20,
+  ): Promise<PagedResult<AnuncioListado>> {
+    const response = await api.get<PagedResult<AnuncioListado>>(
+      `/api/anuncios/destacados?pagina=${pagina}&tamanoPagina=${tamanoPagina}`,
     );
     return response.data;
   },

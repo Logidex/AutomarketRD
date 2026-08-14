@@ -14,6 +14,10 @@ public class SuscripcionDealer
 
     public int LimiteAnuncios => (int)Nivel;
 
+    // Navigation to PlanCatalogo for CuotaDestacados
+    public int? PlanCatalogoId { get; private set; }
+    public virtual PlanCatalogo? Plan { get; private set; }
+
     public DateTime FechaInicioUtc { get; private set; }
     public DateTime FechaVencimientoUtc { get; private set; }
     public DateTime? FechaRecordatorioEnviadoUtc { get; private set; }
@@ -40,6 +44,19 @@ public class SuscripcionDealer
         if (DateTime.UtcNow > FechaVencimientoUtc) return false;
 
         return cantidadAnunciosActuales < LimiteAnuncios;
+    }
+
+    /// <summary>
+    /// Verifica si la suscripción permite destacar más anuncios.
+    /// Requiere el plan del catálogo para obtener la cuota.
+    /// </summary>
+    public bool PermiteDestacarMas(int destacadosActuales, PlanCatalogo plan)
+    {
+        if (DateTime.UtcNow > FechaVencimientoUtc) return false;
+        if (Estado != EstadoSuscripcion.Activa) return false;
+        if (plan == null) return false;
+
+        return destacadosActuales < plan.CuotaDestacados;
     }
 
     public void CambiarPlan(PlanNivel nuevoNivel, CicloFacturacion nuevoCiclo)

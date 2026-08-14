@@ -9,6 +9,7 @@ public class PlanCatalogoDto
     public string Nombre { get; set; } = string.Empty;
     public string? Descripcion { get; set; }
     public int LimiteAnuncios { get; set; }
+    public int CuotaDestacados { get; set; }
 
     /// <summary>Precio base mensual en RD$.</summary>
     public decimal PrecioMensual { get; set; }
@@ -38,6 +39,7 @@ public class PlanCatalogoCreateDto
     public decimal PrecioMensual { get; set; }
     public decimal DescuentoTrimestralPorcentaje { get; set; }
     public decimal DescuentoAnualPorcentaje { get; set; }
+    public int CuotaDestacados { get; set; }
     public bool Activo { get; set; } = true;
 }
 
@@ -48,5 +50,6 @@ public class PlanCatalogoUpdateDto
     public decimal PrecioMensual { get; set; }
     public decimal DescuentoTrimestralPorcentaje { get; set; }
     public decimal DescuentoAnualPorcentaje { get; set; }
+    public int CuotaDestacados { get; set; }
     public bool Activo { get; set; }
 }

@@ -1,6 +1,6 @@
 # AutoMarketRDSpn
 
-AutoMarketRDSpn es una plataforma de compraventa de vehículos pensada para conectar compradores, vendedores y dealers en un mismo lugar. El proyecto está organizado como una solución full stack: un backend en .NET 8 con PostgreSQL y Docker, y un frontend en React + Vite + TypeScript + Tailwind.
+AutoMarketRDSpn es una plataforma de compraventa de vehículos pensada para conectar compradores, vendedores y dealers en un mismo lugar. El proyecto está organizado como una solución full stack: un backend en .NET 10 con PostgreSQL y Docker, y un frontend en React + Vite + TypeScript + Tailwind.
 
 Este README está escrito para que cualquier nuevo desarrollador pueda entender el proyecto rápidamente: qué hace, cómo está dividido, cómo correrlo en local y qué partes están listas hoy.
 

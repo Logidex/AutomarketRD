@@ -40,7 +40,9 @@ public class CatalogoService : ICatalogoService
             Precio = a.Precio,
             Moneda = a.Moneda,
             Kilometraje = a.Kilometraje,
-            FotoPrincipal = AnuncioFotos.ObtenerPrincipal(a.Fotos)
+            FotoPrincipal = AnuncioFotos.ObtenerPrincipal(a.Fotos),
+            PlanNivel = a.Usuario?.PerfilDealer?.Suscripcion?.Nivel.ToString(),
+            CreatedAt = a.CreatedAt
         }).ToList();
 
         // 4. Empaquetamos todo en nuestra caja maestra

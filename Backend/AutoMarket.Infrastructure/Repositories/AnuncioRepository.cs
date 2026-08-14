@@ -315,6 +315,44 @@ public class AnuncioRepository : IAnuncioRepository
             );
     }
 
+    public async Task<int> ContarDestacadosPorUsuarioAsync(int usuarioId)
+    {
+        return await _context.Anuncios
+            .CountAsync(a =>
+                a.UsuarioId == usuarioId &&
+                a.EsDestacado &&
+                a.FechaDestacadoHasta.HasValue &&
+                a.FechaDestacadoHasta.Value > DateTime.UtcNow &&
+                a.Estado == "Publicado"
+            );
+    }
+
+    public async Task<(IEnumerable<Anuncio> Anuncios, int Total)>
+        ObtenerDestacadosPaginadosAsync(int pagina, int tamanoPagina)
+    {
+        var query = _context.Anuncios
+            .Include(a => a.Usuario)
+                .ThenInclude(u => u.PerfilDealer)
+                    .ThenInclude(p => p!.Suscripcion)
+            .Where(a =>
+                a.Estado == "Publicado" &&
+                a.EsDestacado &&
+                a.FechaDestacadoHasta.HasValue &&
+                a.FechaDestacadoHasta.Value > DateTime.UtcNow)
+            .AsNoTracking();
+
+        int total = await query.CountAsync();
+
+        var anuncios = await query
+            .OrderByDescending(a => a.Usuario!.PerfilDealer!.Suscripcion!.Nivel)
+            .ThenByDescending(a => a.FechaDestacadoHasta)
+            .Skip((pagina - 1) * tamanoPagina)
+            .Take(tamanoPagina)
+            .ToListAsync();
+
+        return (anuncios, total);
+    }
+
     public async Task<IEnumerable<Anuncio>>
         ObtenerTodosParaAdminAsync()
     {
@@ -344,13 +382,17 @@ public class AnuncioRepository : IAnuncioRepository
         int tamanoPagina)
     {
         var query = _context.Anuncios
+            .Include(a => a.Usuario)
+                .ThenInclude(u => u.PerfilDealer)
+                    .ThenInclude(p => p!.Suscripcion)
             .Where(a => a.Estado == "Publicado")
             .AsNoTracking();
 
         int total = await query.CountAsync();
 
         var anuncios = await query
-            .OrderByDescending(a => a.CreatedAt)
+            .OrderByDescending(a => a.Usuario!.PerfilDealer!.Suscripcion!.Nivel)
+            .ThenByDescending(a => a.CreatedAt)
             .Skip((pagina - 1) * tamanoPagina)
             .Take(tamanoPagina)
             .ToListAsync();

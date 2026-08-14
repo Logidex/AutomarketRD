@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { FaTrash, FaEye } from "react-icons/fa";
+import { FaTrash, FaEye, FaStar } from "react-icons/fa";
 import type { AnuncioListado } from "../types/anuncio.types";
 import { urlImagen } from "../utils/imagen";
 import { formatearPrecio } from "../utils/formato";
@@ -79,6 +79,13 @@ export default function AnuncioCard({
             alt={nombreAnuncio}
             className="h-56 w-full object-cover lg:h-full lg:min-h-[240px]"
           />
+          {anuncio.esDestacado && anuncio.fechaDestacadoHasta && new Date(anuncio.fechaDestacadoHasta) > new Date() && (
+            <div className="absolute left-3 top-3 z-10">
+              <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500 to-yellow-600 px-3 py-1 text-xs font-bold text-white">
+                <FaStar className="w-3 h-3" /> Destacado
+              </span>
+            </div>
+          )}
             <div className="absolute left-3 top-3">
               <span
                 className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${getEstadoStyle(

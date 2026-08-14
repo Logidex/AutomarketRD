@@ -52,6 +52,9 @@ public class PlanCatalogoService : IPlanCatalogoService
         if (dto.PrecioMensual < 0)
             throw new BusinessRuleException("El precio mensual no puede ser negativo.");
 
+        if (dto.CuotaDestacados < 0)
+            throw new BusinessRuleException("La cuota de destacados no puede ser negativa.");
+
         var plan = new PlanCatalogo
         {
             Nivel = dto.Nivel,
@@ -60,6 +63,7 @@ public class PlanCatalogoService : IPlanCatalogoService
             PrecioMensual = dto.PrecioMensual,
             DescuentoTrimestralPorcentaje = dto.DescuentoTrimestralPorcentaje,
             DescuentoAnualPorcentaje = dto.DescuentoAnualPorcentaje,
+            CuotaDestacados = dto.CuotaDestacados,
             Activo = dto.Activo
         };
 
@@ -75,11 +79,15 @@ public class PlanCatalogoService : IPlanCatalogoService
         if (dto.PrecioMensual < 0)
             throw new BusinessRuleException("El precio mensual no puede ser negativo.");
 
+        if (dto.CuotaDestacados < 0)
+            throw new BusinessRuleException("La cuota de destacados no puede ser negativa.");
+
         plan.Nombre = dto.Nombre;
         plan.Descripcion = dto.Descripcion;
         plan.PrecioMensual = dto.PrecioMensual;
         plan.DescuentoTrimestralPorcentaje = dto.DescuentoTrimestralPorcentaje;
         plan.DescuentoAnualPorcentaje = dto.DescuentoAnualPorcentaje;
+        plan.CuotaDestacados = dto.CuotaDestacados;
         plan.Activo = dto.Activo;
 
         await _repository.ActualizarAsync(plan);
@@ -110,6 +118,7 @@ private static PlanCatalogoDto MapearPublico(PlanCatalogo plan)
             Nombre = plan.Nombre,
             Descripcion = plan.Descripcion,
             LimiteAnuncios = plan.LimiteAnuncios,
+            CuotaDestacados = plan.CuotaDestacados,
             PrecioMensual = plan.PrecioMensual,
             DescuentoTrimestralPorcentaje = plan.DescuentoTrimestralPorcentaje,
             DescuentoAnualPorcentaje = plan.DescuentoAnualPorcentaje
@@ -127,6 +136,7 @@ private static PlanCatalogoDto MapearPublico(PlanCatalogo plan)
             Nombre = plan.Nombre,
             Descripcion = plan.Descripcion,
             LimiteAnuncios = plan.LimiteAnuncios,
+            CuotaDestacados = plan.CuotaDestacados,
             PrecioMensual = plan.PrecioMensual,
             DescuentoTrimestralPorcentaje = plan.DescuentoTrimestralPorcentaje,
             DescuentoAnualPorcentaje = plan.DescuentoAnualPorcentaje,

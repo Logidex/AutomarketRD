@@ -67,6 +67,7 @@ export interface PlanAdmin {
   nombre: string;
   descripcion: string | null;
   limiteAnuncios: number;
+  cuotaDestacados: number;
   precioMensual: number;
   precioTrimestral: number;
   precioAnual: number;
@@ -80,6 +81,7 @@ export interface PlanAdminForm {
   nombre: string;
   descripcion?: string | null;
   limiteAnuncios: number;
+  cuotaDestacados: number;
   precioMensual: number;
   descuentoTrimestralPorcentaje: number;
   descuentoAnualPorcentaje: number;

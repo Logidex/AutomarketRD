@@ -37,6 +37,11 @@ public class Anuncio
 
     public bool EnOferta => PrecioAnterior.HasValue && PrecioAnterior.Value > Precio;
 
+    // Destacados: el dealer elige qué anuncios destacar dentro de su cuota de plan
+    public bool EsDestacado { get; private set; }
+    public DateTime? FechaDestacadoHasta { get; private set; }
+
+    public bool EstaDestacadoVigente => EsDestacado && FechaDestacadoHasta.HasValue && FechaDestacadoHasta.Value > DateTime.UtcNow;
 
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
@@ -446,5 +451,37 @@ public class Anuncio
     public void FijarOferta(decimal? precioAnterior)
     {
         PrecioAnterior = precioAnterior;
+    }
+
+    // ========================================================
+    // 9. DESTACADOS
+    // ========================================================
+    public void MarcarComoDestacado(DateTime hasta)
+    {
+        if (hasta <= DateTime.UtcNow)
+            throw new ArgumentException("La fecha de fin debe ser futura.");
+
+        EsDestacado = true;
+        FechaDestacadoHasta = hasta;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void QuitarDestacado()
+    {
+        EsDestacado = false;
+        FechaDestacadoHasta = null;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void RenovarDestacado(DateTime nuevoHasta)
+    {
+        if (!EsDestacado)
+            throw new InvalidOperationException("El anuncio no está marcado como destacado.");
+
+        if (nuevoHasta <= DateTime.UtcNow)
+            throw new ArgumentException("La fecha de fin debe ser futura.");
+
+        FechaDestacadoHasta = nuevoHasta;
+        UpdatedAt = DateTime.UtcNow;
     }
 }

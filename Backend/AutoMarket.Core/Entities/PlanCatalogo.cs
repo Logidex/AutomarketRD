@@ -31,4 +31,7 @@ public class PlanCatalogo
 
     /// <summary>Límite de anuncios del plan, derivado del enum.</summary>
     public int LimiteAnuncios => (int)Nivel;
+
+    /// <summary>Cuota de anuncios destacados permitidos simultáneamente.</summary>
+    public int CuotaDestacados { get; set; }
 }

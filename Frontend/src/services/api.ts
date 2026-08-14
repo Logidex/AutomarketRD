@@ -1,7 +1,6 @@
 import axios from "axios";
 
-const envUrl = (import.meta.env.VITE_API_URL as string | undefined)
-  ?.trim();
+const envUrl = (import.meta.env.VITE_API_URL as string | undefined)?.trim();
 
 // Si VITE_API_URL es "/api", se convierte en "".
 // Así, los servicios pueden seguir usando rutas como:
@@ -18,16 +17,28 @@ export const API_BASE_URL = baseURL;
 
 // Manejar respuestas y errores
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log("[API] Response:", response.config.url, response.status);
+    return response;
+  },
   (error) => {
+    console.error(
+      "[API] Error:",
+      error.config?.url,
+      error.response?.status,
+      error.response?.data,
+    );
     // Sesión expirada o cookie inválida
     if (error.response?.status === 401) {
-      localStorage.removeItem("user:v1");
-      localStorage.removeItem("user");
+      console.error("[AUTH 401]", {
+        url: error.config?.url,
+        method: error.config?.method,
+        status: error.response?.status,
+        data: error.response?.data,
+      });
 
-      if (!window.location.pathname.startsWith("/login")) {
-        window.location.href = "/login";
-      }
+      // No redirigimos todavía.
+      // Primero identificaremos qué petición está fallando.
     }
 
     // Rate limiting
@@ -48,10 +59,7 @@ api.interceptors.response.use(
 
       if (backendMessage) {
         error.message = backendMessage;
-      } else if (
-        erroresValidacion &&
-        typeof erroresValidacion === "object"
-      ) {
+      } else if (erroresValidacion && typeof erroresValidacion === "object") {
         const detalles = Object.values(erroresValidacion)
           .flat()
           .filter((value): value is string => typeof value === "string");

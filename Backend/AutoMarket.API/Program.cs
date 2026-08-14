@@ -170,33 +170,50 @@ try
     }
 
     builder.Services.AddAuthentication(
-        JwtBearerDefaults.AuthenticationScheme)
-        .AddJwtBearer(options =>
+    JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters =
+            new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+
+                ValidIssuer =
+                    builder.Configuration["Jwt:Issuer"],
+
+                ValidAudience =
+                    builder.Configuration["Jwt:Audience"],
+
+                IssuerSigningKey =
+                    new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(jwtSecret)),
+
+                NameClaimType = ClaimTypes.Name,
+                RoleClaimType = ClaimTypes.Role,
+
+                ClockSkew = TimeSpan.Zero
+            };
+
+        options.Events = new JwtBearerEvents
         {
-            options.TokenValidationParameters =
-                new TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
+            OnMessageReceived = context =>
+            {
+                var token =
+                    context.Request.Cookies["automarket_token"];
 
-                    ValidIssuer =
-                        builder.Configuration["Jwt:Issuer"],
+                Console.WriteLine(
+                    $"[JWT] Cookie recibida: {!string.IsNullOrWhiteSpace(token)}"
+                );
 
-                    ValidAudience =
-                        builder.Configuration["Jwt:Audience"],
+                context.Token = token;
 
-                    IssuerSigningKey =
-                        new SymmetricSecurityKey(
-                            Encoding.UTF8.GetBytes(jwtSecret)),
-
-                    NameClaimType = ClaimTypes.Name,
-                    RoleClaimType = ClaimTypes.Role,
-
-                    ClockSkew = TimeSpan.Zero
-                };
-        });
+                return Task.CompletedTask;
+            }
+        };
+    });
 
     builder.Services.AddAuthorization();
 
@@ -332,16 +349,16 @@ try
     // FORWARDED HEADERS
     // =======================================================
 
-     builder.Services.Configure<ForwardedHeadersOptions>(
-         options =>
-         {
-             options.ForwardedHeaders =
-                 ForwardedHeaders.XForwardedFor
-                 | ForwardedHeaders.XForwardedProto;
+    builder.Services.Configure<ForwardedHeadersOptions>(
+        options =>
+        {
+            options.ForwardedHeaders =
+                ForwardedHeaders.XForwardedFor
+                | ForwardedHeaders.XForwardedProto;
 
-             options.KnownIPNetworks.Clear();
-             options.KnownProxies.Clear();
-         });
+            options.KnownIPNetworks.Clear();
+            options.KnownProxies.Clear();
+        });
 
 
     var app = builder.Build();

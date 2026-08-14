@@ -586,6 +586,82 @@ var anunciosDto = anuncios
         return true;
     }
 
+    public async Task<bool> MarcarComoDestacadoAsync(int id, int usuarioId)
+    {
+        var anuncio = await _repository.ObtenerPorIdAsync(id);
+
+        if (anuncio == null)
+            throw new KeyNotFoundException("Anuncio no encontrado.");
+
+        if (anuncio.UsuarioId != usuarioId)
+            throw new UnauthorizedAccessException("No tienes permiso para modificar este anuncio.");
+
+        if (anuncio.Estado != "Publicado")
+            throw new BusinessRuleException("Solo se pueden destacar anuncios publicados.");
+
+        var usuario = await _usuarioRepository.ObtenerDealerConPerfilPorIdAsync(usuarioId);
+        var suscripcion = usuario?.PerfilDealer?.Suscripcion;
+        var plan = usuario?.PerfilDealer?.Suscripcion?.Plan; // Need to include Plan in query
+
+        if (suscripcion == null || plan == null)
+            throw new BusinessRuleException("Tu cuenta no tiene un plan de suscripción activo.");
+
+        if (suscripcion.Estado != Core.Entities.Enums.EstadoSuscripcion.Activa)
+            throw new BusinessRuleException("Tu suscripción no está activa.");
+
+        if (suscripcion.FechaVencimientoUtc <= DateTime.UtcNow)
+            throw new BusinessRuleException("Tu suscripción ha vencido.");
+
+        // Contar anuncios destacados actuales del usuario
+        int destacadosActuales = await _repository.ContarDestacadosPorUsuarioAsync(usuarioId);
+
+        if (!suscripcion.PermiteDestacarMas(destacadosActuales, plan))
+            throw new BusinessRuleException($"Has alcanzado el límite de anuncios destacados de tu plan ({plan.CuotaDestacados}).");
+
+        // Destacar por 30 días (o hasta fin de suscripción)
+        var hasta = DateTime.UtcNow.AddDays(30);
+        if (hasta > suscripcion.FechaVencimientoUtc)
+            hasta = suscripcion.FechaVencimientoUtc;
+
+        anuncio.MarcarComoDestacado(hasta);
+        await _repository.ActualizarAsync(anuncio);
+        await _repository.GuardarCambiosAsync();
+
+        return true;
+    }
+
+    public async Task<bool> QuitarDestacadoAsync(int id, int usuarioId)
+    {
+        var anuncio = await _repository.ObtenerPorIdAsync(id);
+
+        if (anuncio == null)
+            throw new KeyNotFoundException("Anuncio no encontrado.");
+
+        if (anuncio.UsuarioId != usuarioId)
+            throw new UnauthorizedAccessException("No tienes permiso para modificar este anuncio.");
+
+        if (!anuncio.EsDestacado)
+            throw new BusinessRuleException("El anuncio no está destacado.");
+
+        anuncio.QuitarDestacado();
+        await _repository.ActualizarAsync(anuncio);
+        await _repository.GuardarCambiosAsync();
+
+        return true;
+    }
+
+    public async Task<PagedResult<AnuncioListadoDto>> ObtenerDestacadosAsync(int pagina, int tamanoPagina)
+    {
+        if (pagina < 1) pagina = 1;
+        if (tamanoPagina < 1 || tamanoPagina > 50) tamanoPagina = 20;
+
+        var (anuncios, total) = await _repository.ObtenerDestacadosPaginadosAsync(pagina, tamanoPagina);
+
+        var items = anuncios.Select(a => MapearListado(a, soloPrimeraFoto: true)).ToList();
+
+        return new PagedResult<AnuncioListadoDto>(items, total, pagina, tamanoPagina);
+    }
+
     private static AnuncioListadoDto MapearListado(Anuncio anuncio, bool soloPrimeraFoto)
     {
         var fotos = soloPrimeraFoto
@@ -622,7 +698,8 @@ var anunciosDto = anuncios
             Estado = anuncio.Estado,
             Vistas = anuncio.Vistas,
             Fotos = fotos,
-            BadgeSuscripcion = anuncio.Usuario?.PerfilDealer?.Suscripcion?.Nivel.ToString() ?? "Gratis"
+            BadgeSuscripcion = anuncio.Usuario?.PerfilDealer?.Suscripcion?.Nivel.ToString() ?? "Gratis",
+            CreatedAt = anuncio.CreatedAt
         };
     }
 }

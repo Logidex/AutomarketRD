@@ -57,6 +57,7 @@ public class UsuarioRepository : IUsuarioRepository
         return await _context.Usuarios
             .Include(u => u.PerfilDealer)
                 .ThenInclude(p => p!.Suscripcion)
+                    .ThenInclude(s => s!.Plan)
             .FirstOrDefaultAsync(u =>
                 u.UsuarioId == usuarioId
             );

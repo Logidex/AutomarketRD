@@ -5,6 +5,7 @@ using AutoMarket.Application.DTOs;
 using AutoMarket.Application.Services;
 using Microsoft.AspNetCore.Authorization;
 using AutoMarket.Application.Interfaces;
+using AutoMarket.Core.Exceptions;
 
 namespace AutoMarket.API.Controllers;
 
@@ -305,5 +306,51 @@ public class AnunciosController : ControllerBase
         {
             return StatusCode(403, new { mensaje = ex.Message });
         }
+    }
+
+    // ==========================================
+    // 12. DESTACADOS
+    // ==========================================
+    [HttpPatch("{id:int}/destacar")]
+    [Authorize(Roles = Roles.DealerVendedor)]
+    public async Task<IActionResult> MarcarComoDestacado(int id)
+    {
+        int usuarioId = User.ObtenerUsuarioId();
+
+        try
+        {
+            var ok = await _anuncioService.MarcarComoDestacadoAsync(id, usuarioId);
+            return Ok(new { mensaje = "Anuncio marcado como destacado." });
+        }
+        catch (KeyNotFoundException ex) { return NotFound(new { error = ex.Message }); }
+        catch (UnauthorizedAccessException ex) { return StatusCode(403, new { error = ex.Message }); }
+        catch (BusinessRuleException ex) { return BadRequest(new { error = ex.Message }); }
+    }
+
+    [HttpPatch("{id:int}/quitar-destacado")]
+    [Authorize(Roles = Roles.DealerVendedor)]
+    public async Task<IActionResult> QuitarDestacado(int id)
+    {
+        int usuarioId = User.ObtenerUsuarioId();
+
+        try
+        {
+            var ok = await _anuncioService.QuitarDestacadoAsync(id, usuarioId);
+            return Ok(new { mensaje = "Destacado quitado correctamente." });
+        }
+        catch (KeyNotFoundException ex) { return NotFound(new { error = ex.Message }); }
+        catch (UnauthorizedAccessException ex) { return StatusCode(403, new { error = ex.Message }); }
+        catch (BusinessRuleException ex) { return BadRequest(new { error = ex.Message }); }
+    }
+
+    [HttpGet("destacados")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ObtenerDestacados([FromQuery] int pagina = 1, [FromQuery] int tamanoPagina = 20)
+    {
+        if (pagina < 1) pagina = 1;
+        if (tamanoPagina < 1 || tamanoPagina > 50) tamanoPagina = 20;
+
+        var resultado = await _anuncioService.ObtenerDestacadosAsync(pagina, tamanoPagina);
+        return Ok(resultado);
     }
 }

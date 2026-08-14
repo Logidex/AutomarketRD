@@ -38,6 +38,16 @@ export interface AnuncioListado {
   vistas: number;
 
   fotos: string[];
+
+  // Nivel de suscripción del vendedor (para prioridad)
+  badgeSuscripcion?: string;
+  
+  // Para ordenamiento
+  createdAt?: string;
+
+  // Destacados
+  esDestacado?: boolean;
+  fechaDestacadoHasta?: string | null;
 }
 
 export interface PagedResult<T> {

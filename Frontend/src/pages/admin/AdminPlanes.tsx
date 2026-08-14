@@ -18,6 +18,7 @@ const PLAN_VACIO: PlanAdminForm = {
   nombre: "",
   descripcion: "",
   limiteAnuncios: 10,
+  cuotaDestacados: 0,
   precioMensual: 0,
   descuentoTrimestralPorcentaje: 0,
   descuentoAnualPorcentaje: 0,
@@ -53,6 +54,7 @@ function useAdminPlanesPage() {
       nombre: plan.nombre,
       descripcion: plan.descripcion ?? "",
       limiteAnuncios: plan.limiteAnuncios,
+      cuotaDestacados: plan.cuotaDestacados ?? 0,
       precioMensual: plan.precioMensual,
       descuentoTrimestralPorcentaje: plan.descuentoTrimestralPorcentaje,
       descuentoAnualPorcentaje: plan.descuentoAnualPorcentaje,
@@ -184,6 +186,7 @@ function TablaPlanes({ planes, onEditar, onEliminar }: PropsTabla) {
             <th className="px-4 py-3">Plan</th>
             <th className="px-4 py-3">Nivel</th>
             <th className="px-4 py-3">Límite anuncios</th>
+            <th className="px-4 py-3">Cuota destacados</th>
             <th className="px-4 py-3">Mensual</th>
             <th className="px-4 py-3">Trimestral</th>
             <th className="px-4 py-3">Anual</th>
@@ -207,6 +210,9 @@ function TablaPlanes({ planes, onEditar, onEliminar }: PropsTabla) {
               </td>
               <td className="px-4 py-3 text-gray-700">
                 {plan.limiteAnuncios}
+              </td>
+              <td className="px-4 py-3 text-gray-700 font-medium">
+                {plan.cuotaDestacados ?? 0}
               </td>
               <td className="px-4 py-3 font-medium text-gray-900">
                 {formatearRD$(plan.precioMensual)}
@@ -359,6 +365,21 @@ function ModalPlan({
             </div>
 
             <div>
+              <label htmlFor="planCuotaDestacados" className={labelClase}>Cuota de destacados</label>
+              <input
+                id="planCuotaDestacados"
+                name="cuotaDestacados"
+                type="number"
+                min={0}
+                value={form.cuotaDestacados}
+                onChange={onChange}
+                className={inputClase}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
               <label htmlFor="planPrecioMensual" className={labelClase}>Precio mensual (RD$)</label>
               <input
                 id="planPrecioMensual"
@@ -371,9 +392,7 @@ function ModalPlan({
                 className={inputClase}
               />
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor="planDescuentoTrimestral" className={labelClase}>
                 Descuento trimestral (%)
@@ -389,7 +408,9 @@ function ModalPlan({
                 className={inputClase}
               />
             </div>
+          </div>
 
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor="planDescuentoAnual" className={labelClase}>Descuento anual (%)</label>
               <input

@@ -35,13 +35,14 @@ public static class AuthCookieHelper
     private static CookieOptions CrearOpciones(
         IWebHostEnvironment environment)
     {
+        // En producción (HTTPS): Secure=true, SameSite=Lax
+        // En desarrollo/staging (HTTP local): Secure=false, SameSite=Lax
+        var esProduccion = environment.IsProduction();
+        
         return new CookieOptions
         {
             HttpOnly = true,
-            // En desarrollo (http://localhost) el navegador no guarda cookies Secure.
-            Secure = !environment.IsDevelopment(),
-            // Lax bloquea el envío de la cookie en solicitudes cross-site
-            // (mitigación CSRF para este SPA del mismo origen).
+            Secure = esProduccion,
             SameSite = SameSiteMode.Lax,
             Path = "/",
             Expires = DateTimeOffset.UtcNow.Add(Duracion)

@@ -74,17 +74,25 @@ public static class DatabaseSeeder
 
         var planes = new[]
         {
-            new { Nivel = PlanNivel.Gratis, Nombre = "Plan Gratis", Descripcion = "Publiqué para ver el primer vehículo gratis.", PrecioMensual = 0m, DescTrim = 0m, DescAnual = 0m },
-            new { Nivel = PlanNivel.Basico, Nombre = "Plan Básico", Descripcion = "Para vendedores que inician con hasta 50 vehículos.", PrecioMensual = 1500m, DescTrim = 7m, DescAnual = 15m },
-            new { Nivel = PlanNivel.Pro, Nombre = "Plan Pro", Descripcion = "Para vendedores activos con hasta 200 vehículos.", PrecioMensual = 3000m, DescTrim = 7m, DescAnual = 15m },
-            new { Nivel = PlanNivel.Elite, Nombre = "Plan Elite", Descripcion = "El máximo poder para hasta 500 vehículos.", PrecioMensual = 5500m, DescTrim = 7m, DescAnual = 15m }
+            new { Nivel = PlanNivel.Gratis, Nombre = "Plan Gratis", Descripcion = "Publiqué para ver el primer vehículo gratis.", PrecioMensual = 0m, DescTrim = 0m, DescAnual = 0m, CuotaDestacados = 0 },
+            new { Nivel = PlanNivel.Basico, Nombre = "Plan Básico", Descripcion = "Para vendedores que inician con hasta 50 vehículos.", PrecioMensual = 1500m, DescTrim = 7m, DescAnual = 15m, CuotaDestacados = 1 },
+            new { Nivel = PlanNivel.Pro, Nombre = "Plan Pro", Descripcion = "Para vendedores activos con hasta 200 vehículos.", PrecioMensual = 3000m, DescTrim = 7m, DescAnual = 15m, CuotaDestacados = 5 },
+            new { Nivel = PlanNivel.Elite, Nombre = "Plan Elite", Descripcion = "El máximo poder para hasta 500 vehículos.", PrecioMensual = 5500m, DescTrim = 7m, DescAnual = 15m, CuotaDestacados = 10 }
         };
 
         foreach (var p in planes)
         {
             var existente = await planRepository.ObtenerPorNivelAsync(p.Nivel);
             if (existente != null)
+            {
+                // Actualizar cuota de destacados si ya existe
+                if (existente.CuotaDestacados != p.CuotaDestacados)
+                {
+                    existente.CuotaDestacados = p.CuotaDestacados;
+                    await planRepository.ActualizarAsync(existente);
+                }
                 continue;
+            }
 
             await planRepository.AgregarAsync(new PlanCatalogo
             {
@@ -94,6 +102,7 @@ public static class DatabaseSeeder
                 PrecioMensual = p.PrecioMensual,
                 DescuentoTrimestralPorcentaje = p.DescTrim,
                 DescuentoAnualPorcentaje = p.DescAnual,
+                CuotaDestacados = p.CuotaDestacados,
                 Activo = true
             });
         }

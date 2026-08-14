@@ -10,4 +10,6 @@ public class AnuncioCatalogoDto
     public string Moneda { get; set; } = "DOP";
     public int Kilometraje { get; set; }
     public string? FotoPrincipal { get; set; }
+    public string? PlanNivel { get; set; }
+    public DateTime CreatedAt { get; set; }
 }

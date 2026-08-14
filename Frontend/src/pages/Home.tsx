@@ -6,6 +6,9 @@ import {
   FaMapMarkerAlt,
   FaSearch,
   FaTachometerAlt,
+  FaStar,
+  FaCrown,
+  FaGem,
 } from "react-icons/fa";
 import { useVehiculos } from "../hooks/useVehiculos";
 import type { AnuncioListado } from "../types/anuncio.types";
@@ -13,14 +16,42 @@ import logo from "../assets/AutoMarketRD_Logo.svg";
 import { urlImagen } from "../utils/imagen";
 import { formatearPrecio } from "../utils/formato";
 import MenuPublico from "../components/layout/MenuPublico";
+import { anuncioService } from "../services/anuncio.service";
+import { useQuery } from "@tanstack/react-query";
 import {
   TIPOS_VEHICULO,
   TRANSMISIONES,
   COMBUSTIBLES,
   etiquetaDe,
 } from "../constants/vehiculo.opciones";
+import { nombrePlan } from "../constants/planes";
 
 const TAMANO_PAGINA = 12;
+
+type PlanNivel = "Gratis" | "Basico" | "Pro" | "Elite";
+
+const COLOR_PLAN: Record<PlanNivel, string> = {
+  Elite: "bg-gradient-to-r from-amber-500 to-yellow-600 text-white",
+  Pro: "bg-gradient-to-r from-purple-500 to-pink-500 text-white",
+  Basico: "bg-gradient-to-r from-blue-500 to-cyan-500 text-white",
+  Gratis: "bg-gradient-to-r from-gray-500 to-gray-600 text-white",
+};
+
+const ICONO_PLAN: Record<PlanNivel, React.ReactNode> = {
+  Elite: <FaCrown className="w-3 h-3" />,
+  Pro: <FaGem className="w-3 h-3" />,
+  Basico: <FaStar className="w-3 h-3" />,
+  Gratis: <span className="text-xs font-bold">F</span>,
+};
+
+function BadgePlan({ nivel, className = "" }: { nivel: PlanNivel; className?: string }) {
+  return (
+    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${COLOR_PLAN[nivel]} ${className}`}>
+      {ICONO_PLAN[nivel]}
+      {nombrePlan(nivel)}
+    </span>
+  );
+}
 
 interface Filtros {
   marca: string;
@@ -274,6 +305,8 @@ interface PropsTarjeta {
 }
 
 function TarjetaAnuncioHome({ anuncio, onAbrir }: PropsTarjeta) {
+  const planNivel = (anuncio.badgeSuscripcion as PlanNivel) ?? "Gratis";
+
   return (
     <button
       type="button"
@@ -286,6 +319,14 @@ function TarjetaAnuncioHome({ anuncio, onAbrir }: PropsTarjeta) {
           alt={`${anuncio.marca} ${anuncio.modelo}`}
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
+        <BadgePlan nivel={planNivel} className="absolute top-3 right-3 z-10" />
+        {anuncio.esDestacado && anuncio.fechaDestacadoHasta && new Date(anuncio.fechaDestacadoHasta) > new Date() && (
+          <div className="absolute left-3 top-3 z-10">
+            <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500 to-yellow-600 px-2.5 py-1 text-xs font-bold text-white">
+              <FaStar className="w-3 h-3" /> Destacado
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-1 flex-col p-5">
@@ -459,6 +500,15 @@ export default function Home() {
     irAPagina,
   } = useBusquedaVehiculos();
 
+  // Anuncios destacados (desde endpoint del backend con cuotas por plan)
+  const { data: destacadosData, isLoading: destacadosCargando } = useQuery({
+    queryKey: ["anuncios-destacados"],
+    queryFn: () => anuncioService.obtenerDestacados(1, 6),
+    staleTime: 1000 * 60 * 10,
+  });
+
+  const anunciosDestacados = destacadosData?.items ?? [];
+
   return (
     <div className="min-h-screen bg-[#0c101b] text-white">
       {/* HEADER */}
@@ -467,7 +517,7 @@ export default function Home() {
           <img
             src={logo}
             alt="AutoMarket RD"
-            className="h-20 w-auto object-contain"
+            className="h-24 w-auto object-contain drop-shadow-[0_0_20px_rgba(59,130,246,0.4)]"
           />
         </Link>
 
@@ -481,6 +531,42 @@ export default function Home() {
         onChange={handleChange}
         onSubmit={aplicarBusqueda}
       />
+
+      {/* DESTACADOS POR SUSCRIPCIÓN */}
+      {anunciosDestacados.length > 0 && (
+        <section className="mx-auto max-w-6xl px-6 py-10 sm:px-8">
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <FaCrown className="text-amber-400" />
+              <h2 className="text-xl font-bold">Destacados <span className="text-amber-400">Premium</span></h2>
+            </div>
+            <span className="text-xs text-[#9aa1b1]">Ordenados por plan: Elite → Pro → Básico → Gratis</span>
+          </div>
+
+          {destacadosCargando ? (
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="aspect-[16/10] rounded-2xl bg-[#13161d]" />
+                  <div className="mt-4 h-4 bg-[#13161d] rounded w-3/4" />
+                  <div className="mt-2 h-4 bg-[#13161d] rounded w-1/2" />
+                  <div className="mt-4 h-3 bg-[#13161d] rounded w-full" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {anunciosDestacados.map((anuncio) => (
+                <TarjetaAnuncioHome
+                  key={anuncio.id}
+                  anuncio={anuncio}
+                  onAbrir={() => navigate(`/anuncio/${anuncio.id}`)}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+      )}
 
       {/* VITRINA */}
       <main className="mx-auto max-w-6xl px-6 py-10 sm:px-8">
