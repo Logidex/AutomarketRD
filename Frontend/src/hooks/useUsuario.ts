@@ -13,11 +13,19 @@ export const useUsuarioCuenta = (usuarioId?: number) => {
 
 export const useActualizarDatos = () => {
   const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: (datos: { nombre: string; apellido: string; telefonoPersonal?: string | null }) =>
-      usuarioService.actualizarDatos(datos),
+    mutationFn: (datos: {
+      nombre: string;
+      apellido: string;
+      telefonoPersonal?: string | null;
+    }) => usuarioService.actualizarDatos(datos),
+
     onSuccess: (cuenta) => {
-      queryClient.setQueryData(['usuario-cuenta'], cuenta);
+      queryClient.setQueryData(
+        ['usuario-cuenta', cuenta.usuarioId],
+        cuenta,
+      );
     },
   });
 };

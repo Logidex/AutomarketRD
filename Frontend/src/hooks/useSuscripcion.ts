@@ -59,6 +59,7 @@ export const useConfirmarPago = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['suscripcion'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-resumen'] });
+      queryClient.invalidateQueries({ queryKey: ['historial-pagos'] });
     },
-  });
+  );
 };
