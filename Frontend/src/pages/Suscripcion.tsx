@@ -8,6 +8,7 @@ import { ROLES } from "../constants/roles";
 import { formatearRD$, precioCicloDe, type Ciclo } from "../utils/formato";
 import logo from "../assets/AutoMarketRD_Logo.svg";
 import MenuPublico from "../components/layout/MenuPublico";
+import PlanCard from "../components/PlanCard";
 import { usePlanesCatalogo } from "../hooks/useSuscripcion";
 
 const CICLOS: Ciclo[] = ["Mensual", "Trimestral", "Anual"];
@@ -97,68 +98,52 @@ export default function Suscripcion() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
           {/* Tarjeta del plan Gratis */}
-          <div className="rounded-2xl border border-white/10 bg-[#17141a] p-6 flex flex-col">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-lg font-semibold">
-                {planGratis?.nombre ?? "Plan Gratis"}
-              </h3>
-              <span className="rounded-full bg-green-500/10 px-2 py-0.5 text-xs font-bold text-green-400">
-                Tu plan actual
-              </span>
-            </div>
-            <p className="text-sm text-[#9aa1b1] mb-4">
-              {planGratis?.descripcion ?? "Para probar la plataforma."}
-            </p>
-            <div className="text-3xl font-bold mb-1">
-              {planGratis ? formatearRD$(precioCiclo(planGratis)) : "Gratis"}
-            </div>
-            <p className="text-xs text-[#9aa1b1] mb-6">
-              {planGratis
-                ? `${planGratis.limiteAnuncios} ${planGratis.limiteAnuncios === 1 ? "anuncio" : "anuncios"}`
-                : "1 anuncio"}
-            </p>
-            <div className="mt-auto">
-              <button
-                type="button"
-                onClick={() => navigate("/dashboard")}
-                className="block w-full rounded-lg border border-white/20 py-2.5 text-center text-sm font-semibold hover:border-white transition-colors"
-              >
-                Ir a mi panel
-              </button>
-            </div>
-          </div>
+          {planGratis && (
+            <PlanCard
+              plan={planGratis}
+              precio="Gratis"
+              ciclo={ciclo}
+              etiqueta="Tu plan actual"
+              boton={
+                <button
+                  type="button"
+                  onClick={() => navigate("/dashboard")}
+                  className="block w-full rounded-lg border border-white/20 py-2.5 text-center text-sm font-semibold hover:border-white transition-colors"
+                >
+                  Ir a mi panel
+                </button>
+              }
+            />
+          )}
 
           {/* Planes de pago */}
           {planesPago.length > 0 ? (
-            planesPago.map((plan) => (
-              <div
-                key={plan.nivel}
-                className="rounded-2xl border border-white/10 bg-[#13161d] p-6 flex flex-col transition-colors hover:border-blue-500/40"
-              >
-                <h3 className="text-lg font-semibold mb-2">{plan.nombre}</h3>
-                <p className="text-sm text-[#9aa1b1] mb-4">{plan.descripcion}</p>
-                <div className="text-3xl font-bold mb-1">
-                  {formatearRD$(precioCiclo(plan))}
-                </div>
-                <p className="text-xs text-[#9aa1b1] mb-6">
-                  {plan.limiteAnuncios} anuncios
-                  {ciclo === "Mensual" && plan.descuentoAnualPorcentaje > 0 && (
-                    <> · hasta {plan.descuentoAnualPorcentaje}% en Anual</>
-                  )}
-                </p>
-                <div className="mt-auto">
-                  <button
-                    type="button"
-                    onClick={() => handleElegir(plan)}
-                    className="w-full rounded-lg bg-blue-500 py-2.5 text-sm font-semibold hover:bg-blue-600 transition-colors"
-                  >
-                    Elegir este plan
-                  </button>
-                </div>
-              </div>
-            ))
+            planesPago.map((plan) => {
+              const esPopular = plan.nivel === "Pro";
+              const esPremium = plan.nivel === "Elite";
+              return (
+                <PlanCard
+                  key={plan.nivel}
+                  plan={plan}
+                  precio={formatearRD$(precioCiclo(plan))}
+                  ciclo={ciclo}
+                  etiqueta={esPopular ? "Más popular" : esPremium ? "Máximo rendimiento" : undefined}
+                  destacado={esPopular}
+                  premium={esPremium}
+                  boton={
+                    <button
+                      type="button"
+                      onClick={() => handleElegir(plan)}
+                      className="w-full rounded-lg bg-blue-500 py-2.5 text-sm font-semibold hover:bg-blue-600 transition-colors"
+                    >
+                      Elegir este plan
+                    </button>
+                  }
+                />
+              );
+            })
           ) : (
             <p className="col-span-3 text-center text-[#9aa1b1]">
               Los planes están disponibles próximamente.

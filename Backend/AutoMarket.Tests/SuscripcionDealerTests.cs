@@ -54,7 +54,7 @@ public class SuscripcionDealerTests
         var suscripcion = new SuscripcionDealer(1, PlanNivel.Pro, CicloFacturacion.Mensual);
 
         // Act
-        var resultado = suscripcion.PermiteNuevosAnuncios((int)PlanNivel.Pro - 1);
+        var resultado = suscripcion.PermiteNuevosAnuncios(PlanConfig.LimiteAnuncios(PlanNivel.Pro) - 1);
 
         // Assert
         Assert.True(resultado);
@@ -70,7 +70,7 @@ public class SuscripcionDealerTests
         var suscripcion = new SuscripcionDealer(1, PlanNivel.Basico, CicloFacturacion.Mensual);
 
         // Act
-        var resultado = suscripcion.PermiteNuevosAnuncios((int)PlanNivel.Basico);
+        var resultado = suscripcion.PermiteNuevosAnuncios(PlanConfig.LimiteAnuncios(PlanNivel.Basico));
 
         // Assert
         Assert.False(resultado);

@@ -29,8 +29,8 @@ public class PlanCatalogo
 
     public bool Activo { get; set; } = true;
 
-    /// <summary>Límite de anuncios del plan, derivado del enum.</summary>
-    public int LimiteAnuncios => (int)Nivel;
+    /// <summary>Límite de anuncios del plan, según la configuración central.</summary>
+    public int LimiteAnuncios => PlanConfig.LimiteAnuncios(Nivel);
 
     /// <summary>Cuota de anuncios destacados permitidos simultáneamente.</summary>
     public int CuotaDestacados { get; set; }

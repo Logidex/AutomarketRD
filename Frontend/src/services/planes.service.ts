@@ -5,6 +5,7 @@ export interface PlanCatalogo {
   nombre: string;
   descripcion: string | null;
   limiteAnuncios: number;
+  cuotaDestacados: number;
   precioMensual: number;
   precioTrimestral: number;
   precioAnual: number;

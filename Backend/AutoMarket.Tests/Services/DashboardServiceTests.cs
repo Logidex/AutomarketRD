@@ -207,7 +207,7 @@ public class DashboardServiceTests : IDisposable
 
         // Assert
         Assert.Equal("Pro", resumen.PlanActual);
-        Assert.Equal((int)PlanNivel.Pro, resumen.LimiteAnuncios);
+        Assert.Equal(PlanConfig.LimiteAnuncios(PlanNivel.Pro), resumen.LimiteAnuncios);
         Assert.Equal(20, resumen.DiasRestantesSuscripcion);
         Assert.Equal(1, resumen.AnunciosActivos);
     }

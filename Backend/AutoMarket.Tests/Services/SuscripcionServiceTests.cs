@@ -481,7 +481,7 @@ public class SuscripcionServiceTests
         Assert.Equal(perfilId, resultado!.PerfilDealerId);
         Assert.Equal(PlanNivel.Elite, resultado.Nivel);
         Assert.Equal(EstadoSuscripcion.Activa, resultado.Estado);
-        Assert.Equal((int)PlanNivel.Elite, resultado.LimiteAnuncios);
+        Assert.Equal(PlanConfig.LimiteAnuncios(PlanNivel.Elite), resultado.LimiteAnuncios);
         Assert.True(resultado.Activa);
     }
 

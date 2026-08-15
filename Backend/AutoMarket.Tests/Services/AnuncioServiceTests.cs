@@ -449,9 +449,10 @@ public class AnuncioServiceTests
 
         var usuario = CrearUsuarioDealerConSuscripcion(idDueño, PlanNivel.Gratis, CicloFacturacion.Mensual, EstadoSuscripcion.Activa);
 
-        // Un anuncio ya publicado ocupa el único cupo del plan Gratis
+        // El plan Gratis ya llegó a su límite de anuncios publicados
         _mockRepo.Setup(r => r.ObtenerPorIdAsync(idAnuncio)).ReturnsAsync(anuncioEnBD);
-        _mockRepo.Setup(r => r.ContarAnunciosPorUsuarioAsync(idDueño)).ReturnsAsync(1);
+        _mockRepo.Setup(r => r.ContarAnunciosPorUsuarioAsync(idDueño))
+            .ReturnsAsync(PlanConfig.LimiteAnuncios(PlanNivel.Gratis));
         _mockUsuarioRepo.Setup(r => r.ObtenerDealerConPerfilPorIdAsync(idDueño)).ReturnsAsync(usuario);
 
         // 2 & 3. ACT & ASSERT

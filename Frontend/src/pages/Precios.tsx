@@ -4,13 +4,12 @@ import Swal from "sweetalert2";
 import { type PlanCatalogo } from "../services/planes.service";
 import { authService } from "../services/auth.service";
 import { ROLES } from "../constants/roles";
-import { formatearRD$, precioCicloDe } from "../utils/formato";
-import { FaPaypal } from "react-icons/fa";
+import { formatearRD$, precioCicloDe, type Ciclo } from "../utils/formato";
+import { FaPaypal, FaBolt } from "react-icons/fa";
 import logo from "../assets/AutoMarketRD_Logo.svg";
 import MenuPublico from "../components/layout/MenuPublico";
+import PlanCard from "../components/PlanCard";
 import { usePlanesCatalogo, useGenerarLinkPago } from "../hooks/useSuscripcion";
-
-type Ciclo = "Mensual" | "Trimestral" | "Anual";
 
 const CICLOS: Ciclo[] = ["Mensual", "Trimestral", "Anual"];
 
@@ -22,10 +21,8 @@ export default function Precios() {
   const generarLinkPago = useGenerarLinkPago();
 
   const precioCiclo = (plan: PlanCatalogo) => precioCicloDe(plan, ciclo);
-
   const precioEtiqueta = (plan: PlanCatalogo) => formatearRD$(precioCiclo(plan));
 
-  // Reglas visuales: solo el Gratis se resalta, los demás son opciones.
   const handleComprar = async (plan: PlanCatalogo) => {
     const usuario = authService.getCurrentUser();
 
@@ -91,8 +88,9 @@ export default function Precios() {
           <h1 className="text-4xl font-bold mb-3">
             Planes para tu agencia
           </h1>
-          <p className="text-[#9aa1b1]">
-            Publica, gestiona y vende más con los planes de AutoMarket RD.
+          <p className="mx-auto max-w-2xl text-[#9aa1b1]">
+            Mientras mejor es tu plan, <strong className="text-white">más rápido vendes</strong>:
+            tus vehículos aparecen primero en la vitrina y destacan en la portada.
           </p>
         </div>
 
@@ -116,76 +114,99 @@ export default function Precios() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
           {/* Tarjeta del plan Gratis */}
-          <div className="rounded-2xl border border-white/10 bg-[#17141a] p-6 flex flex-col">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-lg font-semibold">
-                {planGratis?.nombre ?? "Plan Gratis"}
-              </h3>
-              <span className="rounded-full bg-green-500/10 px-2 py-0.5 text-xs font-bold text-green-400">
-                Gratis
-              </span>
-            </div>
-            <p className="text-sm text-[#9aa1b1] mb-4">
-              {planGratis?.descripcion ?? "Para probar la plataforma."}
-            </p>
-            <div className="text-3xl font-bold mb-1">
-              {planGratis ? precioEtiqueta(planGratis) : "Gratis"}
-            </div>
-            <p className="text-xs text-[#9aa1b1] mb-6">
-              {planGratis
-                ? `${planGratis.limiteAnuncios} ${planGratis.limiteAnuncios === 1 ? "anuncio" : "anuncios"}`
-                : "1 anuncio"}
-            </p>
-            <div className="mt-auto">
-              <Link
-                to="/registro"
-                className="block w-full rounded-lg border border-white/20 py-2.5 text-center text-sm font-semibold hover:border-white transition-colors"
-              >
-                Registrarme
-              </Link>
-            </div>
-          </div>
+          {planGratis && (
+            <PlanCard
+              plan={planGratis}
+              precio="Gratis"
+              ciclo={ciclo}
+              etiqueta="Para probar"
+              boton={
+                <Link
+                  to="/registro"
+                  className="block w-full rounded-lg border border-white/20 py-2.5 text-center text-sm font-semibold hover:border-white transition-colors"
+                >
+                  Registrarme
+                </Link>
+              }
+            />
+          )}
 
           {/* Planes de pago */}
           {planesPago.length > 0 ? (
-            planesPago.map((plan) => (
-              <div
-                key={plan.nivel}
-                className="rounded-2xl border border-white/10 bg-[#13161d] p-6 flex flex-col transition-colors hover:border-blue-500/40"
-              >
-                <h3 className="text-lg font-semibold mb-2">{plan.nombre}</h3>
-                <p className="text-sm text-[#9aa1b1] mb-4">
-                  {plan.descripcion}
-                </p>
-                <div className="text-3xl font-bold mb-1">
-                  {precioEtiqueta(plan)}
-                </div>
-                <p className="text-xs text-[#9aa1b1] mb-6">
-                  {plan.limiteAnuncios} anuncios
-                  {ciclo === "Mensual" && plan.descuentoTrimestralPorcentaje > 0 && (
-                    <> · hasta {plan.descuentoAnualPorcentaje}% en Anual</>
-                  )}
-                </p>
-                <div className="mt-auto">
-                  <button
-                    type="button"
-                    onClick={() => handleComprar(plan)}
-                    disabled={comprandoPlan === plan.nivel}
-                    className="w-full rounded-lg bg-blue-500 py-2.5 text-sm font-semibold hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed transition-colors"
-                  >
-                    {comprandoPlan === plan.nivel ? "Redirigiendo..." : "Comprar Plan"}
-                  </button>
-                </div>
-              </div>
-            ))
+            planesPago.map((plan) => {
+              const esPopular = plan.nivel === "Pro";
+              const esPremium = plan.nivel === "Elite";
+              return (
+                <PlanCard
+                  key={plan.nivel}
+                  plan={plan}
+                  precio={precioEtiqueta(plan)}
+                  ciclo={ciclo}
+                  etiqueta={esPopular ? "Más popular" : esPremium ? "Máximo rendimiento" : undefined}
+                  destacado={esPopular}
+                  premium={esPremium}
+                  boton={
+                    <button
+                      type="button"
+                      onClick={() => handleComprar(plan)}
+                      disabled={comprandoPlan === plan.nivel}
+                      className="w-full rounded-lg bg-blue-500 py-2.5 text-sm font-semibold hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed transition-colors"
+                    >
+                      {comprandoPlan === plan.nivel ? "Redirigiendo..." : "Comprar Plan"}
+                    </button>
+                  }
+                />
+              );
+            })
           ) : (
             <p className="col-span-3 text-center text-[#9aa1b1]">
               Los planes están disponibles próximamente.
             </p>
           )}
         </div>
+
+        {/* Por qué un mejor plan vende más rápido */}
+        <section className="mt-16 rounded-2xl border border-white/10 bg-[#11141a] p-8">
+          <div className="flex items-center gap-3 mb-6">
+            <FaBolt className="text-2xl text-amber-400" />
+            <h2 className="text-xl font-bold">
+              ¿Por qué un mejor plan vende más rápido?
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            <div>
+              <h3 className="font-semibold mb-1 text-blue-400">
+                Prioridad en la vitrina
+              </h3>
+              <p className="text-sm text-[#9aa1b1]">
+                La vitrina y las búsquedas ordenan los vehículos por plan:
+                los anuncios de Elite, Pro y Básico aparecen antes que los del
+                plan Gratis.
+              </p>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-1 text-violet-400">
+                Destacados en la portada
+              </h3>
+              <p className="text-sm text-[#9aa1b1]">
+                Pro y Elite muestran sus vehículos en la sección
+                "Destacados Premium" de la página principal, la zona de mayor
+                visibilidad.
+              </p>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-1 text-amber-400">
+                Confianza y reconocimiento
+              </h3>
+              <p className="text-sm text-[#9aa1b1]">
+                Tu vehículo lleva el badge de tu plan, lo que transmite seriedad
+                y atrae más contactos de compradores.
+              </p>
+            </div>
+          </div>
+        </section>
 
         {/* Método de pago */}
         <div className="mt-10 flex items-center justify-center gap-3 rounded-xl border border-[#3b2f2f] bg-[#1a1515] p-4">

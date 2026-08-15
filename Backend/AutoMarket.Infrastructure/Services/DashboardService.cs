@@ -1,5 +1,6 @@
 using AutoMarket.Application.DTOs.Admin;
 using AutoMarket.Application.Interfaces;
+using AutoMarket.Core.Entities;
 using AutoMarket.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -102,7 +103,8 @@ public class DashboardService : IDashboardService
                 (suscripcion.FechaVencimientoUtc.Date - DateTime.UtcNow.Date).Days
             );
 
-            cuotaDestacados = suscripcion.Plan?.CuotaDestacados ?? 0;
+            cuotaDestacados = suscripcion.Plan?.CuotaDestacados
+                ?? PlanConfig.CuotaDestacados(suscripcion.Nivel);
         }
 
         var destacadosActivos = await anunciosDealer

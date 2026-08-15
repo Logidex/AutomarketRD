@@ -12,7 +12,7 @@ public class SuscripcionDealer
     public CicloFacturacion Ciclo { get; private set; }
     public EstadoSuscripcion Estado { get; private set; }
 
-    public int LimiteAnuncios => (int)Nivel;
+    public int LimiteAnuncios => PlanConfig.LimiteAnuncios(Nivel);
 
     // Navigation to PlanCatalogo for CuotaDestacados
     public int? PlanCatalogoId { get; private set; }
