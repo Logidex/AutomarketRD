@@ -3,7 +3,6 @@ import { FaTrash, FaEye, FaStar } from "react-icons/fa";
 import type { AnuncioListado } from "../types/anuncio.types";
 import { urlImagen } from "../utils/imagen";
 import { formatearPrecio } from "../utils/formato";
-
 const getEstadoStyle = (estado: string) => {
     const value = estado.trim().toLowerCase();
 
@@ -43,6 +42,8 @@ interface AnuncioCardProps {
   onPublicar: (id: number) => void;
   onCambiarEstado: (id: number, estado: string) => void;
   onEliminar: (id: number) => void;
+  onDestacar?: (id: number) => void;
+  onQuitarDestacado?: (id: number) => void;
 }
 
 export default function AnuncioCard({
@@ -50,6 +51,8 @@ export default function AnuncioCard({
   onPublicar,
   onCambiarEstado,
   onEliminar,
+  onDestacar,
+  onQuitarDestacado,
 }: AnuncioCardProps) {
   const fotoPrincipal =
     urlImagen(anuncio.fotos?.[0]) ||
@@ -79,22 +82,20 @@ export default function AnuncioCard({
             alt={nombreAnuncio}
             className="h-56 w-full object-cover lg:h-full lg:min-h-[240px]"
           />
-          {anuncio.esDestacado && anuncio.fechaDestacadoHasta && new Date(anuncio.fechaDestacadoHasta) > new Date() && (
-            <div className="absolute left-3 top-3 z-10">
-              <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500 to-yellow-600 px-3 py-1 text-xs font-bold text-white">
+          <div className="absolute left-3 top-3 z-10 flex flex-col items-start gap-1.5">
+            <span
+              className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${getEstadoStyle(
+                estadoNormalizado,
+              )}`}
+            >
+              {estadoNormalizado || "Sin estado"}
+            </span>
+            {anuncio.esDestacado && anuncio.fechaDestacadoHasta && new Date(anuncio.fechaDestacadoHasta) > new Date() && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500 to-yellow-600 px-3 py-1 text-xs font-bold text-white shadow">
                 <FaStar className="w-3 h-3" /> Destacado
               </span>
-            </div>
-          )}
-            <div className="absolute left-3 top-3">
-              <span
-                className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${getEstadoStyle(
-                  estadoNormalizado,
-                )}`}
-              >
-                {estadoNormalizado || "Sin estado"}
-              </span>
-            </div>
+            )}
+          </div>
             <div className="absolute right-3 top-3">
               <span className="inline-flex items-center gap-1 rounded-full bg-black/60 px-2.5 py-1 text-xs font-semibold text-white">
                 <FaEye /> {anuncio.vistas ?? 0}
@@ -215,6 +216,26 @@ export default function AnuncioCard({
                     className="rounded-lg bg-green-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-green-700"
                   >
                     Publicar
+                  </button>
+                )}
+
+                {esPublicado && onDestacar && !anuncio.esDestacado && (
+                  <button
+                    onClick={() => onDestacar(anuncio.id)}
+                    className="flex items-center gap-1.5 rounded-lg bg-amber-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-amber-600"
+                  >
+                    <FaStar />
+                    Destacar
+                  </button>
+                )}
+
+                {esPublicado && onQuitarDestacado && anuncio.esDestacado && (
+                  <button
+                    onClick={() => onQuitarDestacado(anuncio.id)}
+                    className="flex items-center gap-1.5 rounded-lg border border-amber-300 bg-amber-50 px-4 py-2.5 text-sm font-semibold text-amber-700 transition-colors hover:bg-amber-100"
+                  >
+                    <FaStar />
+                    Quitar destacado
                   </button>
                 )}
 

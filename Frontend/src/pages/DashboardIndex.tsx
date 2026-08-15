@@ -96,6 +96,12 @@ export default function DashboardIndex() {
                 {resumen.diasRestantesSuscripcion ?? 0}
               </span>
             </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Destacados en uso:</span>
+              <span className={`font-bold ${(resumen.destacadosActivos ?? 0) >= (resumen.cuotaDestacados ?? 0) ? 'text-amber-600' : 'text-gray-900'}`}>
+                {resumen.destacadosActivos ?? 0} / {resumen.cuotaDestacados ?? 0}
+              </span>
+            </div>
           </div>
         </div>
       </div>

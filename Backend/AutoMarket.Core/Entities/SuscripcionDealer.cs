@@ -37,6 +37,18 @@ public class SuscripcionDealer
         FechaVencimientoUtc = CalcularFechaVencimiento(ciclo);
     }
 
+    /// <summary>
+    /// Vincula el plan del catálogo que define la cuota de destacados y demás
+    /// límites configurables. Es una referencia informativa: la cuota vigente
+    /// se lee desde <see cref="Plan"/> (o desde el nivel como respaldo).
+    /// </summary>
+    public void VincularPlanCatalogo(PlanCatalogo? plan)
+    {
+        if (plan == null) return;
+
+        PlanCatalogoId = plan.Id;
+    }
+
     public bool PermiteNuevosAnuncios(int cantidadAnunciosActuales)
     {
         // La cancelación no revierte los días ya pagados: se permite mientras la

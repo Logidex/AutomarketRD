@@ -23,6 +23,10 @@ public class DashboardResumenDto
     public int DiasRestantesSuscripcion { get; set; }
     public int LimiteAnuncios { get; set; }
 
+    // Destacados por plan
+    public int CuotaDestacados { get; set; }
+    public int DestacadosActivos { get; set; }
+
     // Nuevos: anuncios más vistos
     public List<AnuncioMasVistoDto> AnunciosMasVistos { get; set; } = new();
 }

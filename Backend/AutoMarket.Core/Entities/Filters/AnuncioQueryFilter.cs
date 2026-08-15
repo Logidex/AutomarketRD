@@ -36,6 +36,10 @@ namespace AutoMarket.Core.Entities
 
         public int? KilometrajeMaximo { get; set; }
 
+        // true => excluye de los resultados los anuncios destacados vigentes
+        // (se usa cuando ya se muestran en una sección aparte).
+        public bool ExcluirDestacadosVigentes { get; set; }
+
         public int PaginaActual { get; set; } = 1;
         public int CantidadPorPagina { get; set; } = 10;
     }

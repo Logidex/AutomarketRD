@@ -39,6 +39,9 @@ public class AnuncioListadoDto
     public List<string> Fotos { get; set; } = new();
 
     public string BadgeSuscripcion { get; set; } = "Gratis";
-    
+
+    public bool EsDestacado { get; set; }
+    public DateTime? FechaDestacadoHasta { get; set; }
+
     public DateTime CreatedAt { get; set; }
 }

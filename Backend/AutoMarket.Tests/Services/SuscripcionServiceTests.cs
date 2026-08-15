@@ -14,6 +14,7 @@ public class SuscripcionServiceTests
     private readonly Mock<ISuscripcionRepository> _mockRepo;
     private readonly Mock<IAnuncioRepository> _mockAnuncioRepo;
     private readonly Mock<IPayPalService> _mockPayPalService;
+    private readonly Mock<IPlanCatalogoRepository> _mockPlanCatalogoRepo;
     private readonly SuscripcionService _servicio;
 
     public SuscripcionServiceTests()
@@ -21,7 +22,8 @@ public class SuscripcionServiceTests
         _mockRepo = new Mock<ISuscripcionRepository>();
         _mockAnuncioRepo = new Mock<IAnuncioRepository>();
         _mockPayPalService = new Mock<IPayPalService>();
-        _servicio = new SuscripcionService(_mockRepo.Object, _mockAnuncioRepo.Object, _mockPayPalService.Object);
+        _mockPlanCatalogoRepo = new Mock<IPlanCatalogoRepository>();
+        _servicio = new SuscripcionService(_mockRepo.Object, _mockAnuncioRepo.Object, _mockPayPalService.Object, _mockPlanCatalogoRepo.Object);
     }
 
     // =========================================================================

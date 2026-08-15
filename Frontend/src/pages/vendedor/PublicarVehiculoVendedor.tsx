@@ -9,6 +9,7 @@ export default function PublicarVehiculoVendedor() {
     archivos, fotosGuardadas, handleChange, handleImageChange,
     handleEliminarArchivo, handleEliminarFotoGuardada, guardar, submitting,
     publicarAlGuardar, setPublicarAlGuardar,
+    destacarAlPublicar, setDestacarAlPublicar,
     fotoPrincipal, handleEstablecerPrincipal
   } = useFormularioVehiculo(false, "/vendedor");
 
@@ -47,6 +48,8 @@ export default function PublicarVehiculoVendedor() {
           onTransmisionPersonalizadaChange={(e) => setTransmisionPersonalizada(e.target.value)}
           publicarAlGuardar={publicarAlGuardar}
           onPublicarAlGuardarChange={(e) => setPublicarAlGuardar(e.target.checked)}
+          destacarAlPublicar={destacarAlPublicar}
+          onDestacarAlPublicarChange={(e) => setDestacarAlPublicar(e.target.checked)}
         />
         <GestorImagenes
           archivos={archivos}

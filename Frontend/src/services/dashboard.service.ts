@@ -11,6 +11,8 @@ export interface DashboardResumen {
   planActual: string;
   diasRestantesSuscripcion: number;
   limiteAnuncios: number;
+  cuotaDestacados: number;
+  destacadosActivos: number;
   anunciosMasVistos: Array<{
     id: number;
     nombreAnuncio: string;

@@ -12,6 +12,8 @@ import {
   usePublicarAnuncio,
   useCambiarEstadoAnuncio,
   useEliminarAnuncio,
+  useDestacarAnuncio,
+  useQuitarDestacadoAnuncio,
 } from "../hooks/useAnuncios";
 
 export default function MisAnuncios() {
@@ -27,6 +29,8 @@ export default function MisAnuncios() {
   const publicar = usePublicarAnuncio();
   const cambiarEstado = useCambiarEstadoAnuncio();
   const eliminar = useEliminarAnuncio();
+  const destacar = useDestacarAnuncio();
+  const quitarDestacado = useQuitarDestacadoAnuncio();
 
   const anuncios = paged?.items ?? ([] as AnuncioListado[]);
 
@@ -164,9 +168,85 @@ export default function MisAnuncios() {
     }
   };
 
+  const handleDestacar = async (id: number) => {
+    const result = await Swal.fire({
+      title: "¿Destacar anuncio?",
+      text: "El anuncio aparecerá en la sección de destacados de la página principal.",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Sí, destacar",
+      cancelButtonText: "Cancelar",
+      confirmButtonColor: "#f59e0b",
+      cancelButtonColor: "#6b7280",
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      await destacar.mutateAsync(id);
+      await invalidate();
+      await recargarResumen();
+
+      Swal.fire({
+        title: "Destacado",
+        text: "El anuncio ahora es destacado.",
+        icon: "success",
+        confirmButtonColor: "#2563eb",
+      });
+    } catch (error) {
+      console.error(error);
+      Swal.fire({
+        title: "No se pudo destacar",
+        text: error instanceof Error ? error.message : "Verifica tu plan de suscripción.",
+        icon: "error",
+        confirmButtonColor: "#ef4444",
+      });
+    }
+  };
+
+  const handleQuitarDestacado = async (id: number) => {
+    const result = await Swal.fire({
+      title: "¿Quitar destacado?",
+      text: "El anuncio dejará de aparecer en la sección de destacados.",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Sí, quitar",
+      cancelButtonText: "Cancelar",
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      await quitarDestacado.mutateAsync(id);
+      await invalidate();
+      await recargarResumen();
+
+      Swal.fire({
+        title: "Actualizado",
+        text: "El anuncio ya no es destacado.",
+        icon: "success",
+        confirmButtonColor: "#2563eb",
+      });
+    } catch (error) {
+      console.error(error);
+      Swal.fire({
+        title: "Error",
+        text: error instanceof Error ? error.message : "No se pudo quitar el destacado.",
+        icon: "error",
+        confirmButtonColor: "#ef4444",
+      });
+    }
+  };
+
   const activosEnVitrina = resumen?.anunciosActivos ?? 0;
   const limitePlan = resumen?.limiteAnuncios ?? 0;
   const disponibles = Math.max(0, limitePlan - activosEnVitrina);
+
+  const cuotaDestacados = resumen?.cuotaDestacados ?? 0;
+  const destacadosActivos = resumen?.destacadosActivos ?? 0;
+  const destacadosDisponibles = Math.max(0, cuotaDestacados - destacadosActivos);
 
   return (
     <div className="mx-auto max-w-6xl p-6">
@@ -231,6 +311,37 @@ export default function MisAnuncios() {
         </div>
       )}
 
+      {resumen && cuotaDestacados > 0 && (
+        <div className={`mb-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border p-4 ${
+          destacadosDisponibles === 0 ? "border-amber-200 bg-amber-50" : "border-white/0 bg-white"
+        }`}>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-gray-800">
+              Destacados del plan
+            </p>
+            <p className={`text-sm ${destacadosDisponibles === 0 ? "text-amber-700" : "text-gray-500"}`}>
+              {destacadosDisponibles === 0
+                ? "Llegaste al límite de anuncios destacados de tu plan. Quita uno para destacar otro."
+                : `Estás usando ${destacadosActivos} de ${cuotaDestacados} anuncios destacados de tu plan (${destacadosDisponibles} disponibles).`}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-semibold text-gray-500">
+              {destacadosActivos}/{cuotaDestacados}
+            </span>
+            <div className="h-2 w-40 overflow-hidden rounded-full bg-gray-200">
+              <div
+                className={`h-full rounded-full ${destacadosDisponibles === 0 ? "bg-amber-500" : "bg-yellow-500"}`}
+                style={{
+                  width: `${Math.min(100, (destacadosActivos / cuotaDestacados) * 100)}%`,
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
       {anuncios.length === 0 ? (
         <div className="flex min-h-[420px] flex-col items-center justify-center rounded-2xl border border-gray-200 bg-white px-6 text-center shadow-sm">
           <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-blue-50">
@@ -263,6 +374,8 @@ export default function MisAnuncios() {
               onPublicar={handlePublicar}
               onCambiarEstado={handleCambiarEstado}
               onEliminar={handleEliminar}
+              onDestacar={handleDestacar}
+              onQuitarDestacado={handleQuitarDestacado}
             />
           ))}
         </ul>

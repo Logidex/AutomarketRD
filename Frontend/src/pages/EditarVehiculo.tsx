@@ -13,6 +13,7 @@ export default function EditarVehiculo() {
     archivos, fotosGuardadas, handleChange, handleImageChange,
     handleEliminarArchivo, handleEliminarFotoGuardada, guardar, submitting,
     publicarAlGuardar, setPublicarAlGuardar,
+    destacarAlPublicar, setDestacarAlPublicar,
     fotoPrincipal, handleEstablecerPrincipal
   } = useFormularioVehiculo(true);
 
@@ -47,6 +48,8 @@ export default function EditarVehiculo() {
           onTransmisionPersonalizadaChange={(e) => setTransmisionPersonalizada(e.target.value)}
           publicarAlGuardar={publicarAlGuardar}
           onPublicarAlGuardarChange={(e) => setPublicarAlGuardar(e.target.checked)}
+          destacarAlPublicar={destacarAlPublicar}
+          onDestacarAlPublicarChange={(e) => setDestacarAlPublicar(e.target.checked)}
         />
 
         <GestorImagenes

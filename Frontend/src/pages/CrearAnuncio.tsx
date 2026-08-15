@@ -9,6 +9,7 @@ export default function CrearAnuncio() {
     archivos, fotosGuardadas, handleChange, handleImageChange,
     handleEliminarArchivo, handleEliminarFotoGuardada, guardar, submitting,
     publicarAlGuardar, setPublicarAlGuardar,
+    destacarAlPublicar, setDestacarAlPublicar,
     fotoPrincipal, handleEstablecerPrincipal
   } = useFormularioVehiculo(false);
 
@@ -40,6 +41,8 @@ export default function CrearAnuncio() {
           onTransmisionPersonalizadaChange={(e) => setTransmisionPersonalizada(e.target.value)}
           publicarAlGuardar={publicarAlGuardar}
           onPublicarAlGuardarChange={(e) => setPublicarAlGuardar(e.target.checked)}
+          destacarAlPublicar={destacarAlPublicar}
+          onDestacarAlPublicarChange={(e) => setDestacarAlPublicar(e.target.checked)}
         />
         <GestorImagenes
           archivos={archivos}

@@ -40,6 +40,10 @@ public class AnuncioDto
 
     public List<string> Fotos { get; set; } = new();
 
+    // Estado de destacado (para que el dueño lo pueda gestionar desde el formulario).
+    public bool EsDestacado { get; set; }
+    public DateTime? FechaDestacadoHasta { get; set; }
+
     // Datos de contacto del vendedor, expuestos solo en el detalle público.
     public string? NombreVendedor { get; set; }
     public string? WhatsAppContacto { get; set; }

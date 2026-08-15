@@ -99,6 +99,17 @@ public class AnuncioRepository : IAnuncioRepository
             );
         }
 
+        // Excluye los destacados vigentes para no duplicarlos cuando ya se
+        // muestran en una sección aparte (Home).
+        if (filtro.ExcluirDestacadosVigentes)
+        {
+            query = query.Where(a =>
+                !(a.EsDestacado &&
+                  a.FechaDestacadoHasta.HasValue &&
+                  a.FechaDestacadoHasta.Value > DateTime.UtcNow)
+            );
+        }
+
         if (!string.IsNullOrWhiteSpace(filtro.Marca))
         {
             var termino = NormalizadorTexto.Normalizar(filtro.Marca);

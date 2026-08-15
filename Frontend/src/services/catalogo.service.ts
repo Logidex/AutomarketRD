@@ -20,6 +20,7 @@ export interface AnuncioBusquedaDto {
   anioHasta?: number;
   kilometrajeMaximo?: number;
   vendedorId?: number;
+  excluirDestacados?: boolean;
   paginaActual: number;
   cantidadAnuncios: number;
 }
@@ -53,6 +54,8 @@ export const catalogoService = {
       params.set("KilometrajeMaximo", String(dto.kilometrajeMaximo));
     if (dto.vendedorId != null)
       params.set("VendedorId", String(dto.vendedorId));
+    if (dto.excluirDestacados)
+      params.set("ExcluirDestacadosVigentes", "true");
 
     params.set("PaginaActual", String(dto.paginaActual));
     params.set("CantidadAnuncios", String(dto.cantidadAnuncios));

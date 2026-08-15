@@ -126,4 +126,8 @@ export interface AnuncioDetalle {
 
   // true si es cuenta Vendedor (particular); false si es Dealer (agencia).
   esVendedorParticular: boolean;
+
+  // Estado de destacado (para gestión desde el formulario del dueño).
+  esDestacado?: boolean;
+  fechaDestacadoHasta?: string | null;
 }

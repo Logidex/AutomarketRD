@@ -94,6 +94,7 @@ function useBusquedaVehiculos() {
       combustible: filtrosAplicados.combustible || undefined,
       precioMinimo: filtrosAplicados.precioMinimo ? Number(filtrosAplicados.precioMinimo) : undefined,
       precioMaximo: filtrosAplicados.precioMaximo ? Number(filtrosAplicados.precioMaximo) : undefined,
+      excluirDestacados: true,
     },
     pagina,
   });
@@ -501,10 +502,16 @@ export default function Home() {
   } = useBusquedaVehiculos();
 
   // Anuncios destacados (desde endpoint del backend con cuotas por plan)
-  const { data: destacadosData, isLoading: destacadosCargando } = useQuery({
+  const {
+    data: destacadosData,
+    isLoading: destacadosCargando,
+    isError: destacadosError,
+    refetch: destacadosRefetch,
+  } = useQuery({
     queryKey: ["anuncios-destacados"],
     queryFn: () => anuncioService.obtenerDestacados(1, 6),
     staleTime: 1000 * 60 * 10,
+    retry: 1,
   });
 
   const anunciosDestacados = destacadosData?.items ?? [];
@@ -533,40 +540,56 @@ export default function Home() {
       />
 
       {/* DESTACADOS POR SUSCRIPCIÓN */}
-      {anunciosDestacados.length > 0 && (
-        <section className="mx-auto max-w-6xl px-6 py-10 sm:px-8">
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <FaCrown className="text-amber-400" />
-              <h2 className="text-xl font-bold">Destacados <span className="text-amber-400">Premium</span></h2>
-            </div>
-            <span className="text-xs text-[#9aa1b1]">Ordenados por plan: Elite → Pro → Básico → Gratis</span>
+      <section className="mx-auto max-w-6xl px-6 py-10 sm:px-8">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <FaCrown className="text-amber-400" />
+            <h2 className="text-xl font-bold">Destacados <span className="text-amber-400">Premium</span></h2>
           </div>
+          <span className="text-xs text-[#9aa1b1]">Ordenados por plan: Elite → Pro → Básico</span>
+        </div>
 
-          {destacadosCargando ? (
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="animate-pulse">
-                  <div className="aspect-[16/10] rounded-2xl bg-[#13161d]" />
-                  <div className="mt-4 h-4 bg-[#13161d] rounded w-3/4" />
-                  <div className="mt-2 h-4 bg-[#13161d] rounded w-1/2" />
-                  <div className="mt-4 h-3 bg-[#13161d] rounded w-full" />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {anunciosDestacados.map((anuncio) => (
-                <TarjetaAnuncioHome
-                  key={anuncio.id}
-                  anuncio={anuncio}
-                  onAbrir={() => navigate(`/anuncio/${anuncio.id}`)}
-                />
-              ))}
-            </div>
-          )}
-        </section>
-      )}
+        {destacadosError ? (
+          <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-8 text-center">
+            <p className="text-red-400">
+              No se pudieron cargar los anuncios destacados. Inténtalo nuevamente.
+            </p>
+            <button
+              type="button"
+              onClick={() => destacadosRefetch()}
+              className="mt-4 rounded-lg bg-blue-500 px-6 py-2 text-sm font-semibold transition-colors hover:bg-blue-600"
+            >
+              Reintentar
+            </button>
+          </div>
+        ) : destacadosCargando && anunciosDestacados.length === 0 ? (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="animate-pulse">
+                <div className="aspect-[16/10] rounded-2xl bg-[#13161d]" />
+                <div className="mt-4 h-4 bg-[#13161d] rounded w-3/4" />
+                <div className="mt-2 h-4 bg-[#13161d] rounded w-1/2" />
+                <div className="mt-4 h-3 bg-[#13161d] rounded w-full" />
+              </div>
+            ))}
+          </div>
+        ) : anunciosDestacados.length > 0 ? (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {anunciosDestacados.map((anuncio) => (
+              <TarjetaAnuncioHome
+                key={anuncio.id}
+                anuncio={anuncio}
+                onAbrir={() => navigate(`/anuncio/${anuncio.id}`)}
+              />
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-[#9aa1b1]">
+            Aún no hay anuncios destacados. Los anunciantes con planes Pro y Elite
+            pueden destacar sus vehículos desde su panel.
+          </p>
+        )}
+      </section>
 
       {/* VITRINA */}
       <main className="mx-auto max-w-6xl px-6 py-10 sm:px-8">

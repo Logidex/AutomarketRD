@@ -16,6 +16,7 @@ public class SuscripcionService : ISuscripcionService
     private readonly ISuscripcionRepository _repository;
     private readonly IAnuncioRepository _anuncioRepository;
     private readonly IPayPalService _payPalService;
+    private readonly IPlanCatalogoRepository _planCatalogoRepository;
 
 /// <summary>
 /// Inicializa una nueva instancia de la clase SuscripcionService.
@@ -23,11 +24,13 @@ public class SuscripcionService : ISuscripcionService
     public SuscripcionService(
         ISuscripcionRepository repository,
         IAnuncioRepository anuncioRepository,
-        IPayPalService payPalService)
+        IPayPalService payPalService,
+        IPlanCatalogoRepository planCatalogoRepository)
     {
         _repository = repository;
         _anuncioRepository = anuncioRepository;
         _payPalService = payPalService;
+        _planCatalogoRepository = planCatalogoRepository;
     }
 
 /// <summary>
@@ -41,6 +44,9 @@ public class SuscripcionService : ISuscripcionService
             throw new BusinessRuleException("El dealer ya posee una suscripción registrada.");
 
         var nuevaSuscripcion = new SuscripcionDealer(perfilDealerId, nivel, ciclo);
+
+        nuevaSuscripcion.VincularPlanCatalogo(
+            await _planCatalogoRepository.ObtenerPorNivelAsync(nivel));
 
         await _repository.AgregarAsync(nuevaSuscripcion);
     }
@@ -67,6 +73,9 @@ public class SuscripcionService : ISuscripcionService
 
         suscripcion.CambiarPlan(nuevoNivel, ciclo);
 
+        suscripcion.VincularPlanCatalogo(
+            await _planCatalogoRepository.ObtenerPorNivelAsync(nuevoNivel));
+
         await _repository.ActualizarAsync(suscripcion);
     }
 
@@ -81,6 +90,9 @@ public class SuscripcionService : ISuscripcionService
             throw new KeyNotFoundException("No se encontró una suscripción para este dealer.");
 
         suscripcion.RenovarManualmente(nuevaFechaVencimiento);
+
+        suscripcion.VincularPlanCatalogo(
+            await _planCatalogoRepository.ObtenerPorNivelAsync(suscripcion.Nivel));
 
         await _repository.ActualizarAsync(suscripcion);
     }
@@ -97,6 +109,8 @@ public class SuscripcionService : ISuscripcionService
             await ValidarInventarioContraNuevoPlanAsync(perfilDealerId, nivel);
 
             var nuevaSuscripcion = new SuscripcionDealer(perfilDealerId, nivel, ciclo);
+            nuevaSuscripcion.VincularPlanCatalogo(
+                await _planCatalogoRepository.ObtenerPorNivelAsync(nivel));
             await _repository.AgregarAsync(nuevaSuscripcion);
             return;
         }
@@ -107,6 +121,9 @@ public class SuscripcionService : ISuscripcionService
 
             suscripcionExistente.ActivarConPlan(nivel, ciclo);
 
+            suscripcionExistente.VincularPlanCatalogo(
+                await _planCatalogoRepository.ObtenerPorNivelAsync(nivel));
+
             await _repository.ActualizarAsync(suscripcionExistente);
             return;
         }
@@ -116,6 +133,9 @@ public class SuscripcionService : ISuscripcionService
             var nuevaFechaVencimiento = CalcularNuevaVigenciaDesdePago(suscripcionExistente, ciclo);
             suscripcionExistente.RenovarManualmente(nuevaFechaVencimiento);
 
+            suscripcionExistente.VincularPlanCatalogo(
+                await _planCatalogoRepository.ObtenerPorNivelAsync(nivel));
+
             await _repository.ActualizarAsync(suscripcionExistente);
             return;
         }
@@ -123,6 +143,10 @@ public class SuscripcionService : ISuscripcionService
         await ValidarInventarioContraNuevoPlanAsync(perfilDealerId, nivel);
 
         suscripcionExistente.CambiarPlan(nivel, ciclo);
+
+        suscripcionExistente.VincularPlanCatalogo(
+            await _planCatalogoRepository.ObtenerPorNivelAsync(nivel));
+
         await _repository.ActualizarAsync(suscripcionExistente);
     }
 

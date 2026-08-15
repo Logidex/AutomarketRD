@@ -16,6 +16,7 @@ public class AnuncioService : IAnuncioService
     private readonly IAnuncioRepository _repository;
     private readonly IAlmacenadorArchivos _almacenadorArchivos;
     private readonly IUsuarioRepository _usuarioRepository;
+    private readonly IPlanCatalogoRepository _planCatalogoRepository;
 
 /// <summary>
 /// Inicializa una nueva instancia de la clase AnuncioService.
@@ -23,11 +24,13 @@ public class AnuncioService : IAnuncioService
     public AnuncioService(
         IAnuncioRepository repository,
         IAlmacenadorArchivos almacenadorArchivos,
-        IUsuarioRepository usuarioRepository)
+        IUsuarioRepository usuarioRepository,
+        IPlanCatalogoRepository planCatalogoRepository)
     {
         _repository = repository;
         _almacenadorArchivos = almacenadorArchivos;
         _usuarioRepository = usuarioRepository;
+        _planCatalogoRepository = planCatalogoRepository;
     }
 
     private static readonly HashSet<string> EstadosValidos = new(StringComparer.OrdinalIgnoreCase)
@@ -219,6 +222,9 @@ public class AnuncioService : IAnuncioService
 
             Estado = anuncio.Estado,
             Fotos = anuncio.Fotos.ToList(),
+
+            EsDestacado = anuncio.EstaDestacadoVigente,
+            FechaDestacadoHasta = anuncio.FechaDestacadoHasta,
 
             NombreVendedor = nombreVendedor,
             WhatsAppContacto = whatsAppContacto,
@@ -486,6 +492,7 @@ public class AnuncioService : IAnuncioService
             Moneda = dto.Moneda,
 
             KilometrajeMaximo = dto.KilometrajeMaximo,
+            ExcluirDestacadosVigentes = dto.ExcluirDestacadosVigentes,
 
             PaginaActual = dto.PaginaActual,
             CantidadPorPagina = dto.CantidadAnuncios
@@ -601,7 +608,8 @@ var anunciosDto = anuncios
 
         var usuario = await _usuarioRepository.ObtenerDealerConPerfilPorIdAsync(usuarioId);
         var suscripcion = usuario?.PerfilDealer?.Suscripcion;
-        var plan = usuario?.PerfilDealer?.Suscripcion?.Plan; // Need to include Plan in query
+        var plan = usuario?.PerfilDealer?.Suscripcion?.Plan
+                   ?? await _planCatalogoRepository.ObtenerPorNivelAsync(suscripcion?.Nivel ?? PlanNivel.Gratis);
 
         if (suscripcion == null || plan == null)
             throw new BusinessRuleException("Tu cuenta no tiene un plan de suscripción activo.");
@@ -614,6 +622,10 @@ var anunciosDto = anuncios
 
         // Contar anuncios destacados actuales del usuario
         int destacadosActuales = await _repository.ContarDestacadosPorUsuarioAsync(usuarioId);
+
+        // Si este anuncio ya está destacado, no debe consumir cupo adicional al renovarlo
+        if (anuncio.EstaDestacadoVigente)
+            destacadosActuales--;
 
         if (!suscripcion.PermiteDestacarMas(destacadosActuales, plan))
             throw new BusinessRuleException($"Has alcanzado el límite de anuncios destacados de tu plan ({plan.CuotaDestacados}).");
@@ -699,6 +711,8 @@ var anunciosDto = anuncios
             Vistas = anuncio.Vistas,
             Fotos = fotos,
             BadgeSuscripcion = anuncio.Usuario?.PerfilDealer?.Suscripcion?.Nivel.ToString() ?? "Gratis",
+            EsDestacado = anuncio.EstaDestacadoVigente,
+            FechaDestacadoHasta = anuncio.FechaDestacadoHasta,
             CreatedAt = anuncio.CreatedAt
         };
     }

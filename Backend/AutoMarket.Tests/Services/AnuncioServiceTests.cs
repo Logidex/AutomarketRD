@@ -17,6 +17,7 @@ public class AnuncioServiceTests
     private readonly Mock<IAnuncioRepository> _mockRepo;
     private readonly Mock<IAlmacenadorArchivos> _mockArchivos;
     private readonly Mock<IUsuarioRepository> _mockUsuarioRepo; // 🌟 Nueva dependencia agregada
+    private readonly Mock<IPlanCatalogoRepository> _mockPlanCatalogoRepo;
     private readonly AnuncioService _servicio;
 
     // El constructor corre automáticamente ANTES de cada prueba individual
@@ -25,9 +26,10 @@ public class AnuncioServiceTests
         _mockRepo = new Mock<IAnuncioRepository>();
         _mockArchivos = new Mock<IAlmacenadorArchivos>();
         _mockUsuarioRepo = new Mock<IUsuarioRepository>(); // Inicializamos el nuevo Mock
+        _mockPlanCatalogoRepo = new Mock<IPlanCatalogoRepository>();
 
-        // Instanciamos el servicio UNA SOLA VEZ pasándole los 3 parámetros requeridos
-        _servicio = new AnuncioService(_mockRepo.Object, _mockArchivos.Object, _mockUsuarioRepo.Object);
+        // Instanciamos el servicio UNA SOLA VEZ pasándole los parámetros requeridos
+        _servicio = new AnuncioService(_mockRepo.Object, _mockArchivos.Object, _mockUsuarioRepo.Object, _mockPlanCatalogoRepo.Object);
     }
 
     // =========================================================================
@@ -825,6 +827,236 @@ public class AnuncioServiceTests
             Times.Once);
     }
 
+    // =========================================================================
+    // DESTACADOS: MarcarComoDestacadoAsync con plan vinculado
+    // =========================================================================
+    [Fact]
+    public async Task MarcarComoDestacadoAsync_DealerConPlanVinculadoYCupo_DebeDestacar()
+    {
+        var usuarioId = 2;
+        var idAnuncio = 1;
+
+        var anuncio = CrearAnuncioPublicado(idAnuncio, usuarioId);
+        _mockRepo.Setup(r => r.ObtenerPorIdAsync(idAnuncio)).ReturnsAsync(anuncio);
+
+        var usuario = CrearUsuarioDealerConPlan(usuarioId, PlanNivel.Pro, CicloFacturacion.Mensual, cuotaDestacados: 1);
+        _mockUsuarioRepo.Setup(r => r.ObtenerDealerConPerfilPorIdAsync(usuarioId)).ReturnsAsync(usuario);
+        _mockRepo.Setup(r => r.ContarDestacadosPorUsuarioAsync(usuarioId)).ReturnsAsync(0);
+
+        var resultado = await _servicio.MarcarComoDestacadoAsync(idAnuncio, usuarioId);
+
+        Assert.True(resultado);
+        Assert.True(anuncio.EsDestacado);
+        Assert.NotNull(anuncio.FechaDestacadoHasta);
+        _mockRepo.Verify(r => r.ActualizarAsync(anuncio), Times.Once);
+        _mockRepo.Verify(r => r.GuardarCambiosAsync(), Times.Once);
+        _mockPlanCatalogoRepo.Verify(r => r.ObtenerPorNivelAsync(It.IsAny<PlanNivel>()), Times.Never);
+    }
+
+    // =========================================================================
+    // DESTACADOS: fallback por nivel cuando no hay plan vinculado
+    // =========================================================================
+    [Fact]
+    public async Task MarcarComoDestacadoAsync_SinPlanVinculado_UsaCuotaPorNivel()
+    {
+        var usuarioId = 4;
+        var idAnuncio = 3;
+
+        var anuncio = CrearAnuncioPublicado(idAnuncio, usuarioId);
+        _mockRepo.Setup(r => r.ObtenerPorIdAsync(idAnuncio)).ReturnsAsync(anuncio);
+
+        var usuario = CrearUsuarioDealerConSuscripcion(
+            usuarioId, PlanNivel.Basico, CicloFacturacion.Mensual, EstadoSuscripcion.Activa);
+        _mockUsuarioRepo.Setup(r => r.ObtenerDealerConPerfilPorIdAsync(usuarioId)).ReturnsAsync(usuario);
+
+        _mockPlanCatalogoRepo.Setup(r => r.ObtenerPorNivelAsync(PlanNivel.Basico))
+            .ReturnsAsync(new PlanCatalogo { Id = 2, Nivel = PlanNivel.Basico, CuotaDestacados = 1 });
+        _mockRepo.Setup(r => r.ContarDestacadosPorUsuarioAsync(usuarioId)).ReturnsAsync(0);
+
+        var resultado = await _servicio.MarcarComoDestacadoAsync(idAnuncio, usuarioId);
+
+        Assert.True(resultado);
+        Assert.True(anuncio.EsDestacado);
+        _mockPlanCatalogoRepo.Verify(r => r.ObtenerPorNivelAsync(PlanNivel.Basico), Times.Once);
+    }
+
+    // =========================================================================
+    // DESTACADOS: cuota alcanzada -> excepción
+    // =========================================================================
+    [Fact]
+    public async Task MarcarComoDestacadoAsync_AlcanzoCuota_DebeLanzarExcepcion()
+    {
+        var usuarioId = 5;
+        var idAnuncio = 10;
+
+        var anuncio = CrearAnuncioPublicado(idAnuncio, usuarioId);
+        _mockRepo.Setup(r => r.ObtenerPorIdAsync(idAnuncio)).ReturnsAsync(anuncio);
+
+        var usuario = CrearUsuarioDealerConPlan(usuarioId, PlanNivel.Basico, CicloFacturacion.Mensual, cuotaDestacados: 1);
+        _mockUsuarioRepo.Setup(r => r.ObtenerDealerConPerfilPorIdAsync(usuarioId)).ReturnsAsync(usuario);
+        _mockRepo.Setup(r => r.ContarDestacadosPorUsuarioAsync(usuarioId)).ReturnsAsync(1);
+
+        var excepcion = await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            _servicio.MarcarComoDestacadoAsync(idAnuncio, usuarioId));
+
+        Assert.Contains("límite de anuncios destacados", excepcion.Message);
+    }
+
+    // =========================================================================
+    // DESTACADOS: anuncio ya destacado no consume cupo adicional al renovar
+    // =========================================================================
+    [Fact]
+    public async Task MarcarComoDestacadoAsync_AnuncioYaDestacado_NoConsumeCupoAdicional()
+    {
+        var usuarioId = 6;
+        var idAnuncio = 20;
+
+        var anuncio = CrearAnuncioPublicado(idAnuncio, usuarioId);
+        anuncio.MarcarComoDestacado(DateTime.UtcNow.AddDays(10));
+        _mockRepo.Setup(r => r.ObtenerPorIdAsync(idAnuncio)).ReturnsAsync(anuncio);
+
+        var usuario = CrearUsuarioDealerConPlan(usuarioId, PlanNivel.Basico, CicloFacturacion.Mensual, cuotaDestacados: 1);
+        _mockUsuarioRepo.Setup(r => r.ObtenerDealerConPerfilPorIdAsync(usuarioId)).ReturnsAsync(usuario);
+        // La cuota está "llena" (1 destacado), pero al ser el mismo anuncio se permite
+        _mockRepo.Setup(r => r.ContarDestacadosPorUsuarioAsync(usuarioId)).ReturnsAsync(1);
+
+        var resultado = await _servicio.MarcarComoDestacadoAsync(idAnuncio, usuarioId);
+
+        Assert.True(resultado);
+    }
+
+    // =========================================================================
+    // DESTACADOS: solo se destacan anuncios publicados
+    // =========================================================================
+    [Fact]
+    public async Task MarcarComoDestacadoAsync_AnuncioBorrador_DebeLanzarExcepcion()
+    {
+        var usuarioId = 7;
+        var idAnuncio = 21;
+
+        var anuncio = new Anuncio(usuarioId, "Toyota", "Corolla", "", "Sedan", "1.8L", "Delantera", "Blanco", "Negro", 2020, 800000, "DOP", 50000, "Automática", "Gasolina", new List<string>(), "Santo Domingo", "Borrador");
+        _mockRepo.Setup(r => r.ObtenerPorIdAsync(idAnuncio)).ReturnsAsync(anuncio);
+
+        var excepcion = await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            _servicio.MarcarComoDestacadoAsync(idAnuncio, usuarioId));
+
+        Assert.Contains("Solo se pueden destacar anuncios publicados", excepcion.Message);
+    }
+
+    // =========================================================================
+    // DESTACADOS: suscripción vencida -> excepción
+    // =========================================================================
+    [Fact]
+    public async Task MarcarComoDestacadoAsync_SuscripcionVencida_DebeLanzarExcepcion()
+    {
+        var usuarioId = 8;
+        var idAnuncio = 22;
+
+        var anuncio = CrearAnuncioPublicado(idAnuncio, usuarioId);
+        _mockRepo.Setup(r => r.ObtenerPorIdAsync(idAnuncio)).ReturnsAsync(anuncio);
+
+        var usuario = CrearUsuarioDealerConPlan(usuarioId, PlanNivel.Pro, CicloFacturacion.Mensual, cuotaDestacados: 5);
+        SetPrivateProperty(usuario.PerfilDealer!.Suscripcion!, "FechaVencimientoUtc", DateTime.UtcNow.AddDays(-1));
+        _mockUsuarioRepo.Setup(r => r.ObtenerDealerConPerfilPorIdAsync(usuarioId)).ReturnsAsync(usuario);
+
+        var excepcion = await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            _servicio.MarcarComoDestacadoAsync(idAnuncio, usuarioId));
+
+        Assert.Contains("ha vencido", excepcion.Message);
+    }
+
+    // =========================================================================
+    // DESTACADOS: QuitarDestacadoAsync con anuncio destacado
+    // =========================================================================
+    [Fact]
+    public async Task QuitarDestacadoAsync_AnuncioDestacado_DebeQuitarlo()
+    {
+        var usuarioId = 9;
+        var idAnuncio = 30;
+
+        var anuncio = CrearAnuncioPublicado(idAnuncio, usuarioId);
+        anuncio.MarcarComoDestacado(DateTime.UtcNow.AddDays(30));
+        _mockRepo.Setup(r => r.ObtenerPorIdAsync(idAnuncio)).ReturnsAsync(anuncio);
+
+        var resultado = await _servicio.QuitarDestacadoAsync(idAnuncio, usuarioId);
+
+        Assert.True(resultado);
+        Assert.False(anuncio.EsDestacado);
+        Assert.Null(anuncio.FechaDestacadoHasta);
+        _mockRepo.Verify(r => r.ActualizarAsync(anuncio), Times.Once);
+    }
+
+    // =========================================================================
+    // DESTACADOS: QuitarDestacadoAsync con anuncio no destacado -> excepción
+    // =========================================================================
+    [Fact]
+    public async Task QuitarDestacadoAsync_AnuncioNoDestacado_DebeLanzarExcepcion()
+    {
+        var usuarioId = 10;
+        var idAnuncio = 31;
+
+        var anuncio = CrearAnuncioPublicado(idAnuncio, usuarioId);
+        _mockRepo.Setup(r => r.ObtenerPorIdAsync(idAnuncio)).ReturnsAsync(anuncio);
+
+        var excepcion = await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            _servicio.QuitarDestacadoAsync(idAnuncio, usuarioId));
+
+        Assert.Contains("no está destacado", excepcion.Message);
+    }
+
+    // =========================================================================
+    // DESTACADOS: ObtenerDestacadosAsync devuelve paginado con EsDestacado
+    // =========================================================================
+    [Fact]
+    public async Task ObtenerDestacadosAsync_DebeRetornarPaginadoConEsDestacado()
+    {
+        var usuarioId = 11;
+        var idAnuncio = 40;
+
+        var anuncio = CrearAnuncioPublicado(idAnuncio, usuarioId);
+        anuncio.MarcarComoDestacado(DateTime.UtcNow.AddDays(5));
+        _mockRepo.Setup(r => r.ObtenerDestacadosPaginadosAsync(1, 6))
+            .ReturnsAsync((new List<Anuncio> { anuncio }, 1));
+
+        var resultado = await _servicio.ObtenerDestacadosAsync(1, 6);
+
+        Assert.NotNull(resultado);
+        Assert.Equal(1, resultado.TotalRegistros);
+        var item = Assert.Single(resultado.Items);
+        Assert.True(item.EsDestacado);
+        Assert.NotNull(item.FechaDestacadoHasta);
+    }
+
+    // =========================================================================
+    // BuscarAnunciosAsync: el filtro ExcluirDestacadosVigentes llega al repo
+    // =========================================================================
+    [Fact]
+    public async Task BuscarAnunciosAsync_ExcluirDestacadosVigentes_DebePasarseAlRepositorio()
+    {
+        var anuncios = new List<Anuncio>
+        {
+            new Anuncio(1, "Toyota", "Corolla", "", "Sedan", "1.8L", "Delantera", "Blanco", "Negro", 2015, 600000, "DOP", 80000, "Automática", "Gasolina", new List<string> { "Ninguno" }, "Santo Domingo", "Excelente estado")
+        };
+
+        _mockRepo
+            .Setup(r => r.BuscarPaginadoAsync(It.IsAny<AnuncioQueryFilter>()))
+            .ReturnsAsync((anuncios, 1));
+
+        var dto = new AnuncioSearchDto
+        {
+            ExcluirDestacadosVigentes = true,
+            PaginaActual = 1,
+            CantidadAnuncios = 12
+        };
+
+        await _servicio.BuscarAnunciosAsync(dto);
+
+        _mockRepo.Verify(
+            r => r.BuscarPaginadoAsync(It.Is<AnuncioQueryFilter>(f =>
+                f.ExcluirDestacadosVigentes)),
+            Times.Once);
+    }
+
     private Usuario CrearUsuarioDealerSinSuscripcion(int id)
     {
         var usuario = new Usuario(
@@ -878,6 +1110,42 @@ public class AnuncioServiceTests
         SetPrivateProperty(suscripcion, "PerfilDealer", perfil);
 
         return usuario;
+    }
+
+    private Usuario CrearUsuarioDealerConPlan(
+        int id,
+        PlanNivel nivel,
+        CicloFacturacion ciclo,
+        int cuotaDestacados)
+    {
+        var usuario = CrearUsuarioDealerConSuscripcion(
+            id, nivel, ciclo, EstadoSuscripcion.Activa);
+
+        var plan = new PlanCatalogo
+        {
+            Id = id,
+            Nivel = nivel,
+            Nombre = $"Plan {nivel}",
+            CuotaDestacados = cuotaDestacados,
+            Activo = true
+        };
+
+        SetPrivateProperty(usuario.PerfilDealer!.Suscripcion!, "Plan", plan);
+
+        return usuario;
+    }
+
+    private static Anuncio CrearAnuncioPublicado(int id, int usuarioId)
+    {
+        var anuncio = new Anuncio(
+            usuarioId, "Toyota", "Corolla", "", "Sedan", "1.8L", "Delantera",
+            "Blanco", "Negro", 2020, 800000, "DOP", 50000, "Automática",
+            "Gasolina", new List<string>(), "Santo Domingo", "Prueba destacados");
+
+        anuncio.CambiarEstado("Publicado");
+        SetPrivateProperty(anuncio, "Id", id);
+
+        return anuncio;
     }
 
     private static void SetPrivateProperty(object obj, string propertyName, object? value)

@@ -84,21 +84,33 @@ public class DashboardService : IDashboardService
 
         var perfilDealer = await _context.PerfilesDealers
             .Include(p => p.Suscripcion)
+                .ThenInclude(s => s!.Plan)
             .FirstOrDefaultAsync(p => p.UsuarioId == dealerUsuarioId);
 
         string planActual = "N/A";
         int diasRestantes = 0;
         int limiteAnuncios = 0;
+        int cuotaDestacados = 0;
 
         if (perfilDealer?.Suscripcion != null)
         {
-            planActual = perfilDealer.Suscripcion.Nivel.ToString();
-            limiteAnuncios = perfilDealer.Suscripcion.LimiteAnuncios;
+            var suscripcion = perfilDealer.Suscripcion;
+            planActual = suscripcion.Nivel.ToString();
+            limiteAnuncios = suscripcion.LimiteAnuncios;
             diasRestantes = Math.Max(
                 0,
-                (perfilDealer.Suscripcion.FechaVencimientoUtc.Date - DateTime.UtcNow.Date).Days
+                (suscripcion.FechaVencimientoUtc.Date - DateTime.UtcNow.Date).Days
             );
+
+            cuotaDestacados = suscripcion.Plan?.CuotaDestacados ?? 0;
         }
+
+        var destacadosActivos = await anunciosDealer
+            .CountAsync(a =>
+                a.EsDestacado &&
+                a.FechaDestacadoHasta.HasValue &&
+                a.FechaDestacadoHasta.Value > DateTime.UtcNow &&
+                a.Estado == "Publicado");
 
         var anunciosMasVistos = await anunciosDealer
             .OrderByDescending(a => a.Vistas)
@@ -125,6 +137,8 @@ public class DashboardService : IDashboardService
             PlanActual = planActual,
             DiasRestantesSuscripcion = diasRestantes,
             LimiteAnuncios = limiteAnuncios,
+            CuotaDestacados = cuotaDestacados,
+            DestacadosActivos = destacadosActivos,
             AnunciosMasVistos = anunciosMasVistos
         };
     }

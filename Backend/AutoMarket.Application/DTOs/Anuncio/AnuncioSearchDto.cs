@@ -39,6 +39,10 @@ namespace AutoMarket.Application.DTOs
 
         public int? KilometrajeMaximo { get; set; }
 
+        // true => excluye de la vitrina los anuncios destacados vigentes
+        // (se usa en el Home, donde ya se muestran en una sección aparte).
+        public bool ExcluirDestacadosVigentes { get; set; }
+
         public int PaginaActual { get; set; } = 1;
         public int CantidadAnuncios { get; set; } = 10;
     }

@@ -502,6 +502,8 @@ interface FormularioVehiculoProps {
   transmisionPersonalizada: string;
   publicarAlGuardar: boolean;
   onPublicarAlGuardarChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  destacarAlPublicar: boolean;
+  onDestacarAlPublicarChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onChange: (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => void;
@@ -518,6 +520,8 @@ export default function FormularioVehiculo({
   transmisionPersonalizada,
   publicarAlGuardar,
   onPublicarAlGuardarChange,
+  destacarAlPublicar,
+  onDestacarAlPublicarChange,
   onChange,
   onKilometrajeChange,
   onAccesoriosChange,
@@ -569,6 +573,32 @@ export default function FormularioVehiculo({
           El vehículo aparecerá de inmediato en la vitrina pública.
         </span>
       </div>
+
+      {/* DESTACAR AL PUBLICAR */}
+      {publicarAlGuardar && (
+        <div className="flex items-center gap-3 border-t border-amber-100 bg-amber-50/50 p-4 rounded-lg">
+          <input
+            id="destacarAlPublicar"
+            type="checkbox"
+            checked={destacarAlPublicar}
+            onChange={onDestacarAlPublicarChange}
+            className="h-4 w-4 rounded border-amber-300 text-amber-500 focus:ring-amber-400"
+          />
+          <div>
+            <label
+              htmlFor="destacarAlPublicar"
+              className="text-sm font-medium text-gray-800"
+            >
+              Destacar este anuncio
+            </label>
+            <p className="text-xs text-gray-500">
+              Aparecerá en la sección de destacados de la página principal (usa una
+              cuota de tu plan). Si la cuota está llena, el anuncio se publica igual
+              sin destacar.
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

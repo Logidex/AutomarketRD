@@ -11,6 +11,8 @@ import {
   useEliminarImagenAnuncio,
   usePublicarAnuncio,
   useEstablecerFotoPrincipal,
+  useDestacarAnuncio,
+  useQuitarDestacadoAnuncio,
 } from './useAnuncios';
 
 export const useFormularioVehiculo = (
@@ -27,14 +29,18 @@ export const useFormularioVehiculo = (
   const eliminarImagen = useEliminarImagenAnuncio();
   const publicarAnuncio = usePublicarAnuncio();
   const establecerFotoPrincipal = useEstablecerFotoPrincipal();
+  const destacarAnuncio = useDestacarAnuncio();
+  const quitarDestacadoAnuncio = useQuitarDestacadoAnuncio();
 
   const MINIMO_IMAGENES = 5;
   const MAXIMO_IMAGENES = 10;
 
   const enviandoRef = useRef(false);
   const fotosInicialesRef = useRef<string[]>([]);
+  const esDestacadoInicialRef = useRef(false);
   const [submitting, setSubmitting] = useState(false);
   const [publicarAlGuardar, setPublicarAlGuardar] = useState(false);
+  const [destacarAlPublicar, setDestacarAlPublicar] = useState(false);
 
   const [archivos, setArchivos] = useState<File[]>([]);
   const [fotosGuardadas, setFotosGuardadas] = useState<string[]>([]);
@@ -75,6 +81,8 @@ export const useFormularioVehiculo = (
           setAccesoriosTexto(datos.accesorios.join(", "));
           setFotosGuardadas(datos.fotos || []);
           fotosInicialesRef.current = datos.fotos || [];
+          esDestacadoInicialRef.current = datos.esDestacado ?? false;
+          setDestacarAlPublicar(datos.esDestacado ?? false);
 
 if (!["Automatica", "Manual", "Secuencial", "CVT", "DobleEmbrague"].includes(datos.transmision)) {
             setFormData((prev) => ({ ...prev, transmision: "Otra" }));
@@ -188,6 +196,7 @@ if (!["Automatica", "Manual", "Secuencial", "CVT", "DobleEmbrague"].includes(dat
         }
         await aplicarFotoPrincipal(Number(id), rutasSubidas);
         if (publicarAlGuardar) await publicarAnuncio.mutateAsync(Number(id));
+        await aplicarDestacado(Number(id), esDestacadoInicialRef.current);
       } else {
         const response = await crearAnuncio.mutateAsync(payload);
         let rutasSubidas: string[] = [];
@@ -196,6 +205,7 @@ if (!["Automatica", "Manual", "Secuencial", "CVT", "DobleEmbrague"].includes(dat
         }
         await aplicarFotoPrincipal(response.id, rutasSubidas);
         if (publicarAlGuardar) await publicarAnuncio.mutateAsync(response.id);
+        await aplicarDestacado(response.id, false);
         Swal.fire("Éxito", publicarAlGuardar ? "Publicado correctamente" : "Creado correctamente", "success");
       }
       navigate(destino);
@@ -238,6 +248,26 @@ if (!["Automatica", "Manual", "Secuencial", "CVT", "DobleEmbrague"].includes(dat
     }
   };
 
+  const aplicarDestacado = async (idAnuncio: number, fueDestacadoInicial: boolean) => {
+    try {
+      if (destacarAlPublicar) {
+        // En creación solo aplica si se publicó; en edición aplica siempre
+        // (el anuncio ya pudo estar publicado antes).
+        if (!isEditMode && !publicarAlGuardar) return;
+        await destacarAnuncio.mutateAsync(idAnuncio);
+      } else if (isEditMode && fueDestacadoInicial) {
+        await quitarDestacadoAnuncio.mutateAsync(idAnuncio);
+      }
+    } catch {
+      Swal.fire({
+        title: "Aviso de destacado",
+        text: "El anuncio se guardó correctamente, pero no fue posible gestionar su destacado. Verifica que tengas cupo disponible en tu plan.",
+        icon: "warning",
+        confirmButtonColor: "#f59e0b",
+      });
+    }
+  };
+
   return {
     formData, setFormData,
     kilometraje, setKilometraje,
@@ -247,6 +277,7 @@ if (!["Automatica", "Manual", "Secuencial", "CVT", "DobleEmbrague"].includes(dat
     archivos, fotosGuardadas, handleChange, handleImageChange, 
     handleEliminarArchivo, handleEliminarFotoGuardada, guardar, submitting,
     publicarAlGuardar, setPublicarAlGuardar,
+    destacarAlPublicar, setDestacarAlPublicar,
     fotoPrincipal, handleEstablecerPrincipal
   };
 };

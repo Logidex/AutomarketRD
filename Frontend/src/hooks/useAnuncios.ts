@@ -41,6 +41,36 @@ export const usePublicarAnuncio = () => {
   });
 };
 
+export const useDestacarAnuncio = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) => anuncioService.marcarComoDestacado(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ['vehiculos'] });
+      queryClient.invalidateQueries({ queryKey: ['mis-anuncios'] });
+      queryClient.invalidateQueries({ queryKey: ['vehiculo', id] });
+      queryClient.invalidateQueries({ queryKey: ['anuncios-destacados'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-resumen'] });
+    },
+  });
+};
+
+export const useQuitarDestacadoAnuncio = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) => anuncioService.quitarDestacado(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ['vehiculos'] });
+      queryClient.invalidateQueries({ queryKey: ['mis-anuncios'] });
+      queryClient.invalidateQueries({ queryKey: ['vehiculo', id] });
+      queryClient.invalidateQueries({ queryKey: ['anuncios-destacados'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-resumen'] });
+    },
+  });
+};
+
 export const useCambiarEstadoAnuncio = () => {
   const queryClient = useQueryClient();
 
