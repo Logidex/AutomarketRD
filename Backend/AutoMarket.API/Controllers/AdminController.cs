@@ -1,6 +1,8 @@
 using AutoMarket.API.Constants;
+using AutoMarket.API.Extensions;
 using AutoMarket.Application.DTOs.Admin;
 using AutoMarket.Application.DTOs.Planes;
+using AutoMarket.Application.DTOs.Ticket;
 using AutoMarket.Application.Interfaces;
 using AutoMarket.Application.Services;
 using AutoMarket.Core.Entities.Enums;
@@ -26,6 +28,7 @@ public class AdminController : ControllerBase
     private readonly ISuscripcionService _suscripcionService;
     private readonly IPlanCatalogoService _planCatalogoService;
     private readonly IUsuarioCuentaService _usuarioCuentaService;
+    private readonly ITicketService _ticketService;
 
 /// <summary>
 /// Inicializa una nueva instancia de la clase AdminController.
@@ -37,7 +40,8 @@ public class AdminController : ControllerBase
         IAlmacenadorArchivos almacenadorArchivos,
         ISuscripcionService suscripcionService,
         IPlanCatalogoService planCatalogoService,
-        IUsuarioCuentaService usuarioCuentaService)
+        IUsuarioCuentaService usuarioCuentaService,
+        ITicketService ticketService)
     {
         _dashboardService = dashboardService;
         _usuarioRepository = usuarioRepository;
@@ -46,6 +50,7 @@ public class AdminController : ControllerBase
         _suscripcionService = suscripcionService;
         _planCatalogoService = planCatalogoService;
         _usuarioCuentaService = usuarioCuentaService;
+        _ticketService = ticketService;
     }
 
     [HttpGet("dashboard/resumen")]
@@ -282,6 +287,79 @@ public class AdminController : ControllerBase
         catch (KeyNotFoundException ex)
         {
             return NotFound(new { exito = false, mensaje = ex.Message });
+        }
+    }
+
+    // ==========================================
+    // 6. TICKETS DE SOPORTE
+    // ==========================================
+
+    [HttpGet("tickets/resumen")]
+    public async Task<IActionResult> ObtenerResumenTickets()
+    {
+        var resumen = await _ticketService.ObtenerResumenAdminAsync();
+        return Ok(resumen);
+    }
+
+    [HttpGet("tickets")]
+    public async Task<IActionResult> ListarTickets()
+    {
+        var tickets = await _ticketService.ObtenerTicketsAdminAsync();
+        return Ok(tickets);
+    }
+
+    [HttpGet("tickets/{id:int}")]
+    public async Task<IActionResult> ObtenerTicketAdmin(int id)
+    {
+        try
+        {
+            var ticket = await _ticketService.ObtenerTicketAdminAsync(id);
+            return Ok(ticket);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { exito = false, mensaje = ex.Message });
+        }
+    }
+
+    [HttpPost("tickets/{id:int}/mensajes")]
+    public async Task<IActionResult> ResponderTicket(int id, [FromBody] TicketMensajeCreateDto dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var adminId = User.ObtenerUsuarioId();
+
+        try
+        {
+            await _ticketService.ResponderTicketAdminAsync(id, dto, adminId);
+            return Ok(new { exito = true, mensaje = "Respuesta enviada al cliente." });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { exito = false, mensaje = ex.Message });
+        }
+        catch (BusinessRuleException ex)
+        {
+            return BadRequest(new { exito = false, mensaje = ex.Message });
+        }
+    }
+
+    [HttpPatch("tickets/{id:int}/estado")]
+    public async Task<IActionResult> CambiarEstadoTicket(int id, [FromBody] CambiarEstadoTicketDto dto)
+    {
+        try
+        {
+            await _ticketService.CambiarEstadoAdminAsync(id, dto);
+            return Ok(new { exito = true, mensaje = $"El ticket pasó a estado {dto.NuevoEstado}." });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { exito = false, mensaje = ex.Message });
+        }
+        catch (BusinessRuleException ex)
+        {
+            return BadRequest(new { exito = false, mensaje = ex.Message });
         }
     }
 }

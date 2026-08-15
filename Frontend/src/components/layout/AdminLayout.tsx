@@ -7,8 +7,10 @@ import {
   FaShieldAlt,
   FaSignOutAlt,
   FaMoneyCheckAlt,
+  FaHeadset,
 } from "react-icons/fa";
 import { authService } from "../../services/auth.service";
+import { useResumenTicketsAdmin } from "../../hooks/useTickets";
 import logo from "../../assets/AutoMarketRD_Logo.svg";
 
 const menuItems = [
@@ -37,6 +39,11 @@ const menuItems = [
     label: "Pagos",
     icon: <FaMoneyCheckAlt />,
   },
+  {
+    path: "/admin/soporte",
+    label: "Soporte",
+    icon: <FaHeadset />,
+  },
 ];
 
 export default function AdminLayout() {
@@ -44,6 +51,10 @@ export default function AdminLayout() {
   const location = useLocation();
 
   const usuario = authService.getCurrentUser();
+
+  const { data: resumenTickets } = useResumenTicketsAdmin();
+
+  const cantidadAbiertos = resumenTickets?.cantidadAbiertos ?? 0;
 
   const nombreUsuario = usuario
     ? `${usuario.nombre} ${usuario.apellido ?? ""}`.trim()
@@ -95,6 +106,11 @@ export default function AdminLayout() {
               >
                 <span className="mr-3 text-lg">{item.icon}</span>
                 <span>{item.label}</span>
+                {item.path === "/admin/soporte" && cantidadAbiertos > 0 && (
+                  <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
+                    {cantidadAbiertos}
+                  </span>
+                )}
               </Link>
             );
           })}

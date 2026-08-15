@@ -19,6 +19,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<HistorialVista> HistorialVistas { get; set; }
     public DbSet<PlanCatalogo> PlanesCatalogo { get; set; }
     public DbSet<PagoSuscripcion> PagosSuscripcion { get; set; }
+    public DbSet<Ticket> Tickets { get; set; }
+    public DbSet<TicketMensaje> TicketMensajes { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -412,6 +414,77 @@ public class ApplicationDbContext : DbContext
                 .HasDatabaseName("IX_PagosSuscripcion_PerfilDealerId");
 
             b.HasIndex(p => p.FechaUtc);
+        });
+
+        // ==========================================
+        // CONFIGURACIÓN: TICKETS DE SOPORTE
+        // ==========================================
+        modelBuilder.Entity<Ticket>(b =>
+        {
+            b.HasKey(t => t.Id);
+
+            b.Property(t => t.Asunto)
+                .IsRequired()
+                .HasMaxLength(150);
+
+            b.Property(t => t.Categoria)
+                .IsRequired()
+                .HasColumnType("integer");
+
+            b.Property(t => t.Prioridad)
+                .IsRequired()
+                .HasColumnType("integer");
+
+            b.Property(t => t.Estado)
+                .IsRequired()
+                .HasColumnType("integer");
+
+            b.Property(t => t.FechaCreacionUtc)
+                .IsRequired()
+                .HasColumnType("timestamp with time zone");
+
+            b.Property(t => t.FechaActualizacionUtc)
+                .IsRequired()
+                .HasColumnType("timestamp with time zone");
+
+            b.HasOne(t => t.Usuario)
+                .WithMany()
+                .HasForeignKey(t => t.UsuarioId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            b.HasIndex(t => t.UsuarioId);
+            b.HasIndex(t => t.Estado);
+            b.HasIndex(t => new { t.Estado, t.Prioridad })
+                .HasDatabaseName("IX_Tickets_Estado_Prioridad");
+        });
+
+        modelBuilder.Entity<TicketMensaje>(b =>
+        {
+            b.HasKey(m => m.Id);
+
+            b.Property(m => m.Mensaje)
+                .IsRequired()
+                .HasMaxLength(2000);
+
+            b.Property(m => m.EsAdmin)
+                .IsRequired();
+
+            b.Property(m => m.FechaCreacionUtc)
+                .IsRequired()
+                .HasColumnType("timestamp with time zone");
+
+            b.HasOne(m => m.Ticket)
+                .WithMany(t => t.Mensajes)
+                .HasForeignKey(m => m.TicketId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            b.HasOne(m => m.Autor)
+                .WithMany()
+                .HasForeignKey(m => m.AutorId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            b.HasIndex(m => m.TicketId);
+            b.HasIndex(m => m.AutorId);
         });
     }
 }

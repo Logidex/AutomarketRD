@@ -550,7 +550,6 @@ export default function Home() {
             <FaCrown className="text-amber-400" />
             <h2 className="text-xl font-bold">Destacados <span className="text-amber-400">Premium</span></h2>
           </div>
-          <span className="text-xs text-[#9aa1b1]">Ordenados por plan: Elite → Pro → Básico</span>
         </div>
 
         {destacadosError ? (

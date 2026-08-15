@@ -18,7 +18,8 @@ public class AdminControllerTests
         Mock<IUsuarioRepository>? mockUsuarios = null,
         Mock<ISuscripcionService>? mockSuscripcionService = null,
         Mock<IPlanCatalogoService>? mockPlanCatalogo = null,
-        Mock<IUsuarioCuentaService>? mockUsuarioCuenta = null)
+        Mock<IUsuarioCuentaService>? mockUsuarioCuenta = null,
+        Mock<ITicketService>? mockTicketService = null)
     {
         return new AdminController(
             (mockDashboard ?? new Mock<IDashboardService>()).Object,
@@ -27,7 +28,8 @@ public class AdminControllerTests
             (mockS3 ?? new Mock<IAlmacenadorArchivos>()).Object,
             (mockSuscripcionService ?? new Mock<ISuscripcionService>()).Object,
             (mockPlanCatalogo ?? new Mock<IPlanCatalogoService>()).Object,
-            (mockUsuarioCuenta ?? new Mock<IUsuarioCuentaService>()).Object);
+            (mockUsuarioCuenta ?? new Mock<IUsuarioCuentaService>()).Object,
+            (mockTicketService ?? new Mock<ITicketService>()).Object);
     }
 
     [Fact]

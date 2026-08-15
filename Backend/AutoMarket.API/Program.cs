@@ -134,6 +134,9 @@ try
 
     builder.Services.AddScoped<IContactoService, ContactoService>();
 
+    builder.Services.AddScoped<ITicketRepository, TicketRepository>();
+    builder.Services.AddScoped<ITicketService, TicketService>();
+
     builder.Services.AddScoped<IEmailSenderService, SmtpEmailSenderService>();
 
     builder.Services.AddHostedService<SuscripcionMonitorService>();

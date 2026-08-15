@@ -1,5 +1,5 @@
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
-import { FaCarSide, FaEnvelope, FaHome, FaLevelUpAlt, FaPaperPlane, FaSignOutAlt, FaUserCog } from "react-icons/fa";
+import { FaCarSide, FaEnvelope, FaHeadset, FaHome, FaLevelUpAlt, FaPaperPlane, FaSignOutAlt, FaUserCog } from "react-icons/fa";
 import { authService } from "../../services/auth.service";
 import logo from "../../assets/AutoMarketRD_Logo.svg";
 import CampanaNotificaciones from "./CampanaNotificaciones";
@@ -115,6 +115,20 @@ export default function VendedorLayout() {
         >
           <FaLevelUpAlt className="text-xs" />
           Ascender a Dealer
+        </NavLink>
+
+        <NavLink
+          to="/vendedor/soporte"
+          className={({ isActive }) =>
+            `flex items-center gap-2 border-b-2 px-3 py-2.5 text-sm font-medium transition-colors ${
+              isActive
+                ? "border-gray-800 text-gray-900"
+                : "border-transparent text-gray-500 hover:text-gray-800"
+            }`
+          }
+        >
+          <FaHeadset className="text-xs" />
+          Soporte
         </NavLink>
 
         <NavLink

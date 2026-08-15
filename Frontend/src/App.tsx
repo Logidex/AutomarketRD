@@ -35,6 +35,7 @@ const MisAnuncios = lazy(() => import('./pages/MisAnuncios'));
 const PublicarVehiculo = lazy(() => import('./pages/CrearAnuncio'));
 const EditarVehiculo = lazy(() => import('./pages/EditarVehiculo'));
 const Leads = lazy(() => import('./pages/Leads'));
+const Soporte = lazy(() => import('./pages/Soporte'));
 const MiPerfil = lazy(() => import('./pages/MiPerfil'));
 const MiCuenta = lazy(() => import('./pages/MiCuenta'));
 const Favoritos = lazy(() => import('./pages/Favoritos'));
@@ -49,6 +50,7 @@ const AdminUsuarios = lazy(() => import('./pages/admin/AdminUsuarios'));
 const AdminAnuncios = lazy(() => import('./pages/admin/AdminAnuncios'));
 const AdminPlanes = lazy(() => import('./pages/admin/AdminPlanes'));
   const AdminPagos = lazy(() => import('./pages/admin/AdminPagos'));
+  const AdminTickets = lazy(() => import('./pages/admin/AdminTickets'));
 
 // Páginas del área de Vendedor
 const MiVehiculoVendedor = lazy(() => import('./pages/vendedor/MiVehiculoVendedor'));
@@ -148,6 +150,9 @@ function App() {
             {/* /vendedor/ascender */}
             <Route path="ascender" element={<AscenderVendedor />} />
 
+            {/* /vendedor/soporte */}
+            <Route path="soporte" element={<Soporte />} />
+
             {/* /vendedor/cuenta */}
             <Route path="cuenta" element={<CuentaVendedor />} />
           </Route>
@@ -206,6 +211,12 @@ function App() {
               path="suscripcion"
               element={<DashboardSuscripcion />}
             />
+
+            {/* /dashboard/soporte */}
+            <Route
+              path="soporte"
+              element={<Soporte />}
+            />
           </Route>
         </Route>
 
@@ -230,6 +241,9 @@ function App() {
 
             {/* /admin/pagos */}
             <Route path="pagos" element={<AdminPagos />} />
+
+            {/* /admin/soporte */}
+            <Route path="soporte" element={<AdminTickets />} />
           </Route>
         </Route>
 
