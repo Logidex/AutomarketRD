@@ -1,8 +1,11 @@
 import GestorImagenes from "../components/GestorImagenes";
 import FormularioVehiculo from "../components/FormularioVehiculo";
 import { useFormularioVehiculo } from "../hooks/useFormularioVehiculo";
+import { useMaxFotosAnuncio } from "../hooks/useSuscripcion";
 
 export default function CrearAnuncio() {
+  const maxFotos = useMaxFotosAnuncio();
+
   const {
     formData, kilometraje, setKilometraje, accesoriosTexto, setAccesoriosTexto,
     mostrarTransmisionPersonalizada, transmisionPersonalizada, setTransmisionPersonalizada,
@@ -11,7 +14,7 @@ export default function CrearAnuncio() {
     publicarAlGuardar, setPublicarAlGuardar,
     destacarAlPublicar, setDestacarAlPublicar,
     fotoPrincipal, handleEstablecerPrincipal
-  } = useFormularioVehiculo(false);
+  } = useFormularioVehiculo(false, "/dashboard/mis-anuncios", maxFotos);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,6 +51,7 @@ export default function CrearAnuncio() {
           archivos={archivos}
           fotosGuardadas={fotosGuardadas}
           fotoPrincipal={fotoPrincipal}
+          maxImagenes={maxFotos}
           onImageChange={handleImageChange}
           onEliminarArchivo={handleEliminarArchivo}
           onEliminarFotoGuardada={handleEliminarFotoGuardada}

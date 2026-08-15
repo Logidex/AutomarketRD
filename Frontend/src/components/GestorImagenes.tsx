@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { urlImagen } from '../utils/imagen';
 
 const MINIMO_IMAGENES = 5;
-const MAXIMO_IMAGENES = 10;
 
 interface ImagenPreviewProps {
   archivo: File;
@@ -84,6 +83,7 @@ interface GestorImagenesProps {
   archivos: File[];
   fotosGuardadas: string[];
   fotoPrincipal: File | string | null;
+  maxImagenes?: number;
   onImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onEliminarArchivo: (indice: number) => void;
   onEliminarFotoGuardada: (indice: number) => void;
@@ -94,6 +94,7 @@ export default function GestorImagenes({
   archivos,
   fotosGuardadas,
   fotoPrincipal,
+  maxImagenes = 10,
   onImageChange,
   onEliminarArchivo,
   onEliminarFotoGuardada,
@@ -112,7 +113,7 @@ export default function GestorImagenes({
         </label>
 
         <span className="text-sm font-semibold text-gray-600">
-          {totalImagenes}/{MAXIMO_IMAGENES}
+          {totalImagenes}/{maxImagenes}
         </span>
       </div>
 
@@ -127,7 +128,7 @@ export default function GestorImagenes({
 
       <p className="mt-1 text-xs text-gray-500">
         Agrega imágenes una por una o varias a la vez. Haz clic en la estrella (★) de una foto para elegir la principal.
-        Debes tener entre {MINIMO_IMAGENES} y {MAXIMO_IMAGENES} para guardar el anuncio.
+        Debes tener entre {MINIMO_IMAGENES} y {maxImagenes} para guardar el anuncio.
       </p>
 
       {totalImagenes > 0 && (

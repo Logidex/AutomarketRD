@@ -24,6 +24,16 @@ export const usePlanesCatalogo = () => {
   });
 };
 
+export const useMaxFotosAnuncio = (defaultMaxFotos = 8) => {
+  const { data: suscripcion } = useSuscripcion();
+  const { data: planes = [] } = usePlanesCatalogo();
+
+  if (!suscripcion) return defaultMaxFotos;
+
+  const plan = planes.find((p) => p.nivel === suscripcion.nivel);
+  return plan?.maxFotos ?? defaultMaxFotos;
+};
+
 export const useHistorialPagos = () => {
   return useQuery<PagoSuscripcion[]>({
     queryKey: ['historial-pagos'],

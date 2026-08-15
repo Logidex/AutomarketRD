@@ -43,5 +43,11 @@ public class AnuncioListadoDto
     public bool EsDestacado { get; set; }
     public DateTime? FechaDestacadoHasta { get; set; }
 
+    // Vigencia del anuncio publicado.
+    public DateTime? FechaVencimiento { get; set; }
+
+    // true si el vendedor es un dealer verificado (suscripción pagada + correo confirmado).
+    public bool EsDealerVerificado { get; set; }
+
     public DateTime CreatedAt { get; set; }
 }

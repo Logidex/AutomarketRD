@@ -119,6 +119,8 @@ private static PlanCatalogoDto MapearPublico(PlanCatalogo plan)
             Descripcion = plan.Descripcion,
             LimiteAnuncios = plan.LimiteAnuncios,
             CuotaDestacados = plan.CuotaDestacados,
+            MaxFotos = PlanConfig.MaxFotos(plan.Nivel),
+            DiasVigencia = PlanConfig.DiasVigencia(plan.Nivel),
             PrecioMensual = plan.PrecioMensual,
             DescuentoTrimestralPorcentaje = plan.DescuentoTrimestralPorcentaje,
             DescuentoAnualPorcentaje = plan.DescuentoAnualPorcentaje
@@ -137,6 +139,8 @@ private static PlanCatalogoDto MapearPublico(PlanCatalogo plan)
             Descripcion = plan.Descripcion,
             LimiteAnuncios = plan.LimiteAnuncios,
             CuotaDestacados = plan.CuotaDestacados,
+            MaxFotos = PlanConfig.MaxFotos(plan.Nivel),
+            DiasVigencia = PlanConfig.DiasVigencia(plan.Nivel),
             PrecioMensual = plan.PrecioMensual,
             DescuentoTrimestralPorcentaje = plan.DescuentoTrimestralPorcentaje,
             DescuentoAnualPorcentaje = plan.DescuentoAnualPorcentaje,

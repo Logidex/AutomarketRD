@@ -34,6 +34,7 @@ import { urlImagen } from "../utils/imagen";
 import { formatearPrecio } from "../utils/formato";
 import logo from "../assets/AutoMarketRD_Logo.svg";
 import MenuPublico from "../components/layout/MenuPublico";
+import BadgeVerificado from "../components/BadgeVerificado";
 import {
   TIPOS_VEHICULO,
   TRANSMISIONES,
@@ -432,8 +433,9 @@ function SeccionContacto({
         {esVendedorParticular ? "Contactar vendedor" : "Contactar agencia"}
       </h2>
       {anuncio.nombreVendedor && (
-        <p className="mt-1 text-sm font-medium text-[#c3c9d4]">
+        <p className="mt-1 flex items-center gap-2 text-sm font-medium text-[#c3c9d4]">
           {anuncio.nombreVendedor}
+          {anuncio.esDealerVerificado && <BadgeVerificado />}
         </p>
       )}
 

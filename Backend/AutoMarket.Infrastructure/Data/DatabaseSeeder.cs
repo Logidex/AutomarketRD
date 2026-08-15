@@ -74,7 +74,7 @@ public static class DatabaseSeeder
 
         var planes = new[]
         {
-            new { Nivel = PlanNivel.Gratis, Nombre = "Plan Gratis", Descripcion = "Para que pruebes la plataforma: publica hasta 3 vehículos sin costo.", PrecioMensual = 0m, DescTrim = 0m, DescAnual = 0m },
+            new { Nivel = PlanNivel.Gratis, Nombre = "Plan Gratis", Descripcion = "Para que pruebes la plataforma: publica 1 vehículo sin costo.", PrecioMensual = 0m, DescTrim = 0m, DescAnual = 0m },
             new { Nivel = PlanNivel.Basico, Nombre = "Plan Básico", Descripcion = "Para vendedores que inician: hasta 15 vehículos publicados.", PrecioMensual = 999m, DescTrim = 7m, DescAnual = 15m },
             new { Nivel = PlanNivel.Pro, Nombre = "Plan Pro", Descripcion = "Para vendedores activos: hasta 50 vehículos y 5 destacados en la portada.", PrecioMensual = 2499m, DescTrim = 7m, DescAnual = 15m },
             new { Nivel = PlanNivel.Elite, Nombre = "Plan Elite", Descripcion = "El máximo poder: hasta 150 vehículos y 20 destacados en la portada.", PrecioMensual = 4999m, DescTrim = 7m, DescAnual = 15m }

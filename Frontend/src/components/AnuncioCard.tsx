@@ -62,6 +62,12 @@ export default function AnuncioCard({
   const estadoLower = estadoNormalizado.toLowerCase();
   const esPublicado = estadoLower === "publicado";
 
+  const fechaVencimiento = anuncio.fechaVencimiento
+    ? new Date(anuncio.fechaVencimiento)
+    : null;
+  const esVencido =
+    esPublicado && fechaVencimiento !== null && fechaVencimiento <= new Date();
+
   const nombreAnuncio = anuncio.nombreAnuncio || "Sin nombre";
   const ubicacion = anuncio.ubicacion || "Sin ubicación";
   const tipoVehiculo = anuncio.tipoVehiculo || "Sin tipo";
@@ -88,7 +94,7 @@ export default function AnuncioCard({
                 estadoNormalizado,
               )}`}
             >
-              {estadoNormalizado || "Sin estado"}
+              {esVencido ? "Vencido" : estadoNormalizado || "Sin estado"}
             </span>
             {anuncio.esDestacado && anuncio.fechaDestacadoHasta && new Date(anuncio.fechaDestacadoHasta) > new Date() && (
               <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500 to-yellow-600 px-3 py-1 text-xs font-bold text-white shadow">
@@ -210,6 +216,16 @@ export default function AnuncioCard({
               </div>
 
               <div className="flex flex-wrap gap-2 sm:justify-end">
+                {esVencido && (
+                  <button
+                    onClick={() => onPublicar(anuncio.id)}
+                    className="flex items-center gap-1.5 rounded-lg bg-green-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-green-700"
+                  >
+                    <FaEye />
+                    Renovar
+                  </button>
+                )}
+
                 {!esPublicado && (
                   <button
                     onClick={() => onPublicar(anuncio.id)}

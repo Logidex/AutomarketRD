@@ -43,6 +43,11 @@ public class Anuncio
 
     public bool EstaDestacadoVigente => EsDestacado && FechaDestacadoHasta.HasValue && FechaDestacadoHasta.Value > DateTime.UtcNow;
 
+    // Vigencia del anuncio publicado (según el plan del vendedor).
+    public DateTime? FechaVencimientoUtc { get; private set; }
+
+    public bool EstaVencido => Estado == "Publicado" && FechaVencimientoUtc.HasValue && FechaVencimientoUtc.Value <= DateTime.UtcNow;
+
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
 
@@ -201,14 +206,14 @@ public class Anuncio
     // ==========================================
     // 3. MÉTODO AGREGAR FOTOS OPTIMIZADO
     // ==========================================
-    public void AgregarFotos(List<string> rutasFotos)
+    public void AgregarFotos(List<string> rutasFotos, int maxFotos = 10)
     {
         if (rutasFotos == null || !rutasFotos.Any())
             throw new ArgumentException("Debes proporcionar al menos una foto.");
 
-        if (_fotos.Count + rutasFotos.Count > 10)
+        if (_fotos.Count + rutasFotos.Count > maxFotos)
         {
-            throw new InvalidOperationException($"Límite excedido. El anuncio ya tiene {_fotos.Count} fotos y el máximo total es 10.");
+            throw new InvalidOperationException($"Límite excedido. El anuncio ya tiene {_fotos.Count} fotos y el máximo total es {maxFotos}.");
         }
 
         _fotos.AddRange(rutasFotos);
@@ -218,15 +223,18 @@ public class Anuncio
     // ==========================================
     // 4. MÉTODO PUBLICAR ANUNCIO
     // ==========================================
-    public void Publicar()
+    public void Publicar(int diasVigencia = 30)
     {
-        if (Estado == "Publicado")
+        // Un anuncio publicado y vigente no se puede volver a publicar;
+        // uno vencido sí (equivale a renovarlo).
+        if (Estado == "Publicado" && !EstaVencido)
             throw new InvalidOperationException("El anuncio ya está publicado.");
 
         if (_fotos.Count < 5)
             throw new InvalidOperationException("Imposible publicar: Un anuncio requiere un mínimo de 5 fotos.");
 
         Estado = "Publicado";
+        FechaVencimientoUtc = DateTime.UtcNow.AddDays(diasVigencia);
         UpdatedAt = DateTime.UtcNow;
     }
 

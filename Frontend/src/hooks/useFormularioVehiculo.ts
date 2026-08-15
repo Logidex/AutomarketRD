@@ -18,6 +18,7 @@ import {
 export const useFormularioVehiculo = (
   isEditMode: boolean = false,
   destino: string = "/dashboard/mis-anuncios",
+  maxImagenes: number = 10,
 ) => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -33,7 +34,6 @@ export const useFormularioVehiculo = (
   const quitarDestacadoAnuncio = useQuitarDestacadoAnuncio();
 
   const MINIMO_IMAGENES = 5;
-  const MAXIMO_IMAGENES = 10;
 
   const enviandoRef = useRef(false);
   const fotosInicialesRef = useRef<string[]>([]);
@@ -116,11 +116,11 @@ if (!["Automatica", "Manual", "Secuencial", "CVT", "DobleEmbrague"].includes(dat
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
 
-    const cupo = Math.max(0, MAXIMO_IMAGENES - (archivos.length + fotosGuardadas.length));
+    const cupo = Math.max(0, maxImagenes - (archivos.length + fotosGuardadas.length));
     if (cupo === 0) {
       Swal.fire({
         title: "Límite alcanzado",
-        text: `Ya puedes agregar hasta ${MAXIMO_IMAGENES} imágenes por anuncio.`,
+        text: `Ya puedes agregar hasta ${maxImagenes} imágenes por anuncio.`,
         icon: "warning",
         confirmButtonColor: "#ef4444",
       });
@@ -161,13 +161,13 @@ if (!["Automatica", "Manual", "Secuencial", "CVT", "DobleEmbrague"].includes(dat
     setLoading(true);
 
     const totalImagenes = archivos.length + fotosGuardadas.length;
-    if (totalImagenes < MINIMO_IMAGENES || totalImagenes > MAXIMO_IMAGENES) {
+    if (totalImagenes < MINIMO_IMAGENES || totalImagenes > maxImagenes) {
       enviandoRef.current = false;
       setSubmitting(false);
       setLoading(false);
       Swal.fire({
         title: "Imágenes requeridas",
-        text: `Debes agregar entre ${MINIMO_IMAGENES} y ${MAXIMO_IMAGENES} fotos para guardar el anuncio.`,
+        text: `Debes agregar entre ${MINIMO_IMAGENES} y ${maxImagenes} fotos para guardar el anuncio.`,
         icon: "warning",
         confirmButtonColor: "#ef4444",
       });

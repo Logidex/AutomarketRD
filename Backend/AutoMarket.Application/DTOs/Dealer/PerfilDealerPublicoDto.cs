@@ -14,5 +14,8 @@ namespace AutoMarket.Application.DTOs.Usuario
         // true si es una cuenta Vendedor (particular, un solo anuncio),
         // false si es un Dealer con perfil de agencia.
         public bool EsVendedorParticular { get; set; }
+
+        // true si tiene correo confirmado y suscripción pagada (no Gratis).
+        public bool EsDealerVerificado { get; set; }
     }
 }

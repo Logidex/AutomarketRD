@@ -1,10 +1,12 @@
 import GestorImagenes from "../../components/GestorImagenes";
 import FormularioVehiculo from "../../components/FormularioVehiculo";
 import { useFormularioVehiculo } from "../../hooks/useFormularioVehiculo";
+import { useMaxFotosAnuncio } from "../../hooks/useSuscripcion";
 import { useNavigate } from "react-router-dom";
 
 export default function EditarVehiculoVendedor() {
   const navigate = useNavigate();
+  const maxFotos = useMaxFotosAnuncio();
 
   const {
     formData, kilometraje, setKilometraje, accesoriosTexto, setAccesoriosTexto,
@@ -14,7 +16,7 @@ export default function EditarVehiculoVendedor() {
     publicarAlGuardar, setPublicarAlGuardar,
     destacarAlPublicar, setDestacarAlPublicar,
     fotoPrincipal, handleEstablecerPrincipal
-  } = useFormularioVehiculo(true, "/vendedor");
+  } = useFormularioVehiculo(true, "/vendedor", maxFotos);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,6 +59,7 @@ export default function EditarVehiculoVendedor() {
           archivos={archivos}
           fotosGuardadas={fotosGuardadas}
           fotoPrincipal={fotoPrincipal}
+          maxImagenes={maxFotos}
           onImageChange={handleImageChange}
           onEliminarArchivo={handleEliminarArchivo}
           onEliminarFotoGuardada={handleEliminarFotoGuardada}

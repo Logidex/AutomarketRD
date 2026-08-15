@@ -44,6 +44,12 @@ public class AnuncioDto
     public bool EsDestacado { get; set; }
     public DateTime? FechaDestacadoHasta { get; set; }
 
+    // Vigencia del anuncio publicado.
+    public DateTime? FechaVencimiento { get; set; }
+
+    // true si el vendedor es un dealer verificado (suscripción pagada + correo confirmado).
+    public bool EsDealerVerificado { get; set; }
+
     // Datos de contacto del vendedor, expuestos solo en el detalle público.
     public string? NombreVendedor { get; set; }
     public string? WhatsAppContacto { get; set; }

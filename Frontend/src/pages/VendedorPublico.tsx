@@ -16,6 +16,7 @@ import type { PerfilDealerPublico } from "../services/dealer.service";
 import { urlImagen } from "../utils/imagen";
 import { formatearPrecio } from "../utils/formato";
 import Spinner from "../components/Spinner";
+import BadgeVerificado from "../components/BadgeVerificado";
 import { usePerfilDealerPublico, useAnunciosVendedor } from "../hooks/usePerfilDealer";
 
 const fotoPrincipal = (anuncio: AnuncioListado): string =>
@@ -77,6 +78,9 @@ function TarjetaAnuncioVendedor({ anuncio, destacada, onAbrir }: PropsTarjeta) {
           alt={`${anuncio.marca} ${anuncio.modelo}`}
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
+        {anuncio.esDealerVerificado && (
+          <BadgeVerificado className="absolute left-3 bottom-3 z-10" />
+        )}
       </div>
 
       <div className="flex flex-1 flex-col p-5">
@@ -176,6 +180,9 @@ function PerfilParticular({ perfil, anuncios, inicial, numeroWhatsApp }: PropsPe
           <p className="mt-1 text-sm text-[#9aa1b1]">
             Vende de forma particular en AutoMarket RD.
           </p>
+          {perfil.esDealerVerificado && (
+            <BadgeVerificado className="mt-2" />
+          )}
         </div>
 
         <BotonesContacto
@@ -239,6 +246,10 @@ function PerfilDealer({ perfil, anuncios, numeroWhatsApp }: PropsPerfilDealer) {
             <p className="mt-1 text-sm text-[#9aa1b1]">
               Agencia de venta de vehículos en AutoMarket RD.
             </p>
+
+            {perfil.esDealerVerificado && (
+              <BadgeVerificado className="mt-2" />
+            )}
 
             <div className="mt-3 flex flex-wrap gap-2">
               {perfil.ubicacion && (

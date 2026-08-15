@@ -41,7 +41,13 @@ export interface AnuncioListado {
 
   // Nivel de suscripción del vendedor (para prioridad)
   badgeSuscripcion?: string;
-  
+
+  // true si el vendedor es un dealer verificado (suscripción pagada + correo confirmado)
+  esDealerVerificado?: boolean;
+
+  // Fecha de vencimiento del anuncio publicado (null = sin vigencia definida)
+  fechaVencimiento?: string | null;
+
   // Para ordenamiento
   createdAt?: string;
 
@@ -130,4 +136,10 @@ export interface AnuncioDetalle {
   // Estado de destacado (para gestión desde el formulario del dueño).
   esDestacado?: boolean;
   fechaDestacadoHasta?: string | null;
+
+  // Vigencia del anuncio publicado.
+  fechaVencimiento?: string | null;
+
+  // true si el vendedor es un dealer verificado (suscripción pagada + correo confirmado).
+  esDealerVerificado?: boolean;
 }

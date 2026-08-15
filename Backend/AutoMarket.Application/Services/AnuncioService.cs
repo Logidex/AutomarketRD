@@ -158,9 +158,9 @@ public class AnuncioService : IAnuncioService
             return null;
         }
 
-        // Solo los anuncios publicados son visibles públicamente.
-        // El resto (borradores, pausados, vendidos) solo los ve su dueño.
-        if (anuncio.Estado != "Publicado")
+        // Solo los anuncios publicados y vigentes son visibles públicamente.
+        // El resto (borradores, pausados, vendidos, vencidos) solo lo ve su dueño.
+        if (anuncio.Estado != "Publicado" || anuncio.EstaVencido)
         {
             if (usuarioId != anuncio.UsuarioId)
                 return null;
@@ -174,6 +174,7 @@ public class AnuncioService : IAnuncioService
 
         string? nombreVendedor = null;
         string? whatsAppContacto = null;
+        bool esDealerVerificado = false;
 
         if (vendedor != null)
         {
@@ -185,6 +186,8 @@ public class AnuncioService : IAnuncioService
                 vendedor.PerfilDealer?.WhatsApp ??
                 vendedor.PerfilDealer?.TelefonoAgencia ??
                 vendedor.TelefonoPersonal;
+
+            esDealerVerificado = EsDealerVerificado(vendedor);
         }
 
         return new AnuncioDto
@@ -226,6 +229,10 @@ public class AnuncioService : IAnuncioService
             EsDestacado = anuncio.EstaDestacadoVigente,
             FechaDestacadoHasta = anuncio.FechaDestacadoHasta,
 
+            FechaVencimiento = anuncio.FechaVencimientoUtc,
+
+            EsDealerVerificado = esDealerVerificado,
+
             NombreVendedor = nombreVendedor,
             WhatsAppContacto = whatsAppContacto,
 
@@ -233,6 +240,18 @@ public class AnuncioService : IAnuncioService
                 vendedor != null &&
                 string.Equals(vendedor.Rol, "Vendedor", StringComparison.OrdinalIgnoreCase)
         };
+    }
+
+    /// <summary>
+    /// Dealer verificado = suscripción pagada (no Gratis) + correo confirmado.
+    /// </summary>
+    private static bool EsDealerVerificado(Usuario vendedor)
+    {
+        if (!vendedor.EmailConfirmado)
+            return false;
+
+        var nivel = vendedor.PerfilDealer?.Suscripcion?.Nivel;
+        return nivel.HasValue && nivel.Value != PlanNivel.Gratis;
     }
 
     public async Task<
@@ -305,12 +324,13 @@ public class AnuncioService : IAnuncioService
             throw new UnauthorizedAccessException("Acceso denegado: No tienes permiso para publicar un anuncio que no te pertenece.");
         }
 
-        if (anuncio.Estado == "Publicado")
+        // Ya está publicado y vigente: no hay nada que hacer.
+        if (anuncio.Estado == "Publicado" && !anuncio.EstaVencido)
             return true;
 
-        await ValidarCupoParaPublicarAsync(anuncio, usuarioId);
+        int diasVigencia = await ValidarCupoParaPublicarAsync(anuncio, usuarioId);
 
-        anuncio.Publicar();
+        anuncio.Publicar(diasVigencia);
 
         await _repository.ActualizarAsync(anuncio);
         return true;
@@ -319,11 +339,13 @@ public class AnuncioService : IAnuncioService
     /// <summary>
     /// Valida cupo del plan, suscripción vigente y que el anuncio tenga el mínimo de
     /// fotos antes de publicarlo. El límite aplica a la vitrina activa (Publicado +
-    /// Pausado); los borradores no ocupan cupo.
+    /// Pausado); los borradores no ocupan cupo. Devuelve los días de vigencia del
+    /// anuncio según el plan del vendedor.
     /// </summary>
-    private async Task ValidarCupoParaPublicarAsync(Anuncio anuncio, int usuarioId)
+    private async Task<int> ValidarCupoParaPublicarAsync(Anuncio anuncio, int usuarioId)
     {
-        if (anuncio.Estado == "Publicado") return;
+        if (anuncio.Estado == "Publicado" && !anuncio.EstaVencido)
+            return PlanConfig.DiasVigencia(PlanNivel.Gratis);
 
         // Solo cuentan los activos en vitrina; si este anuncio ya está publicado o
         // pausado (ya ocupa cupo), se descuenta para no ocupar doble cupo.
@@ -347,7 +369,7 @@ public class AnuncioService : IAnuncioService
                 );
             }
 
-            return;
+            return PlanConfig.DiasVigencia(PlanNivel.Gratis);
         }
 
         var suscripcion = usuario?.PerfilDealer?.Suscripcion;
@@ -372,6 +394,8 @@ public class AnuncioService : IAnuncioService
                 "Has alcanzado el límite de anuncios permitidos por tu plan."
             );
         }
+
+        return PlanConfig.DiasVigencia(suscripcion.Nivel);
     }
 
     public async Task<List<string>> SubirImagenesAsync(AnuncioImagenUploadDto dto)
@@ -406,11 +430,29 @@ public class AnuncioService : IAnuncioService
             }
         }
 
-        _anuncio.AgregarFotos(rutasGuardadas);
+        _anuncio.AgregarFotos(rutasGuardadas, await ObtenerMaxFotosUsuarioAsync(dto.UsuarioId));
 
         await _repository.ActualizarAsync(_anuncio);
 
         return rutasGuardadas;
+    }
+
+    /// <summary>
+    /// Máximo de fotos permitidas para el anuncio según el plan del usuario.
+    /// Para vendedores particulares aplica el límite base (Gratis).
+    /// </summary>
+    private async Task<int> ObtenerMaxFotosUsuarioAsync(int usuarioId)
+    {
+        var usuario = await _usuarioRepository.ObtenerDealerConPerfilPorIdAsync(usuarioId);
+
+        bool esVendedorParticular =
+            usuario != null &&
+            string.Equals(usuario.Rol, "Vendedor", StringComparison.OrdinalIgnoreCase);
+
+        if (esVendedorParticular || usuario?.PerfilDealer?.Suscripcion == null)
+            return PlanConfig.MaxFotos(PlanNivel.Gratis);
+
+        return PlanConfig.MaxFotos(usuario.PerfilDealer.Suscripcion.Nivel);
     }
 
     public async Task<bool> EstablecerFotoPrincipalAsync(int id, int usuarioId, string urlImagen)
@@ -538,8 +580,8 @@ var anunciosDto = anuncios
         // suscripción vigente y mínimo de 5 fotos.
         if (string.Equals(estado, "Publicado", StringComparison.OrdinalIgnoreCase))
         {
-            await ValidarCupoParaPublicarAsync(anuncio, usuarioId);
-            anuncio.Publicar();
+            int diasVigencia = await ValidarCupoParaPublicarAsync(anuncio, usuarioId);
+            anuncio.Publicar(diasVigencia);
         }
         else
         {
@@ -713,6 +755,9 @@ var anunciosDto = anuncios
             BadgeSuscripcion = anuncio.Usuario?.PerfilDealer?.Suscripcion?.Nivel.ToString() ?? "Gratis",
             EsDestacado = anuncio.EstaDestacadoVigente,
             FechaDestacadoHasta = anuncio.FechaDestacadoHasta,
+            FechaVencimiento = anuncio.FechaVencimientoUtc,
+            EsDealerVerificado =
+                anuncio.Usuario != null && EsDealerVerificado(anuncio.Usuario),
             CreatedAt = anuncio.CreatedAt
         };
     }

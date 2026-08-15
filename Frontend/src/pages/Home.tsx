@@ -25,6 +25,7 @@ import {
   etiquetaDe,
 } from "../constants/vehiculo.opciones";
 import { nombrePlan } from "../constants/planes";
+import BadgeVerificado from "../components/BadgeVerificado";
 
 const TAMANO_PAGINA = 12;
 
@@ -321,6 +322,9 @@ function TarjetaAnuncioHome({ anuncio, onAbrir }: PropsTarjeta) {
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
         <BadgePlan nivel={planNivel} className="absolute top-3 right-3 z-10" />
+        {anuncio.esDealerVerificado && (
+          <BadgeVerificado className="absolute left-3 bottom-3 z-10" />
+        )}
         {anuncio.esDestacado && anuncio.fechaDestacadoHasta && new Date(anuncio.fechaDestacadoHasta) > new Date() && (
           <div className="absolute left-3 top-3 z-10">
             <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500 to-yellow-600 px-2.5 py-1 text-xs font-bold text-white">

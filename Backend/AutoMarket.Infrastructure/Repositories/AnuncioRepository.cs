@@ -38,7 +38,8 @@ public class AnuncioRepository : IAnuncioRepository
             .Include(a => a.Usuario)
                 .ThenInclude(u => u.PerfilDealer)
                     .ThenInclude(p => p!.Suscripcion)
-            .Where(a => a.Estado == "Publicado")
+            .Where(a => a.Estado == "Publicado" &&
+                        (a.FechaVencimientoUtc == null || a.FechaVencimientoUtc > DateTime.UtcNow))
             .AsNoTracking()
             .ToListAsync();
     }
@@ -89,13 +90,15 @@ public class AnuncioRepository : IAnuncioRepository
             var vendedorId = filtro.VendedorId.Value;
             query = query.Where(a =>
                 a.UsuarioId == vendedorId &&
-                a.Estado == "Publicado"
+                a.Estado == "Publicado" &&
+                (a.FechaVencimientoUtc == null || a.FechaVencimientoUtc > DateTime.UtcNow)
             );
         }
         else
         {
             query = query.Where(a =>
-                a.Estado == "Publicado"
+                a.Estado == "Publicado" &&
+                (a.FechaVencimientoUtc == null || a.FechaVencimientoUtc > DateTime.UtcNow)
             );
         }
 
@@ -318,11 +321,12 @@ public class AnuncioRepository : IAnuncioRepository
         int usuarioId)
     {
         // El límite del plan aplica a la vitrina activa (publicado + pausado).
-        // Borradores, vendidos y eliminados no ocupan cupo.
+        // Borradores, vendidos, eliminados y anuncios vencidos no ocupan cupo.
         return await _context.Anuncios
             .CountAsync(a =>
                 a.UsuarioId == usuarioId &&
-                (a.Estado == "Publicado" || a.Estado == "Pausado")
+                (a.Estado == "Publicado" || a.Estado == "Pausado") &&
+                (a.FechaVencimientoUtc == null || a.FechaVencimientoUtc > DateTime.UtcNow)
             );
     }
 
@@ -334,7 +338,8 @@ public class AnuncioRepository : IAnuncioRepository
                 a.EsDestacado &&
                 a.FechaDestacadoHasta.HasValue &&
                 a.FechaDestacadoHasta.Value > DateTime.UtcNow &&
-                a.Estado == "Publicado"
+                a.Estado == "Publicado" &&
+                (a.FechaVencimientoUtc == null || a.FechaVencimientoUtc > DateTime.UtcNow)
             );
     }
 
@@ -349,7 +354,8 @@ public class AnuncioRepository : IAnuncioRepository
                 a.Estado == "Publicado" &&
                 a.EsDestacado &&
                 a.FechaDestacadoHasta.HasValue &&
-                a.FechaDestacadoHasta.Value > DateTime.UtcNow)
+                a.FechaDestacadoHasta.Value > DateTime.UtcNow &&
+                (a.FechaVencimientoUtc == null || a.FechaVencimientoUtc > DateTime.UtcNow))
             .AsNoTracking();
 
         int total = await query.CountAsync();
@@ -381,7 +387,8 @@ public class AnuncioRepository : IAnuncioRepository
         IEnumerable<int> ids)
     {
         return await _context.Anuncios
-            .Where(a => ids.Contains(a.Id) && a.Estado == "Publicado")
+            .Where(a => ids.Contains(a.Id) && a.Estado == "Publicado" &&
+                        (a.FechaVencimientoUtc == null || a.FechaVencimientoUtc > DateTime.UtcNow))
             .ToListAsync();
     }
 
@@ -396,7 +403,8 @@ public class AnuncioRepository : IAnuncioRepository
             .Include(a => a.Usuario)
                 .ThenInclude(u => u.PerfilDealer)
                     .ThenInclude(p => p!.Suscripcion)
-            .Where(a => a.Estado == "Publicado")
+            .Where(a => a.Estado == "Publicado" &&
+                        (a.FechaVencimientoUtc == null || a.FechaVencimientoUtc > DateTime.UtcNow))
             .AsNoTracking();
 
         int total = await query.CountAsync();

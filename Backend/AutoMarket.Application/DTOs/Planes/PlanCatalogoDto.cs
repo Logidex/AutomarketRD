@@ -11,6 +11,12 @@ public class PlanCatalogoDto
     public int LimiteAnuncios { get; set; }
     public int CuotaDestacados { get; set; }
 
+    /// <summary>Máximo de fotos por anuncio permitido por el plan.</summary>
+    public int MaxFotos { get; set; }
+
+    /// <summary>Días de vigencia de cada anuncio publicado.</summary>
+    public int DiasVigencia { get; set; }
+
     /// <summary>Precio base mensual en RD$.</summary>
     public decimal PrecioMensual { get; set; }
 

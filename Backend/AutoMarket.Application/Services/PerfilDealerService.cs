@@ -1,5 +1,7 @@
 using AutoMarket.Application.DTOs.Usuario;
 using AutoMarket.Application.Interfaces;
+using AutoMarket.Core.Entities;
+using AutoMarket.Core.Entities.Enums;
 using AutoMarket.Core.Interfaces;
 using Microsoft.AspNetCore.Http;
 
@@ -126,7 +128,10 @@ public class PerfilDealerService : IPerfilDealerService
             TelefonoAgencia = perfil.TelefonoAgencia,
             Descripcion = perfil.Descripcion ?? string.Empty,
             WhatsApp = perfil.WhatsApp,
-            EsVendedorParticular = false
+            EsVendedorParticular = false,
+            EsDealerVerificado = dealer.EmailConfirmado
+                && perfil.Suscripcion != null
+                && perfil.Suscripcion.Nivel != PlanNivel.Gratis
         };
     }
 
@@ -148,7 +153,10 @@ public class PerfilDealerService : IPerfilDealerService
             TelefonoAgencia = vendedor.TelefonoPersonal ?? string.Empty,
             Descripcion = string.Empty,
             WhatsApp = null,
-            EsVendedorParticular = true
+            EsVendedorParticular = true,
+            EsDealerVerificado = vendedor.EmailConfirmado
+                && vendedor.PerfilDealer?.Suscripcion != null
+                && vendedor.PerfilDealer.Suscripcion.Nivel != PlanNivel.Gratis
         };
     }
 

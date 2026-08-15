@@ -464,6 +464,40 @@ public class AnuncioServiceTests
     }
 
     // =========================================================================
+    // PRUEBA 17c: Publicar - Renovación de un anuncio vencido
+    // =========================================================================
+    [Fact]
+    public async Task PublicarAnuncioAsync_AnuncioVencido_RenuevaVigencia()
+    {
+        // 1. ARRANGE
+        var idAnuncio = 7;
+        var idDueño = 1;
+
+        var anuncioEnBD = CrearAnuncioPublicado(idAnuncio, idDueño);
+        anuncioEnBD.AgregarFotos(new List<string> { "f1", "f2", "f3", "f4", "f5" });
+        // Simula que el anuncio ya venció.
+        SetPrivateProperty(anuncioEnBD, "FechaVencimientoUtc", DateTime.UtcNow.AddDays(-1));
+
+        var usuario = CrearUsuarioDealerConSuscripcion(idDueño, PlanNivel.Pro, CicloFacturacion.Mensual, EstadoSuscripcion.Activa);
+
+        // El anuncio vencido ya no ocupa cupo en la vitrina.
+        _mockRepo.Setup(r => r.ObtenerPorIdAsync(idAnuncio)).ReturnsAsync(anuncioEnBD);
+        _mockRepo.Setup(r => r.ContarAnunciosPorUsuarioAsync(idDueño)).ReturnsAsync(0);
+        _mockUsuarioRepo.Setup(r => r.ObtenerDealerConPerfilPorIdAsync(idDueño)).ReturnsAsync(usuario);
+
+        // 2. ACT
+        var resultado = await _servicio.PublicarAnuncioAsync(idAnuncio, idDueño);
+
+        // 3. ASSERT
+        Assert.True(resultado);
+        Assert.Equal("Publicado", anuncioEnBD.Estado);
+        Assert.False(anuncioEnBD.EstaVencido);
+        // Plan Pro: vigencia de 45 días.
+        Assert.True(anuncioEnBD.FechaVencimientoUtc!.Value > DateTime.UtcNow.AddDays(44));
+        _mockRepo.Verify(r => r.ActualizarAsync(It.IsAny<Anuncio>()), Times.Once);
+    }
+
+    // =========================================================================
     // PRUEBA 18: Subir Imágenes - Fallo por no encontrado
     // =========================================================================
     [Fact]

@@ -10,6 +10,7 @@ export interface PerfilDealerPublico {
   descripcion: string;
   whatsApp?: string | null;
   esVendedorParticular: boolean;
+  esDealerVerificado: boolean;
 }
 
 export const dealerService = {

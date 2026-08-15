@@ -107,6 +107,14 @@ export default function PlanCard({
             )
           }
         />
+        <FilaBeneficio
+          texto={`Hasta ${plan.maxFotos} fotos por anuncio`}
+          icono={<FaCheck className="text-blue-400" />}
+        />
+        <FilaBeneficio
+          texto={`Anuncio vigente ${plan.diasVigencia} días`}
+          icono={<FaCheck className="text-blue-400" />}
+        />
         <div className="flex items-start justify-between gap-2 py-1">
           <span className="text-sm text-gray-300">Prioridad en la vitrina</span>
           <span className={`text-sm font-semibold ${acento}`}>

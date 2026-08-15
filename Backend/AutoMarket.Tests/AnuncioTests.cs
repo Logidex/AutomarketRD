@@ -174,4 +174,95 @@ public class AnuncioTests
         // Act & Assert
         Assert.Throws<KeyNotFoundException>(() => anuncio.MoverFotoAlInicio("uploads/fantasma.jpg"));
     }
+
+    // =========================================================================
+    // Vigencia: Publicar asigna la fecha de vencimiento según los días del plan
+    // =========================================================================
+    [Fact]
+    public void Publicar_AsignaFechaVencimientoSegunDias()
+    {
+        // Arrange
+        var anuncio = CrearAnuncioBase(moneda: "DOP");
+        anuncio.AgregarFotos(new List<string> { "f1", "f2", "f3", "f4", "f5" });
+
+        // Act
+        anuncio.Publicar(diasVigencia: 45);
+
+        // Assert
+        Assert.Equal("Publicado", anuncio.Estado);
+        Assert.NotNull(anuncio.FechaVencimientoUtc);
+        Assert.True(anuncio.FechaVencimientoUtc!.Value > DateTime.UtcNow.AddDays(44));
+        Assert.True(anuncio.FechaVencimientoUtc!.Value <= DateTime.UtcNow.AddDays(45));
+        Assert.False(anuncio.EstaVencido);
+    }
+
+    [Fact]
+    public void EstaVencido_ConFechaPasada_DebeSerTrue()
+    {
+        // Arrange
+        var anuncio = CrearAnuncioBase(moneda: "DOP");
+        anuncio.AgregarFotos(new List<string> { "f1", "f2", "f3", "f4", "f5" });
+        anuncio.Publicar(diasVigencia: -1); // vigencia en el pasado
+
+        // Assert
+        Assert.True(anuncio.EstaVencido);
+    }
+
+    [Fact]
+    public void Publicar_AnuncioVencido_DebeRenovarVigencia()
+    {
+        // Arrange
+        var anuncio = CrearAnuncioBase(moneda: "DOP");
+        anuncio.AgregarFotos(new List<string> { "f1", "f2", "f3", "f4", "f5" });
+        anuncio.Publicar(diasVigencia: -1); // queda vencido
+
+        // Act
+        anuncio.Publicar(diasVigencia: 30); // renovar
+
+        // Assert
+        Assert.Equal("Publicado", anuncio.Estado);
+        Assert.False(anuncio.EstaVencido);
+        Assert.True(anuncio.FechaVencimientoUtc!.Value > DateTime.UtcNow);
+    }
+
+    [Fact]
+    public void Publicar_AnuncioPublicadoYVigente_DebeLanzarInvalidOperationException()
+    {
+        // Arrange
+        var anuncio = CrearAnuncioBase(moneda: "DOP");
+        anuncio.AgregarFotos(new List<string> { "f1", "f2", "f3", "f4", "f5" });
+        anuncio.Publicar(diasVigencia: 30);
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => anuncio.Publicar(diasVigencia: 30));
+    }
+
+    // =========================================================================
+    // Fotos: límite máximo configurable por plan
+    // =========================================================================
+    [Fact]
+    public void AgregarFotos_ExcedeMaximoPorPlan_DebeLanzarInvalidOperationException()
+    {
+        // Arrange
+        var anuncio = CrearAnuncioBase(moneda: "DOP");
+        anuncio.AgregarFotos(new List<string> { "f1", "f2", "f3", "f4", "f5" });
+
+        // Act & Assert (máximo 8, agregar 4 más supera el límite)
+        Assert.Throws<InvalidOperationException>(() =>
+            anuncio.AgregarFotos(new List<string> { "f6", "f7", "f8", "f9" }, maxFotos: 8));
+    }
+
+    [Fact]
+    public void AgregarFotos_DentroDelMaximoPorPlan_DebeAgregar()
+    {
+        // Arrange
+        var anuncio = CrearAnuncioBase(moneda: "DOP");
+        anuncio.AgregarFotos(new List<string> { "f1", "f2", "f3", "f4", "f5" });
+
+        // Act (máximo 8, agregar 3 más queda justo en el límite)
+        anuncio.AgregarFotos(new List<string> { "f6", "f7", "f8" }, maxFotos: 8);
+
+        // Assert
+        Assert.Equal(8, anuncio.Fotos.Count);
+    }
 }
