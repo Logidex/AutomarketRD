@@ -6,6 +6,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import App from './App'
 import { LoadingProvider } from './context/LoadingContext'
 import { ComparadorProvider } from './context/ComparadorContext'
+import { ThemeProvider } from './context/TemaContext'
 import './index.css'
 
 const queryClient = new QueryClient({
@@ -22,11 +23,13 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <LoadingProvider>
-          <ComparadorProvider>
-            <App />
-          </ComparadorProvider>
-        </LoadingProvider>
+        <ThemeProvider>
+          <LoadingProvider>
+            <ComparadorProvider>
+              <App />
+            </ComparadorProvider>
+          </LoadingProvider>
+        </ThemeProvider>
       </BrowserRouter>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>

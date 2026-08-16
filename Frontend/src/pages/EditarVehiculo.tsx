@@ -32,8 +32,8 @@ export default function EditarVehiculo() {
   };
 
   return (
-    <div className="mx-auto max-w-4xl rounded-lg border border-gray-200 bg-white p-8 shadow-sm">
-      <h2 className="mb-6 text-2xl font-bold text-gray-900">
+    <div className="mx-auto max-w-4xl rounded-lg border border-line bg-surface p-8 shadow-sm">
+      <h2 className="mb-6 text-2xl font-bold text-ink">
         Editar Vehículo (ID: {id})
       </h2>
 
@@ -65,11 +65,11 @@ export default function EditarVehiculo() {
           onEstablecerPrincipal={handleEstablecerPrincipal}
         />
 
-        <div className="flex justify-end gap-4 border-t border-gray-100 pt-6">
+        <div className="flex justify-end gap-4 border-t border-line pt-6">
           <button
             type="button"
             onClick={() => navigate("/dashboard")}
-            className="rounded-md border border-gray-300 px-6 py-2.5 font-medium text-gray-700 transition-colors hover:bg-gray-100"
+            className="rounded-md border border-line px-6 py-2.5 font-medium text-ink-2 transition-colors hover:bg-hover"
           >
             Cancelar
           </button>

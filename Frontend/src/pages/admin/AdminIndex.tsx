@@ -21,7 +21,7 @@ export default function AdminIndex() {
   if (!resumen) {
     return (
       <div className="p-6">
-        <div className="text-gray-500">No hay datos disponibles.</div>
+        <div className="text-ink-3">No hay datos disponibles.</div>
       </div>
     );
   }
@@ -29,7 +29,7 @@ export default function AdminIndex() {
   return (
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">
+        <h2 className="text-2xl font-bold text-ink">
           Resumen general de la plataforma
         </h2>
       </div>
@@ -79,17 +79,17 @@ export default function AdminIndex() {
 
       {/* Fila 3: Leads no leídos + más vistos */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-          <h3 className="mb-4 text-lg font-semibold text-gray-800">Leads</h3>
+        <div className="rounded-lg border border-line bg-surface p-6 shadow-sm">
+          <h3 className="mb-4 text-lg font-semibold text-ink">Leads</h3>
           <div className="space-y-2">
             <div className="flex justify-between">
-              <span className="text-gray-600">Totales:</span>
-              <span className="font-bold text-gray-900">
+              <span className="text-ink-2">Totales:</span>
+              <span className="font-bold text-ink">
                 {resumen.totalLeads ?? 0}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">No leídos:</span>
+              <span className="text-ink-2">No leídos:</span>
               <span className="font-bold text-red-600">
                 {resumen.leadsNoLeidos ?? 0}
               </span>
@@ -97,21 +97,21 @@ export default function AdminIndex() {
           </div>
         </div>
 
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-          <h3 className="mb-4 text-lg font-semibold text-gray-800">
+        <div className="rounded-lg border border-line bg-surface p-6 shadow-sm">
+          <h3 className="mb-4 text-lg font-semibold text-ink">
             Anuncios más vistos
           </h3>
           {!resumen.anunciosMasVistos ||
           resumen.anunciosMasVistos.length === 0 ? (
-            <p className="text-gray-500">Aún no hay anuncios con vistas.</p>
+            <p className="text-ink-3">Aún no hay anuncios con vistas.</p>
           ) : (
             <ul className="space-y-2">
               {resumen.anunciosMasVistos.map((anuncio) => (
                 <li
                   key={anuncio.id}
-                  className="flex items-center justify-between rounded border border-gray-100 p-3 hover:bg-gray-50"
+                  className="flex items-center justify-between rounded border border-line p-3 hover:bg-surface-2"
                 >
-                  <span className="font-medium text-gray-800">
+                  <span className="font-medium text-ink">
                     {anuncio.nombreAnuncio}
                   </span>
                   <span className="rounded bg-violet-100 px-2 py-1 text-sm font-semibold text-violet-700">
@@ -137,11 +137,11 @@ function MetricaCard({
   color?: string;
 }) {
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+    <div className="rounded-lg border border-line bg-surface p-6 shadow-sm">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-gray-600">{titulo}</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900">{valor}</p>
+          <p className="text-sm font-medium text-ink-2">{titulo}</p>
+          <p className="mt-2 text-3xl font-bold text-ink">{valor}</p>
         </div>
         <div className={`h-12 w-12 rounded-full ${color} opacity-20`} />
       </div>

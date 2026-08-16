@@ -96,22 +96,22 @@ export default function AscenderRol() {
 
   return (
     <>
-      <h2 className="flex items-center gap-2 text-base font-bold text-white">
+      <h2 className="flex items-center gap-2 text-base font-bold text-ink">
         <FaLevelUpAlt className="text-blue-400" />
         Empieza a vender
       </h2>
 
       {esComprador && (
         <p>
-          Tu cuenta es de <strong className="text-gray-200">Comprador</strong>.
+          Tu cuenta es de <strong className="text-ink-2">Comprador</strong>.
           Puedes escalarla cuando lo desees:
         </p>
       )}
 
       {esVendedor && (
         <p>
-          Tu cuenta es de <strong className="text-gray-200">Vendedor</strong>.
-          Puedes escalarla a <strong className="text-gray-200">Dealer</strong>{" "}
+          Tu cuenta es de <strong className="text-ink-2">Vendedor</strong>.
+          Puedes escalarla a <strong className="text-ink-2">Dealer</strong>{" "}
           para publicar más anuncios y acceder a suscripciones de pago:
         </p>
       )}
@@ -122,7 +122,7 @@ export default function AscenderRol() {
             type="button"
             onClick={confirmarAsVendedor}
             disabled={cargando}
-            className="flex items-center justify-center gap-2 rounded-lg bg-white/5 px-5 py-3 font-semibold text-white transition-colors hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+            className="flex items-center justify-center gap-2 rounded-lg bg-hover px-5 py-3 font-semibold text-ink transition-colors hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <FaUserEdit className="text-green-400" />
             Convertirme en Vendedor
@@ -140,7 +140,7 @@ export default function AscenderRol() {
             });
           }}
           disabled={cargando}
-          className="flex items-center justify-center gap-2 rounded-lg bg-white/5 px-5 py-3 font-semibold text-white transition-colors hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+          className="flex items-center justify-center gap-2 rounded-lg bg-hover px-5 py-3 font-semibold text-ink transition-colors hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
         >
           <FaStore className="text-yellow-400" />
           Convertirme en Dealer
@@ -149,7 +149,7 @@ export default function AscenderRol() {
 
       {mostrarFormDealer && (
         <form onSubmit={confirmarAsDealer} className="mt-4 space-y-4">
-          <p className="rounded-lg border border-blue-500/30 bg-blue-500/10 px-3 py-2 text-xs text-blue-300">
+          <p className="rounded-lg border border-blue-500/30 bg-blue-500/10 px-3 py-2 text-xs text-blue-600">
             Al convertirte en Dealer tu cuenta quedará con el plan{" "}
             <strong>Gratis</strong> (1 anuncio). Después podrás elegir una
             suscripción de pago y pagarla con PayPal.
@@ -159,7 +159,7 @@ export default function AscenderRol() {
             <div>
               <label
                 htmlFor="nombreAgencia"
-                className="mb-1 block text-xs font-medium text-[#9aa1b1]"
+                className="mb-1 block text-xs font-medium text-ink-2"
               >
                 Nombre de la Agencia *
               </label>
@@ -172,13 +172,13 @@ export default function AscenderRol() {
                   setAgencia({ ...agencia, nombreAgencia: e.target.value })
                 }
                 placeholder="AutoVentas RD"
-                className="w-full rounded-lg border border-white/10 bg-[#0c101b] px-3 py-2.5 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
+                className="w-full rounded-lg border border-line bg-input px-3 py-2.5 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
               />
             </div>
             <div>
               <label
                 htmlFor="agenciaRNC"
-                className="mb-1 block text-xs font-medium text-[#9aa1b1]"
+                className="mb-1 block text-xs font-medium text-ink-2"
               >
                 RNC de la Agencia *
               </label>
@@ -191,13 +191,13 @@ export default function AscenderRol() {
                   setAgencia({ ...agencia, agenciaRNC: e.target.value })
                 }
                 placeholder="1-30-12345-6"
-                className="w-full rounded-lg border border-white/10 bg-[#0c101b] px-3 py-2.5 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
+                className="w-full rounded-lg border border-line bg-input px-3 py-2.5 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
               />
             </div>
             <div>
               <label
                 htmlFor="ubicacionAgencia"
-                className="mb-1 block text-xs font-medium text-[#9aa1b1]"
+                className="mb-1 block text-xs font-medium text-ink-2"
               >
                 Ubicación de la Agencia
               </label>
@@ -212,13 +212,13 @@ export default function AscenderRol() {
                   })
                 }
                 placeholder="Santo Domingo"
-                className="w-full rounded-lg border border-white/10 bg-[#0c101b] px-3 py-2.5 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
+                className="w-full rounded-lg border border-line bg-input px-3 py-2.5 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
               />
             </div>
             <div>
               <label
                 htmlFor="telefonoAgencia"
-                className="mb-1 block text-xs font-medium text-[#9aa1b1]"
+                className="mb-1 block text-xs font-medium text-ink-2"
               >
                 Teléfono de la Agencia
               </label>
@@ -233,7 +233,7 @@ export default function AscenderRol() {
                   })
                 }
                 placeholder="809-555-5555"
-                className="w-full rounded-lg border border-white/10 bg-[#0c101b] px-3 py-2.5 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
+                className="w-full rounded-lg border border-line bg-input px-3 py-2.5 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
               />
             </div>
           </div>

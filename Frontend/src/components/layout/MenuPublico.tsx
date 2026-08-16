@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { FaChevronDown } from "react-icons/fa";
 import NavbarUsuario from "./NavbarUsuario";
+import BotonTema from "../BotonTema";
 
 interface OpcionCompra {
   etiqueta: string;
@@ -106,7 +107,7 @@ export default function MenuPublico() {
           aria-expanded={menuAbierto}
           aria-haspopup="menu"
           onClick={() => setMenuAbierto((abierto) => !abierto)}
-          className="flex items-center gap-1.5 text-[#9aa1b1] transition-colors hover:text-white"
+          className="flex items-center gap-1.5 text-ink-2 transition-colors hover:text-ink"
         >
           Compra tu carro
           <FaChevronDown className="text-[10px]" />
@@ -117,19 +118,19 @@ export default function MenuPublico() {
             role="menu"
             className="absolute right-0 top-full z-50 w-72 pt-2"
           >
-            <div className="overflow-hidden rounded-xl border border-white/10 bg-[#13161d] py-2 shadow-2xl">
+            <div className="overflow-hidden rounded-xl border border-line bg-surface py-2 shadow-2xl">
               {OPCIONES_COMPRA.map((opcion) => (
                 <Link
                   key={opcion.to}
                   to={opcion.to}
                   role="menuitem"
                   onClick={() => setMenuAbierto(false)}
-                  className="block px-5 py-3 transition-colors hover:bg-white/5"
+                  className="block px-5 py-3 transition-colors hover:bg-hover"
                 >
-                  <span className="block font-semibold text-white">
+                  <span className="block font-semibold text-ink">
                     {opcion.etiqueta}
                   </span>
-                  <span className="block text-xs text-[#9aa1b1]">
+                  <span className="block text-xs text-ink-2">
                     {opcion.descripcion}
                   </span>
                 </Link>
@@ -142,7 +143,7 @@ export default function MenuPublico() {
       {/* VENDE TU CARRO */}
       <Link
         to="/registro"
-        className="text-[#9aa1b1] transition-colors hover:text-white"
+        className="text-ink-2 transition-colors hover:text-ink"
       >
         Vende tu carro
       </Link>
@@ -150,7 +151,7 @@ export default function MenuPublico() {
       {/* DIRECTORIO */}
       <Link
         to="/vehiculos"
-        className="text-[#9aa1b1] transition-colors hover:text-white"
+        className="text-ink-2 transition-colors hover:text-ink"
       >
         Directorio
       </Link>
@@ -158,14 +159,14 @@ export default function MenuPublico() {
       {/* COMPARADOR */}
       <Link
         to="/comparador"
-        className="text-[#9aa1b1] transition-colors hover:text-white"
+        className="text-ink-2 transition-colors hover:text-ink"
       >
         Comparar
       </Link>
 
       <Link
         to="/precios"
-        className="text-[#9aa1b1] transition-colors hover:text-white"
+        className="text-ink-2 transition-colors hover:text-ink"
       >
         Precios
       </Link>
@@ -182,7 +183,7 @@ export default function MenuPublico() {
           aria-expanded={menuLegalAbierto}
           aria-haspopup="menu"
           onClick={() => setMenuLegalAbierto((abierto) => !abierto)}
-          className="flex items-center gap-1.5 text-[#9aa1b1] transition-colors hover:text-white"
+          className="flex items-center gap-1.5 text-ink-2 transition-colors hover:text-ink"
         >
           Legal
           <FaChevronDown className="text-[10px]" />
@@ -193,19 +194,19 @@ export default function MenuPublico() {
             role="menu"
             className="absolute right-0 top-full z-50 w-72 pt-2"
           >
-            <div className="overflow-hidden rounded-xl border border-white/10 bg-[#13161d] py-2 shadow-2xl">
+            <div className="overflow-hidden rounded-xl border border-line bg-surface py-2 shadow-2xl">
               {OPCIONES_LEGAL.map((opcion) => (
                 <Link
                   key={opcion.to}
                   to={opcion.to}
                   role="menuitem"
                   onClick={() => setMenuLegalAbierto(false)}
-                  className="block px-5 py-3 transition-colors hover:bg-white/5"
+                  className="block px-5 py-3 transition-colors hover:bg-hover"
                 >
-                  <span className="block font-semibold text-white">
+                  <span className="block font-semibold text-ink">
                     {opcion.etiqueta}
                   </span>
-                  <span className="block text-xs text-[#9aa1b1]">
+                  <span className="block text-xs text-ink-2">
                     {opcion.descripcion}
                   </span>
                 </Link>
@@ -214,6 +215,8 @@ export default function MenuPublico() {
           </div>
         )}
       </div>
+
+      <BotonTema />
 
       <NavbarUsuario />
     </nav>

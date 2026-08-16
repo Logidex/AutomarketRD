@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { FaEnvelope, FaClock, FaShieldAlt, FaSpinner } from 'react-icons/fa';
+import { FaEnvelope, FaClock, FaHeadset, FaShieldAlt, FaSpinner } from 'react-icons/fa';
 import Swal from 'sweetalert2';
 import LayoutPublico from '../../components/layout/LayoutPublico';
 import { Link } from 'react-router-dom';
@@ -56,45 +56,50 @@ export default function Contacto() {
   };
 
   const inputClass =
-    'w-full rounded-lg border border-white/10 bg-white/[0.02] p-3 text-white placeholder-white/30 transition-colors focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500';
-  const labelClass = 'mb-1.5 block text-sm font-medium text-white/80';
+    'w-full rounded-lg border border-line bg-hover p-3 text-ink placeholder-white/30 transition-colors focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500';
+  const labelClass = 'mb-1.5 block text-sm font-medium text-ink/80';
 
   return (
     <LayoutPublico titulo='Contacto'>
       <article className='space-y-10'>
         <header className='text-center'>
-          <h1 className='mb-3 text-4xl font-bold text-white'>
+          <h1 className='mb-3 text-4xl font-bold text-ink'>
             ¿Cómo podemos ayudarte?
           </h1>
-          <p className='text-[#9aa1b1]'>
+          <p className='text-ink-2'>
             Nuestro equipo de soporte está disponible para resolver tus dudas,
             problemas técnicos o consultas comerciales.
           </p>
         </header>
 
         <div className='grid gap-6 sm:grid-cols-3'>
-          <div className='rounded-2xl border border-white/10 bg-white/[0.02] p-6 text-center'>
+          <div className='rounded-2xl border border-line bg-hover p-6 text-center'>
             <div className='mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-500/10 text-blue-400'>
-              <FaEnvelope />
+              <FaHeadset />
             </div>
-            <h2 className='mb-2 text-lg font-semibold text-white'>Email</h2>
-            <p className='mb-3 text-sm text-[#9aa1b1]'>Escríbanos directamente a</p>
-            <a
-              href={`mailto:${soporteEmail}`}
-              className='inline-block max-w-full break-words rounded-lg bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-300 transition-colors hover:bg-blue-500/20'
+            <h2 className='mb-2 text-lg font-semibold text-ink'>
+              Panel de soporte
+            </h2>
+            <p className='mb-3 text-sm text-ink-2'>
+              Si eres Dealer o Vendedor, abre un ticket desde tu cuenta y
+              recibe seguimiento directo del equipo.
+            </p>
+            <Link
+              to='/login'
+              className='inline-block rounded-lg bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-300 transition-colors hover:bg-blue-500/20'
             >
-              {soporteEmail}
-            </a>
+              Ir a mi cuenta
+            </Link>
           </div>
 
-          <div className='rounded-2xl border border-white/10 bg-white/[0.02] p-6 text-center'>
+          <div className='rounded-2xl border border-line bg-hover p-6 text-center'>
             <div className='mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-500/10 text-green-400'>
               <FaClock />
             </div>
-            <h2 className='mb-2 text-lg font-semibold text-white'>
+            <h2 className='mb-2 text-lg font-semibold text-ink'>
               Horario de atención
             </h2>
-            <p className='text-sm text-[#9aa1b1]'>
+            <p className='text-sm text-ink-2'>
               Lunes a Viernes
               <br />
               9:00 AM — 5:00 PM
@@ -103,27 +108,32 @@ export default function Contacto() {
             </p>
           </div>
 
-          <div className='rounded-2xl border border-white/10 bg-white/[0.02] p-6 text-center'>
+          <div className='rounded-2xl border border-line bg-hover p-6 text-center'>
             <div className='mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-amber-500/10 text-amber-400'>
               <FaShieldAlt />
             </div>
-            <h2 className='mb-2 text-lg font-semibold text-white'>
+            <h2 className='mb-2 text-lg font-semibold text-ink'>
               Tiempo de respuesta
             </h2>
-            <p className='text-sm text-[#9aa1b1]'>
-              Hasta 48 horas hábiles
+            <p className='text-sm text-ink-2'>
+              Tickets: hasta 24 horas hábiles
               <br />
-              para consultas generales
+              Contacto general: hasta 48 horas
               <br />
-              hasta 24 horas para pagos
+              pagos y suscripciones: 24 horas
             </p>
           </div>
         </div>
 
-        <section className='rounded-2xl border border-white/10 bg-white/[0.02] p-8'>
-          <h2 className='mb-6 text-2xl font-bold text-white'>
+        <section className='rounded-2xl border border-line bg-hover p-8'>
+          <h2 className='mb-2 text-2xl font-bold text-ink'>
             Envíanos un mensaje
           </h2>
+          <p className='mb-6 text-sm text-ink-2'>
+            Este formulario es para consultas generales y usuarios sin cuenta
+            (Compradores). Para asuntos de tu cuenta, plan o anuncios, usa el
+            panel de soporte de tu cuenta para un seguimiento más rápido.
+          </p>
 
           <form onSubmit={handleSubmit} className='space-y-5'>
             {/* Honeypot anti-spam: oculto visualmente pero presente en el DOM */}
@@ -214,7 +224,7 @@ export default function Contacto() {
                 placeholder='Escribe aquí tu mensaje...'
                 className={`${inputClass} resize-y`}
               />
-              <p className='mt-1 text-right text-xs text-white/40'>
+              <p className='mt-1 text-right text-xs text-ink/40'>
                 {form.mensaje.length}/2000
               </p>
             </div>
@@ -238,18 +248,20 @@ export default function Contacto() {
           </form>
         </section>
 
-        <section className='rounded-2xl border border-white/10 bg-white/[0.02] p-8'>
-          <h2 className='mb-6 text-2xl font-bold text-white'>Temas frecuentes</h2>
+        <section className='rounded-2xl border border-line bg-hover p-8'>
+          <h2 className='mb-6 text-2xl font-bold text-ink'>Temas frecuentes</h2>
 
-          <div className='space-y-6 text-[#cdd3e0]'>
+          <div className='space-y-6 text-ink-3'>
             <div>
-              <h3 className='mb-1 font-semibold text-white'>
+              <h3 className='mb-1 font-semibold text-ink'>
                 Pagos y suscripciones
               </h3>
               <p className='text-sm'>
-                Dudas sobre tu plan, facturación, cancelación, reembolsos.
-                Incluye tu correo de cuenta y el ID de orden de PayPal si
-                aplica. Consulta también nuestra{' '}
+                Dudas sobre tu plan, facturación, cancelación o reembolsos.
+                Abre un ticket con la categoría{' '}
+                <em>Facturación</em> desde tu panel de soporte e incluye tu
+                correo de cuenta y el ID de orden de PayPal si aplica. Consulta
+                también nuestra{' '}
                 <Link
                   to='/reembolso'
                   className='text-blue-400 hover:text-blue-300 underline'
@@ -261,16 +273,17 @@ export default function Contacto() {
             </div>
 
             <div>
-              <h3 className='mb-1 font-semibold text-white'>Problemas técnicos</h3>
+              <h3 className='mb-1 font-semibold text-ink'>Problemas técnicos</h3>
               <p className='text-sm'>
                 Error al publicar un anuncio, no recibí notificaciones,
-                problemas para iniciar sesión. Indica captura del error,
-                navegador y pasos para reproducirlo.
+                problemas para iniciar sesión. Abre un ticket con la categoría{' '}
+                <em>Soporte técnico</em> e indica captura del error, navegador y
+                pasos para reproducirlo.
               </p>
             </div>
 
             <div>
-              <h3 className='mb-1 font-semibold text-white'>
+              <h3 className='mb-1 font-semibold text-ink'>
                 Verificación de cuenta
               </h3>
               <p className='text-sm'>
@@ -287,7 +300,7 @@ export default function Contacto() {
             </div>
 
             <div>
-              <h3 className='mb-1 font-semibold text-white'>
+              <h3 className='mb-1 font-semibold text-ink'>
                 Disputas entre usuarios
               </h3>
               <p className='text-sm'>
@@ -297,6 +310,24 @@ export default function Contacto() {
               </p>
             </div>
           </div>
+        </section>
+
+        <section className='rounded-2xl border border-line bg-hover p-6 text-center'>
+          <div className='mb-2 flex items-center justify-center gap-2 text-sm font-semibold text-ink'>
+            <FaEnvelope className='text-blue-400' />
+            Asuntos legales y privacidad
+          </div>
+          <p className='text-sm text-ink-2'>
+            Para consultas de privacidad, derechos legales o asuntos formales,
+            escríbenos a{' '}
+            <a
+              href={`mailto:${soporteEmail}`}
+              className='text-blue-400 hover:text-blue-300 underline'
+            >
+              {soporteEmail}
+            </a>
+            .
+          </p>
         </section>
       </article>
     </LayoutPublico>

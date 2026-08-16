@@ -3,15 +3,15 @@ import LayoutPublico from "../../components/layout/LayoutPublico";
 export default function Reembolso() {
   return (
     <LayoutPublico titulo="Política de Reembolso">
-      <article className="prose prose-invert max-w-none space-y-6 text-[#cdd3e0]">
+      <article className="prose prose-invert max-w-none space-y-6 text-ink-3">
         <header>
-          <p className="text-sm text-[#9aa1b1]">
-            Última actualización: 12 de agosto de 2026
+          <p className="text-sm text-ink-2">
+            Última actualización: 15 de agosto de 2026
           </p>
         </header>
 
         <section>
-          <h2 className="text-2xl font-bold text-white">1. Aplicación</h2>
+          <h2 className="text-2xl font-bold text-ink">1. Aplicación</h2>
           <p>
             Esta Política de Reembolso aplica a las suscripciones pagadas de
             AutoMarket RD (planes Básicos y posteriores) procesadas a través de
@@ -22,7 +22,7 @@ export default function Reembolso() {
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold text-white">2. Periodo de reembolso</h2>
+          <h2 className="text-2xl font-bold text-ink">2. Periodo de reembolso</h2>
           <p>
             Tienes derecho a solicitar un reembolso completo dentro de los{" "}
             <strong>7 días naturales</strong> Posteriores a la fecha de pago
@@ -37,7 +37,7 @@ export default function Reembolso() {
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold text-white">3. Condiciones para solicitarlo</h2>
+          <h2 className="text-2xl font-bold text-ink">3. Condiciones para solicitarlo</h2>
           <ul className="list-disc pl-6">
             <li>
               La solicitud se debe realizar dentro del plazo de 7 días
@@ -57,7 +57,7 @@ export default function Reembolso() {
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold text-white">4. Casos excepcionales</h2>
+          <h2 className="text-2xl font-bold text-ink">4. Casos excepcionales</h2>
           <p>
             Se podrá evaluar un reembolso fuera del plazo de 7 días en
             situaciones como:
@@ -76,17 +76,12 @@ export default function Reembolso() {
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold text-white">5. Cómo solicitar el reembolso</h2>
+          <h2 className="text-2xl font-bold text-ink">5. Cómo solicitar el reembolso</h2>
           <ol className="list-decimal pl-6">
             <li>
-              Envía un correo a{" "}
-              <a
-                href="mailto:soporte.automarketrd@gmail.com"
-                className="text-blue-400 hover:text-blue-300 underline"
-              >
-                soporte.automarketrd@gmail.com
-              </a>{" "}
-               con el asunto{" "}
+              Inicia sesión en tu cuenta y abre un ticket en el panel de
+              soporte con la categoría{" "}
+              <em>Facturación</em> y el asunto{" "}
               <em>"Solicitud de reembolso — [tu correo de cuenta]"</em>.
             </li>
             <li>
@@ -95,13 +90,24 @@ export default function Reembolso() {
               solicitud.
             </li>
             <li>
-              Responderemos dentro de los 5 días hábiles Posteriores.
+              Responderemos dentro de los 5 días hábiles Posteriores a
+              través del mismo ticket.
             </li>
           </ol>
+          <p className="mt-4 text-sm">
+            Si no puedes acceder a tu cuenta, escríbenos a{" "}
+            <a
+              href="mailto:soporte.automarketrd@gmail.com"
+              className="text-blue-400 hover:text-blue-300 underline"
+            >
+              soporte.automarketrd@gmail.com
+            </a>{" "}
+            con el asunto indicado.
+          </p>
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold text-white">6. Procesamiento del reembolso</h2>
+          <h2 className="text-2xl font-bold text-ink">6. Procesamiento del reembolso</h2>
           <p>
             Una vez aprobado, el reembolso se procesará a través de PayPal
             hacia el mismo método de pago original. El tiempo de reflejo en
@@ -111,7 +117,7 @@ export default function Reembolso() {
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold text-white">7. Efecto sobre la suscripción</h2>
+          <h2 className="text-2xl font-bold text-ink">7. Efecto sobre la suscripción</h2>
           <p>
             Al procesarse un reembolso, la suscripción asociada se dará de
             baja inmediatamente, perdiendo el acceso a las funciones del plan
@@ -121,7 +127,7 @@ export default function Reembolso() {
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold text-white">8. Denegación de reembolso</h2>
+          <h2 className="text-2xl font-bold text-ink">8. Denegación de reembolso</h2>
           <p>
             Nos reservamos el derecho de denegar solicitudes que no cumplan
             las condiciones de esta política. En ese caso, notificaremos al
@@ -130,9 +136,10 @@ export default function Reembolso() {
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold text-white">9. Contacto</h2>
+          <h2 className="text-2xl font-bold text-ink">9. Contacto</h2>
           <p>
-            Para consultas sobre esta política, escríbenos a{" "}
+            Para consultas sobre esta política, abre un ticket de soporte
+            desde tu cuenta o escríbenos a{" "}
             <a
               href="mailto:soporte.automarketrd@gmail.com"
               className="text-blue-400 hover:text-blue-300 underline"

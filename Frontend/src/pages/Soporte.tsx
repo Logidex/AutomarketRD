@@ -36,12 +36,12 @@ const ESTADO_CLASES: Record<TicketEstado, string> = {
   Abierto: "bg-blue-100 text-blue-700",
   EnProceso: "bg-amber-100 text-amber-700",
   Resuelto: "bg-green-100 text-green-700",
-  Cerrado: "bg-gray-100 text-gray-600",
+  Cerrado: "bg-surface-2 text-ink-2",
   Detenido: "bg-slate-200 text-slate-700",
 };
 
 const PRIORIDAD_CLASES: Record<TicketPrioridad, string> = {
-  Baja: "bg-gray-100 text-gray-600",
+  Baja: "bg-surface-2 text-ink-2",
   Normal: "bg-blue-50 text-blue-600",
   Alta: "bg-orange-100 text-orange-700",
   Urgente: "bg-red-100 text-red-700",
@@ -77,11 +77,11 @@ export default function Soporte() {
     <div className="mx-auto max-w-7xl p-6">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="flex items-center gap-3 text-2xl font-bold text-gray-900">
+          <h1 className="flex items-center gap-3 text-2xl font-bold text-ink">
             <FaHeadset className="text-blue-600" />
             Soporte
           </h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-ink-3">
             Tickets de ayuda con tu cuenta, facturación y anuncios
           </p>
         </div>
@@ -97,9 +97,9 @@ export default function Soporte() {
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
         {/* LISTADO */}
-        <section className="rounded-2xl border border-gray-200 bg-white shadow-sm">
-          <div className="border-b border-gray-100 px-5 py-4">
-            <h2 className="text-sm font-bold uppercase tracking-wide text-gray-500">
+        <section className="rounded-2xl border border-line bg-surface shadow-sm">
+          <div className="border-b border-line px-5 py-4">
+            <h2 className="text-sm font-bold uppercase tracking-wide text-ink-3">
               Mis tickets ({tickets.length})
             </h2>
           </div>
@@ -113,7 +113,7 @@ export default function Soporte() {
               <div className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-50">
                 <FaComments className="text-2xl text-blue-600" />
               </div>
-              <p className="text-gray-600">Aún no has abierto tickets.</p>
+              <p className="text-ink-2">Aún no has abierto tickets.</p>
               <button
                 type="button"
                 onClick={() => setMostrandoFormulario(true)}
@@ -123,7 +123,7 @@ export default function Soporte() {
               </button>
             </div>
           ) : (
-            <ul className="max-h-[70vh] divide-y divide-gray-100 overflow-y-auto">
+            <ul className="max-h-[70vh] divide-y divide-line overflow-y-auto">
               {tickets.map((ticket) => (
                 <ListaItemTicket
                   key={ticket.id}
@@ -137,7 +137,7 @@ export default function Soporte() {
         </section>
 
         {/* DETALLE */}
-        <section className="min-h-[500px] rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <section className="min-h-[500px] rounded-2xl border border-line bg-surface shadow-sm">
           <DetalleTicket
             key={ticketActivo.data?.id ?? "ninguno"}
             ticket={ticketActivo.data}
@@ -179,11 +179,11 @@ function ListaItemTicket({
         type="button"
         onClick={onClick}
         className={`flex w-full flex-col gap-2 px-5 py-4 text-left transition-colors ${
-          activo ? "bg-blue-50/70" : "hover:bg-gray-50"
+          activo ? "bg-blue-50/70" : "hover:bg-surface-2"
         }`}
       >
         <div className="flex items-center justify-between gap-2">
-          <span className="truncate text-sm font-bold text-gray-900">
+          <span className="truncate text-sm font-bold text-ink">
             {ticket.asunto}
           </span>
           {hayRespuestaNueva && (
@@ -204,16 +204,16 @@ function ListaItemTicket({
           >
             {ticket.prioridad}
           </span>
-          <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs text-gray-600">
+          <span className="rounded-full bg-surface-2 px-2.5 py-0.5 text-xs text-ink-2">
             {CATEGORIA_LABEL[ticket.categoria]}
           </span>
         </div>
 
-        <p className="truncate text-xs text-gray-500">
+        <p className="truncate text-xs text-ink-3">
           {ticket.ultimoMensaje || "Sin mensajes"}
         </p>
 
-        <p className="text-[11px] text-gray-400">
+        <p className="text-[11px] text-ink-3">
           {ticket.cantidadMensajes} mensaje{ticket.cantidadMensajes === 1 ? "" : "s"} ·{" "}
           {formatearFecha(ticket.fechaActualizacionUtc, true)}
         </p>
@@ -243,8 +243,8 @@ function DetalleTicket({
 
   if (!ticket) {
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-3 p-10 text-center text-gray-500">
-        <FaComments className="text-4xl text-gray-300" />
+      <div className="flex h-full flex-col items-center justify-center gap-3 p-10 text-center text-ink-3">
+        <FaComments className="text-4xl text-ink-3" />
         <p>Selecciona un ticket para ver la conversación.</p>
       </div>
     );
@@ -268,9 +268,9 @@ function DetalleTicket({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="border-b border-gray-100 px-6 py-4">
+      <div className="border-b border-line px-6 py-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-lg font-bold text-gray-900">{ticket.asunto}</h2>
+          <h2 className="text-lg font-bold text-ink">{ticket.asunto}</h2>
           <span
             className={`rounded-full px-3 py-1 text-xs font-semibold ${ESTADO_CLASES[ticket.estado]}`}
           >
@@ -278,13 +278,13 @@ function DetalleTicket({
           </span>
         </div>
 
-        <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-500">
+        <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-ink-3">
           <span
             className={`rounded-full px-2.5 py-0.5 font-semibold ${PRIORIDAD_CLASES[ticket.prioridad]}`}
           >
             Prioridad: {ticket.prioridad}
           </span>
-          <span className="rounded-full bg-gray-100 px-2.5 py-0.5">
+          <span className="rounded-full bg-surface-2 px-2.5 py-0.5">
             {CATEGORIA_LABEL[ticket.categoria]}
           </span>
           <span>Abierto: {formatearFecha(ticket.fechaCreacionUtc, true)}</span>
@@ -302,13 +302,13 @@ function DetalleTicket({
             <div
               className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm ${
                 mensajeItem.esAdmin
-                  ? "rounded-tl-sm bg-gray-100 text-gray-800"
+                  ? "rounded-tl-sm bg-surface-2 text-ink"
                   : "rounded-tr-sm bg-blue-600 text-white"
               }`}
             >
               <p className="whitespace-pre-wrap">{mensajeItem.mensaje}</p>
             </div>
-            <p className="text-[11px] text-gray-400">
+            <p className="text-[11px] text-ink-3">
               {mensajeItem.esAdmin ? "Soporte AutoMarket RD" : "Tú"} ·{" "}
               {formatearFecha(mensajeItem.fechaCreacionUtc, true)}
             </p>
@@ -316,10 +316,10 @@ function DetalleTicket({
         ))}
       </div>
 
-      <div className="border-t border-gray-100 p-4">
+      <div className="border-t border-line p-4">
         {estaCerrado ? (
-          <div className="flex items-center gap-2 rounded-lg bg-gray-50 px-4 py-3 text-sm text-gray-500">
-            <FaLock className="text-gray-400" />
+          <div className="flex items-center gap-2 rounded-lg bg-surface-2 px-4 py-3 text-sm text-ink-3">
+            <FaLock className="text-ink-3" />
             Este ticket está cerrado. Si necesitas más ayuda, abre un nuevo
             ticket.
           </div>
@@ -334,7 +334,7 @@ function DetalleTicket({
               type="button"
               onClick={cerrarTicket}
               disabled={cerrar.isPending}
-              className="shrink-0 rounded-xl border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-50"
+              className="shrink-0 rounded-xl border border-line px-4 py-2 text-sm font-semibold text-ink-2 transition-colors hover:bg-surface-2 disabled:opacity-50"
             >
               Cerrar ticket
             </button>
@@ -347,7 +347,7 @@ function DetalleTicket({
               rows={2}
               maxLength={2000}
               placeholder="Escribe tu respuesta..."
-              className="flex-1 resize-none rounded-xl border border-gray-300 px-4 py-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="flex-1 resize-none rounded-xl border border-line px-4 py-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
             <div className="flex flex-col gap-2">
               <button
@@ -362,7 +362,7 @@ function DetalleTicket({
                 type="button"
                 onClick={cerrarTicket}
                 disabled={cerrar.isPending}
-                className="rounded-xl border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-50"
+                className="rounded-xl border border-line px-4 py-2 text-sm font-semibold text-ink-2 transition-colors hover:bg-surface-2 disabled:opacity-50"
               >
                 Cerrar ticket
               </button>
@@ -408,14 +408,14 @@ function FormularioCrearTicket({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <form
         onSubmit={enviar}
-        className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl"
+        className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-surface p-6 shadow-xl"
       >
         <div className="mb-5 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-gray-900">Nuevo ticket de soporte</h2>
+          <h2 className="text-lg font-bold text-ink">Nuevo ticket de soporte</h2>
           <button
             type="button"
             onClick={onCerrar}
-            className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+            className="rounded-lg p-2 text-ink-3 transition-colors hover:bg-surface-2 hover:text-ink-2"
           >
             <FaTimes />
           </button>
@@ -423,7 +423,7 @@ function FormularioCrearTicket({
 
         <div className="space-y-4">
           <div>
-            <label className="mb-1 block text-sm font-semibold text-gray-700">
+            <label className="mb-1 block text-sm font-semibold text-ink-2">
               Asunto
             </label>
             <input
@@ -432,19 +432,19 @@ function FormularioCrearTicket({
               onChange={(e) => setAsunto(e.target.value)}
               maxLength={150}
               placeholder="Ej: No puedo renovar mi plan"
-              className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-xl border border-line px-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="mb-1 block text-sm font-semibold text-gray-700">
+              <label className="mb-1 block text-sm font-semibold text-ink-2">
                 Categoría
               </label>
               <select
                 value={categoria}
                 onChange={(e) => setCategoria(e.target.value as TicketCategoria)}
-                className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none"
+                className="w-full rounded-xl border border-line px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none"
               >
                 {CATEGORIAS.map((c) => (
                   <option key={c} value={c}>
@@ -455,13 +455,13 @@ function FormularioCrearTicket({
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-semibold text-gray-700">
+              <label className="mb-1 block text-sm font-semibold text-ink-2">
                 Prioridad
               </label>
               <select
                 value={prioridad}
                 onChange={(e) => setPrioridad(e.target.value as TicketPrioridad)}
-                className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none"
+                className="w-full rounded-xl border border-line px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none"
               >
                 {PRIORIDADES.map((p) => (
                   <option key={p} value={p}>
@@ -473,7 +473,7 @@ function FormularioCrearTicket({
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-semibold text-gray-700">
+            <label className="mb-1 block text-sm font-semibold text-ink-2">
               Mensaje
             </label>
             <textarea
@@ -482,9 +482,9 @@ function FormularioCrearTicket({
               rows={5}
               maxLength={2000}
               placeholder="Describe el problema con el mayor detalle posible..."
-              className="w-full resize-none rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full resize-none rounded-xl border border-line px-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
-            <p className="mt-1 text-right text-[11px] text-gray-400">
+            <p className="mt-1 text-right text-[11px] text-ink-3">
               {mensaje.length}/2000
             </p>
           </div>
@@ -500,7 +500,7 @@ function FormularioCrearTicket({
           <button
             type="button"
             onClick={onCerrar}
-            className="rounded-xl border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-600 transition-colors hover:bg-gray-50"
+            className="rounded-xl border border-line px-4 py-2.5 text-sm font-semibold text-ink-2 transition-colors hover:bg-surface-2"
           >
             Cancelar
           </button>

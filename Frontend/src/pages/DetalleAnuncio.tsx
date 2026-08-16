@@ -72,7 +72,7 @@ function GaleriaFotos({
   const hayVariasFotos = anuncio.fotos.length > 1;
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#13161d]">
+    <div className="overflow-hidden rounded-2xl border border-line bg-surface">
       <div
         className="group relative aspect-[16/10]"
         onMouseEnter={onPausar}
@@ -140,7 +140,7 @@ function GaleriaFotos({
       </div>
 
       {hayVariasFotos && (
-        <div className="flex flex-wrap gap-2 border-t border-white/10 p-3">
+        <div className="flex flex-wrap gap-2 border-t border-line p-3">
           {anuncio.fotos.map((foto, i) => (
             <button
               key={foto}
@@ -154,7 +154,7 @@ function GaleriaFotos({
               className={`h-16 w-24 overflow-hidden rounded-lg border transition-colors ${
                 i === fotoActiva
                   ? "border-blue-500"
-                  : "border-white/10 hover:border-white/30"
+                  : "border-line hover:border-ink-3"
               }`}
             >
               <img
@@ -177,22 +177,22 @@ function DescripcionYEquipamiento({ anuncio }: { anuncio: AnuncioDetalle }) {
   return (
     <>
       {anuncio.descripcion && (
-        <section className="mt-8 rounded-2xl border border-white/10 bg-[#13161d] p-6">
+        <section className="mt-8 rounded-2xl border border-line bg-surface p-6">
           <h2 className="text-lg font-bold">Descripción</h2>
-          <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-[#c3c9d4]">
+          <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-ink-3">
             {anuncio.descripcion}
           </p>
         </section>
       )}
 
       {anuncio.accesorios && anuncio.accesorios.length > 0 && (
-        <section className="mt-8 rounded-2xl border border-white/10 bg-[#13161d] p-6">
+        <section className="mt-8 rounded-2xl border border-line bg-surface p-6">
           <h2 className="text-lg font-bold">Equipamiento</h2>
           <div className="mt-4 flex flex-wrap gap-2">
             {anuncio.accesorios.map((accesorio) => (
               <span
                 key={accesorio}
-                className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-gray-300"
+                className="rounded-full border border-line bg-surface-2 px-3 py-1.5 text-xs font-medium text-ink-2"
               >
                 {accesorio}
               </span>
@@ -228,13 +228,13 @@ function TarjetaDatos({
   onToggleComparar,
 }: PropsTarjeta) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-[#13161d] p-6">
+    <div className="rounded-2xl border border-line bg-surface p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">
             {anuncio.marca} {anuncio.modelo}
           </h1>
-          <p className="mt-1 text-sm text-[#9aa1b1]">
+          <p className="mt-1 text-sm text-ink-2">
             {anuncio.version || "—"}
           </p>
         </div>
@@ -243,7 +243,7 @@ function TarjetaDatos({
             Nuevo
           </span>
         ) : (
-          <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-gray-300">
+          <span className="rounded-full bg-surface-2 px-3 py-1 text-xs font-medium text-ink-2">
             Usado
           </span>
         )}
@@ -254,7 +254,7 @@ function TarjetaDatos({
       </p>
 
       {esOferta && anuncio.precioAnterior != null && (
-        <p className="mt-1 text-sm text-[#9aa1b1]">
+        <p className="mt-1 text-sm text-ink-2">
           <span className="mr-2 line-through">
             {formatearPrecio(anuncio.precioAnterior, anuncio.moneda)}
           </span>
@@ -271,7 +271,7 @@ function TarjetaDatos({
           className={`mt-4 flex w-full items-center justify-center gap-2 rounded-lg border px-5 py-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
             esFavorito
               ? "border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20"
-              : "border-white/10 bg-white/5 text-[#9aa1b1] hover:border-red-500/40 hover:text-red-400"
+              : "border-line bg-surface-2 text-ink-2 hover:border-red-500/40 hover:text-red-400"
           }`}
         >
           {esFavorito ? (
@@ -296,7 +296,7 @@ function TarjetaDatos({
           className={`mt-3 flex w-full items-center justify-center gap-2 rounded-lg border px-5 py-2.5 text-sm font-semibold transition-colors ${
             esSeleccionado(anuncio.id)
               ? "border-blue-500/50 bg-blue-500/15 text-blue-400"
-              : "border-white/10 bg-white/5 text-[#9aa1b1] hover:border-blue-500/40 hover:text-blue-400"
+              : "border-line bg-surface-2 text-ink-2 hover:border-blue-500/40 hover:text-blue-400"
           }`}
         >
           {esSeleccionado(anuncio.id) ? (
@@ -314,19 +314,19 @@ function TarjetaDatos({
       )}
 
       <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
-        <div className="flex items-center gap-2 text-[#c3c9d4]">
-          <FaCalendarAlt className="text-gray-500" />
+        <div className="flex items-center gap-2 text-ink-3">
+          <FaCalendarAlt className="text-ink-3" />
           {anuncio.anio}
         </div>
-        <div className="flex items-center gap-2 text-[#c3c9d4]">
-          <FaTachometerAlt className="text-gray-500" />
+        <div className="flex items-center gap-2 text-ink-3">
+          <FaTachometerAlt className="text-ink-3" />
           {esVehiculoNuevo
             ? "Nuevo"
             : `${anuncio.kilometraje.toLocaleString("es-DO")} km`}
         </div>
         {anuncio.ubicacion && (
-          <div className="col-span-2 flex items-center gap-2 text-[#c3c9d4]">
-            <FaMapMarkerAlt className="text-gray-500" />
+          <div className="col-span-2 flex items-center gap-2 text-ink-3">
+            <FaMapMarkerAlt className="text-ink-3" />
             {anuncio.ubicacion}
           </div>
         )}
@@ -343,28 +343,28 @@ function FichaTecnica({
   propsMostradas: { etiqueta: string; valor: string }[];
 }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-[#13161d] p-6">
-      <h2 className="text-sm font-bold uppercase tracking-wide text-[#9aa1b1]">
+    <div className="rounded-2xl border border-line bg-surface p-6">
+      <h2 className="text-sm font-bold uppercase tracking-wide text-ink-2">
         Ficha técnica
       </h2>
       <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-4 text-sm">
         {propsMostradas.map((fila) => (
           <div key={fila.etiqueta}>
-            <dt className="text-xs text-[#9aa1b1]">{fila.etiqueta}</dt>
-            <dd className="mt-0.5 font-medium text-[#e8eaf0]">
+            <dt className="text-xs text-ink-2">{fila.etiqueta}</dt>
+            <dd className="mt-0.5 font-medium text-ink">
               {fila.valor}
             </dd>
           </div>
         ))}
         <div>
-          <dt className="text-xs text-[#9aa1b1]">Color exterior</dt>
-          <dd className="mt-0.5 font-medium text-[#e8eaf0]">
+          <dt className="text-xs text-ink-2">Color exterior</dt>
+          <dd className="mt-0.5 font-medium text-ink">
             {anuncio.colorExterior || "—"}
           </dd>
         </div>
         <div>
-          <dt className="text-xs text-[#9aa1b1]">Color interior</dt>
-          <dd className="mt-0.5 font-medium text-[#e8eaf0]">
+          <dt className="text-xs text-ink-2">Color interior</dt>
+          <dd className="mt-0.5 font-medium text-ink">
             {anuncio.colorInterior || "—"}
           </dd>
         </div>
@@ -428,12 +428,12 @@ function SeccionContacto({
       </Link>
     </div>
   ) : (
-    <div className="rounded-2xl border border-white/10 bg-[#13161d] p-6">
+    <div className="rounded-2xl border border-line bg-surface p-6">
       <h2 className="text-lg font-bold">
         {esVendedorParticular ? "Contactar vendedor" : "Contactar agencia"}
       </h2>
       {anuncio.nombreVendedor && (
-        <p className="mt-1 flex items-center gap-2 text-sm font-medium text-[#c3c9d4]">
+        <p className="mt-1 flex items-center gap-2 text-sm font-medium text-ink-3">
           {anuncio.nombreVendedor}
           {anuncio.esDealerVerificado && <BadgeVerificado />}
         </p>
@@ -488,9 +488,9 @@ function SeccionContacto({
       {mostrarFormulario && (
         <form onSubmit={onEnviar} className="mt-5 space-y-4">
           {usuario ? (
-            <div className="rounded-lg border border-white/10 bg-[#0c101b] px-3 py-2.5 text-xs text-[#9aa1b1]">
+            <div className="rounded-lg border border-line bg-page px-3 py-2.5 text-xs text-ink-2">
               Enviarás este mensaje con los datos de tu cuenta:{" "}
-              <span className="font-medium text-[#c3c9d4]">
+              <span className="font-medium text-ink-3">
                 {nombre} · {email}
                 {telefono ? ` · ${telefono}` : ""}
               </span>
@@ -500,7 +500,7 @@ function SeccionContacto({
               <div>
                 <label
                   htmlFor="contactoNombre"
-                  className="mb-1 block text-xs font-medium text-[#9aa1b1]"
+                  className="mb-1 block text-xs font-medium text-ink-2"
                 >
                   Nombre *
                 </label>
@@ -512,7 +512,7 @@ function SeccionContacto({
                   value={nombre}
                   onChange={(e) => onChangeNombre(e.target.value)}
                   placeholder="Tu nombre"
-                  className="w-full rounded-lg border border-white/10 bg-[#0c101b] px-3 py-2.5 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
+                  className="w-full rounded-lg border border-line bg-page px-3 py-2.5 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
                 />
               </div>
 
@@ -520,7 +520,7 @@ function SeccionContacto({
                 <div>
                   <label
                     htmlFor="contactoEmail"
-                    className="mb-1 block text-xs font-medium text-[#9aa1b1]"
+                    className="mb-1 block text-xs font-medium text-ink-2"
                   >
                     Email
                   </label>
@@ -531,13 +531,13 @@ function SeccionContacto({
                     value={email}
                     onChange={(e) => onChangeEmail(e.target.value)}
                     placeholder="tucorreo@ejemplo.com"
-                    className="w-full rounded-lg border border-white/10 bg-[#0c101b] px-3 py-2.5 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
+                    className="w-full rounded-lg border border-line bg-page px-3 py-2.5 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
                   />
                 </div>
                 <div>
                   <label
                     htmlFor="contactoTelefono"
-                    className="mb-1 block text-xs font-medium text-[#9aa1b1]"
+                    className="mb-1 block text-xs font-medium text-ink-2"
                   >
                     Teléfono
                   </label>
@@ -548,7 +548,7 @@ function SeccionContacto({
                     value={telefono}
                     onChange={(e) => onChangeTelefono(e.target.value)}
                     placeholder="809-000-0000"
-                    className="w-full rounded-lg border border-white/10 bg-[#0c101b] px-3 py-2.5 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
+                    className="w-full rounded-lg border border-line bg-page px-3 py-2.5 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
                   />
                 </div>
               </div>
@@ -558,7 +558,7 @@ function SeccionContacto({
           <div>
             <label
               htmlFor="contactoMensaje"
-              className="mb-1 block text-xs font-medium text-[#9aa1b1]"
+              className="mb-1 block text-xs font-medium text-ink-2"
             >
               Mensaje *
             </label>
@@ -570,7 +570,7 @@ function SeccionContacto({
               value={mensaje}
               onChange={(e) => onChangeMensaje(e.target.value)}
               placeholder="Hola, me interesa este vehículo. ¿Sigue disponible?"
-              className="w-full rounded-lg border border-white/10 bg-[#0c101b] px-3 py-2.5 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
+              className="w-full rounded-lg border border-line bg-page px-3 py-2.5 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
             />
           </div>
 
@@ -591,7 +591,7 @@ function SeccionContacto({
         </form>
       )}
 
-      <div className="mt-5 border-t border-white/10 pt-4 text-center text-[10px] text-[#6b7280]">
+      <div className="mt-5 border-t border-line pt-4 text-center text-[10px] text-[#6b7280]">
         {esVendedorParticular
           ? "Al contactar, el vendedor recibirá tus datos para responderte directamente."
           : "Al contactar, la agencia recibirá tus datos para responderte directamente."}
@@ -1055,9 +1055,9 @@ export default function DetalleAnuncio() {
   } = detalle;
 
   return (
-    <div className="min-h-screen bg-[#0c101b] text-white">
+    <div className="min-h-screen bg-page text-ink">
       {/* HEADER */}
-      <header className="flex items-center justify-between border-b border-white/10 px-6 py-5 sm:px-8">
+      <header className="flex items-center justify-between border-b border-line px-6 py-5 sm:px-8">
         <Link to="/" className="flex items-center gap-4">
           <img
             src={logo}
@@ -1074,7 +1074,7 @@ export default function DetalleAnuncio() {
         <button
           type="button"
           onClick={() => navigate("/")}
-          className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-[#9aa1b1] transition-colors hover:text-white"
+          className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-ink-2 transition-colors hover:text-ink"
         >
           <FaArrowLeft />
           Volver a la vitrina
@@ -1082,7 +1082,7 @@ export default function DetalleAnuncio() {
 
         {cargando ? (
           <div className="flex items-center justify-center py-32">
-            <div className="h-10 w-10 animate-spin rounded-full border-2 border-white/10 border-t-blue-500" />
+            <div className="h-10 w-10 animate-spin rounded-full border-2 border-line border-t-blue-500" />
           </div>
         ) : (errorCarga || !idValido) && !anuncio ? (
           <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-12 text-center">
@@ -1090,7 +1090,7 @@ export default function DetalleAnuncio() {
             <h2 className="mt-4 text-lg font-semibold">
               Vehículo no disponible
             </h2>
-            <p className="mt-2 text-sm text-[#9aa1b1]">
+            <p className="mt-2 text-sm text-ink-2">
               {!idValido
                 ? "No se indicó el vehículo a consultar."
                 : errorCarga instanceof Error
@@ -1156,10 +1156,10 @@ export default function DetalleAnuncio() {
       </main>
 
       {/* FOOTER */}
-      <footer className="border-t border-white/10 py-8">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 text-sm text-[#9aa1b1] sm:flex-row sm:px-8">
+      <footer className="border-t border-line py-8">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 text-sm text-ink-2 sm:flex-row sm:px-8">
           <span>© 2026 AutoMarket RD. Todos los derechos reservados.</span>
-          <Link to="/precios" className="transition-colors hover:text-white">
+          <Link to="/precios" className="transition-colors hover:text-ink">
             Planes y precios
           </Link>
         </div>

@@ -81,8 +81,8 @@ export default function CampanaNotificaciones({
 
   const estiloBoton =
     tema === "claro"
-      ? "border-gray-300 bg-white text-gray-500 hover:border-blue-400 hover:text-blue-600"
-      : "border-white/15 bg-white/5 text-[#9aa1b1] hover:border-blue-500/50 hover:text-white";
+      ? "border-line bg-surface text-ink-3 hover:border-blue-400 hover:text-blue-600"
+      : "border-line bg-hover text-ink-2 hover:border-blue-500/50 hover:text-ink";
 
   return (
     <div ref={contenedorRef} className="relative">
@@ -107,10 +107,10 @@ export default function CampanaNotificaciones({
       {abierto && (
         <div
           role="menu"
-          className="absolute right-0 top-[calc(100%+10px)] z-50 w-80 overflow-hidden rounded-xl border border-white/10 bg-[#13161d] shadow-xl"
+          className="absolute right-0 top-[calc(100%+10px)] z-50 w-80 overflow-hidden rounded-xl border border-line bg-surface shadow-xl"
         >
-          <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-            <p className="text-sm font-semibold text-white">Notificaciones</p>
+          <div className="flex items-center justify-between border-b border-line px-4 py-3">
+            <p className="text-sm font-semibold text-ink">Notificaciones</p>
             {tienePendientes && (
               <button
                 type="button"
@@ -126,8 +126,8 @@ export default function CampanaNotificaciones({
 
           {resumen.recientes.length === 0 ? (
             <div className="flex flex-col items-center gap-2 px-4 py-8 text-center">
-              <FaEnvelope className="text-2xl text-[#3a4152]" />
-              <p className="text-sm text-[#9aa1b1]">
+              <FaEnvelope className="text-2xl text-ink-3" />
+              <p className="text-sm text-ink-2">
                 {tienePendientes
                   ? "Cargando notificaciones…"
                   : "No tienes mensajes sin atender."}
@@ -140,21 +140,21 @@ export default function CampanaNotificaciones({
                   <button
                     type="button"
                     onClick={irALeads}
-                    className="flex w-full flex-col gap-1 border-b border-white/5 px-4 py-3 text-left transition-colors hover:bg-white/5"
+                    className="flex w-full flex-col gap-1 border-b border-line px-4 py-3 text-left transition-colors hover:bg-hover"
                   >
                     <span className="flex items-center justify-between gap-2">
-                      <strong className="truncate text-sm text-gray-200">
+                      <strong className="truncate text-sm text-ink">
                         {lead.nombreContacto}
                       </strong>
-                      <span className="shrink-0 text-[10px] text-[#6b7280]">
+                      <span className="shrink-0 text-[10px] text-ink-3">
                         {formatearFecha(lead.fechaCreacionUtc)}
                       </span>
                     </span>
-                    <span className="line-clamp-2 text-xs text-[#9aa1b1]">
+                    <span className="line-clamp-2 text-xs text-ink-2">
                       {lead.mensaje}
                     </span>
                     {lead.anuncio && (
-                      <span className="text-[11px] text-[#6b7280]">
+                      <span className="text-[11px] text-ink-3">
                         {lead.anuncio.marca} {lead.anuncio.modelo} (
                         {lead.anuncio.anio})
                       </span>
@@ -168,7 +168,7 @@ export default function CampanaNotificaciones({
           <button
             type="button"
             onClick={irALeads}
-            className="block w-full border-t border-white/10 px-4 py-3 text-center text-sm font-medium text-blue-400 transition-colors hover:bg-white/5"
+            className="block w-full border-t border-line px-4 py-3 text-center text-sm font-medium text-blue-400 transition-colors hover:bg-hover"
           >
             Ver todos los mensajes
           </button>

@@ -70,7 +70,7 @@ function BuscadorVehiculos({
     <form onSubmit={onBuscar} className="mt-8">
       <div className="flex flex-col gap-3 sm:flex-row">
         <div className="relative flex-1">
-          <FaSearch className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+          <FaSearch className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-3" />
           <label htmlFor="buscarVehiculo" className="sr-only">
             Buscar un vehículo por marca o modelo
           </label>
@@ -80,7 +80,7 @@ function BuscadorVehiculos({
             value={termino}
             onChange={(e) => onChangeTermino(e.target.value)}
             placeholder="Buscar un vehículo por marca o modelo para agregarlo..."
-            className="w-full rounded-xl border border-white/10 bg-[#0c101b] py-3 pl-12 pr-4 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
+            className="w-full rounded-xl border border-line bg-page py-3 pl-12 pr-4 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
           />
         </div>
         <button
@@ -93,13 +93,13 @@ function BuscadorVehiculos({
       </div>
 
       {resultados.length > 0 && (
-        <div className="mt-3 overflow-hidden rounded-xl border border-white/10 bg-[#13161d]">
+        <div className="mt-3 overflow-hidden rounded-xl border border-line bg-surface">
           {resultados.map((a) => {
             const yaSeleccionado = esSeleccionado(a.id);
             return (
               <div
                 key={a.id}
-                className={`flex items-center gap-4 border-b border-white/5 p-3 last:border-b-0 ${
+                className={`flex items-center gap-4 border-b border-line p-3 last:border-b-0 ${
                   yaSeleccionado ? "opacity-50" : ""
                 }`}
               >
@@ -111,7 +111,7 @@ function BuscadorVehiculos({
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold">
                     {a.marca} {a.modelo}
-                    <span className="ml-2 text-xs font-normal text-[#9aa1b1]">
+                    <span className="ml-2 text-xs font-normal text-ink-2">
                       {a.anio}
                     </span>
                   </p>
@@ -124,7 +124,7 @@ function BuscadorVehiculos({
                   type="button"
                   disabled={yaSeleccionado}
                   onClick={() => onAgregar(a)}
-                  className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-white/10 px-3 py-2 text-xs font-semibold transition-colors hover:border-blue-500/40 hover:text-blue-400 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-line px-3 py-2 text-xs font-semibold transition-colors hover:border-blue-500/40 hover:text-blue-400 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {yaSeleccionado ? (
                     <>
@@ -175,15 +175,15 @@ function ContenidoComparador({
     obtener: (v: VehiculoComparador) => ReactNode,
     destacado?: (v: VehiculoComparador) => boolean,
   ) => (
-    <tr className="border-b border-white/5 transition-colors hover:bg-white/[0.03]">
-      <th className="w-44 whitespace-nowrap px-6 py-4 text-left align-top text-sm font-semibold text-[#9aa1b1]">
+    <tr className="border-b border-line transition-colors hover:bg-hover">
+      <th className="w-44 whitespace-nowrap px-6 py-4 text-left align-top text-sm font-semibold text-ink-2">
         {etiqueta}
       </th>
       {vehiculos.map((v) => (
         <td
           key={v.id}
           className={`px-6 py-4 text-sm ${
-            destacado?.(v) ? "font-semibold text-green-400" : "text-gray-200"
+            destacado?.(v) ? "font-semibold text-green-400" : "text-ink"
           }`}
         >
           {obtener(v)}
@@ -194,12 +194,12 @@ function ContenidoComparador({
 
   if (necesitaSeleccion) {
     return (
-      <div className="rounded-2xl border border-white/10 bg-[#13161d] p-12 text-center">
-        <FaCar className="mx-auto text-5xl text-gray-600" />
+      <div className="rounded-2xl border border-line bg-surface p-12 text-center">
+        <FaCar className="mx-auto text-5xl text-ink-3" />
         <h3 className="mt-4 text-lg font-semibold">
           Agrega vehículos para comparar
         </h3>
-        <p className="mx-auto mt-2 max-w-md text-sm text-[#9aa1b1]">
+        <p className="mx-auto mt-2 max-w-md text-sm text-ink-2">
           Usa el buscador de arriba o ve al directorio y presiona{" "}
           <span className="font-semibold text-blue-400">
             "+ Agregar a comparar"
@@ -219,7 +219,7 @@ function ContenidoComparador({
   if (cargando) {
     return (
       <div className="flex items-center justify-center py-24">
-        <div className="h-10 w-10 animate-spin rounded-full border-2 border-white/10 border-t-blue-500" />
+        <div className="h-10 w-10 animate-spin rounded-full border-2 border-line border-t-blue-500" />
       </div>
     );
   }
@@ -241,12 +241,12 @@ function ContenidoComparador({
 
   if (vehiculos.length === 0) {
     return (
-      <div className="rounded-2xl border border-white/10 bg-[#13161d] p-12 text-center">
-        <FaCar className="mx-auto text-5xl text-gray-600" />
+      <div className="rounded-2xl border border-line bg-surface p-12 text-center">
+        <FaCar className="mx-auto text-5xl text-ink-3" />
         <h3 className="mt-4 text-lg font-semibold">
           No encontramos esos vehículos
         </h3>
-        <p className="mt-2 text-sm text-[#9aa1b1]">
+        <p className="mt-2 text-sm text-ink-2">
           Es posible que uno de los anuncios ya no esté publicado.
         </p>
         <button
@@ -264,24 +264,24 @@ function ContenidoComparador({
     <>
       {/* BARRA DE SELECCIÓN */}
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-[#9aa1b1]">
+        <p className="text-sm text-ink-2">
           {seleccionados.length} de {MAX_VEHICULOS} vehículos seleccionados
         </p>
         <button
           type="button"
           onClick={onLimpiar}
-          className="text-xs font-medium text-[#9aa1b1] underline-offset-2 transition-colors hover:text-white hover:underline"
+          className="text-xs font-medium text-ink-2 underline-offset-2 transition-colors hover:text-ink hover:underline"
         >
           Limpiar todo
         </button>
       </div>
 
       {/* VISTA ESCRITORIO: TABLA */}
-      <div className="hidden overflow-x-auto rounded-2xl border border-white/10 bg-[#13161d] md:block">
+      <div className="hidden overflow-x-auto rounded-2xl border border-line bg-surface md:block">
         <table className="w-full min-w-[760px] border-collapse">
           <thead>
-            <tr className="border-b border-white/10">
-              <th className="w-44 px-6 py-5 text-left align-bottom text-sm font-semibold text-[#9aa1b1]">
+            <tr className="border-b border-line">
+              <th className="w-44 px-6 py-5 text-left align-bottom text-sm font-semibold text-ink-2">
                 Vehículo
               </th>
               {vehiculos.map((v) => (
@@ -299,15 +299,15 @@ function ContenidoComparador({
                         </span>
                       )}
                     </div>
-                    <div className="mt-3 text-base font-bold text-white group-hover:text-blue-400">
+                    <div className="mt-3 text-base font-bold text-ink group-hover:text-blue-400">
                       {v.marca} {v.modelo}
                     </div>
                     {v.version && (
-                      <div className="text-sm text-[#9aa1b1]">{v.version}</div>
+                      <div className="text-sm text-ink-2">{v.version}</div>
                     )}
                     <div
                       className={`mt-1 text-sm ${
-                        v.condicion === "Nuevo" ? "text-blue-400" : "text-gray-300"
+                        v.condicion === "Nuevo" ? "text-blue-400" : "text-ink-2"
                       }`}
                     >
                       {v.condicion === "Nuevo" ? "Nuevo" : "Usado"} · {v.anio}
@@ -326,7 +326,7 @@ function ContenidoComparador({
                     {formatearPrecio(v.precio, v.moneda)}
                   </div>
                   {v.enOferta && v.precioAnterior != null && (
-                    <div className="text-xs text-[#9aa1b1] line-through">
+                    <div className="text-xs text-ink-2 line-through">
                       {formatearPrecio(v.precioAnterior, v.moneda)}
                     </div>
                   )}
@@ -336,25 +336,25 @@ function ContenidoComparador({
             )}
             {filaComparativa("Kilometraje", (v) => (
               <span className="inline-flex items-center gap-1.5">
-                <FaTachometerAlt className="text-gray-500" />
+                <FaTachometerAlt className="text-ink-3" />
                 {v.kilometraje.toLocaleString("es-DO")} km
               </span>
             ))}
             {filaComparativa("Año", (v) => (
               <span className="inline-flex items-center gap-1.5">
-                <FaCalendarAlt className="text-gray-500" />
+                <FaCalendarAlt className="text-ink-3" />
                 {v.anio}
               </span>
             ))}
             {filaComparativa("Tipo", (v) => (
               <span className="inline-flex items-center gap-1.5">
-                <FaCar className="text-gray-500" />
+                <FaCar className="text-ink-3" />
                 {etiquetaDe(v.tipoVehiculo, TIPOS_VEHICULO)}
               </span>
             ))}
             {filaComparativa("Motor", (v) => (
               <span className="inline-flex items-center gap-1.5">
-                <FaCogs className="text-gray-500" />
+                <FaCogs className="text-ink-3" />
                 {etiquetaLegible(v.motor)}
               </span>
             ))}
@@ -364,25 +364,25 @@ function ContenidoComparador({
             {filaComparativa("Tracción", (v) => etiquetaLegible(v.traccion))}
             {filaComparativa("Combustible", (v) => (
               <span className="inline-flex items-center gap-1.5">
-                <FaOilCan className="text-gray-500" />
+                <FaOilCan className="text-ink-3" />
                 {etiquetaDe(v.combustible, COMBUSTIBLES)}
               </span>
             ))}
             {filaComparativa("Color exterior", (v) => (
               <span className="inline-flex items-center gap-1.5">
-                <FaPalette className="text-gray-500" />
+                <FaPalette className="text-ink-3" />
                 {etiquetaLegible(v.colorExterior)}
               </span>
             ))}
             {filaComparativa("Color interior", (v) => (
               <span className="inline-flex items-center gap-1.5">
-                <FaTint className="text-gray-500" />
+                <FaTint className="text-ink-3" />
                 {etiquetaLegible(v.colorInterior)}
               </span>
             ))}
             {filaComparativa("Ubicación", (v) => (
               <span className="inline-flex items-center gap-1.5">
-                <FaMapMarkerAlt className="text-gray-500" />
+                <FaMapMarkerAlt className="text-ink-3" />
                 {etiquetaLegible(v.ubicacion)}
               </span>
             ))}
@@ -395,7 +395,7 @@ function ContenidoComparador({
         {vehiculos.map((v) => (
           <div
             key={v.id}
-            className="overflow-hidden rounded-2xl border border-white/10 bg-[#13161d]"
+            className="overflow-hidden rounded-2xl border border-line bg-surface"
           >
             <div className="relative aspect-[16/10]">
               <img
@@ -411,7 +411,7 @@ function ContenidoComparador({
               <button
                 type="button"
                 onClick={() => onRemover(v.id)}
-                className="absolute right-2 top-2 inline-flex items-center gap-1.5 rounded-lg bg-[#0c101b]/90 px-3 py-2 text-xs font-semibold text-[#9aa1b1] transition-colors hover:text-red-400"
+                className="absolute right-2 top-2 inline-flex items-center gap-1.5 rounded-lg bg-page/90 px-3 py-2 text-xs font-semibold text-ink-2 transition-colors hover:text-red-400"
               >
                 <FaMinus />
                 Quitar
@@ -420,23 +420,23 @@ function ContenidoComparador({
 
             <div className="p-5">
               <Link to={`/anuncio/${v.id}`} className="block">
-                <h3 className="text-lg font-bold text-white hover:text-blue-400">
+                <h3 className="text-lg font-bold text-ink hover:text-blue-400">
                   {v.marca} {v.modelo}
                   {v.version && (
-                    <span className="ml-2 text-sm font-normal text-[#9aa1b1]">
+                    <span className="ml-2 text-sm font-normal text-ink-2">
                       {v.version}
                     </span>
                   )}
                 </h3>
               </Link>
 
-              <div className="mt-3 divide-y divide-white/5">
+              <div className="mt-3 divide-y divide-line">
                 {especificacionesDe(v, menorPrecio).map((esp) => (
                   <div
                     key={esp.etiqueta}
                     className="flex items-center justify-between gap-4 py-2.5 text-sm"
                   >
-                    <span className="inline-flex items-center gap-2 text-[#9aa1b1]">
+                    <span className="inline-flex items-center gap-2 text-ink-2">
                       {esp.icono}
                       {esp.etiqueta}
                     </span>
@@ -444,7 +444,7 @@ function ContenidoComparador({
                       className={`text-right ${
                         esp.destacado
                           ? "font-semibold text-green-400"
-                          : "text-gray-200"
+                          : "text-ink"
                       }`}
                     >
                       {esp.valor}
@@ -467,50 +467,50 @@ function especificacionesDe(
   return [
     {
       etiqueta: "Precio",
-      icono: <FaBalanceScale className="text-gray-500" />,
+      icono: <FaBalanceScale className="text-ink-3" />,
       valor: formatearPrecio(v.precio, v.moneda),
       destacado: v.precio === menorPrecio,
     },
     {
       etiqueta: "Kilometraje",
-      icono: <FaTachometerAlt className="text-gray-500" />,
+      icono: <FaTachometerAlt className="text-ink-3" />,
       valor: `${v.kilometraje.toLocaleString("es-DO")} km`,
     },
-    { etiqueta: "Año", icono: <FaCalendarAlt className="text-gray-500" />, valor: String(v.anio) },
+    { etiqueta: "Año", icono: <FaCalendarAlt className="text-ink-3" />, valor: String(v.anio) },
     {
       etiqueta: "Tipo",
-      icono: <FaCar className="text-gray-500" />,
+      icono: <FaCar className="text-ink-3" />,
       valor: etiquetaDe(v.tipoVehiculo, TIPOS_VEHICULO),
     },
     {
       etiqueta: "Motor",
-      icono: <FaCogs className="text-gray-500" />,
+      icono: <FaCogs className="text-ink-3" />,
       valor: etiquetaLegible(v.motor),
     },
     {
       etiqueta: "Transmisión",
-      icono: <FaCogs className="text-gray-500" />,
+      icono: <FaCogs className="text-ink-3" />,
       valor: etiquetaDe(v.transmision, TRANSMISIONES),
     },
-    { etiqueta: "Tracción", icono: <FaCar className="text-gray-500" />, valor: etiquetaLegible(v.traccion) },
+    { etiqueta: "Tracción", icono: <FaCar className="text-ink-3" />, valor: etiquetaLegible(v.traccion) },
     {
       etiqueta: "Combustible",
-      icono: <FaOilCan className="text-gray-500" />,
+      icono: <FaOilCan className="text-ink-3" />,
       valor: etiquetaDe(v.combustible, COMBUSTIBLES),
     },
     {
       etiqueta: "Color exterior",
-      icono: <FaPalette className="text-gray-500" />,
+      icono: <FaPalette className="text-ink-3" />,
       valor: etiquetaLegible(v.colorExterior),
     },
     {
       etiqueta: "Color interior",
-      icono: <FaTint className="text-gray-500" />,
+      icono: <FaTint className="text-ink-3" />,
       valor: etiquetaLegible(v.colorInterior),
     },
     {
       etiqueta: "Ubicación",
-      icono: <FaMapMarkerAlt className="text-gray-500" />,
+      icono: <FaMapMarkerAlt className="text-ink-3" />,
       valor: etiquetaLegible(v.ubicacion),
     },
   ];
@@ -591,9 +591,9 @@ export default function Comparador() {
   const necesitaSeleccion = seleccionados.length < 2;
 
   return (
-    <div className="min-h-screen bg-[#0c101b] text-white">
+    <div className="min-h-screen bg-page text-ink">
       {/* HEADER */}
-      <header className="flex items-center justify-between border-b border-white/10 px-6 py-5 sm:px-8">
+      <header className="flex items-center justify-between border-b border-line px-6 py-5 sm:px-8">
         <Link to="/" className="flex items-center gap-4">
           <img
             src={logo}
@@ -606,12 +606,12 @@ export default function Comparador() {
       </header>
 
       {/* CABECERA */}
-      <section className="border-b border-white/10 bg-gradient-to-b from-[#11161f] to-[#0c101b]">
+      <section className="border-b border-line bg-gradient-to-b from-surface-2 to-page">
         <div className="mx-auto max-w-6xl px-6 py-10 sm:px-8">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold">Comparador de vehículos</h1>
-              <p className="mt-2 text-sm text-[#9aa1b1]">
+              <p className="mt-2 text-sm text-ink-2">
                 {necesitaSeleccion
                   ? `Selecciona al menos 2 vehículos (máx. ${MAX_VEHICULOS}) para ver la comparación lado a lado.`
                   : `Comparando ${seleccionados.length} vehículo${seleccionados.length !== 1 ? "s" : ""} de ${MAX_VEHICULOS} máx.`}
@@ -619,9 +619,9 @@ export default function Comparador() {
             </div>
             <Link
               to="/vehiculos"
-              className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-5 py-2.5 text-sm font-medium text-[#9aa1b1] transition-colors hover:border-white/30 hover:text-white"
+              className="inline-flex items-center gap-2 rounded-xl border border-line px-5 py-2.5 text-sm font-medium text-ink-2 transition-colors hover:border-blue-500/40 hover:text-ink"
             >
-              <FaExchangeAlt className="text-gray-500" />
+              <FaExchangeAlt className="text-ink-3" />
               Ver directorio
             </Link>
           </div>
@@ -654,10 +654,10 @@ export default function Comparador() {
       </main>
 
       {/* FOOTER */}
-      <footer className="border-t border-white/10 py-8">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 text-sm text-[#9aa1b1] sm:flex-row sm:px-8">
+      <footer className="border-t border-line py-8">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 text-sm text-ink-2 sm:flex-row sm:px-8">
           <span>© 2026 AutoMarket RD. Todos los derechos reservados.</span>
-          <Link to="/precios" className="transition-colors hover:text-white">
+          <Link to="/precios" className="transition-colors hover:text-ink">
             Planes y precios
           </Link>
         </div>

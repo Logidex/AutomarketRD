@@ -31,7 +31,7 @@ function ImagenPreview({
   }, [archivo]);
 
   return (
-    <div className="group relative h-36 w-full overflow-hidden rounded-lg border-2 border-gray-200 bg-gray-100">
+    <div className="group relative h-36 w-full overflow-hidden rounded-lg border-2 border-line bg-surface-2">
       {previewUrl ? (
         <img 
           src={previewUrl} 
@@ -39,7 +39,7 @@ function ImagenPreview({
           className="absolute inset-0 h-full w-full object-cover" 
         />
       ) : (
-        <div className="flex h-full items-center justify-center text-xs text-gray-400">
+        <div className="flex h-full items-center justify-center text-xs text-ink-3">
           Cargando...
         </div>
       )}
@@ -103,16 +103,16 @@ export default function GestorImagenes({
   const totalImagenes = archivos.length + fotosGuardadas.length;
 
   return (
-    <div className="border-t border-gray-100 pt-4">
+    <div className="border-t border-line pt-4">
       <div className="mb-2 flex items-center justify-between">
         <label
           htmlFor="fotosVehiculo"
-          className="block text-sm font-medium text-gray-700"
+          className="block text-sm font-medium text-ink-2"
         >
           Fotos del Vehículo
         </label>
 
-        <span className="text-sm font-semibold text-gray-600">
+        <span className="text-sm font-semibold text-ink-2">
           {totalImagenes}/{maxImagenes}
         </span>
       </div>
@@ -123,10 +123,10 @@ export default function GestorImagenes({
         multiple
         accept="image/png, image/jpeg"
         onChange={onImageChange}
-        className="block w-full cursor-pointer rounded-md border border-gray-300 text-sm text-gray-500 file:mr-4 file:rounded-md file:border-0 file:bg-blue-50 file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-blue-700 hover:file:bg-blue-100"
+        className="block w-full cursor-pointer rounded-md border border-line text-sm text-ink-3 file:mr-4 file:rounded-md file:border-0 file:bg-blue-50 file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-blue-700 hover:file:bg-blue-100"
       />
 
-      <p className="mt-1 text-xs text-gray-500">
+      <p className="mt-1 text-xs text-ink-3">
         Agrega imágenes una por una o varias a la vez. Haz clic en la estrella (★) de una foto para elegir la principal.
         Debes tener entre {MINIMO_IMAGENES} y {maxImagenes} para guardar el anuncio.
       </p>
@@ -137,8 +137,8 @@ export default function GestorImagenes({
           {fotosGuardadas.map((foto, indice) => (
             <div
               key={`old-${indice}`}
-              className={`group relative overflow-hidden rounded-lg border-2 bg-gray-50 ${
-                fotoPrincipal === foto ? "border-amber-400" : "border-gray-200"
+              className={`group relative overflow-hidden rounded-lg border-2 bg-surface-2 ${
+                fotoPrincipal === foto ? "border-amber-400" : "border-line"
               }`}
             >
               <img src={urlImagen(foto)} alt={`Guardada ${indice + 1}`} className="h-36 w-full object-cover" />

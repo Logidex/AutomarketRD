@@ -46,7 +46,7 @@ function InformacionBasica({
       <div>
         <label
           htmlFor="marca"
-          className="mb-1 block text-sm font-medium text-gray-700"
+          className="mb-1 block text-sm font-medium text-ink-2"
         >
           Marca
         </label>
@@ -58,14 +58,14 @@ function InformacionBasica({
           value={formData.marca}
           onChange={onChange}
           placeholder="Ej: Toyota"
-          className="w-full rounded-md border border-gray-300 p-2.5 focus:border-blue-500 focus:ring-blue-500"
+          className="w-full rounded-md border border-line p-2.5 focus:border-blue-500 focus:ring-blue-500"
         />
       </div>
 
       <div>
         <label
           htmlFor="modelo"
-          className="mb-1 block text-sm font-medium text-gray-700"
+          className="mb-1 block text-sm font-medium text-ink-2"
         >
           Modelo
         </label>
@@ -77,14 +77,14 @@ function InformacionBasica({
           value={formData.modelo}
           onChange={onChange}
           placeholder="Ej: Corolla"
-          className="w-full rounded-md border border-gray-300 p-2.5 focus:border-blue-500 focus:ring-blue-500"
+          className="w-full rounded-md border border-line p-2.5 focus:border-blue-500 focus:ring-blue-500"
         />
       </div>
 
       <div>
         <label
           htmlFor="version"
-          className="mb-1 block text-sm font-medium text-gray-700"
+          className="mb-1 block text-sm font-medium text-ink-2"
         >
           Versión
         </label>
@@ -96,14 +96,14 @@ function InformacionBasica({
           value={formData.version}
           onChange={onChange}
           placeholder="Ej: EX, Sport, Limited"
-          className="w-full rounded-md border border-gray-300 p-2.5 focus:border-blue-500 focus:ring-blue-500"
+          className="w-full rounded-md border border-line p-2.5 focus:border-blue-500 focus:ring-blue-500"
         />
       </div>
 
       <div>
         <label
           htmlFor="anio"
-          className="mb-1 block text-sm font-medium text-gray-700"
+          className="mb-1 block text-sm font-medium text-ink-2"
         >
           Año
         </label>
@@ -116,14 +116,14 @@ function InformacionBasica({
           max={new Date().getFullYear() + 1}
           value={formData.anio}
           onChange={onChange}
-          className="w-full rounded-md border border-gray-300 p-2.5 focus:border-blue-500 focus:ring-blue-500"
+          className="w-full rounded-md border border-line p-2.5 focus:border-blue-500 focus:ring-blue-500"
         />
       </div>
 
       <div>
         <label
           htmlFor="precio"
-          className="mb-1 block text-sm font-medium text-gray-700"
+          className="mb-1 block text-sm font-medium text-ink-2"
         >
           Precio
         </label>
@@ -136,14 +136,14 @@ function InformacionBasica({
           value={formData.precio === 0 ? '' : formData.precio}
           onChange={onChange}
           placeholder="0"
-          className="w-full rounded-md border border-gray-300 p-2.5 focus:border-blue-500 focus:ring-blue-500"
+          className="w-full rounded-md border border-line p-2.5 focus:border-blue-500 focus:ring-blue-500"
         />
       </div>
 
       <div>
         <label
           htmlFor="moneda"
-          className="mb-1 block text-sm font-medium text-gray-700"
+          className="mb-1 block text-sm font-medium text-ink-2"
         >
           Moneda
         </label>
@@ -153,7 +153,7 @@ function InformacionBasica({
           required
           value={formData.moneda}
           onChange={onChange}
-          className="w-full rounded-md border border-gray-300 bg-white p-2.5 focus:border-blue-500 focus:ring-blue-500"
+          className="w-full rounded-md border border-line bg-surface p-2.5 focus:border-blue-500 focus:ring-blue-500"
         >
           <option value="DOP">Peso dominicano (RD$)</option>
           <option value="USD">Dólar (US$)</option>
@@ -163,7 +163,7 @@ function InformacionBasica({
       <div>
         <label
           htmlFor="precioAnterior"
-          className="mb-1 block text-sm font-medium text-gray-700"
+          className="mb-1 block text-sm font-medium text-ink-2"
         >
           Precio anterior (opcional)
         </label>
@@ -175,9 +175,9 @@ function InformacionBasica({
           value={formData.precioAnterior === 0 ? '' : formData.precioAnterior}
           onChange={onChange}
           placeholder="Dejar vacío si no está en oferta"
-          className="w-full rounded-md border border-gray-300 p-2.5 focus:border-blue-500 focus:ring-blue-500"
+          className="w-full rounded-md border border-line p-2.5 focus:border-blue-500 focus:ring-blue-500"
         />
-        <p className="mt-1 text-xs text-gray-500">
+        <p className="mt-1 text-xs text-ink-3">
           Si es mayor que el precio actual, el vehículo se muestra como "En oferta".
         </p>
       </div>
@@ -185,7 +185,7 @@ function InformacionBasica({
       <div>
         <label
           htmlFor="kilometraje"
-          className="mb-1 block text-sm font-medium text-gray-700"
+          className="mb-1 block text-sm font-medium text-ink-2"
         >
           Kilometraje
         </label>
@@ -198,9 +198,9 @@ function InformacionBasica({
           value={kilometraje}
           onChange={onKilometrajeChange}
           placeholder="Ej: 50000"
-          className="w-full rounded-md border border-gray-300 p-2.5 focus:border-blue-500 focus:ring-blue-500"
+          className="w-full rounded-md border border-line p-2.5 focus:border-blue-500 focus:ring-blue-500"
         />
-        <p className="mt-1 text-xs text-gray-500">
+        <p className="mt-1 text-xs text-ink-3">
           {kilometraje.trim() === ''
             ? 'Indica el kilometraje del vehículo.'
             : esNuevo
@@ -230,11 +230,11 @@ function Especificaciones({
   onTransmisionPersonalizadaChange,
 }: EspecificacionesProps) {
   return (
-    <div className="grid grid-cols-1 gap-6 border-t border-gray-100 pt-4 md:grid-cols-3">
+    <div className="grid grid-cols-1 gap-6 border-t border-line pt-4 md:grid-cols-3">
       <div>
         <label
           htmlFor="tipoVehiculo"
-          className="mb-1 block text-sm font-medium text-gray-700"
+          className="mb-1 block text-sm font-medium text-ink-2"
         >
           Tipo de Vehículo
         </label>
@@ -244,7 +244,7 @@ function Especificaciones({
           required
           value={formData.tipoVehiculo}
           onChange={onChange}
-          className="w-full rounded-md border border-gray-300 bg-white p-2.5 focus:border-blue-500 focus:ring-blue-500"
+          className="w-full rounded-md border border-line bg-surface p-2.5 focus:border-blue-500 focus:ring-blue-500"
         >
           <option value="">Selecciona...</option>
           {TIPOS_VEHICULO.map((opcion) => (
@@ -258,7 +258,7 @@ function Especificaciones({
       <div>
         <label
           htmlFor="motor"
-          className="mb-1 block text-sm font-medium text-gray-700"
+          className="mb-1 block text-sm font-medium text-ink-2"
         >
           Motor
         </label>
@@ -270,14 +270,14 @@ function Especificaciones({
           value={formData.motor}
           onChange={onChange}
           placeholder="Ej: 1.6L 4 cilindros"
-          className="w-full rounded-md border border-gray-300 p-2.5 focus:border-blue-500 focus:ring-blue-500"
+          className="w-full rounded-md border border-line p-2.5 focus:border-blue-500 focus:ring-blue-500"
         />
       </div>
 
       <div>
         <label
           htmlFor="traccion"
-          className="mb-1 block text-sm font-medium text-gray-700"
+          className="mb-1 block text-sm font-medium text-ink-2"
         >
           Tracción
         </label>
@@ -287,7 +287,7 @@ function Especificaciones({
           required
           value={formData.traccion}
           onChange={onChange}
-          className="w-full rounded-md border border-gray-300 bg-white p-2.5 focus:border-blue-500 focus:ring-blue-500"
+          className="w-full rounded-md border border-line bg-surface p-2.5 focus:border-blue-500 focus:ring-blue-500"
         >
           <option value="">Selecciona...</option>
           <option value="Delantera">Delantera</option>
@@ -300,7 +300,7 @@ function Especificaciones({
       <div>
         <label
           htmlFor="transmision"
-          className="mb-1 block text-sm font-medium text-gray-700"
+          className="mb-1 block text-sm font-medium text-ink-2"
         >
           Transmisión
         </label>
@@ -310,7 +310,7 @@ function Especificaciones({
           required
           value={formData.transmision}
           onChange={onChange}
-          className="w-full rounded-md border border-gray-300 bg-white p-2.5 focus:border-blue-500 focus:ring-blue-500"
+          className="w-full rounded-md border border-line bg-surface p-2.5 focus:border-blue-500 focus:ring-blue-500"
         >
           <option value="">Selecciona...</option>
           <option value="Automatica">Automática</option>
@@ -325,7 +325,7 @@ function Especificaciones({
           <div className="mt-2">
             <label
               htmlFor="transmisionPersonalizada"
-              className="mb-1 block text-sm font-medium text-gray-700"
+              className="mb-1 block text-sm font-medium text-ink-2"
             >
               Transmisión personalizada
             </label>
@@ -337,9 +337,9 @@ function Especificaciones({
               value={transmisionPersonalizada}
               onChange={onTransmisionPersonalizadaChange}
               placeholder="Escribe la transmisión"
-              className="w-full rounded-md border border-gray-300 p-2.5 focus:border-blue-500 focus:ring-blue-500"
+              className="w-full rounded-md border border-line p-2.5 focus:border-blue-500 focus:ring-blue-500"
             />
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-1 text-xs text-ink-3">
               {transmisionPersonalizada.length}/{MAXIMO_TRANSMISION} caracteres
             </p>
             {transmisionPersonalizada.length >= MAXIMO_TRANSMISION && (
@@ -354,7 +354,7 @@ function Especificaciones({
       <div>
         <label
           htmlFor="combustible"
-          className="mb-1 block text-sm font-medium text-gray-700"
+          className="mb-1 block text-sm font-medium text-ink-2"
         >
           Combustible
         </label>
@@ -364,7 +364,7 @@ function Especificaciones({
           required
           value={formData.combustible}
           onChange={onChange}
-          className="w-full rounded-md border border-gray-300 bg-white p-2.5 focus:border-blue-500 focus:ring-blue-500"
+          className="w-full rounded-md border border-line bg-surface p-2.5 focus:border-blue-500 focus:ring-blue-500"
         >
           <option value="">Selecciona...</option>
           <option value="Gasolina">Gasolina</option>
@@ -378,7 +378,7 @@ function Especificaciones({
       <div>
         <label
           htmlFor="colorExterior"
-          className="mb-1 block text-sm font-medium text-gray-700"
+          className="mb-1 block text-sm font-medium text-ink-2"
         >
           Color Exterior
         </label>
@@ -389,14 +389,14 @@ function Especificaciones({
           required
           value={formData.colorExterior}
           onChange={onChange}
-          className="w-full rounded-md border border-gray-300 p-2.5 focus:border-blue-500 focus:ring-blue-500"
+          className="w-full rounded-md border border-line p-2.5 focus:border-blue-500 focus:ring-blue-500"
         />
       </div>
 
       <div>
         <label
           htmlFor="colorInterior"
-          className="mb-1 block text-sm font-medium text-gray-700"
+          className="mb-1 block text-sm font-medium text-ink-2"
         >
           Color Interior
         </label>
@@ -407,7 +407,7 @@ function Especificaciones({
           required
           value={formData.colorInterior}
           onChange={onChange}
-          className="w-full rounded-md border border-gray-300 p-2.5 focus:border-blue-500 focus:ring-blue-500"
+          className="w-full rounded-md border border-line p-2.5 focus:border-blue-500 focus:ring-blue-500"
         />
       </div>
     </div>
@@ -430,11 +430,11 @@ function DetallesYUbicacion({
   onAccesoriosChange,
 }: DetallesYUbicacionProps) {
   return (
-    <div className="grid grid-cols-1 gap-6 border-t border-gray-100 pt-4 md:grid-cols-2">
+    <div className="grid grid-cols-1 gap-6 border-t border-line pt-4 md:grid-cols-2">
       <div>
         <label
           htmlFor="ubicacion"
-          className="mb-1 block text-sm font-medium text-gray-700"
+          className="mb-1 block text-sm font-medium text-ink-2"
         >
           Ubicación
         </label>
@@ -446,14 +446,14 @@ function DetallesYUbicacion({
           value={formData.ubicacion}
           onChange={onChange}
           placeholder="Ej: Santo Domingo"
-          className="w-full rounded-md border border-gray-300 p-2.5 focus:border-blue-500 focus:ring-blue-500"
+          className="w-full rounded-md border border-line p-2.5 focus:border-blue-500 focus:ring-blue-500"
         />
       </div>
 
       <div>
         <label
           htmlFor="accesorios"
-          className="mb-1 block text-sm font-medium text-gray-700"
+          className="mb-1 block text-sm font-medium text-ink-2"
         >
           Accesorios
         </label>
@@ -463,15 +463,15 @@ function DetallesYUbicacion({
           value={accesoriosTexto}
           onChange={onAccesoriosChange}
           placeholder="Sunroof, Cámara, Asientos en piel..."
-          className="w-full rounded-md border border-gray-300 p-2.5 focus:border-blue-500 focus:ring-blue-500"
+          className="w-full rounded-md border border-line p-2.5 focus:border-blue-500 focus:ring-blue-500"
         />
-        <p className="mt-1 text-xs text-gray-500">Separa los accesorios usando comas.</p>
+        <p className="mt-1 text-xs text-ink-3">Separa los accesorios usando comas.</p>
       </div>
 
       <div className="md:col-span-2">
         <label
           htmlFor="descripcion"
-          className="mb-1 block text-sm font-medium text-gray-700"
+          className="mb-1 block text-sm font-medium text-ink-2"
         >
           Descripción
         </label>
@@ -484,9 +484,9 @@ function DetallesYUbicacion({
           value={formData.descripcion}
           onChange={onChange}
           placeholder="Detalles adicionales sobre el vehículo..."
-          className="w-full rounded-md border border-gray-300 p-2.5 focus:border-blue-500 focus:ring-blue-500"
+          className="w-full rounded-md border border-line p-2.5 focus:border-blue-500 focus:ring-blue-500"
         />
-        <p className="mt-1 text-xs text-gray-500">
+        <p className="mt-1 text-xs text-ink-3">
           {formData.descripcion.length}/5000 caracteres
         </p>
       </div>
@@ -555,21 +555,21 @@ export default function FormularioVehiculo({
       />
 
       {/* PUBLICAR AL GUARDAR */}
-      <div className="flex items-center gap-3 border-t border-gray-100 pt-4">
+      <div className="flex items-center gap-3 border-t border-line pt-4">
         <input
           id="publicarAlGuardar"
           type="checkbox"
           checked={publicarAlGuardar}
           onChange={onPublicarAlGuardarChange}
-          className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          className="h-4 w-4 rounded border-line text-blue-600 focus:ring-blue-500"
         />
         <label
           htmlFor="publicarAlGuardar"
-          className="text-sm font-medium text-gray-700"
+          className="text-sm font-medium text-ink-2"
         >
           Publicar al guardar
         </label>
-        <span className="text-xs text-gray-500">
+        <span className="text-xs text-ink-3">
           El vehículo aparecerá de inmediato en la vitrina pública.
         </span>
       </div>
@@ -587,11 +587,11 @@ export default function FormularioVehiculo({
           <div>
             <label
               htmlFor="destacarAlPublicar"
-              className="text-sm font-medium text-gray-800"
+              className="text-sm font-medium text-ink"
             >
               Destacar este anuncio
             </label>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-ink-3">
               Aparecerá en la sección de destacados de la página principal (usa una
               cuota de tu plan). Si la cuota está llena, el anuncio se publica igual
               sin destacar.

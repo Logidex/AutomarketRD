@@ -101,10 +101,10 @@ export default function RecuperarPassword() {
     "w-full px-4 py-3 bg-[#f7f9fc] border border-[#e1e7f0] rounded-lg focus:outline-none focus:border-blue-500 transition-colors";
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#0c101b] p-4">
+    <div className="flex min-h-screen items-center justify-center bg-page p-4">
       <div className="w-full max-w-[950px] overflow-hidden rounded-2xl bg-white shadow-2xl flex flex-col md:flex-row">
         {/* Columna Izquierda - Visual */}
-        <div className="bg-[#0e1422] p-12 text-white flex flex-col md:flex-1">
+        <div className="bg-surface p-12 text-white flex flex-col md:flex-1">
           <div className="mb-10 flex justify-center">
             <img
               src={logo}
@@ -114,7 +114,7 @@ export default function RecuperarPassword() {
           </div>
 
           <h1 className="mb-4 text-3xl font-bold">Recupera tu acceso</h1>
-          <p className="mb-10 text-[#9aa1b1]">
+          <p className="mb-10 text-ink-2">
             {paso === "email"
               ? "Ingresa tu correo y te enviaremos un código para restablecer tu contraseña."
               : "Ingresa el código que recibiste y define tu nueva contraseña."}

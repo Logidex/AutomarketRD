@@ -55,7 +55,7 @@ export default function NavbarUsuario() {
       <div className="flex items-center gap-3">
         <Link
           to="/registro"
-          className="rounded-lg border border-white/15 px-5 py-2 font-semibold text-white transition-colors hover:border-blue-500/50 hover:bg-white/10"
+          className="rounded-lg border border-line px-5 py-2 font-semibold text-ink transition-colors hover:border-blue-500/50 hover:bg-hover"
         >
           Registrarse
         </Link>
@@ -111,7 +111,7 @@ export default function NavbarUsuario() {
         aria-expanded={menuAbierto}
         aria-haspopup="menu"
         title="Mi cuenta"
-        className="flex items-center gap-2 rounded-full border border-white/15 bg-white/5 py-1 pl-1 pr-2.5 transition-colors hover:border-blue-500/50 hover:bg-white/10"
+        className="flex items-center gap-2 rounded-full border border-line bg-hover py-1 pl-1 pr-2.5 transition-colors hover:border-blue-500/50 hover:bg-hover"
       >
         <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 text-sm font-bold text-white">
           {inicial}
@@ -119,28 +119,28 @@ export default function NavbarUsuario() {
         <span className="hidden max-w-28 truncate text-sm font-medium sm:block">
           {nombreUsuario}
         </span>
-        <FaChevronDown className="text-xs text-[#9aa1b1]" />
+        <FaChevronDown className="text-xs text-ink-2" />
       </button>
 
       {menuAbierto && (
         <div
           role="menu"
-          className="absolute right-0 top-[calc(100%+10px)] z-50 w-64 overflow-hidden rounded-xl border border-white/10 bg-[#13161d] shadow-xl"
+          className="absolute right-0 top-[calc(100%+10px)] z-50 w-64 overflow-hidden rounded-xl border border-line bg-surface shadow-xl"
         >
-          <div className="border-b border-white/10 px-4 py-3">
-            <p className="truncate text-sm font-semibold text-white">
+          <div className="border-b border-line px-4 py-3">
+            <p className="truncate text-sm font-semibold text-ink">
               {nombreUsuario}
             </p>
-            <p className="truncate text-xs text-[#9aa1b1]">{usuario?.email}</p>
+            <p className="truncate text-xs text-ink-2">{usuario?.email}</p>
           </div>
 
           <Link
             to={rutaPanel}
             role="menuitem"
             onClick={() => setMenuAbierto(false)}
-            className="flex items-center gap-3 px-4 py-3 text-sm text-gray-200 transition-colors hover:bg-white/5"
+            className="flex items-center gap-3 px-4 py-3 text-sm text-ink-3 transition-colors hover:bg-hover"
           >
-            <FaUser className="text-[#9aa1b1]" />
+            <FaUser className="text-ink-2" />
             {rolEsDealerOVendedor ? "Mi Panel" : "Mi Perfil"}
           </Link>
 
@@ -150,9 +150,9 @@ export default function NavbarUsuario() {
                 to="/perfil/favoritos"
                 role="menuitem"
                 onClick={() => setMenuAbierto(false)}
-                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-200 transition-colors hover:bg-white/5"
+                className="flex items-center gap-3 px-4 py-3 text-sm text-ink-3 transition-colors hover:bg-hover"
               >
-                <FaHeart className="text-[#9aa1b1]" />
+                <FaHeart className="text-ink-2" />
                 Mis Favoritos
               </Link>
 
@@ -160,9 +160,9 @@ export default function NavbarUsuario() {
                 to="/perfil/historial"
                 role="menuitem"
                 onClick={() => setMenuAbierto(false)}
-                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-200 transition-colors hover:bg-white/5"
+                className="flex items-center gap-3 px-4 py-3 text-sm text-ink-3 transition-colors hover:bg-hover"
               >
-                <FaHistory className="text-[#9aa1b1]" />
+                <FaHistory className="text-ink-2" />
                 Recientes
               </Link>
 
@@ -170,9 +170,9 @@ export default function NavbarUsuario() {
                 to="/perfil/contactados"
                 role="menuitem"
                 onClick={() => setMenuAbierto(false)}
-                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-200 transition-colors hover:bg-white/5"
+                className="flex items-center gap-3 px-4 py-3 text-sm text-ink-3 transition-colors hover:bg-hover"
               >
-                <FaEnvelope className="text-[#9aa1b1]" />
+                <FaEnvelope className="text-ink-2" />
                 Contactos enviados
               </Link>
 
@@ -180,9 +180,9 @@ export default function NavbarUsuario() {
                 to="/perfil/editar"
                 role="menuitem"
                 onClick={() => setMenuAbierto(false)}
-                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-200 transition-colors hover:bg-white/5"
+                className="flex items-center gap-3 px-4 py-3 text-sm text-ink-3 transition-colors hover:bg-hover"
               >
-                <FaUserEdit className="text-[#9aa1b1]" />
+                <FaUserEdit className="text-ink-2" />
                 Editar Perfil
               </Link>
             </>
@@ -192,7 +192,7 @@ export default function NavbarUsuario() {
             type="button"
             role="menuitem"
             onClick={handleLogout}
-            className="flex w-full items-center gap-3 border-t border-white/10 px-4 py-3 text-left text-sm text-red-400 transition-colors hover:bg-red-500/10"
+            className="flex w-full items-center gap-3 border-t border-line px-4 py-3 text-left text-sm text-red-400 transition-colors hover:bg-red-500/10"
           >
             <FaSignOutAlt />
             Cerrar sesión

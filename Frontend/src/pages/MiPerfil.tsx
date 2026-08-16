@@ -200,19 +200,19 @@ function FormularioPerfil({
   return (
     <form
       onSubmit={onGuardar}
-      className="space-y-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm"
+      className="space-y-6 rounded-2xl border border-line bg-surface p-6 shadow-sm"
     >
       {/* LOGO */}
       <div>
         <label
           htmlFor="logoAgencia"
-          className="mb-2 block text-sm font-medium text-gray-700"
+          className="mb-2 block text-sm font-medium text-ink-2"
         >
           Logo de la agencia
         </label>
 
         <div className="flex items-center gap-4">
-          <div className="h-24 w-24 overflow-hidden rounded-xl border border-gray-200 bg-gray-100">
+          <div className="h-24 w-24 overflow-hidden rounded-xl border border-line bg-surface-2">
             {logoPreview ? (
               <img
                 src={logo ? logoPreview : urlImagen(logoPreview)}
@@ -220,7 +220,7 @@ function FormularioPerfil({
                 className="h-full w-full object-cover"
               />
             ) : (
-              <div className="flex h-full w-full items-center justify-center text-3xl text-gray-300">
+              <div className="flex h-full w-full items-center justify-center text-3xl text-ink-3">
                 <FaImage />
               </div>
             )}
@@ -229,7 +229,7 @@ function FormularioPerfil({
           {modoEdicion && (
             <label
               htmlFor="logoAgencia"
-              className="cursor-pointer rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+              className="cursor-pointer rounded-lg border border-line bg-surface px-4 py-2 text-sm font-semibold text-ink-2 transition-colors hover:bg-surface-2"
             >
               {logo ? "Cambiar logo seleccionado" : "Subir nuevo logo"}
               <input
@@ -246,7 +246,7 @@ function FormularioPerfil({
             <button
               type="button"
               onClick={onQuitarLogo}
-              className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+              className="rounded-lg border border-line px-4 py-2 text-sm font-semibold text-ink-2 transition-colors hover:bg-surface-2"
             >
               Quitar logo nuevo
             </button>
@@ -259,7 +259,7 @@ function FormularioPerfil({
         <div>
           <label
             htmlFor="nombreAgencia"
-            className="mb-1 block text-sm font-medium text-gray-700"
+            className="mb-1 block text-sm font-medium text-ink-2"
           >
             Nombre de la agencia
           </label>
@@ -271,14 +271,14 @@ function FormularioPerfil({
             onChange={onChange}
             disabled={!modoEdicion}
             required
-            className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-gray-50 disabled:text-gray-600"
+            className="w-full rounded-lg border border-line px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-surface-2 disabled:text-ink-2"
           />
         </div>
 
         <div>
           <label
             htmlFor="ubicacion"
-            className="mb-1 block text-sm font-medium text-gray-700"
+            className="mb-1 block text-sm font-medium text-ink-2"
           >
             Ubicación
           </label>
@@ -290,14 +290,14 @@ function FormularioPerfil({
             onChange={onChange}
             disabled={!modoEdicion}
             required
-            className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-gray-50 disabled:text-gray-600"
+            className="w-full rounded-lg border border-line px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-surface-2 disabled:text-ink-2"
           />
         </div>
 
         <div>
           <label
             htmlFor="telefonoAgencia"
-            className="mb-1 block text-sm font-medium text-gray-700"
+            className="mb-1 block text-sm font-medium text-ink-2"
           >
             Teléfono
           </label>
@@ -309,14 +309,14 @@ function FormularioPerfil({
             onChange={onChange}
             disabled={!modoEdicion}
             required
-            className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-gray-50 disabled:text-gray-600"
+            className="w-full rounded-lg border border-line px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-surface-2 disabled:text-ink-2"
           />
         </div>
 
         <div>
           <label
             htmlFor="whatsApp"
-            className="mb-1 flex items-center gap-1.5 text-sm font-medium text-gray-700"
+            className="mb-1 flex items-center gap-1.5 text-sm font-medium text-ink-2"
           >
             <FaWhatsapp className="text-green-600" />
             WhatsApp
@@ -329,14 +329,14 @@ function FormularioPerfil({
             onChange={onChange}
             disabled={!modoEdicion}
             placeholder="+1 809 000 0000"
-            className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-gray-50 disabled:text-gray-600"
+            className="w-full rounded-lg border border-line px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-surface-2 disabled:text-ink-2"
           />
         </div>
 
         <div className="md:col-span-2">
           <label
             htmlFor="horarios"
-            className="mb-1 block text-sm font-medium text-gray-700"
+            className="mb-1 block text-sm font-medium text-ink-2"
           >
             Horarios de atención
           </label>
@@ -348,14 +348,14 @@ function FormularioPerfil({
             onChange={onChange}
             disabled={!modoEdicion}
             placeholder="Lunes a Sábado, 9:00 AM - 6:00 PM"
-            className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-gray-50 disabled:text-gray-600"
+            className="w-full rounded-lg border border-line px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-surface-2 disabled:text-ink-2"
           />
         </div>
 
         <div className="md:col-span-2">
           <label
             htmlFor="descripcion"
-            className="mb-1 block text-sm font-medium text-gray-700"
+            className="mb-1 block text-sm font-medium text-ink-2"
           >
             Descripción
           </label>
@@ -366,17 +366,17 @@ function FormularioPerfil({
             onChange={onChange}
             disabled={!modoEdicion}
             rows={4}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-gray-50 disabled:text-gray-600"
+            className="w-full rounded-lg border border-line px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-surface-2 disabled:text-ink-2"
           />
         </div>
       </div>
 
       {modoEdicion && (
-        <div className="flex flex-col gap-3 border-t border-gray-100 pt-4 sm:flex-row sm:justify-end">
+        <div className="flex flex-col gap-3 border-t border-line pt-4 sm:flex-row sm:justify-end">
           <button
             type="button"
             onClick={onCancelar}
-            className="flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-6 py-2.5 font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+            className="flex items-center justify-center gap-2 rounded-lg border border-line bg-surface px-6 py-2.5 font-semibold text-ink-2 transition-colors hover:bg-surface-2"
           >
             <FaTimes />
             Cancelar
@@ -416,7 +416,7 @@ export default function MiPerfil() {
 
   if (usuarioId === null) {
     return (
-      <div className="p-6 text-gray-500">
+      <div className="p-6 text-ink-3">
         No se pudo identificar al usuario.
       </div>
     );
@@ -434,21 +434,21 @@ export default function MiPerfil() {
             <FaStore className="text-lg text-blue-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Mi Perfil</h1>
-            <p className="text-sm text-gray-500">
+            <h1 className="text-2xl font-bold text-ink">Mi Perfil</h1>
+            <p className="text-sm text-ink-3">
               Información pública de tu agencia en AutoMarket RD
             </p>
           </div>
         </div>
 
-        <div className="flex min-h-[280px] flex-col items-center justify-center rounded-2xl border border-gray-200 bg-white px-6 text-center shadow-sm">
+        <div className="flex min-h-[280px] flex-col items-center justify-center rounded-2xl border border-line bg-surface px-6 text-center shadow-sm">
           <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-50">
             <FaStore className="text-3xl text-blue-600" />
           </div>
-          <h2 className="mb-2 text-xl font-bold text-gray-800">
+          <h2 className="mb-2 text-xl font-bold text-ink">
             Aún no has configurado tu agencia
           </h2>
-          <p className="mb-6 max-w-md text-gray-500">
+          <p className="mb-6 max-w-md text-ink-3">
             Completa tu información para que los compradores conozcan tu
             agencia cuando vean tus anuncios.
           </p>
@@ -472,8 +472,8 @@ export default function MiPerfil() {
             <FaStore className="text-lg text-blue-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Mi Perfil</h1>
-            <p className="text-sm text-gray-500">
+            <h1 className="text-2xl font-bold text-ink">Mi Perfil</h1>
+            <p className="text-sm text-ink-3">
               Información pública de tu agencia en AutoMarket RD
             </p>
           </div>

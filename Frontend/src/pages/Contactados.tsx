@@ -27,32 +27,32 @@ export default function Contactados({
   const claro = tema === "claro";
 
   const c = {
-    envoltorio: claro ? "" : "min-h-screen bg-[#0c101b] text-white",
-    headerBar: claro ? "" : "border-b border-white/10",
+    envoltorio: claro ? "" : "min-h-screen bg-page text-ink",
+    headerBar: claro ? "" : "border-b border-line",
     enlaceVolver: claro
-      ? "text-sm font-medium text-gray-500 transition-colors hover:text-gray-900"
-      : "text-sm font-medium text-[#9aa1b1] transition-colors hover:text-white",
-    titulo: claro ? "text-2xl font-bold text-gray-900" : "text-2xl font-bold",
-    subtitulo: claro ? "mt-1 text-sm text-gray-500" : "mt-1 text-sm text-[#9aa1b1]",
+      ? "text-sm font-medium text-ink-3 transition-colors hover:text-ink"
+      : "text-sm font-medium text-ink-2 transition-colors hover:text-ink",
+    titulo: claro ? "text-2xl font-bold text-ink" : "text-2xl font-bold",
+    subtitulo: claro ? "mt-1 text-sm text-ink-3" : "mt-1 text-sm text-ink-2",
     card: claro
-      ? "group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white text-left transition-all hover:border-blue-500/60 hover:shadow-md"
-      : "group flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#13161d] text-left transition-all hover:border-blue-500/40 hover:shadow-lg",
+      ? "group flex flex-col overflow-hidden rounded-2xl border border-line bg-surface text-left transition-all hover:border-blue-500/60 hover:shadow-md"
+      : "group flex flex-col overflow-hidden rounded-2xl border border-line bg-surface text-left transition-all hover:border-blue-500/40 hover:shadow-lg",
     anioBadge: claro
       ? "shrink-0 rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700"
       : "shrink-0 rounded-full bg-green-500/10 px-3 py-1 text-xs font-semibold text-green-400",
-    lineaVendedor: claro ? "text-xs text-gray-500" : "text-xs text-[#9aa1b1]",
+    lineaVendedor: claro ? "text-xs text-ink-3" : "text-xs text-ink-2",
     mensaje: claro
-      ? "mt-3 line-clamp-3 flex-1 text-sm leading-relaxed text-gray-600"
-      : "mt-3 line-clamp-3 flex-1 text-sm leading-relaxed text-[#c3c9d4]",
+      ? "mt-3 line-clamp-3 flex-1 text-sm leading-relaxed text-ink-2"
+      : "mt-3 line-clamp-3 flex-1 text-sm leading-relaxed text-ink-2",
     pie: claro
-      ? "mt-4 flex items-center gap-3 border-t border-gray-100 pt-4 text-xs text-gray-500"
-      : "mt-4 flex items-center gap-3 border-t border-white/10 pt-4 text-xs text-[#9aa1b1]",
+      ? "mt-4 flex items-center gap-3 border-t border-line pt-4 text-xs text-ink-3"
+      : "mt-4 flex items-center gap-3 border-t border-line pt-4 text-xs text-ink-2",
     verVehiculo: claro ? "text-blue-600 group-hover:text-blue-500" : "text-blue-400 group-hover:text-blue-300",
     vacioCard: claro
-      ? "rounded-2xl border border-gray-200 bg-white p-16 text-center"
-      : "rounded-2xl border border-white/10 bg-[#13161d] p-16 text-center",
-    vacioTitulo: claro ? "mt-4 text-lg font-semibold text-gray-900" : "mt-4 text-lg font-semibold",
-    vacioTexto: claro ? "mt-2 text-sm text-gray-500" : "mt-2 text-sm text-[#9aa1b1]",
+      ? "rounded-2xl border border-line bg-surface p-16 text-center"
+      : "rounded-2xl border border-line bg-surface p-16 text-center",
+    vacioTitulo: claro ? "mt-4 text-lg font-semibold text-ink" : "mt-4 text-lg font-semibold",
+    vacioTexto: claro ? "mt-2 text-sm text-ink-3" : "mt-2 text-sm text-ink-2",
   };
 
   const iconoCanal = (canal: string) => {
@@ -63,7 +63,7 @@ export default function Contactados({
         case "Formulario":
           return <FaEnvelope className="text-blue-600" />;
         default:
-          return <FaComments className="text-gray-400" />;
+          return <FaComments className="text-ink-3" />;
       }
     }
 
@@ -73,7 +73,7 @@ export default function Contactados({
       case "Formulario":
         return <FaEnvelope className="text-blue-400" />;
       default:
-        return <FaComments className="text-gray-400" />;
+        return <FaComments className="text-ink-3" />;
     }
   };
 
@@ -97,7 +97,7 @@ export default function Contactados({
               Vehículos que contactaste
             </span>
             {contactos.length > 0 && (
-              <span className="text-sm font-normal text-[#9aa1b1]">
+              <span className="text-sm font-normal text-ink-2">
                 ({contactos.length})
               </span>
             )}
@@ -110,11 +110,7 @@ export default function Contactados({
 
         {cargando ? (
           <div className="flex items-center justify-center py-24">
-            <div
-              className={`h-10 w-10 animate-spin rounded-full border-2 border-t-blue-500 ${
-                claro ? "border-gray-200" : "border-white/10"
-              }`}
-            />
+            <div className="h-10 w-10 animate-spin rounded-full border-2 border-line border-t-blue-500" />
           </div>
         ) : mensajeError ? (
           <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-8 text-center">
@@ -129,7 +125,7 @@ export default function Contactados({
           </div>
         ) : contactos.length === 0 ? (
           <div className={c.vacioCard}>
-            <FaEnvelope className="mx-auto text-5xl text-gray-600" />
+            <FaEnvelope className="mx-auto text-5xl text-ink-3" />
             <h2 className={c.vacioTitulo}>
               Aún no has contactado ningún vehículo
             </h2>
@@ -175,7 +171,7 @@ export default function Contactados({
                 <div className="flex flex-1 flex-col p-5">
                   <div className="flex items-start justify-between gap-3">
                     <h3
-                      className={`truncate text-lg font-bold ${claro ? "text-gray-900" : ""}`}
+                      className={`truncate text-lg font-bold ${claro ? "text-ink" : ""}`}
                     >
                       {contacto.marca} {contacto.modelo}
                     </h3>
@@ -185,7 +181,7 @@ export default function Contactados({
                   </div>
 
                   <p className={`mt-1 flex items-center gap-1.5 ${c.lineaVendedor}`}>
-                    <FaCar className={claro ? "text-gray-400" : "text-gray-500"} />
+                    <FaCar className="text-ink-3" />
                     {contacto.nombreVendedor ||
                       (contacto.esVendedorParticular
                         ? "Vendedor particular"

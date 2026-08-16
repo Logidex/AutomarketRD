@@ -47,8 +47,8 @@ export default function Leads() {
     <div className="mx-auto max-w-6xl p-6">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Mis Leads</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <h1 className="text-2xl font-bold text-ink">Mis Leads</h1>
+          <p className="mt-1 text-sm text-ink-3">
             Contactos de interesados en tus vehículos
           </p>
         </div>
@@ -61,14 +61,14 @@ export default function Leads() {
       {cargando ? (
         <Spinner />
       ) : leads.length === 0 ? (
-        <div className="flex min-h-[300px] flex-col items-center justify-center rounded-2xl border border-gray-200 bg-white px-6 text-center shadow-sm">
+        <div className="flex min-h-[300px] flex-col items-center justify-center rounded-2xl border border-line bg-surface px-6 text-center shadow-sm">
           <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-50">
             <FaEnvelope className="text-3xl text-blue-600" />
           </div>
-          <h2 className="mb-1 text-xl font-bold text-gray-800">
+          <h2 className="mb-1 text-xl font-bold text-ink">
             No tienes leads todavía
           </h2>
-          <p className="max-w-md text-gray-500">
+          <p className="max-w-md text-ink-3">
             Cuando un comprador te contacte desde tus anuncios, verás su
             mensaje aquí.
           </p>
@@ -78,14 +78,14 @@ export default function Leads() {
           {leads.map((lead) => (
             <li
               key={lead.id}
-              className={`rounded-2xl border bg-white p-5 shadow-sm transition-shadow hover:shadow-md ${
-                !lead.leido ? "border-blue-200 ring-1 ring-blue-100" : "border-gray-200"
+              className={`rounded-2xl border bg-surface p-5 shadow-sm transition-shadow hover:shadow-md ${
+                !lead.leido ? "border-blue-200 ring-1 ring-blue-100" : "border-line"
               }`}
             >
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-lg font-bold text-gray-900">
+                    <h3 className="text-lg font-bold text-ink">
                       {lead.nombreContacto}
                     </h3>
 
@@ -96,25 +96,25 @@ export default function Leads() {
                     )}
                   </div>
 
-                  <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-gray-700">
+                  <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-ink-2">
                     {lead.mensaje}
                   </p>
 
-                  <div className="mt-4 flex flex-wrap gap-2 text-xs text-gray-500">
+                  <div className="mt-4 flex flex-wrap gap-2 text-xs text-ink-3">
                     {lead.telefonoContacto && (
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-2 px-3 py-1">
                         <FaPhoneAlt /> {lead.telefonoContacto}
                       </span>
                     )}
                     {lead.emailContacto && (
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-2 px-3 py-1">
                         <FaEnvelope /> {lead.emailContacto}
                       </span>
                     )}
-                    <span className="rounded-full bg-gray-100 px-3 py-1">
+                    <span className="rounded-full bg-surface-2 px-3 py-1">
                       Vía: {lead.canal}
                     </span>
-                    <span className="rounded-full bg-gray-100 px-3 py-1">
+                    <span className="rounded-full bg-surface-2 px-3 py-1">
                       {formatearFecha(lead.fechaCreacionUtc, true)}
                     </span>
                   </div>

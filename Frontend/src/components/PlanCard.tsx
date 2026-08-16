@@ -47,7 +47,7 @@ export default function PlanCard({
           ? "border-violet-500/60 bg-[#181327] shadow-lg shadow-violet-500/10"
           : premium
             ? "border-amber-500/40 bg-[#191410]"
-            : "border-white/10 bg-[#13161d] hover:border-blue-500/40"
+            : "border-line bg-surface hover:border-blue-500/40"
       }`}
     >
       {destacado && (
@@ -68,16 +68,16 @@ export default function PlanCard({
         )}
       </div>
 
-      <p className="text-sm text-[#9aa1b1] mb-4">{plan.descripcion}</p>
+      <p className="text-sm text-ink-2 mb-4">{plan.descripcion}</p>
 
       <div className="text-3xl font-bold mb-1">
         {precio}
         {!esGratis && (
-          <span className="ml-1 text-sm font-normal text-[#9aa1b1]">/mes</span>
+          <span className="ml-1 text-sm font-normal text-ink-2">/mes</span>
         )}
       </div>
       {!esGratis && (
-        <p className="text-xs text-[#9aa1b1] mb-4">
+        <p className="text-xs text-ink-2 mb-4">
           {ciclo === "Mensual"
             ? "Renovación mensual"
             : ciclo === "Trimestral"

@@ -216,19 +216,19 @@ function TarjetaEstadoSuscripcion({
   onCancelar,
 }: PropsEstado) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+    <div className="rounded-xl border border-line bg-surface p-6 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-blue-600">
             <FaCreditCard className="text-xl" />
           </div>
           <div>
-            <p className="text-sm text-gray-500">Plan actual</p>
-            <p className="text-xl font-bold text-gray-900">
+            <p className="text-sm text-ink-3">Plan actual</p>
+            <p className="text-xl font-bold text-ink">
               {suscripcion ? `${nombrePlan(suscripcion.nivel)} · ${suscripcion.ciclo}` : "Sin suscripción"}
             </p>
             {suscripcion && (
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-ink-3">
                 {anunciosActivos !== null
                   ? `${anunciosActivos} de ${suscripcion.limiteAnuncios} anuncios en uso`
                   : `${suscripcion.limiteAnuncios} anuncios en tu plan`}{" "}
@@ -290,8 +290,8 @@ interface PropsCiclo {
 function SelectorCiclo({ ciclo, procesando, onChange }: PropsCiclo) {
   return (
     <div className="flex items-center gap-2">
-      <span className="text-sm font-semibold text-gray-700">Ciclo de facturación:</span>
-      <div className="inline-flex rounded-lg border border-gray-200 bg-white p-1">
+      <span className="text-sm font-semibold text-ink-2">Ciclo de facturación:</span>
+      <div className="inline-flex rounded-lg border border-line bg-surface p-1">
         {CICLOS.map((c) => (
           <button
             key={c}
@@ -301,7 +301,7 @@ function SelectorCiclo({ ciclo, procesando, onChange }: PropsCiclo) {
             className={`rounded-lg px-5 py-2 text-sm font-semibold transition-colors ${
               ciclo === c
                 ? "bg-blue-500 text-white"
-                : "text-gray-500 hover:text-gray-800"
+                : "text-ink-3 hover:text-ink"
             } disabled:cursor-not-allowed`}
           >
             {c === "Mensual" ? "Mensual" : c === "Trimestral" ? "Trimestral" : "Anual"}
@@ -328,14 +328,14 @@ function GrillaPlanes({ planes, ciclo, procesando, etiquetaBoton, onPagar }: Pro
       {planes.map((plan) => (
         <div
           key={plan.nivel}
-          className="flex flex-col rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-colors hover:border-blue-300"
+          className="flex flex-col rounded-xl border border-line bg-surface p-6 shadow-sm transition-colors hover:border-blue-300"
         >
-          <h3 className="text-lg font-semibold text-gray-900">{plan.nombre}</h3>
-          <p className="mt-1 mb-4 text-sm text-gray-500">{plan.descripcion}</p>
-          <div className="text-3xl font-bold text-gray-900 mb-1">
+          <h3 className="text-lg font-semibold text-ink">{plan.nombre}</h3>
+          <p className="mt-1 mb-4 text-sm text-ink-3">{plan.descripcion}</p>
+          <div className="text-3xl font-bold text-ink mb-1">
             {formatearRD$(precioCiclo(plan))}
           </div>
-          <p className="text-xs text-gray-500 mb-6">
+          <p className="text-xs text-ink-3 mb-6">
             {plan.limiteAnuncios} anuncios
             {ciclo === "Mensual" && plan.descuentoAnualPorcentaje > 0 && (
               <> · hasta {plan.descuentoAnualPorcentaje}% en Anual</>
@@ -359,17 +359,17 @@ function GrillaPlanes({ planes, ciclo, procesando, etiquetaBoton, onPagar }: Pro
 
 function HistorialPagos({ pagos }: { pagos: PagoSuscripcion[] }) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-      <h2 className="mb-4 text-lg font-semibold text-gray-900">Historial de pagos</h2>
+    <div className="rounded-xl border border-line bg-surface p-6 shadow-sm">
+      <h2 className="mb-4 text-lg font-semibold text-ink">Historial de pagos</h2>
       {pagos.length === 0 ? (
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-ink-3">
           Aún no tienes pagos registrados. Cuando realices tu primera compra o renovación, aparecerá aquí.
         </p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-gray-200 text-xs uppercase text-gray-500">
+              <tr className="border-b border-line text-xs uppercase text-ink-3">
                 <th className="py-2 pr-4">Fecha</th>
                 <th className="py-2 pr-4">Plan</th>
                 <th className="py-2 pr-4">Ciclo</th>
@@ -380,26 +380,26 @@ function HistorialPagos({ pagos }: { pagos: PagoSuscripcion[] }) {
             </thead>
             <tbody>
               {pagos.map((pago) => (
-                <tr key={pago.id} className="border-b border-gray-100 last:border-0">
-                  <td className="py-3 pr-4 text-gray-700">
+                <tr key={pago.id} className="border-b border-line last:border-0">
+                  <td className="py-3 pr-4 text-ink-2">
                     {formatearFecha(pago.fechaUtc)}
                   </td>
-                  <td className="py-3 pr-4 font-semibold text-gray-900">{nombrePlan(pago.nivel)}</td>
-                  <td className="py-3 pr-4 capitalize text-gray-700">{pago.ciclo}</td>
-                  <td className="py-3 pr-4 text-gray-700">
+                  <td className="py-3 pr-4 font-semibold text-ink">{nombrePlan(pago.nivel)}</td>
+                  <td className="py-3 pr-4 capitalize text-ink-2">{pago.ciclo}</td>
+                  <td className="py-3 pr-4 text-ink-2">
                     {pago.moneda} ${pago.monto.toFixed(2)}
                   </td>
                   <td className="py-3 pr-4">
                     <span className={estadoPagoClass(pago.estado)}>{estadoPagoLabel(pago.estado)}</span>
                   </td>
-                  <td className="py-3 text-gray-700">{pago.ordenIdPayPal ?? "—"}</td>
+                  <td className="py-3 text-ink-2">{pago.ordenIdPayPal ?? "—"}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       )}
-      <p className="mt-4 text-xs text-gray-400">
+      <p className="mt-4 text-xs text-ink-3">
         Te avisamos por correo cuando tu plan esté por vencer, para que lo renueves a tiempo.
       </p>
     </div>
@@ -457,7 +457,7 @@ export default function DashboardSuscripcion() {
           onPagar={handlePago}
         />
       ) : (
-        <p className="text-center text-gray-500">Los planes están disponibles próximamente.</p>
+        <p className="text-center text-ink-3">Los planes están disponibles próximamente.</p>
       )}
 
       {/* Historial de pagos */}
@@ -478,7 +478,7 @@ function estadoPagoLabel(estado: string): string {
 function estadoPagoClass(estado: string): string {
   if (estado === "Completado") return "rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700";
   if (estado === "Fallido") return "rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700";
-  return "rounded-full bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-600";
+  return "rounded-full bg-surface-2 px-2 py-0.5 text-xs font-semibold text-ink-2";
 }
 
 function SoporteCard() {

@@ -6,11 +6,11 @@ export default function CuentaVendedor() {
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div>
-        <h1 className="flex items-center gap-3 text-lg font-semibold text-gray-900">
+        <h1 className="flex items-center gap-3 text-lg font-semibold text-ink">
           <FaUserCog className="text-blue-600" />
           Mi cuenta
         </h1>
-        <p className="mt-1 text-sm text-gray-500">
+        <p className="mt-1 text-sm text-ink-3">
           Cambia el correo y la contraseña con los que accedes a AutoMarket RD.
         </p>
       </div>

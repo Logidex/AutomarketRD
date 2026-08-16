@@ -10,7 +10,7 @@ const getEstadoStyle = (estado: string) => {
       case "publicado":
         return "bg-green-100 text-green-800 border-green-200";
       case "borrador":
-        return "bg-gray-100 text-gray-700 border-gray-200";
+        return "bg-surface-2 text-ink-2 border-line";
       case "pausado":
         return "bg-yellow-100 text-yellow-800 border-yellow-200";
       case "vendido":
@@ -27,7 +27,7 @@ const getSelectStyle = (estado: string) => {
       case "publicado":
         return "border-green-300 bg-green-50 text-green-800 focus:ring-green-500";
       case "borrador":
-        return "border-gray-300 bg-gray-50 text-gray-700 focus:ring-gray-500";
+        return "border-line bg-surface-2 text-ink-2 focus:ring-gray-500";
       case "pausado":
         return "border-yellow-300 bg-yellow-50 text-yellow-800 focus:ring-yellow-500";
       case "vendido":
@@ -80,7 +80,7 @@ export default function AnuncioCard({
 
 
   return (
-    <li className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md">
+    <li className="overflow-hidden rounded-2xl border border-line bg-surface shadow-sm transition-shadow hover:shadow-md">
       <div className="flex flex-col lg:flex-row">
         <div className="relative w-full lg:w-64 flex-shrink-0">
           <img
@@ -112,11 +112,11 @@ export default function AnuncioCard({
         <div className="flex-1 p-4 sm:p-5">
           <div className="flex flex-col gap-4">
             <div className="min-w-0">
-              <h2 className="truncate text-lg font-bold text-gray-900 sm:text-xl">
+              <h2 className="truncate text-lg font-bold text-ink sm:text-xl">
                 {nombreAnuncio}
               </h2>
 
-              <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-500">
+              <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-3">
                 <span>{ubicacion}</span>
                 <span>•</span>
                 <span className="font-semibold text-blue-600">
@@ -126,38 +126,38 @@ export default function AnuncioCard({
             </div>
 
             <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-              <div className="rounded-xl border border-gray-100 bg-gray-50 p-3">
-                <p className="text-[11px] uppercase tracking-wide text-gray-500">
+              <div className="rounded-xl border border-line bg-surface-2 p-3">
+                <p className="text-[11px] uppercase tracking-wide text-ink-3">
                   Tipo
                 </p>
-                <p className="mt-1 truncate text-sm font-semibold text-gray-800">
+                <p className="mt-1 truncate text-sm font-semibold text-ink">
                   {tipoVehiculo}
                 </p>
               </div>
 
-              <div className="rounded-xl border border-gray-100 bg-gray-50 p-3">
-                <p className="text-[11px] uppercase tracking-wide text-gray-500">
+              <div className="rounded-xl border border-line bg-surface-2 p-3">
+                <p className="text-[11px] uppercase tracking-wide text-ink-3">
                   Kilometraje
                 </p>
-                <p className="mt-1 text-sm font-semibold text-gray-800">
+                <p className="mt-1 text-sm font-semibold text-ink">
                   {kilometraje.toLocaleString()} km
                 </p>
               </div>
 
-              <div className="rounded-xl border border-gray-100 bg-gray-50 p-3">
-                <p className="text-[11px] uppercase tracking-wide text-gray-500">
+              <div className="rounded-xl border border-line bg-surface-2 p-3">
+                <p className="text-[11px] uppercase tracking-wide text-ink-3">
                   Transmisión
                 </p>
-                <p className="mt-1 truncate text-sm font-semibold text-gray-800">
+                <p className="mt-1 truncate text-sm font-semibold text-ink">
                   {transmision}
                 </p>
               </div>
 
-              <div className="rounded-xl border border-gray-100 bg-gray-50 p-3">
-                <p className="text-[11px] uppercase tracking-wide text-gray-500">
+              <div className="rounded-xl border border-line bg-surface-2 p-3">
+                <p className="text-[11px] uppercase tracking-wide text-ink-3">
                   Combustible
                 </p>
-                <p className="mt-1 truncate text-sm font-semibold text-gray-800">
+                <p className="mt-1 truncate text-sm font-semibold text-ink">
                   {combustible}
                 </p>
               </div>
@@ -167,7 +167,7 @@ export default function AnuncioCard({
               <span className="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
                 {tipoVehiculo}
               </span>
-              <span className="inline-flex rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700">
+              <span className="inline-flex rounded-full bg-surface-2 px-3 py-1 text-xs font-semibold text-ink-2">
                 {ubicacion}
               </span>
               <span className="inline-flex rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-green-700">
@@ -175,11 +175,11 @@ export default function AnuncioCard({
               </span>
             </div>
 
-            <div className="flex flex-col gap-3 border-t border-gray-100 pt-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="flex flex-col gap-3 border-t border-line pt-4 sm:flex-row sm:items-end sm:justify-between">
               <div className="w-full sm:w-60">
                 <label
                   htmlFor="cambiarEstado"
-                  className="mb-1 block text-xs font-medium text-gray-500"
+                  className="mb-1 block text-xs font-medium text-ink-3"
                 >
                   Cambiar estado
                 </label>
@@ -257,7 +257,7 @@ export default function AnuncioCard({
 
                 <button
                   onClick={() => navigate(`/dashboard/editar-anuncio/${anuncio.id}`)}
-                  className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+                  className="rounded-lg border border-line bg-surface px-4 py-2.5 text-sm font-semibold text-ink-2 transition-colors hover:bg-surface-2"
                 >
                   Editar
                 </button>

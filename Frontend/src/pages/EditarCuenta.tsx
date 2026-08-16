@@ -293,8 +293,8 @@ function useEditarCuenta() {
 }
 
 const inputClase =
-  'w-full rounded-lg border border-white/10 bg-[#0c101b] px-3 py-2.5 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none';
-const labelClase = 'mb-1 block text-xs font-medium text-[#9aa1b1]';
+  'w-full rounded-lg border border-line bg-input px-3 py-2.5 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none';
+const labelClase = 'mb-1 block text-xs font-medium text-ink-2';
 
 interface PropsDatos {
   nombre: string;
@@ -318,7 +318,7 @@ function SeccionDatosPersonales({
   onGuardar,
 }: PropsDatos) {
   return (
-    <section className="rounded-2xl border border-white/10 bg-[#13161d] p-6">
+    <section className="rounded-2xl border border-line bg-surface p-6">
       <h2 className="flex items-center gap-2 text-lg font-bold">
         <FaUser className="text-blue-400" />
         Datos personales
@@ -364,7 +364,7 @@ function SeccionDatosPersonales({
         type="button"
         onClick={onGuardar}
         disabled={enviando}
-        className="mt-5 inline-flex items-center gap-2 rounded-lg bg-blue-500 px-6 py-2.5 text-sm font-semibold transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+        className="mt-5 inline-flex items-center gap-2 rounded-lg bg-blue-500 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
       >
         <FaSave />
         Guardar cambios
@@ -405,12 +405,12 @@ function SeccionPassword({
   onVolver,
 }: PropsPassword) {
   return (
-    <section className="mt-6 rounded-2xl border border-white/10 bg-[#13161d] p-6">
+    <section className="mt-6 rounded-2xl border border-line bg-surface p-6">
       <h2 className="flex items-center gap-2 text-lg font-bold">
         <FaKey className="text-yellow-400" />
         Cambiar contraseña
       </h2>
-      <p className="mt-1 text-sm text-[#9aa1b1]">
+      <p className="mt-1 text-sm text-ink-2">
         {pasoCodigo
           ? 'Paso 2 de 2: ingresa el código que enviamos a tu correo.'
           : 'Paso 1 de 2: confirma con tu contraseña actual. Recibirás un código en tu correo.'}
@@ -455,7 +455,7 @@ function SeccionPassword({
             type="button"
             onClick={onSolicitar}
             disabled={enviando}
-            className="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-6 py-2.5 text-sm font-semibold transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <FaEnvelopeOpenText />
             Enviar código a mi correo
@@ -482,7 +482,7 @@ function SeccionPassword({
               type="button"
               onClick={onConfirmar}
               disabled={enviando}
-              className="inline-flex items-center gap-2 rounded-lg bg-green-500 px-6 py-2.5 text-sm font-semibold transition-colors hover:bg-green-600 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-lg bg-green-500 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-green-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <FaLock />
               Confirmar cambio
@@ -491,7 +491,7 @@ function SeccionPassword({
               type="button"
               onClick={onVolver}
               disabled={enviando}
-              className="rounded-lg border border-white/10 px-5 py-2.5 text-sm text-[#9aa1b1] transition-colors hover:text-white"
+              className="rounded-lg border border-line px-5 py-2.5 text-sm text-ink-2 transition-colors hover:text-ink"
             >
               Volver
             </button>
@@ -534,18 +534,18 @@ function SeccionCorreo({
   onVolver,
 }: PropsCorreo) {
   return (
-    <section className="mt-6 rounded-2xl border border-white/10 bg-[#13161d] p-6">
+    <section className="mt-6 rounded-2xl border border-line bg-surface p-6">
       <h2 className="flex items-center gap-2 text-lg font-bold">
         <FaEnvelope className="text-green-400" />
         Cambiar correo electrónico
       </h2>
-      <p className="mt-1 text-sm text-[#9aa1b1]">
+      <p className="mt-1 text-sm text-ink-2">
         {pasoCodigo
           ? 'Paso 2 de 2: ingresa el código que enviamos al nuevo correo.'
           : 'Paso 1 de 2: confirma con tu contraseña y recibe un código en el nuevo correo.'}
       </p>
-      <p className="mt-1 text-sm text-[#9aa1b1]">
-        Correo actual: <strong className="text-gray-200">{cuentaEmail}</strong>
+      <p className="mt-1 text-sm text-ink-2">
+        Correo actual: <strong className="text-ink-2">{cuentaEmail}</strong>
         {emailConfirmado ? (
           <span className="ml-2 rounded-full bg-green-500/10 px-2 py-0.5 text-xs text-green-400">
             confirmado
@@ -585,7 +585,7 @@ function SeccionCorreo({
               type="button"
               onClick={onSolicitar}
               disabled={enviando}
-              className="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-6 py-2.5 text-sm font-semibold transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <FaEnvelopeOpenText />
               Enviar código al nuevo correo
@@ -612,7 +612,7 @@ function SeccionCorreo({
                 type="button"
                 onClick={onConfirmar}
                 disabled={enviando}
-                className="inline-flex items-center gap-2 rounded-lg bg-green-500 px-6 py-2.5 text-sm font-semibold transition-colors hover:bg-green-600 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-lg bg-green-500 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-green-600 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <FaLock />
                 Confirmar cambio
@@ -621,7 +621,7 @@ function SeccionCorreo({
                 type="button"
                 onClick={onVolver}
                 disabled={enviando}
-                className="rounded-lg border border-white/10 px-5 py-2.5 text-sm text-[#9aa1b1] transition-colors hover:text-white"
+                className="rounded-lg border border-line px-5 py-2.5 text-sm text-ink-2 transition-colors hover:text-ink"
               >
                 Volver
               </button>
@@ -674,11 +674,11 @@ export default function EditarCuenta() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0c101b] text-white">
-      <header className="flex items-center justify-between border-b border-white/10 px-6 py-5 sm:px-8">
+    <div className="min-h-screen bg-page text-ink">
+      <header className="flex items-center justify-between border-b border-line px-6 py-5 sm:px-8">
         <Link
           to="/perfil"
-          className="inline-flex items-center gap-2 text-sm font-medium text-[#9aa1b1] transition-colors hover:text-white"
+          className="inline-flex items-center gap-2 text-sm font-medium text-ink-2 transition-colors hover:text-ink"
         >
           <FaArrowLeft />
           Mi cuenta
@@ -691,7 +691,7 @@ export default function EditarCuenta() {
             <FaUserEdit className="text-blue-400" />
             Editar mi cuenta
           </h1>
-          <p className="mt-1 text-sm text-[#9aa1b1]">
+          <p className="mt-1 text-sm text-ink-2">
             Actualiza tus datos personales, contraseña y correo electrónico.
           </p>
         </div>

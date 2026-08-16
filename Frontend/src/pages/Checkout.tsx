@@ -61,9 +61,9 @@ export default function Checkout() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0c101b] text-white">
+    <div className="min-h-screen bg-page text-ink">
       {/* Header */}
-      <header className="flex items-center justify-between border-b border-white/10 px-8 py-5">
+      <header className="flex items-center justify-between border-b border-line px-8 py-5">
         <div className="flex items-center gap-4">
           <img
             src={logo}
@@ -78,8 +78,8 @@ export default function Checkout() {
 
       <main className="mx-auto max-w-xl px-8 py-16">
         {!plan ? (
-          <div className="rounded-2xl border border-white/10 bg-[#11141a] p-10 text-center">
-            <p className="text-[#9aa1b1] mb-6">
+          <div className="rounded-2xl border border-line bg-surface-2 p-10 text-center">
+            <p className="text-ink-2 mb-6">
               No encontramos el plan seleccionado. Elige uno desde la página de Precios.
             </p>
             <Link
@@ -91,27 +91,27 @@ export default function Checkout() {
             </Link>
           </div>
         ) : (
-          <div className="rounded-2xl border border-white/10 bg-[#11141a] overflow-hidden">
+          <div className="rounded-2xl border border-line bg-surface-2 overflow-hidden">
             {/* Resumen del plan */}
             <div className="p-8">
               <h1 className="text-2xl font-bold mb-1">{plan.nombre}</h1>
-              <p className="text-[#9aa1b1] mb-6">{plan.descripcion}</p>
+              <p className="text-ink-2 mb-6">{plan.descripcion}</p>
 
               <div className="space-y-3 mb-6">
-                <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                  <span className="text-[#9aa1b1]">Plan</span>
+                <div className="flex items-center justify-between border-b border-line pb-3">
+                  <span className="text-ink-2">Plan</span>
                   <span className="font-semibold">{plan.nombre}</span>
                 </div>
-                <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                  <span className="text-[#9aa1b1]">Ciclo de facturación</span>
+                <div className="flex items-center justify-between border-b border-line pb-3">
+                  <span className="text-ink-2">Ciclo de facturación</span>
                   <span className="font-semibold">{ciclo}</span>
                 </div>
-                <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                  <span className="text-[#9aa1b1]">Anuncios incluidos</span>
+                <div className="flex items-center justify-between border-b border-line pb-3">
+                  <span className="text-ink-2">Anuncios incluidos</span>
                   <span className="font-semibold">{plan.limiteAnuncios}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-[#9aa1b1]">Total a pagar</span>
+                  <span className="text-ink-2">Total a pagar</span>
                   <span className="text-3xl font-bold text-green-400">
                     {formatearRD$(precio)}
                   </span>
@@ -120,12 +120,12 @@ export default function Checkout() {
 
               {/* Método de pago: solo PayPal */}
               <div className="rounded-xl border border-[#3b2f2f] bg-[#1a1515] p-4 mb-6">
-                <p className="text-sm text-[#9aa1b1] mb-2">Método de pago</p>
+                <p className="text-sm text-ink-2 mb-2">Método de pago</p>
                 <div className="flex items-center gap-3">
                   <FaPaypal className="text-3xl text-[#0070ba]" />
                   <div>
                     <p className="font-semibold">PayPal</p>
-                    <p className="text-xs text-[#9aa1b1]">
+                    <p className="text-xs text-ink-2">
                       Por ahora es el único método de pago disponible.
                     </p>
                   </div>
@@ -151,7 +151,7 @@ export default function Checkout() {
                 )}
               </button>
 
-              <p className="text-xs text-[#9aa1b1] text-center mt-4">
+              <p className="text-xs text-ink-2 text-center mt-4">
                 Al continuar serás redirigido a PayPal para completar el pago de forma
                 segura. Al volver, tu suscripción se activará automáticamente.
               </p>

@@ -1,3 +1,39 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --am-page: #f4f6f9;
+  --am-surface: #ffffff;
+  --am-surface-2: #eef1f6;
+  --am-line: #e2e8f0;
+  --am-ink: #0f172a;
+  --am-ink-2: #475569;
+  --am-ink-3: #64748b;
+  --am-input: #ffffff;
+  --am-hover: rgba(15, 23, 42, 0.05);
+  color-scheme: light;
+}
+
+.dark {
+  --am-page: #0c101b;
+  --am-surface: #13161d;
+  --am-surface-2: #11141a;
+  --am-line: rgba(255, 255, 255, 0.1);
+  --am-ink: #ffffff;
+  --am-ink-2: #9aa1b1;
+  --am-ink-3: #cdd3e0;
+  --am-input: #13161d;
+  --am-hover: rgba(255, 255, 255, 0.06);
+  color-scheme: dark;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    @apply bg-page text-ink transition-colors duration-300;
+  }
+}

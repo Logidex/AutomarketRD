@@ -116,9 +116,26 @@ function FormularioFiltros({
 
   return (
     <form onSubmit={onBuscar} className="mt-8">
-      <div className="grid grid-cols-1 gap-3 rounded-2xl border border-white/10 bg-[#13161d] p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <label htmlFor="filtroTipoVehiculo" className="sr-only">
+          Tipo de vehículo
+        </label>
+        <select
+          id="filtroTipoVehiculo"
+          value={filtros.tipoVehiculo}
+          onChange={(e) => actualizar("tipoVehiculo", e.target.value)}
+          className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink transition-colors focus:border-blue-500 focus:outline-none"
+        >
+          <option value="">Tipo de vehículo</option>
+          {TIPOS_VEHICULO.map((opcion) => (
+            <option key={opcion.valor} value={opcion.valor}>
+              {opcion.etiqueta}
+            </option>
+          ))}
+        </select>
+
         <div className="relative">
-          <FaSearch className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+          <FaSearch className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-3" />
           <label htmlFor="filtroMarca" className="sr-only">
             Buscar por marca
           </label>
@@ -128,7 +145,7 @@ function FormularioFiltros({
             value={filtros.marca}
             onChange={(e) => actualizar("marca", e.target.value)}
             placeholder="Marca (ej. Toyota)"
-            className="w-full rounded-xl border border-white/10 bg-[#0c101b] py-3 pl-12 pr-4 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
+            className="w-full rounded-xl border border-line bg-page py-3 pl-12 pr-4 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
           />
         </div>
 
@@ -141,7 +158,7 @@ function FormularioFiltros({
           value={filtros.modelo}
           onChange={(e) => actualizar("modelo", e.target.value)}
           placeholder="Modelo"
-          className="w-full rounded-xl border border-white/10 bg-[#0c101b] px-4 py-3 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
+          className="w-full rounded-xl border border-line bg-page px-4 py-3 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
         />
 
         <label htmlFor="filtroCondicion" className="sr-only">
@@ -151,7 +168,7 @@ function FormularioFiltros({
           id="filtroCondicion"
           value={filtros.condicion}
           onChange={(e) => actualizar("condicion", e.target.value)}
-          className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm text-gray-200 transition-colors focus:border-blue-500 focus:outline-none"
+          className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink transition-colors focus:border-blue-500 focus:outline-none"
         >
           <option value="">Condición</option>
           <option value="Nuevo">Nuevo</option>
@@ -165,27 +182,10 @@ function FormularioFiltros({
           id="filtroEnOferta"
           value={filtros.enOferta}
           onChange={(e) => actualizar("enOferta", e.target.value)}
-          className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm text-gray-200 transition-colors focus:border-blue-500 focus:outline-none"
+          className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink transition-colors focus:border-blue-500 focus:outline-none"
         >
           <option value="">Ofertas</option>
           <option value="true">En oferta</option>
-        </select>
-
-        <label htmlFor="filtroTipoVehiculo" className="sr-only">
-          Tipo de vehículo
-        </label>
-        <select
-          id="filtroTipoVehiculo"
-          value={filtros.tipoVehiculo}
-          onChange={(e) => actualizar("tipoVehiculo", e.target.value)}
-          className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm text-gray-200 transition-colors focus:border-blue-500 focus:outline-none"
-        >
-          <option value="">Tipo de vehículo</option>
-          {TIPOS_VEHICULO.map((opcion) => (
-            <option key={opcion.valor} value={opcion.valor}>
-              {opcion.etiqueta}
-            </option>
-          ))}
         </select>
 
         <label htmlFor="filtroTransmision" className="sr-only">
@@ -195,7 +195,7 @@ function FormularioFiltros({
           id="filtroTransmision"
           value={filtros.transmision}
           onChange={(e) => actualizar("transmision", e.target.value)}
-          className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm text-gray-200 transition-colors focus:border-blue-500 focus:outline-none"
+          className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink transition-colors focus:border-blue-500 focus:outline-none"
         >
           <option value="">Transmisión</option>
           {TRANSMISIONES.map((opcion) => (
@@ -212,7 +212,7 @@ function FormularioFiltros({
           id="filtroCombustible"
           value={filtros.combustible}
           onChange={(e) => actualizar("combustible", e.target.value)}
-          className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm text-gray-200 transition-colors focus:border-blue-500 focus:outline-none"
+          className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink transition-colors focus:border-blue-500 focus:outline-none"
         >
           <option value="">Combustible</option>
           {COMBUSTIBLES.map((opcion) => (
@@ -231,7 +231,7 @@ function FormularioFiltros({
           value={filtros.ubicacion}
           onChange={(e) => actualizar("ubicacion", e.target.value)}
           placeholder="Ubicación (ej. Santo Domingo)"
-          className="w-full rounded-xl border border-white/10 bg-[#0c101b] px-4 py-3 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
+          className="w-full rounded-xl border border-line bg-page px-4 py-3 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
         />
 
         <div className="flex items-center gap-2">
@@ -242,7 +242,7 @@ function FormularioFiltros({
             id="filtroAnioDesde"
             value={filtros.anioDesde}
             onChange={(e) => actualizar("anioDesde", e.target.value)}
-            className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm text-gray-200 transition-colors focus:border-blue-500 focus:outline-none"
+            className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink transition-colors focus:border-blue-500 focus:outline-none"
           >
             <option value="">Año desde</option>
             {Array.from(
@@ -254,7 +254,7 @@ function FormularioFiltros({
               </option>
             ))}
           </select>
-          <span className="text-gray-500">-</span>
+          <span className="text-ink-3">-</span>
           <label htmlFor="filtroAnioHasta" className="sr-only">
             Año hasta
           </label>
@@ -262,7 +262,7 @@ function FormularioFiltros({
             id="filtroAnioHasta"
             value={filtros.anioHasta}
             onChange={(e) => actualizar("anioHasta", e.target.value)}
-            className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm text-gray-200 transition-colors focus:border-blue-500 focus:outline-none"
+            className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink transition-colors focus:border-blue-500 focus:outline-none"
           >
             <option value="">Año hasta</option>
             {Array.from(
@@ -288,9 +288,9 @@ function FormularioFiltros({
             value={filtros.precioMinimo}
             onChange={(e) => actualizar("precioMinimo", e.target.value)}
             placeholder="Precio mín."
-            className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
+            className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
           />
-          <span className="text-gray-500">-</span>
+          <span className="text-ink-3">-</span>
           <label htmlFor="filtroPrecioMaximo" className="sr-only">
             Precio máximo
           </label>
@@ -302,7 +302,7 @@ function FormularioFiltros({
             value={filtros.precioMaximo}
             onChange={(e) => actualizar("precioMaximo", e.target.value)}
             placeholder="Precio máx."
-            className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
+            className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
           />
         </div>
 
@@ -317,7 +317,7 @@ function FormularioFiltros({
           value={filtros.kilometrajeMaximo}
           onChange={(e) => actualizar("kilometrajeMaximo", e.target.value)}
           placeholder="Kilometraje máx. (km)"
-          className="w-full rounded-xl border border-white/10 bg-[#13161d] px-4 py-3 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
+          className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
         />
       </div>
 
@@ -333,7 +333,7 @@ function FormularioFiltros({
           type="button"
           onClick={onLimpiar}
           disabled={cargando}
-          className="rounded-xl border border-white/10 px-6 py-3 text-sm font-medium text-[#9aa1b1] transition-colors hover:border-white/30 hover:text-white disabled:opacity-50"
+          className="rounded-xl border border-line px-6 py-3 text-sm font-medium text-ink-2 transition-colors hover:border-ink-3 hover:text-ink disabled:opacity-50"
         >
           Limpiar filtros
         </button>
@@ -361,8 +361,8 @@ function TarjetaAnuncio({
     <div
       className={`group relative flex flex-col overflow-hidden rounded-2xl border text-left transition-all hover:shadow-lg ${
         seleccionado
-          ? "border-blue-500 bg-[#16202e]"
-          : "border-white/10 bg-[#13161d] hover:border-blue-500/40"
+          ? "border-blue-500 bg-blue-500/10"
+          : "border-line bg-surface hover:border-blue-500/40"
       }`}
     >
       <button
@@ -385,7 +385,7 @@ function TarjetaAnuncio({
           <div className="flex items-start justify-between gap-3">
             <h3 className="truncate text-lg font-bold">
               {anuncio.marca} {anuncio.modelo}
-              <span className="ml-2 text-sm font-normal text-gray-400">
+              <span className="ml-2 text-sm font-normal text-ink-2">
                 {anuncio.version}
               </span>
             </h3>
@@ -399,7 +399,7 @@ function TarjetaAnuncio({
           </p>
 
           {anuncio.enOferta && anuncio.precioAnterior != null && (
-            <p className="text-sm text-[#9aa1b1]">
+            <p className="text-sm text-ink-2">
               <span className="mr-2 line-through">
                 {formatearPrecio(anuncio.precioAnterior, anuncio.moneda)}
               </span>
@@ -407,29 +407,29 @@ function TarjetaAnuncio({
             </p>
           )}
 
-          <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 border-t border-white/10 pt-4 text-xs text-[#9aa1b1]">
+          <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 border-t border-line pt-4 text-xs text-ink-2">
             <span className="inline-flex items-center gap-1.5">
               {anuncio.condicion === "Nuevo" ? (
                 <span className="rounded-full bg-blue-500/10 px-3 py-1 text-xs font-semibold text-blue-400">
                   Nuevo
                 </span>
               ) : (
-                <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-gray-300">
+                <span className="rounded-full bg-surface-2 px-3 py-1 text-xs font-medium text-ink-2">
                   Usado
                 </span>
               )}
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <FaTachometerAlt className="text-gray-500" />
+              <FaTachometerAlt className="text-ink-3" />
               {anuncio.kilometraje.toLocaleString("es-DO")} km
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <FaCalendarAlt className="text-gray-500" />
+              <FaCalendarAlt className="text-ink-3" />
               {anuncio.anio}
             </span>
             {anuncio.ubicacion && (
               <span className="inline-flex items-center gap-1.5">
-                <FaMapMarkerAlt className="text-gray-500" />
+                <FaMapMarkerAlt className="text-ink-3" />
                 {anuncio.ubicacion}
               </span>
             )}
@@ -442,12 +442,12 @@ function TarjetaAnuncio({
               </span>
             )}
             {anuncio.combustible && (
-              <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-gray-300">
+              <span className="rounded-full bg-surface-2 px-3 py-1 text-xs font-medium text-ink-2">
                 {etiquetaDe(anuncio.combustible, COMBUSTIBLES)}
               </span>
             )}
             {anuncio.transmision && (
-              <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-gray-300">
+              <span className="rounded-full bg-surface-2 px-3 py-1 text-xs font-medium text-ink-2">
                 {etiquetaDe(anuncio.transmision, TRANSMISIONES)}
               </span>
             )}
@@ -464,7 +464,7 @@ function TarjetaAnuncio({
         className={`mt-0 border-t px-5 py-3 text-left text-sm font-medium transition-colors ${
           seleccionado
             ? "border-blue-500/40 bg-blue-500/10 text-blue-400"
-            : "border-white/10 text-[#9aa1b1] hover:text-white"
+            : "border-line text-ink-2 hover:text-ink"
         }`}
       >
         {seleccionado ? <>Quitar de comparar</> : <>+ Agregar a comparar</>}
@@ -510,7 +510,7 @@ function Paginacion({
         type="button"
         onClick={() => onCambiarPagina(pagina - 1)}
         disabled={pagina <= 1}
-        className="rounded-lg border border-white/10 px-4 py-2 text-sm font-medium transition-colors hover:border-white/30 disabled:cursor-not-allowed disabled:opacity-40"
+        className="rounded-lg border border-line px-4 py-2 text-sm font-medium transition-colors hover:border-ink-3 disabled:cursor-not-allowed disabled:opacity-40"
       >
         Anterior
       </button>
@@ -523,7 +523,7 @@ function Paginacion({
           className={`min-w-10 rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${
             p === pagina
               ? "bg-blue-500 text-white"
-              : "border border-white/10 hover:border-white/30"
+              : "border border-line hover:border-ink-3"
           }`}
         >
           {p}
@@ -534,7 +534,7 @@ function Paginacion({
         type="button"
         onClick={() => onCambiarPagina(pagina + 1)}
         disabled={pagina >= totalPaginas}
-        className="rounded-lg border border-white/10 px-4 py-2 text-sm font-medium transition-colors hover:border-white/30 disabled:cursor-not-allowed disabled:opacity-40"
+        className="rounded-lg border border-line px-4 py-2 text-sm font-medium transition-colors hover:border-ink-3 disabled:cursor-not-allowed disabled:opacity-40"
       >
         Siguiente
       </button>
@@ -558,9 +558,9 @@ function BarraComparador({
   const cantidad = seleccionados.length;
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-blue-500/40 bg-[#0d1117]/95 px-6 py-4 backdrop-blur">
+    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-blue-500/40 bg-page/95 px-6 py-4 backdrop-blur">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 sm:px-8">
-        <div className="flex flex-wrap items-center gap-2 text-sm text-[#9aa1b1]">
+        <div className="flex flex-wrap items-center gap-2 text-sm text-ink-2">
           {cantidad === 0 ? (
             <span className="inline-flex items-center gap-2">
               <FaBalanceScale className="text-blue-500" />
@@ -568,7 +568,7 @@ function BarraComparador({
             </span>
           ) : (
             <>
-              <span className="font-semibold text-white">
+              <span className="font-semibold text-ink">
                 {cantidad} seleccionado{cantidad !== 1 && "s"}
               </span>
               {cantidad >= maxVehiculos && (
@@ -582,7 +582,7 @@ function BarraComparador({
             <button
               type="button"
               onClick={onLimpiar}
-              className="text-xs text-[#9aa1b1] underline-offset-2 transition-colors hover:text-white hover:underline"
+              className="text-xs text-ink-2 underline-offset-2 transition-colors hover:text-ink hover:underline"
             >
               Limpiar
             </button>
@@ -700,9 +700,9 @@ export default function Vehiculos() {
 
 
   return (
-    <div className="min-h-screen bg-[#0c101b] text-white">
+    <div className="min-h-screen bg-page text-ink">
       {/* HEADER */}
-      <header className="flex items-center justify-between border-b border-white/10 px-6 py-5 sm:px-8">
+      <header className="flex items-center justify-between border-b border-line px-6 py-5 sm:px-8">
         <Link to="/" className="flex items-center gap-4">
           <img
             src={logo}
@@ -715,17 +715,17 @@ export default function Vehiculos() {
       </header>
 
       {/* CABECERA + FILTROS */}
-      <section className="border-b border-white/10 bg-gradient-to-b from-[#11161f] to-[#0c101b]">
+      <section className="border-b border-line bg-gradient-to-b from-surface-2 to-page">
         <div className="mx-auto max-w-6xl px-6 py-10 sm:px-8">
           <h1 className="text-3xl font-bold">
             Todos los vehículos
             {totalRegistros > 0 && (
-              <span className="ml-2 text-base font-normal text-[#9aa1b1]">
+              <span className="ml-2 text-base font-normal text-ink-2">
                 ({totalRegistros})
               </span>
             )}
           </h1>
-          <p className="mt-2 text-sm text-[#9aa1b1]">
+          <p className="mt-2 text-sm text-ink-2">
             Filtra por marca, modelo, año, precio, kilometraje y más para
             encontrar tu próximo vehículo.
           </p>
@@ -744,7 +744,7 @@ export default function Vehiculos() {
       <main className="mx-auto max-w-6xl px-6 py-10 sm:px-8">
         {isLoading ? (
           <div className="flex items-center justify-center py-24">
-            <div className="h-10 w-10 animate-spin rounded-full border-2 border-white/10 border-t-blue-500" />
+            <div className="h-10 w-10 animate-spin rounded-full border-2 border-line border-t-blue-500" />
           </div>
         ) : isError ? (
           <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-8 text-center">
@@ -760,12 +760,12 @@ export default function Vehiculos() {
             </button>
           </div>
         ) : anuncios.length === 0 ? (
-          <div className="rounded-2xl border border-white/10 bg-[#13161d] p-16 text-center">
-            <FaCar className="mx-auto text-5xl text-gray-600" />
+          <div className="rounded-2xl border border-line bg-surface p-16 text-center">
+            <FaCar className="mx-auto text-5xl text-ink-3" />
             <h3 className="mt-4 text-lg font-semibold">
               No encontramos vehículos
             </h3>
-            <p className="mt-2 text-sm text-[#9aa1b1]">
+            <p className="mt-2 text-sm text-ink-2">
               Prueba ajustando o limpiando los filtros de búsqueda.
             </p>
           </div>
@@ -805,10 +805,10 @@ export default function Vehiculos() {
       />
 
       {/* FOOTER */}
-      <footer className="border-t border-white/10 py-8">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 text-sm text-[#9aa1b1] sm:flex-row sm:px-8">
+      <footer className="border-t border-line py-8">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 text-sm text-ink-2 sm:flex-row sm:px-8">
           <span>© 2026 AutoMarket RD. Todos los derechos reservados.</span>
-          <Link to="/precios" className="transition-colors hover:text-white">
+          <Link to="/precios" className="transition-colors hover:text-ink">
             Planes y precios
           </Link>
         </div>

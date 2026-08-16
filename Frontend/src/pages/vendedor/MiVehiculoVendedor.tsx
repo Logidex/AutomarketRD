@@ -20,7 +20,7 @@ export default function MiVehiculoVendedor() {
 
   if (usuarioId === null) {
     return (
-      <p className="text-sm text-gray-500">
+      <p className="text-sm text-ink-3">
         No se pudo identificar tu cuenta.
       </p>
     );
@@ -91,18 +91,18 @@ export default function MiVehiculoVendedor() {
   if (!anuncio) {
     return (
       <div className="mx-auto max-w-2xl">
-        <h1 className="mb-1 text-lg font-semibold text-gray-900">
+        <h1 className="mb-1 text-lg font-semibold text-ink">
           Mi Vehículo
         </h1>
-        <p className="mb-6 text-sm text-gray-500">
+        <p className="mb-6 text-sm text-ink-3">
           Publica tu vehículo para que los interesados puedan contactarte.
         </p>
 
-        <div className="rounded-lg border border-dashed border-gray-300 bg-white p-8 text-center">
-          <p className="mb-1 text-sm text-gray-600">
+        <div className="rounded-lg border border-dashed border-line bg-surface p-8 text-center">
+          <p className="mb-1 text-sm text-ink-2">
             Todavía no tienes ningún vehículo publicado.
           </p>
-          <p className="mb-6 text-sm text-gray-400">
+          <p className="mb-6 text-sm text-ink-3">
             Recuerda: puedes publicar solo un anuncio con tu cuenta.
           </p>
 
@@ -121,20 +121,20 @@ export default function MiVehiculoVendedor() {
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-semibold text-gray-900">Mi Vehículo</h1>
-          <p className="text-sm text-gray-500">
+          <h1 className="text-lg font-semibold text-ink">Mi Vehículo</h1>
+          <p className="text-sm text-ink-3">
             Así te ven los compradores en la vitrina.
           </p>
         </div>
         <Link
           to={`/vendedor/editar-anuncio/${anuncio.id}`}
-          className="rounded-md border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-600 transition-colors hover:bg-gray-50"
+          className="rounded-md border border-line px-3 py-1.5 text-xs font-semibold text-ink-2 transition-colors hover:bg-surface-2"
         >
           Editar
         </Link>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-lg border border-line bg-surface shadow-sm">
         {/* FOTO */}
         {anuncio.fotos.length > 0 ? (
           <img
@@ -143,7 +143,7 @@ export default function MiVehiculoVendedor() {
             className="h-52 w-full object-cover sm:h-64"
           />
         ) : (
-          <div className="flex h-40 w-full items-center justify-center bg-gray-100 text-sm text-gray-400">
+          <div className="flex h-40 w-full items-center justify-center bg-surface-2 text-sm text-ink-3">
             Sin fotos todavía
           </div>
         )}
@@ -151,19 +151,19 @@ export default function MiVehiculoVendedor() {
         <div className="space-y-4 p-5">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">
+              <h2 className="text-lg font-semibold text-ink">
                 {anuncio.marca} {anuncio.modelo} {anuncio.anio}
               </h2>
-              <p className="text-sm text-gray-500">{anuncio.ubicacion}</p>
+              <p className="text-sm text-ink-3">{anuncio.ubicacion}</p>
             </div>
             <BadgeEstado estado={anuncio.estado} />
           </div>
 
-          <p className="text-xl font-bold text-gray-900">
+          <p className="text-xl font-bold text-ink">
             {formatearPrecio(anuncio.precio, anuncio.moneda)}
           </p>
 
-          <div className="flex items-center gap-4 text-sm text-gray-600">
+          <div className="flex items-center gap-4 text-sm text-ink-2">
             <span>{anuncio.kilometraje.toLocaleString("es-DO")} km</span>
             <span aria-hidden="true">·</span>
             <span>{anuncio.transmision}</span>
@@ -172,9 +172,9 @@ export default function MiVehiculoVendedor() {
           </div>
 
           {/* CONTADOR DE VISTAS */}
-          <div className="flex items-center gap-2 rounded-md bg-gray-50 px-3 py-2.5 text-sm text-gray-600">
+          <div className="flex items-center gap-2 rounded-md bg-surface-2 px-3 py-2.5 text-sm text-ink-2">
             <svg
-              className="h-5 w-5 text-gray-400"
+              className="h-5 w-5 text-ink-3"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -192,7 +192,7 @@ export default function MiVehiculoVendedor() {
               />
             </svg>
             <span>
-              <strong className="font-semibold text-gray-800">
+              <strong className="font-semibold text-ink">
                 {anuncio.vistas}
               </strong>{" "}
               persona{anuncio.vistas === 1 ? "" : "s"} han visto tu anuncio
@@ -200,10 +200,10 @@ export default function MiVehiculoVendedor() {
           </div>
 
           {/* ACCIONES */}
-          <div className="flex flex-wrap items-center gap-3 border-t border-gray-100 pt-4">
+          <div className="flex flex-wrap items-center gap-3 border-t border-line pt-4">
             <Link
               to={`/vendedor/editar-anuncio/${anuncio.id}`}
-              className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+              className="rounded-md border border-line px-4 py-2 text-sm font-medium text-ink-2 transition-colors hover:bg-surface-2"
             >
               Editar anuncio
             </Link>
@@ -231,7 +231,7 @@ export default function MiVehiculoVendedor() {
         </div>
       </div>
 
-      <p className="text-xs text-gray-400">
+      <p className="text-xs text-ink-3">
         Para publicar más de un vehículo, actualice a una cuenta de Dealer.
       </p>
     </div>
@@ -240,7 +240,7 @@ export default function MiVehiculoVendedor() {
 
 const CLASES_ESTADO: Record<string, string> = {
   Publicado: "bg-emerald-50 text-emerald-700",
-  Borrador: "bg-gray-100 text-gray-600",
+  Borrador: "bg-surface-2 text-ink-2",
   Vendido: "bg-blue-50 text-blue-700",
   Pausado: "bg-amber-50 text-amber-700",
 };
@@ -249,7 +249,7 @@ function BadgeEstado({ estado }: { estado: string }) {
   return (
     <span
       className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-        CLASES_ESTADO[estado] ?? "bg-gray-100 text-gray-600"
+        CLASES_ESTADO[estado] ?? "bg-surface-2 text-ink-2"
       }`}
     >
       {estado}

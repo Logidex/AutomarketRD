@@ -56,7 +56,7 @@ export default function MisAnuncios() {
   if (usuarioId === null) {
     return (
       <div className="mx-auto max-w-6xl p-6">
-        <p className="text-gray-500">No se pudo identificar al usuario.</p>
+        <p className="text-ink-3">No se pudo identificar al usuario.</p>
       </div>
     );
   }
@@ -251,7 +251,7 @@ export default function MisAnuncios() {
   return (
     <div className="mx-auto max-w-6xl p-6">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Mis Anuncios</h1>
+        <h1 className="text-2xl font-bold text-ink">Mis Anuncios</h1>
 
         {anuncios.length > 0 && (
           <Link
@@ -267,20 +267,20 @@ export default function MisAnuncios() {
       {resumen && limitePlan > 0 && (
         <div
           className={`mb-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border p-4 ${
-            disponibles === 0 ? "border-red-200 bg-red-50" : "border-gray-200 bg-white"
+            disponibles === 0 ? "border-red-200 bg-red-50" : "border-line bg-surface"
           }`}
         >
           <div className="min-w-0">
             <p
               className={`text-sm font-semibold ${
-                disponibles === 0 ? "text-red-700" : "text-gray-800"
+                disponibles === 0 ? "text-red-700" : "text-ink"
               }`}
             >
               Uso del plan {resumen.planActual}
             </p>
             <p
               className={`text-sm ${
-                disponibles === 0 ? "text-red-600" : "text-gray-500"
+                disponibles === 0 ? "text-red-600" : "text-ink-3"
               }`}
             >
               {disponibles === 0
@@ -290,10 +290,10 @@ export default function MisAnuncios() {
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="text-xs font-semibold text-gray-500">
+            <span className="text-xs font-semibold text-ink-3">
               {activosEnVitrina}/{limitePlan}
             </span>
-            <div className="h-2 w-40 overflow-hidden rounded-full bg-gray-200">
+            <div className="h-2 w-40 overflow-hidden rounded-full bg-surface-2">
               <div
                 className={`h-full rounded-full ${
                   disponibles === 0
@@ -313,13 +313,13 @@ export default function MisAnuncios() {
 
       {resumen && cuotaDestacados > 0 && (
         <div className={`mb-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border p-4 ${
-          destacadosDisponibles === 0 ? "border-amber-200 bg-amber-50" : "border-white/0 bg-white"
+          destacadosDisponibles === 0 ? "border-amber-200 bg-amber-50" : "border-transparent bg-surface"
         }`}>
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-gray-800">
+            <p className="text-sm font-semibold text-ink">
               Destacados del plan
             </p>
-            <p className={`text-sm ${destacadosDisponibles === 0 ? "text-amber-700" : "text-gray-500"}`}>
+            <p className={`text-sm ${destacadosDisponibles === 0 ? "text-amber-700" : "text-ink-3"}`}>
               {destacadosDisponibles === 0
                 ? "Llegaste al límite de anuncios destacados de tu plan. Quita uno para destacar otro."
                 : `Estás usando ${destacadosActivos} de ${cuotaDestacados} anuncios destacados de tu plan (${destacadosDisponibles} disponibles).`}
@@ -327,10 +327,10 @@ export default function MisAnuncios() {
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="text-xs font-semibold text-gray-500">
+            <span className="text-xs font-semibold text-ink-3">
               {destacadosActivos}/{cuotaDestacados}
             </span>
-            <div className="h-2 w-40 overflow-hidden rounded-full bg-gray-200">
+            <div className="h-2 w-40 overflow-hidden rounded-full bg-surface-2">
               <div
                 className={`h-full rounded-full ${destacadosDisponibles === 0 ? "bg-amber-500" : "bg-yellow-500"}`}
                 style={{
@@ -343,16 +343,16 @@ export default function MisAnuncios() {
       )}
 
       {anuncios.length === 0 ? (
-        <div className="flex min-h-[420px] flex-col items-center justify-center rounded-2xl border border-gray-200 bg-white px-6 text-center shadow-sm">
+        <div className="flex min-h-[420px] flex-col items-center justify-center rounded-2xl border border-line bg-surface px-6 text-center shadow-sm">
           <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-blue-50">
             <FaCar className="text-4xl text-blue-600" />
           </div>
 
-          <h2 className="mb-2 text-2xl font-bold text-gray-800">
+          <h2 className="mb-2 text-2xl font-bold text-ink">
             Todavía no tienes anuncios
           </h2>
 
-          <p className="mb-6 max-w-md text-gray-500">
+          <p className="mb-6 max-w-md text-ink-3">
             Aún no has publicado ningún vehículo. Comienza agregando tu primer
             anuncio para mostrarlo en AutoMarket RD.
           </p>

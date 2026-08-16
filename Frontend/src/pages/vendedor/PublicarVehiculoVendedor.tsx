@@ -30,10 +30,10 @@ export default function PublicarVehiculoVendedor() {
 
   return (
     <div>
-      <h1 className="mb-1 text-lg font-semibold text-gray-900">
+      <h1 className="mb-1 text-lg font-semibold text-ink">
         Publicar mi vehículo
       </h1>
-      <p className="mb-6 text-sm text-gray-500">
+      <p className="mb-6 text-sm text-ink-3">
         Completa los datos de tu vehículo. Recuerda que solo puedes publicar un
         anuncio con tu cuenta de vendedor.
       </p>

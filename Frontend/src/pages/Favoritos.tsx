@@ -34,11 +34,11 @@ export default function Favoritos() {
   const mensajeError = isError ? "No se pudieron cargar tus favoritos." : "";
 
   return (
-    <div className="min-h-screen bg-[#0c101b] text-white">
-      <header className="flex items-center justify-between border-b border-white/10 px-6 py-5 sm:px-8">
+    <div className="min-h-screen bg-page text-ink">
+      <header className="flex items-center justify-between border-b border-line px-6 py-5 sm:px-8">
         <Link
           to="/perfil"
-          className="text-sm font-medium text-[#9aa1b1] transition-colors hover:text-white"
+          className="text-sm font-medium text-ink-2 transition-colors hover:text-ink"
         >
           ← Mi cuenta
         </Link>
@@ -50,19 +50,19 @@ export default function Favoritos() {
             <FaHeart className="text-red-500" />
             Mis favoritos
             {favoritos.length > 0 && (
-              <span className="text-sm font-normal text-[#9aa1b1]">
+              <span className="text-sm font-normal text-ink-2">
                 ({favoritos.length})
               </span>
             )}
           </h1>
-          <p className="mt-1 text-sm text-[#9aa1b1]">
+          <p className="mt-1 text-sm text-ink-2">
             Vehículos que guardaste para revisar o comparar más tarde.
           </p>
         </div>
 
         {cargando ? (
           <div className="flex items-center justify-center py-24">
-            <div className="h-10 w-10 animate-spin rounded-full border-2 border-white/10 border-t-blue-500" />
+            <div className="h-10 w-10 animate-spin rounded-full border-2 border-line border-t-blue-500" />
           </div>
         ) : mensajeError ? (
           <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-8 text-center">
@@ -70,24 +70,24 @@ export default function Favoritos() {
             <button
               type="button"
               onClick={() => refetch()}
-              className="mt-4 rounded-lg bg-blue-500 px-6 py-2 text-sm font-semibold transition-colors hover:bg-blue-600"
+              className="mt-4 rounded-lg bg-blue-500 px-6 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-600"
             >
               Reintentar
             </button>
           </div>
         ) : favoritos.length === 0 ? (
-          <div className="rounded-2xl border border-white/10 bg-[#13161d] p-16 text-center">
-            <FaHeart className="mx-auto text-5xl text-gray-600" />
+          <div className="rounded-2xl border border-line bg-surface p-16 text-center">
+            <FaHeart className="mx-auto text-5xl text-ink-3" />
             <h2 className="mt-4 text-lg font-semibold">
               Aún no tienes favoritos
             </h2>
-            <p className="mt-2 text-sm text-[#9aa1b1]">
+            <p className="mt-2 text-sm text-ink-2">
               Pulsa el corazón en un vehículo para guardarlo aquí.
             </p>
             <button
               type="button"
               onClick={() => navigate("/")}
-              className="mt-6 rounded-lg bg-blue-500 px-6 py-2 text-sm font-semibold transition-colors hover:bg-blue-600"
+              className="mt-6 rounded-lg bg-blue-500 px-6 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-600"
             >
               Explorar vehículos
             </button>
@@ -97,7 +97,7 @@ export default function Favoritos() {
             {favoritos.map((favorito) => (
               <div
                 key={favorito.id}
-                className="group flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#13161d] transition-[border-color,box-shadow] hover:border-red-500/30 hover:shadow-lg"
+                className="group flex flex-col overflow-hidden rounded-2xl border border-line bg-surface transition-[border-color,box-shadow] hover:border-red-500/30 hover:shadow-lg"
               >
                 <button
                   type="button"
@@ -129,13 +129,13 @@ export default function Favoritos() {
                     {formatearPrecio(favorito.precio, favorito.moneda)}
                   </p>
 
-                  <div className="mt-4 flex items-center gap-3 border-t border-white/10 pt-4">
-                    <span className="inline-flex items-center gap-1.5 text-xs text-[#9aa1b1]">
-                      <FaCalendarAlt className="text-gray-500" />
+                  <div className="mt-4 flex items-center gap-3 border-t border-line pt-4">
+                    <span className="inline-flex items-center gap-1.5 text-xs text-ink-2">
+                      <FaCalendarAlt className="text-ink-3" />
                       {favorito.anio}
                     </span>
-                    <span className="inline-flex items-center gap-1.5 text-xs text-[#9aa1b1]">
-                      <FaLocationArrow className="text-gray-500" />
+                    <span className="inline-flex items-center gap-1.5 text-xs text-ink-2">
+                      <FaLocationArrow className="text-ink-3" />
                       Ver detalle
                     </span>
                   </div>
@@ -144,7 +144,7 @@ export default function Favoritos() {
                     <button
                       type="button"
                       onClick={() => navigate(`/anuncio/${favorito.id}`)}
-                      className="flex-1 rounded-lg bg-blue-500 px-4 py-2 text-sm font-semibold transition-colors hover:bg-blue-600"
+                      className="flex-1 rounded-lg bg-blue-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-600"
                     >
                       Ver anuncio
                     </button>
@@ -152,7 +152,7 @@ export default function Favoritos() {
                       type="button"
                       onClick={() => quitar(favorito.id)}
                       title="Quitar de favoritos"
-                      className="rounded-lg border border-white/10 px-4 py-2 text-sm text-[#9aa1b1] transition-colors hover:border-red-500/40 hover:text-red-400"
+                      className="rounded-lg border border-line px-4 py-2 text-sm text-ink-2 transition-colors hover:border-red-500/40 hover:text-red-400"
                     >
                       <FaHeart />
                     </button>

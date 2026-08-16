@@ -22,7 +22,7 @@ function estadoPagoClass(estado: string): string {
   if (estado === "Fallido") {
     return "rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-semibold text-red-700";
   }
-  return "rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-semibold text-gray-600";
+  return "rounded-full bg-surface-2 px-2.5 py-0.5 text-xs font-semibold text-ink-2";
 }
 
 export default function AdminPagos() {
@@ -71,16 +71,16 @@ export default function AdminPagos() {
   return (
     <div className="space-y-6 p-6">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900">Pagos y reembolsos</h2>
-        <p className="mt-1 text-sm text-gray-500">
+        <h2 className="text-2xl font-bold text-ink">Pagos y reembolsos</h2>
+        <p className="mt-1 text-sm text-ink-3">
           Historial de pagos de suscripción de los dealers. Puedes reembolsar un
           pago completado contra PayPal.
         </p>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white shadow-sm">
+      <div className="overflow-x-auto rounded-lg border border-line bg-surface shadow-sm">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-gray-200 bg-gray-50 text-xs uppercase text-gray-500">
+          <thead className="border-b border-line bg-surface-2 text-xs uppercase text-ink-3">
             <tr>
               <th className="px-4 py-3">Dealer</th>
               <th className="px-4 py-3">Plan</th>
@@ -91,29 +91,29 @@ export default function AdminPagos() {
               <th className="px-4 py-3 text-right">Acciones</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-line">
             {pagos.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
+                <td colSpan={7} className="px-4 py-8 text-center text-ink-3">
                   No hay pagos registrados todavía.
                 </td>
               </tr>
             ) : (
               pagos.map((pago) => (
-                <tr key={pago.id} className="hover:bg-gray-50">
+                <tr key={pago.id} className="hover:bg-surface-2">
                   <td className="px-4 py-3">
-                    <p className="font-semibold text-gray-900">
+                    <p className="font-semibold text-ink">
                       {pago.dealerNombreAgencia}
                     </p>
-                    <p className="text-xs text-gray-500">{pago.dealerEmail}</p>
+                    <p className="text-xs text-ink-3">{pago.dealerEmail}</p>
                   </td>
-                  <td className="px-4 py-3 text-gray-700">
+                  <td className="px-4 py-3 text-ink-2">
                     <span className="mr-2 inline-block rounded-full bg-violet-100 px-2.5 py-0.5 text-xs font-semibold text-violet-700">
                       {pago.nivel}
                     </span>
-                    <span className="text-xs text-gray-500">{pago.ciclo}</span>
+                    <span className="text-xs text-ink-3">{pago.ciclo}</span>
                   </td>
-                  <td className="px-4 py-3 font-semibold text-gray-900">
+                  <td className="px-4 py-3 font-semibold text-ink">
                     {formatearPrecio(pago.monto, pago.moneda)}
                   </td>
                   <td className="px-4 py-3">
@@ -121,10 +121,10 @@ export default function AdminPagos() {
                       {estadoPagoLabel(pago.estado)}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-gray-700">
+                  <td className="px-4 py-3 text-ink-2">
                     {formatearFecha(pago.fechaUtc, true)}
                   </td>
-                  <td className="px-4 py-3 text-xs text-gray-500">
+                  <td className="px-4 py-3 text-xs text-ink-3">
                     {pago.ordenIdPayPal ?? "—"}
                   </td>
                   <td className="px-4 py-3">
@@ -133,7 +133,7 @@ export default function AdminPagos() {
                         <button
                           type="button"
                           onClick={() => reembolsar(pago)}
-                          className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 transition-colors hover:bg-red-50"
+                          className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-surface px-3 py-1.5 text-xs font-semibold text-red-700 transition-colors hover:bg-red-50"
                         >
                           <FaUndo />
                           Reembolsar

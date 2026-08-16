@@ -26,8 +26,8 @@ const PLAN_VACIO: PlanAdminForm = {
 };
 
 const inputClase =
-  "w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none transition-colors focus:border-violet-500 focus:ring-2 focus:ring-violet-200";
-const labelClase = "mb-1 block text-sm font-medium text-gray-700";
+  "w-full rounded-lg border border-line px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-violet-500 focus:ring-2 focus:ring-violet-200";
+const labelClase = "mb-1 block text-sm font-medium text-ink-2";
 
 function useAdminPlanesPage() {
   const { data: planes = [], isLoading: loading } = useAdminPlanes();
@@ -179,9 +179,9 @@ interface PropsTabla {
 
 function TablaPlanes({ planes, onEditar, onEliminar }: PropsTabla) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white shadow-sm">
+    <div className="overflow-x-auto rounded-lg border border-line bg-surface shadow-sm">
       <table className="w-full text-left text-sm">
-        <thead className="border-b border-gray-200 bg-gray-50 text-xs uppercase text-gray-500">
+        <thead className="border-b border-line bg-surface-2 text-xs uppercase text-ink-3">
           <tr>
             <th className="px-4 py-3">Plan</th>
             <th className="px-4 py-3">Nivel</th>
@@ -194,13 +194,13 @@ function TablaPlanes({ planes, onEditar, onEliminar }: PropsTabla) {
             <th className="px-4 py-3 text-right">Acciones</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-100">
+        <tbody className="divide-y divide-line">
           {planes.map((plan) => (
-            <tr key={plan.id} className="hover:bg-gray-50">
+            <tr key={plan.id} className="hover:bg-surface-2">
               <td className="px-4 py-3">
-                <p className="font-semibold text-gray-900">{plan.nombre}</p>
+                <p className="font-semibold text-ink">{plan.nombre}</p>
                 {plan.descripcion && (
-                  <p className="text-xs text-gray-500">{plan.descripcion}</p>
+                  <p className="text-xs text-ink-3">{plan.descripcion}</p>
                 )}
               </td>
               <td className="px-4 py-3">
@@ -208,19 +208,19 @@ function TablaPlanes({ planes, onEditar, onEliminar }: PropsTabla) {
                   {plan.nivel}
                 </span>
               </td>
-              <td className="px-4 py-3 text-gray-700">
+              <td className="px-4 py-3 text-ink-2">
                 {plan.limiteAnuncios}
               </td>
-              <td className="px-4 py-3 text-gray-700 font-medium">
+              <td className="px-4 py-3 text-ink-2 font-medium">
                 {plan.cuotaDestacados ?? 0}
               </td>
-              <td className="px-4 py-3 font-medium text-gray-900">
+              <td className="px-4 py-3 font-medium text-ink">
                 {formatearRD$(plan.precioMensual)}
               </td>
-              <td className="px-4 py-3 text-gray-700">
+              <td className="px-4 py-3 text-ink-2">
                 {formatearRD$(plan.precioTrimestral)}
               </td>
-              <td className="px-4 py-3 text-gray-700">
+              <td className="px-4 py-3 text-ink-2">
                 {formatearRD$(plan.precioAnual)}
               </td>
               <td className="px-4 py-3">
@@ -229,7 +229,7 @@ function TablaPlanes({ planes, onEditar, onEliminar }: PropsTabla) {
                     Activo
                   </span>
                 ) : (
-                  <span className="inline-block rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-semibold text-gray-600">
+                  <span className="inline-block rounded-full bg-surface-2 px-2.5 py-0.5 text-xs font-semibold text-ink-2">
                     Inactivo
                   </span>
                 )}
@@ -239,14 +239,14 @@ function TablaPlanes({ planes, onEditar, onEliminar }: PropsTabla) {
                   <button
                     type="button"
                     onClick={() => onEditar(plan)}
-                    className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+                    className="rounded-lg border border-line bg-surface px-3 py-1.5 text-xs font-semibold text-ink-2 transition-colors hover:bg-surface-2"
                   >
                     Editar
                   </button>
                   <button
                     type="button"
                     onClick={() => onEliminar(plan)}
-                    className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 transition-colors hover:bg-red-50"
+                    className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-surface px-3 py-1.5 text-xs font-semibold text-red-700 transition-colors hover:bg-red-50"
                   >
                     <FaTrash />
                     Eliminar
@@ -287,10 +287,10 @@ function ModalPlan({
         className="absolute inset-0 bg-black/40"
       />
       <div
-        className="relative w-full max-w-lg rounded-xl bg-white p-6 shadow-2xl"
+        className="relative w-full max-w-lg rounded-xl bg-surface p-6 shadow-2xl"
       >
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-bold text-gray-900">
+          <h3 className="text-lg font-bold text-ink">
             {editandoId === null ? "Nuevo plan" : "Editar plan"}
           </h3>
           <button
@@ -298,7 +298,7 @@ function ModalPlan({
             onClick={onCerrar}
             disabled={guardando}
             aria-label="Cerrar ventana"
-            className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 disabled:opacity-50"
+            className="rounded-lg p-1.5 text-ink-3 hover:bg-surface-2 hover:text-ink-2 disabled:opacity-50"
           >
             <FaTimes />
           </button>
@@ -426,13 +426,13 @@ function ModalPlan({
             </div>
           </div>
 
-          <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-gray-700">
+          <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-ink-2">
             <input
               name="activo"
               type="checkbox"
               checked={form.activo}
               onChange={onChange}
-              className="h-4 w-4 rounded border-gray-300 text-violet-600 focus:ring-violet-500"
+              className="h-4 w-4 rounded border-line text-violet-600 focus:ring-violet-500"
             />
             Plan activo (visible en el catálogo público)
           </label>
@@ -443,7 +443,7 @@ function ModalPlan({
             type="button"
             onClick={onCerrar}
             disabled={guardando}
-            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50"
+            className="rounded-lg border border-line px-4 py-2 text-sm font-semibold text-ink-2 transition-colors hover:bg-surface-2 disabled:opacity-50"
           >
             Cancelar
           </button>
@@ -485,7 +485,7 @@ export default function AdminPlanes() {
   return (
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Catálogo de planes</h2>
+        <h2 className="text-2xl font-bold text-ink">Catálogo de planes</h2>
 
         <button
           type="button"

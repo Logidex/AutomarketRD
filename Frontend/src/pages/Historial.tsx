@@ -21,11 +21,11 @@ export default function Historial() {
   const mensajeError = isError ? "No se pudo cargar tu historial." : "";
 
   return (
-    <div className="min-h-screen bg-[#0c101b] text-white">
-      <header className="flex items-center justify-between border-b border-white/10 px-6 py-5 sm:px-8">
+    <div className="min-h-screen bg-page text-ink">
+      <header className="flex items-center justify-between border-b border-line px-6 py-5 sm:px-8">
         <Link
           to="/perfil"
-          className="text-sm font-medium text-[#9aa1b1] transition-colors hover:text-white"
+          className="text-sm font-medium text-ink-2 transition-colors hover:text-ink"
         >
           ← Mi cuenta
         </Link>
@@ -37,19 +37,19 @@ export default function Historial() {
             <FaHistory className="text-blue-400" />
             Vehículos recientes
             {recientes.length > 0 && (
-              <span className="text-sm font-normal text-[#9aa1b1]">
+              <span className="text-sm font-normal text-ink-2">
                 ({recientes.length})
               </span>
             )}
           </h1>
-          <p className="mt-1 text-sm text-[#9aa1b1]">
+          <p className="mt-1 text-sm text-ink-2">
             Los últimos vehículos que has visto, para retomar tu búsqueda.
           </p>
         </div>
 
         {cargando ? (
           <div className="flex items-center justify-center py-24">
-            <div className="h-10 w-10 animate-spin rounded-full border-2 border-white/10 border-t-blue-500" />
+            <div className="h-10 w-10 animate-spin rounded-full border-2 border-line border-t-blue-500" />
           </div>
         ) : mensajeError ? (
           <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-8 text-center">
@@ -57,24 +57,24 @@ export default function Historial() {
             <button
               type="button"
               onClick={() => refetch()}
-              className="mt-4 rounded-lg bg-blue-500 px-6 py-2 text-sm font-semibold transition-colors hover:bg-blue-600"
+              className="mt-4 rounded-lg bg-blue-500 px-6 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-600"
             >
               Reintentar
             </button>
           </div>
         ) : recientes.length === 0 ? (
-          <div className="rounded-2xl border border-white/10 bg-[#13161d] p-16 text-center">
-            <FaHistory className="mx-auto text-5xl text-gray-600" />
+          <div className="rounded-2xl border border-line bg-surface p-16 text-center">
+            <FaHistory className="mx-auto text-5xl text-ink-3" />
             <h2 className="mt-4 text-lg font-semibold">
               Aún no has visto vehículos
             </h2>
-            <p className="mt-2 text-sm text-[#9aa1b1]">
+            <p className="mt-2 text-sm text-ink-2">
               Cuando abras un vehículo desde la vitrina, aparecerá aquí.
             </p>
             <button
               type="button"
               onClick={() => navigate("/")}
-              className="mt-6 rounded-lg bg-blue-500 px-6 py-2 text-sm font-semibold transition-colors hover:bg-blue-600"
+              className="mt-6 rounded-lg bg-blue-500 px-6 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-600"
             >
               Explorar vehículos
             </button>
@@ -86,7 +86,7 @@ export default function Historial() {
                 key={`${anuncio.id}-${anuncio.vistoEnUtc}`}
                 type="button"
                 onClick={() => navigate(`/anuncio/${anuncio.id}`)}
-                className="group flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#13161d] text-left transition-[border-color,box-shadow] hover:border-blue-500/40 hover:shadow-lg"
+                className="group flex flex-col overflow-hidden rounded-2xl border border-line bg-surface text-left transition-[border-color,box-shadow] hover:border-blue-500/40 hover:shadow-lg"
               >
                 <div className="relative aspect-[16/10] overflow-hidden">
                   <img
@@ -99,7 +99,7 @@ export default function Historial() {
                     }}
                   />
                   <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-black/60 px-2.5 py-1 text-xs font-medium text-white backdrop-blur">
-                    <FaClock className="text-gray-300" />
+                    <FaClock className="text-ink-3" />
                     {formatearFecha(anuncio.vistoEnUtc, true)}
                   </span>
                 </div>
@@ -118,9 +118,9 @@ export default function Historial() {
                     {formatearPrecio(anuncio.precio, anuncio.moneda)}
                   </p>
 
-                  <div className="mt-4 flex items-center gap-3 border-t border-white/10 pt-4 text-xs text-[#9aa1b1]">
+                  <div className="mt-4 flex items-center gap-3 border-t border-line pt-4 text-xs text-ink-2">
                     <span className="inline-flex items-center gap-1.5">
-                      <FaCalendarAlt className="text-gray-500" />
+                      <FaCalendarAlt className="text-ink-3" />
                       {anuncio.anio}
                     </span>
                     <span className="inline-flex items-center gap-1.5 text-blue-400 group-hover:text-blue-300">

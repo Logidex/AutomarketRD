@@ -40,8 +40,8 @@ export default function PagoExitoso() {
   }, [orderId]);
 
   return (
-    <div className="min-h-screen bg-[#0c101b] flex items-center justify-center p-4 text-white">
-      <div className="w-full max-w-md bg-[#11141a] rounded-2xl border border-white/10 p-10 text-center">
+    <div className="min-h-screen bg-page flex items-center justify-center p-4 text-ink">
+      <div className="w-full max-w-md bg-surface-2 rounded-2xl border border-line p-10 text-center">
         <div className="mb-6 flex justify-center">
           <img src={logo} alt="AutoMarket RD" className="h-14 w-auto object-contain" />
         </div>
@@ -50,7 +50,7 @@ export default function PagoExitoso() {
           <>
             <FaSpinner className="mx-auto mb-4 animate-spin text-5xl text-blue-400" />
             <h1 className="text-2xl font-bold mb-2">Confirmando tu pago...</h1>
-            <p className="text-[#9aa1b1]">
+            <p className="text-ink-2">
               Estamos verificando tu pago con PayPal y activando tu suscripción.
             </p>
           </>
@@ -60,7 +60,7 @@ export default function PagoExitoso() {
           <>
             <FaCheckCircle className="mx-auto mb-4 text-5xl text-green-500" />
             <h1 className="text-2xl font-bold mb-2">¡Pago exitoso!</h1>
-            <p className="text-[#9aa1b1] mb-8">
+            <p className="text-ink-2 mb-8">
               Tu suscripción se activó correctamente. Ya puedes seguir publicando
               tus anuncios sin interrupciones.
             </p>
@@ -71,8 +71,8 @@ export default function PagoExitoso() {
           <>
             <FaExclamationCircle className="mx-auto mb-4 text-5xl text-red-500" />
             <h1 className="text-2xl font-bold mb-2">No pudimos confirmar el pago</h1>
-            <p className="text-[#9aa1b1] mb-8">{mensajeError}</p>
-            <p className="text-sm text-[#9aa1b1] mb-8">
+            <p className="text-ink-2 mb-8">{mensajeError}</p>
+            <p className="text-sm text-ink-2 mb-8">
               Puede que el pago aún se esté procesando. Revisa el estado de tu
               suscripción en tu panel de control.
             </p>

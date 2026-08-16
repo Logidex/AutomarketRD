@@ -8,6 +8,7 @@ import { suscripcionService, type SuscripcionDealer } from "../../services/suscr
 import { nombrePlan as nombrePlanUtil } from "../../constants/planes";
 import logo from "../../assets/AutoMarketRD_Logo.svg";
 import CampanaNotificaciones from "./CampanaNotificaciones";
+import BotonTema from "../BotonTema";
 
 const menuItems = [
   {
@@ -84,7 +85,7 @@ export default function DashboardLayout() {
   };
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#f4f6f9] font-sans">
+    <div className="flex h-screen w-screen overflow-hidden bg-page font-sans">
       {/* SIDEBAR */}
       <aside className="z-10 flex h-full w-[260px] flex-col bg-[#11141a] text-white shadow-lg">
         {/* LOGO */}
@@ -151,13 +152,16 @@ export default function DashboardLayout() {
       {/* ÁREA PRINCIPAL */}
       <main className="flex h-full flex-1 flex-col overflow-hidden">
         {/* HEADER */}
-        <header className="flex h-[70px] shrink-0 items-center justify-between border-b border-gray-200 bg-white px-8">
-          <h3 className="text-xl font-semibold text-gray-800">
+        <header className="flex h-[70px] shrink-0 items-center justify-between border-b border-line bg-surface px-8">
+          <h3 className="text-xl font-semibold text-ink">
             Panel de Control
           </h3>
 
           {/* INFORMACIÓN DEL USUARIO */}
           <div className="flex items-center gap-3">
+            {/* BOTÓN DE TEMA */}
+            <BotonTema />
+
             {/* NOTIFICACIONES DE LEADS */}
             <CampanaNotificaciones rutaLeads="/dashboard/leads" tema="claro" />
 
@@ -165,12 +169,12 @@ export default function DashboardLayout() {
             <PlanBadge suscripcion={suscripcion} />
 
             <div className="hidden text-right sm:block">
-              <p className="text-sm font-semibold text-gray-800">
+              <p className="text-sm font-semibold text-ink">
                 {nombreUsuario}
               </p>
 
               {usuario?.rol && (
-                <p className="text-xs text-gray-500">{usuario.rol}</p>
+                <p className="text-xs text-ink-3">{usuario.rol}</p>
               )}
             </div>
 
@@ -194,7 +198,7 @@ function PlanBadge({ suscripcion }: { suscripcion: SuscripcionDealer | null }) {
     return (
       <Link
         to="/dashboard/suscripcion"
-        className="hidden rounded-full border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-600 transition-colors hover:border-blue-400 hover:text-blue-600 sm:block"
+        className="hidden rounded-full border border-line px-3 py-1.5 text-xs font-semibold text-ink-2 transition-colors hover:border-blue-400 hover:text-blue-600 sm:block"
       >
         Suscríbete
       </Link>
@@ -210,7 +214,7 @@ function PlanBadge({ suscripcion }: { suscripcion: SuscripcionDealer | null }) {
   return (
     <Link
       to="/dashboard/suscripcion"
-      className={`hidden rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors sm:block ${colorClase} hover:bg-gray-50`}
+      className={`hidden rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors sm:block ${colorClase} hover:bg-hover`}
       title={`Plan ${nombrePlan}`}
     >
       Plan {nombrePlan}

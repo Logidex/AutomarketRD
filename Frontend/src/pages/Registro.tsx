@@ -199,11 +199,11 @@ export default function Registro() {
   const esDealer = formData.rol === "Dealer";
 
   return (
-    <div className="min-h-screen bg-[#0c101b] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-page flex items-center justify-center p-4">
       <div className="w-full max-w-[950px] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row">
 
         {/* Columna Izquierda - Visual */}
-        <div className="md:flex-1 bg-[#0e1422] p-12 text-white flex flex-col">
+        <div className="md:flex-1 bg-surface p-12 text-white flex flex-col">
           <div className="mb-10">
             <div className="flex items-center justify-center w-full">
               <img
@@ -217,7 +217,7 @@ export default function Registro() {
           <h1 className="text-3xl font-bold mb-4">
             Únete al mercado
           </h1>
-          <p className="text-[#9aa1b1] mb-10">
+          <p className="text-ink-2 mb-10">
             Crea tu cuenta y comienza a explorar o publicar vehículos en
             AutoMarket RD.
           </p>

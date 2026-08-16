@@ -157,22 +157,22 @@ export default function SeccionCambiarCorreo() {
   }
 
   const inputClase =
-    "w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200";
+    "w-full rounded-lg border border-line px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200";
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-      <h2 className="flex items-center gap-2 text-lg font-bold text-gray-900">
+    <div className="rounded-2xl border border-line bg-surface p-6 shadow-sm">
+      <h2 className="flex items-center gap-2 text-lg font-bold text-ink">
         <FaCopyright className="text-green-600" />
         Cambiar correo electrónico
       </h2>
-      <p className="mt-1 text-sm text-gray-500">
+      <p className="mt-1 text-sm text-ink-3">
         {pasoCodigo
           ? "Paso 2 de 2: ingresa el código que enviamos al nuevo correo."
           : "Paso 1 de 2: confirma con tu contraseña y recibe un código en el nuevo correo."}
       </p>
-      <p className="mt-2 text-sm text-gray-500">
+      <p className="mt-2 text-sm text-ink-3">
         Correo actual:{" "}
-        <strong className="text-gray-800">{emailActual}</strong>
+        <strong className="text-ink">{emailActual}</strong>
         {emailConfirmado ? (
           <span className="ml-2 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
             confirmado
@@ -190,7 +190,7 @@ export default function SeccionCambiarCorreo() {
             <div>
               <label
                 htmlFor="passwordActual"
-                className="mb-1 block text-sm font-medium text-gray-700"
+                className="mb-1 block text-sm font-medium text-ink-2"
               >
                 Contraseña actual *
               </label>
@@ -207,7 +207,7 @@ export default function SeccionCambiarCorreo() {
             <div>
               <label
                 htmlFor="nuevoEmail"
-                className="mb-1 block text-sm font-medium text-gray-700"
+                className="mb-1 block text-sm font-medium text-ink-2"
               >
                 Nuevo correo *
               </label>
@@ -237,7 +237,7 @@ export default function SeccionCambiarCorreo() {
             <div>
               <label
                 htmlFor="codigoConfirmacion"
-                className="mb-1 block text-sm font-medium text-gray-700"
+                className="mb-1 block text-sm font-medium text-ink-2"
               >
                 Código de confirmación (6 dígitos) *
               </label>
@@ -270,7 +270,7 @@ export default function SeccionCambiarCorreo() {
                 type="button"
                 onClick={() => dispatchCambioCorreo({ type: "volver" })}
                 disabled={enviando}
-                className="rounded-lg border border-gray-300 px-5 py-2.5 text-sm text-gray-600 transition-colors hover:bg-gray-50"
+                className="rounded-lg border border-line px-5 py-2.5 text-sm text-ink-2 transition-colors hover:bg-surface-2"
               >
                 Volver
               </button>

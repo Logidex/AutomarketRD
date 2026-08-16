@@ -27,7 +27,7 @@ export default function DashboardIndex() {
   if (!resumen) {
     return (
       <div className="p-6">
-        <div className="text-gray-500">No hay datos disponibles.</div>
+        <div className="text-ink-3">No hay datos disponibles.</div>
       </div>
     );
   }
@@ -69,36 +69,36 @@ export default function DashboardIndex() {
 
       {/* Fila 2: Leads y Suscripción */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-          <h3 className="mb-4 text-lg font-semibold text-gray-800">Leads</h3>
+        <div className="rounded-lg border border-line bg-surface p-6 shadow-sm">
+          <h3 className="mb-4 text-lg font-semibold text-ink">Leads</h3>
           <div className="space-y-2">
             <div className="flex justify-between">
-              <span className="text-gray-600">Total:</span>
-              <span className="font-bold text-gray-900">{resumen.totalLeads ?? 0}</span>
+              <span className="text-ink-2">Total:</span>
+              <span className="font-bold text-ink">{resumen.totalLeads ?? 0}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">No leídos:</span>
+              <span className="text-ink-2">No leídos:</span>
               <span className="font-bold text-red-600">{resumen.leadsNoLeidos ?? 0}</span>
             </div>
           </div>
         </div>
 
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-          <h3 className="mb-4 text-lg font-semibold text-gray-800">Suscripción</h3>
+        <div className="rounded-lg border border-line bg-surface p-6 shadow-sm">
+          <h3 className="mb-4 text-lg font-semibold text-ink">Suscripción</h3>
           <div className="space-y-2">
             <div className="flex justify-between">
-              <span className="text-gray-600">Plan actual:</span>
-              <span className="font-bold text-gray-900">{nombrePlan(resumen.planActual)}</span>
+              <span className="text-ink-2">Plan actual:</span>
+              <span className="font-bold text-ink">{nombrePlan(resumen.planActual)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">Días restantes:</span>
+              <span className="text-ink-2">Días restantes:</span>
               <span className={`font-bold ${(resumen.diasRestantesSuscripcion ?? 0) <= 7 ? 'text-red-600' : 'text-green-600'}`}>
                 {resumen.diasRestantesSuscripcion ?? 0}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">Destacados en uso:</span>
-              <span className={`font-bold ${(resumen.destacadosActivos ?? 0) >= (resumen.cuotaDestacados ?? 0) ? 'text-amber-600' : 'text-gray-900'}`}>
+              <span className="text-ink-2">Destacados en uso:</span>
+              <span className={`font-bold ${(resumen.destacadosActivos ?? 0) >= (resumen.cuotaDestacados ?? 0) ? 'text-amber-600' : 'text-ink'}`}>
                 {resumen.destacadosActivos ?? 0} / {resumen.cuotaDestacados ?? 0}
               </span>
             </div>
@@ -107,18 +107,18 @@ export default function DashboardIndex() {
       </div>
 
       {/* Fila 3: Anuncios más vistos */}
-      <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-        <h3 className="mb-4 text-lg font-semibold text-gray-800">Anuncios más vistos</h3>
+      <div className="rounded-lg border border-line bg-surface p-6 shadow-sm">
+        <h3 className="mb-4 text-lg font-semibold text-ink">Anuncios más vistos</h3>
         {!resumen.anunciosMasVistos || resumen.anunciosMasVistos.length === 0 ? (
-          <p className="text-gray-500">Aún no hay anuncios con vistas.</p>
+          <p className="text-ink-3">Aún no hay anuncios con vistas.</p>
         ) : (
           <ul className="space-y-2">
             {resumen.anunciosMasVistos.map((anuncio) => (
               <li
                 key={anuncio.id}
-                className="flex items-center justify-between rounded border border-gray-100 p-3 hover:bg-gray-50"
+                className="flex items-center justify-between rounded border border-line p-3 hover:bg-hover"
               >
-                <span className="font-medium text-gray-800">{anuncio.nombreAnuncio}</span>
+                <span className="font-medium text-ink">{anuncio.nombreAnuncio}</span>
                 <span className="rounded bg-blue-100 px-2 py-1 text-sm font-semibold text-blue-700">
                   {anuncio.vistas} vistas
                 </span>
@@ -144,12 +144,12 @@ function MetricaCard({
   color?: string;
 }) {
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+    <div className="rounded-lg border border-line bg-surface p-6 shadow-sm">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-gray-600">{titulo}</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900">{valor}</p>
-          {subtitulo && <p className="mt-1 text-xs text-gray-500">{subtitulo}</p>}
+          <p className="text-sm font-medium text-ink-2">{titulo}</p>
+          <p className="mt-2 text-3xl font-bold text-ink">{valor}</p>
+          {subtitulo && <p className="mt-1 text-xs text-ink-3">{subtitulo}</p>}
         </div>
         <div className={`h-12 w-12 rounded-full ${color} opacity-20`} />
       </div>

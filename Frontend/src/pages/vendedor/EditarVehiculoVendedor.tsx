@@ -32,10 +32,10 @@ export default function EditarVehiculoVendedor() {
 
   return (
     <div>
-      <h1 className="mb-1 text-lg font-semibold text-gray-900">
+      <h1 className="mb-1 text-lg font-semibold text-ink">
         Editar mi vehículo
       </h1>
-      <p className="mb-6 text-sm text-gray-500">
+      <p className="mb-6 text-sm text-ink-3">
         Modifica los datos cuando quieras; los cambios se reflejan en la vitrina.
       </p>
 
@@ -69,7 +69,7 @@ export default function EditarVehiculoVendedor() {
           <button
             type="button"
             onClick={() => navigate("/vendedor")}
-            className="rounded-md border border-gray-300 px-5 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-100"
+            className="rounded-md border border-line px-5 py-2.5 text-sm font-semibold text-ink-2 transition-colors hover:bg-surface-2"
           >
             Cancelar
           </button>

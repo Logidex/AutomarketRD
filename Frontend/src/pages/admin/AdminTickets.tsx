@@ -32,12 +32,12 @@ const ESTADO_CLASES: Record<TicketEstado, string> = {
   Abierto: "bg-blue-100 text-blue-700",
   EnProceso: "bg-amber-100 text-amber-700",
   Resuelto: "bg-green-100 text-green-700",
-  Cerrado: "bg-gray-100 text-gray-600",
+  Cerrado: "bg-surface-2 text-ink-2",
   Detenido: "bg-slate-200 text-slate-700",
 };
 
 const PRIORIDAD_CLASES: Record<TicketPrioridad, string> = {
-  Baja: "bg-gray-100 text-gray-600",
+  Baja: "bg-surface-2 text-ink-2",
   Normal: "bg-blue-50 text-blue-600",
   Alta: "bg-orange-100 text-orange-700",
   Urgente: "bg-red-100 text-red-700",
@@ -81,11 +81,11 @@ export default function AdminTickets() {
     <div className="mx-auto max-w-7xl p-6">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="flex items-center gap-3 text-2xl font-bold text-gray-900">
+          <h1 className="flex items-center gap-3 text-2xl font-bold text-ink">
             <FaHeadset className="text-violet-600" />
             Tickets de soporte
           </h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-ink-3">
             Atiende las solicitudes de ayuda de tus clientes
           </p>
         </div>
@@ -104,7 +104,7 @@ export default function AdminTickets() {
             className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-colors ${
               filtro === estado
                 ? "bg-violet-600 text-white"
-                : "bg-white text-gray-600 hover:bg-gray-50"
+                : "bg-surface text-ink-2 hover:bg-surface-2"
             }`}
           >
             {estado === "Todos" ? "Todos" : ESTADO_LABEL[estado]}
@@ -114,9 +114,9 @@ export default function AdminTickets() {
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
         {/* LISTADO */}
-        <section className="rounded-2xl border border-gray-200 bg-white shadow-sm">
-          <div className="border-b border-gray-100 px-5 py-4">
-            <h2 className="text-sm font-bold uppercase tracking-wide text-gray-500">
+        <section className="rounded-2xl border border-line bg-surface shadow-sm">
+          <div className="border-b border-line px-5 py-4">
+            <h2 className="text-sm font-bold uppercase tracking-wide text-ink-3">
               {filtro === "Todos" ? "Todos los tickets" : ESTADO_LABEL[filtro]} (
               {ticketsFiltrados.length})
             </h2>
@@ -128,11 +128,11 @@ export default function AdminTickets() {
             </div>
           ) : ticketsFiltrados.length === 0 ? (
             <div className="flex flex-col items-center gap-3 px-6 py-12 text-center">
-              <FaEnvelope className="text-3xl text-gray-300" />
-              <p className="text-gray-500">No hay tickets en este filtro.</p>
+              <FaEnvelope className="text-3xl text-ink-3" />
+              <p className="text-ink-3">No hay tickets en este filtro.</p>
             </div>
           ) : (
-            <ul className="max-h-[70vh] divide-y divide-gray-100 overflow-y-auto">
+            <ul className="max-h-[70vh] divide-y divide-line overflow-y-auto">
               {ticketsFiltrados.map((ticket) => (
                 <li key={ticket.id}>
                   <button
@@ -141,11 +141,11 @@ export default function AdminTickets() {
                     className={`flex w-full flex-col gap-2 px-5 py-4 text-left transition-colors ${
                       ticket.id === seleccionadoReal
                         ? "bg-violet-50/70"
-                        : "hover:bg-gray-50"
+                        : "hover:bg-surface-2"
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="truncate text-sm font-bold text-gray-900">
+                      <span className="truncate text-sm font-bold text-ink">
                         #{ticket.id} · {ticket.asunto}
                       </span>
                       <span
@@ -156,7 +156,7 @@ export default function AdminTickets() {
                     </div>
 
                     <div className="flex flex-wrap items-center gap-1.5 text-xs">
-                      <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2.5 py-0.5 text-gray-700">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-surface-2 px-2.5 py-0.5 text-ink-2">
                         <FaUserTie /> {ticket.usuarioNombre}
                       </span>
                       <span
@@ -164,16 +164,16 @@ export default function AdminTickets() {
                       >
                         {ticket.prioridad}
                       </span>
-                      <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-gray-600">
+                      <span className="rounded-full bg-surface-2 px-2.5 py-0.5 text-ink-2">
                         {CATEGORIA_LABEL[ticket.categoria]}
                       </span>
                     </div>
 
-                    <p className="truncate text-xs text-gray-500">
+                    <p className="truncate text-xs text-ink-3">
                       {ticket.ultimoMensaje}
                     </p>
 
-                    <p className="text-[11px] text-gray-400">
+                    <p className="text-[11px] text-ink-3">
                       {ticket.usuarioEmail} · {formatearFecha(ticket.fechaActualizacionUtc, true)}
                     </p>
                   </button>
@@ -184,7 +184,7 @@ export default function AdminTickets() {
         </section>
 
         {/* DETALLE */}
-        <section className="min-h-[500px] rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <section className="min-h-[500px] rounded-2xl border border-line bg-surface shadow-sm">
           <DetalleAdminTicket
             key={ticketActivo.data?.id ?? "ninguno"}
             ticket={ticketActivo.data}
@@ -217,8 +217,8 @@ function DetalleAdminTicket({
 
   if (!ticket) {
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-3 p-10 text-center text-gray-500">
-        <FaEnvelope className="text-4xl text-gray-300" />
+      <div className="flex h-full flex-col items-center justify-center gap-3 p-10 text-center text-ink-3">
+        <FaEnvelope className="text-4xl text-ink-3" />
         <p>Selecciona un ticket para ver la conversación.</p>
       </div>
     );
@@ -241,9 +241,9 @@ function DetalleAdminTicket({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="border-b border-gray-100 px-6 py-4">
+      <div className="border-b border-line px-6 py-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-lg font-bold text-gray-900">
+          <h2 className="text-lg font-bold text-ink">
             #{ticket.id} · {ticket.asunto}
           </h2>
           <span
@@ -253,8 +253,8 @@ function DetalleAdminTicket({
           </span>
         </div>
 
-        <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-500">
-          <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2.5 py-0.5">
+        <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-ink-3">
+          <span className="inline-flex items-center gap-1 rounded-full bg-surface-2 px-2.5 py-0.5">
             <FaUserTie /> {ticket.usuarioNombre} ({ticket.usuarioEmail})
           </span>
           <span
@@ -262,7 +262,7 @@ function DetalleAdminTicket({
           >
             {ticket.prioridad}
           </span>
-          <span className="rounded-full bg-gray-100 px-2.5 py-0.5">
+          <span className="rounded-full bg-surface-2 px-2.5 py-0.5">
             {CATEGORIA_LABEL[ticket.categoria]}
           </span>
           <span>Abierto: {formatearFecha(ticket.fechaCreacionUtc, true)}</span>
@@ -270,7 +270,7 @@ function DetalleAdminTicket({
 
         {estadosAccion.length > 0 && (
           <div className="mt-3 flex flex-wrap items-center gap-2">
-            <span className="text-xs font-semibold text-gray-500">Cambiar estado:</span>
+            <span className="text-xs font-semibold text-ink-3">Cambiar estado:</span>
             {estadosAccion.map((estado) => (
               <button
                 key={estado}
@@ -298,12 +298,12 @@ function DetalleAdminTicket({
               className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm ${
                 mensajeItem.esAdmin
                   ? "rounded-tr-sm bg-violet-600 text-white"
-                  : "rounded-tl-sm bg-gray-100 text-gray-800"
+                  : "rounded-tl-sm bg-surface-2 text-ink"
               }`}
             >
               <p className="whitespace-pre-wrap">{mensajeItem.mensaje}</p>
             </div>
-            <p className="text-[11px] text-gray-400">
+            <p className="text-[11px] text-ink-3">
               {mensajeItem.esAdmin ? "Tú (Soporte)" : mensajeItem.autorNombre} ·{" "}
               {formatearFecha(mensajeItem.fechaCreacionUtc, true)}
             </p>
@@ -311,9 +311,9 @@ function DetalleAdminTicket({
         ))}
       </div>
 
-      <div className="border-t border-gray-100 p-4">
+      <div className="border-t border-line p-4">
         {estaCerrado ? (
-          <div className="rounded-lg bg-gray-50 px-4 py-3 text-sm text-gray-500">
+          <div className="rounded-lg bg-surface-2 px-4 py-3 text-sm text-ink-3">
             Este ticket está cerrado. Para responder, primero vuelve a abrirlo
             cambiando su estado.
           </div>
@@ -325,7 +325,7 @@ function DetalleAdminTicket({
               rows={2}
               maxLength={2000}
               placeholder="Escribe tu respuesta al cliente..."
-              className="flex-1 resize-none rounded-xl border border-gray-300 px-4 py-3 text-sm focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500"
+              className="flex-1 resize-none rounded-xl border border-line px-4 py-3 text-sm focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500"
             />
             <button
               type="button"

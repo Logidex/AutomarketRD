@@ -300,9 +300,9 @@ function TablaUsuarios({
   onCambiarRol,
 }: PropsTabla) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white shadow-sm">
+    <div className="overflow-x-auto rounded-lg border border-line bg-surface shadow-sm">
       <table className="w-full text-left text-sm">
-        <thead className="border-b border-gray-200 bg-gray-50 text-xs uppercase text-gray-500">
+        <thead className="border-b border-line bg-surface-2 text-xs uppercase text-ink-3">
           <tr>
             <th className="px-4 py-3">Usuario</th>
             <th className="px-4 py-3">Correo</th>
@@ -312,23 +312,23 @@ function TablaUsuarios({
             <th className="px-4 py-3 text-right">Acciones</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-100">
+        <tbody className="divide-y divide-line">
           {usuarios.map((usuario) => (
-            <tr key={usuario.usuarioId} className="hover:bg-gray-50">
-              <td className="px-4 py-3 font-medium text-gray-900">
+            <tr key={usuario.usuarioId} className="hover:bg-surface-2">
+              <td className="px-4 py-3 font-medium text-ink">
                 {usuario.nombre} {usuario.apellido}
               </td>
-              <td className="px-4 py-3 text-gray-600">{usuario.email}</td>
+              <td className="px-4 py-3 text-ink-2">{usuario.email}</td>
               <td className="px-4 py-3">
                 <span
                   className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                    COLOR_ROL[usuario.rol] ?? "bg-gray-100 text-gray-700"
+                    COLOR_ROL[usuario.rol] ?? "bg-surface-2 text-ink-2"
                   }`}
                 >
                   {usuario.rol}
                 </span>
               </td>
-              <td className="px-4 py-3 text-gray-600">
+              <td className="px-4 py-3 text-ink-2">
                 {formatearFecha(usuario.fechaRegistro)}
               </td>
               <td className="px-4 py-3">
@@ -350,7 +350,7 @@ function TablaUsuarios({
                         type="button"
                         onClick={() => onCambiarPlan(usuario)}
                         disabled={procesando !== null}
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-violet-200 bg-white px-3 py-1.5 text-xs font-semibold text-violet-700 transition-colors hover:bg-violet-50 disabled:opacity-50"
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-violet-200 bg-surface px-3 py-1.5 text-xs font-semibold text-violet-700 transition-colors hover:bg-violet-50 disabled:opacity-50"
                       >
                         <FaCoins />
                         Plan
@@ -359,7 +359,7 @@ function TablaUsuarios({
                         type="button"
                         onClick={() => onRenovar(usuario)}
                         disabled={procesando !== null}
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-white px-3 py-1.5 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-50 disabled:opacity-50"
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-surface px-3 py-1.5 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-50 disabled:opacity-50"
                       >
                         <FaRedoAlt />
                         Renovar
@@ -372,7 +372,7 @@ function TablaUsuarios({
                       type="button"
                       onClick={() => onCambiarRol(usuario)}
                       disabled={procesando !== null}
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-amber-200 bg-white px-3 py-1.5 text-xs font-semibold text-amber-700 transition-colors hover:bg-amber-50 disabled:opacity-50"
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-amber-200 bg-surface px-3 py-1.5 text-xs font-semibold text-amber-700 transition-colors hover:bg-amber-50 disabled:opacity-50"
                     >
                       <FaUserTag />
                       Rol
@@ -386,8 +386,8 @@ function TablaUsuarios({
                       disabled={procesando !== null}
                       className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors disabled:opacity-50 ${
                         usuario.isActivo
-                          ? "border-red-200 bg-white text-red-700 hover:bg-red-50"
-                          : "border-green-200 bg-white text-green-700 hover:bg-green-50"
+                          ? "border-red-200 bg-surface text-red-700 hover:bg-red-50"
+                          : "border-green-200 bg-surface text-green-700 hover:bg-green-50"
                       }`}
                     >
                       {usuario.isActivo ? <FaBan /> : <FaCheckCircle />}
@@ -422,7 +422,7 @@ export default function AdminUsuarios() {
   return (
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">
+        <h2 className="text-2xl font-bold text-ink">
           Gestión de usuarios
         </h2>
       </div>

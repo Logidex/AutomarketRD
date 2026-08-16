@@ -56,19 +56,19 @@ export default function AdminAnuncios() {
   return (
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">
+        <h2 className="text-2xl font-bold text-ink">
           Moderación de anuncios
         </h2>
       </div>
 
       {anuncios.length === 0 ? (
-        <div className="rounded-lg border border-gray-200 bg-white p-10 text-center text-gray-500 shadow-sm">
+        <div className="rounded-lg border border-line bg-surface p-10 text-center text-ink-3 shadow-sm">
           No hay anuncios registrados.
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white shadow-sm">
+        <div className="overflow-x-auto rounded-lg border border-line bg-surface shadow-sm">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-gray-200 bg-gray-50 text-xs uppercase text-gray-500">
+            <thead className="border-b border-line bg-surface-2 text-xs uppercase text-ink-3">
               <tr>
                 <th className="px-4 py-3">ID</th>
                 <th className="px-4 py-3">Marca</th>
@@ -78,18 +78,18 @@ export default function AdminAnuncios() {
                 <th className="px-4 py-3 text-right">Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-line">
               {anuncios.map((anuncio) => (
-                <tr key={anuncio.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 text-gray-600">{anuncio.id}</td>
-                  <td className="px-4 py-3 font-medium text-gray-900">
+                <tr key={anuncio.id} className="hover:bg-surface-2">
+                  <td className="px-4 py-3 text-ink-2">{anuncio.id}</td>
+                  <td className="px-4 py-3 font-medium text-ink">
                     {anuncio.marca}
                   </td>
-                  <td className="px-4 py-3 text-gray-700">{anuncio.modelo}</td>
-                  <td className="px-4 py-3 font-semibold text-gray-900">
+                  <td className="px-4 py-3 text-ink-2">{anuncio.modelo}</td>
+                  <td className="px-4 py-3 font-semibold text-ink">
                     {formatearPrecio(anuncio.precio, anuncio.moneda)}
                   </td>
-                  <td className="px-4 py-3 text-gray-600">
+                  <td className="px-4 py-3 text-ink-2">
                     {anuncio.usuarioId}
                   </td>
                   <td className="px-4 py-3 text-right">
@@ -97,7 +97,7 @@ export default function AdminAnuncios() {
                       type="button"
                       onClick={() => eliminar(anuncio)}
                       disabled={procesando !== null}
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 transition-colors hover:bg-red-50 disabled:opacity-50"
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-surface px-3 py-1.5 text-xs font-semibold text-red-700 transition-colors hover:bg-red-50 disabled:opacity-50"
                     >
                       <FaTrash />
                       Eliminar

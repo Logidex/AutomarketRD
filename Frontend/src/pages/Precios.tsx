@@ -68,9 +68,9 @@ export default function Precios() {
   const planGratis = planes.find((p) => p.nivel === "Gratis");
 
   return (
-    <div className="min-h-screen bg-[#0c101b] text-white">
+    <div className="min-h-screen bg-page text-ink">
       {/* Header */}
-      <header className="flex items-center justify-between border-b border-white/10 px-8 py-5">
+      <header className="flex items-center justify-between border-b border-line px-8 py-5">
         <div className="flex items-center gap-4">
           <img
             src={logo}
@@ -88,15 +88,15 @@ export default function Precios() {
           <h1 className="text-4xl font-bold mb-3">
             Planes para tu agencia
           </h1>
-          <p className="mx-auto max-w-2xl text-[#9aa1b1]">
-            Mientras mejor es tu plan, <strong className="text-white">más rápido vendes</strong>:
+          <p className="mx-auto max-w-2xl text-ink-2">
+            Mientras mejor es tu plan, <strong className="text-ink">más rápido vendes</strong>:
             tus vehículos aparecen primero en la vitrina y destacan en la portada.
           </p>
         </div>
 
         {/* Selector de ciclo */}
         <div className="mb-10 flex justify-center">
-          <div className="inline-flex rounded-lg border border-white/10 bg-[#11141a] p-1">
+          <div className="inline-flex rounded-lg border border-line bg-surface-2 p-1">
             {CICLOS.map((c) => (
               <button
                 key={c}
@@ -105,7 +105,7 @@ export default function Precios() {
                 className={`px-6 py-2 rounded-lg text-sm font-semibold transition-colors ${
                   ciclo === c
                     ? "bg-blue-500 text-white"
-                    : "text-[#9aa1b1] hover:text-white"
+                    : "text-ink-2 hover:text-ink"
                 }`}
               >
                 {c}
@@ -161,14 +161,14 @@ export default function Precios() {
               );
             })
           ) : (
-            <p className="col-span-3 text-center text-[#9aa1b1]">
+            <p className="col-span-3 text-center text-ink-2">
               Los planes están disponibles próximamente.
             </p>
           )}
         </div>
 
         {/* Por qué un mejor plan vende más rápido */}
-        <section className="mt-16 rounded-2xl border border-white/10 bg-[#11141a] p-8">
+        <section className="mt-16 rounded-2xl border border-line bg-surface-2 p-8">
           <div className="flex items-center gap-3 mb-6">
             <FaBolt className="text-2xl text-amber-400" />
             <h2 className="text-xl font-bold">
@@ -180,7 +180,7 @@ export default function Precios() {
               <h3 className="font-semibold mb-1 text-blue-400">
                 Prioridad en la vitrina
               </h3>
-              <p className="text-sm text-[#9aa1b1]">
+              <p className="text-sm text-ink-2">
                 La vitrina y las búsquedas ordenan los vehículos por plan:
                 los anuncios de Elite, Pro y Básico aparecen antes que los del
                 plan Gratis.
@@ -190,7 +190,7 @@ export default function Precios() {
               <h3 className="font-semibold mb-1 text-violet-400">
                 Destacados en la portada
               </h3>
-              <p className="text-sm text-[#9aa1b1]">
+              <p className="text-sm text-ink-2">
                 Pro y Elite muestran sus vehículos en la sección
                 "Destacados Premium" de la página principal, la zona de mayor
                 visibilidad.
@@ -200,7 +200,7 @@ export default function Precios() {
               <h3 className="font-semibold mb-1 text-amber-400">
                 Confianza y reconocimiento
               </h3>
-              <p className="text-sm text-[#9aa1b1]">
+              <p className="text-sm text-ink-2">
                 Tu vehículo lleva el badge de tu plan, lo que transmite seriedad
                 y atrae más contactos de compradores.
               </p>
@@ -211,7 +211,7 @@ export default function Precios() {
         {/* Método de pago */}
         <div className="mt-10 flex items-center justify-center gap-3 rounded-xl border border-[#3b2f2f] bg-[#1a1515] p-4">
           <FaPaypal className="text-3xl text-[#0070ba]" />
-          <p className="text-sm text-[#9aa1b1]">
+          <p className="text-sm text-ink-2">
             El pago se procesa de forma segura con <strong className="text-white">PayPal</strong>. Por
             ahora es el único método de pago disponible.
           </p>

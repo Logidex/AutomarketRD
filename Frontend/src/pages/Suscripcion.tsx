@@ -52,9 +52,9 @@ export default function Suscripcion() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0c101b] text-white">
+    <div className="min-h-screen bg-page text-ink">
       {/* Header */}
-      <header className="flex items-center justify-between border-b border-white/10 px-8 py-5">
+      <header className="flex items-center justify-between border-b border-line px-8 py-5">
         <div className="flex items-center gap-4">
           <img
             src={logo}
@@ -72,7 +72,7 @@ export default function Suscripcion() {
           <h1 className="text-4xl font-bold mb-3">
             Elige tu suscripción
           </h1>
-          <p className="text-[#9aa1b1]">
+          <p className="text-ink-2">
             Tu cuenta ya está activa con el plan Gratis. Elige el plan que mejor
             se adapte a tu agencia y empieza a vender más.
           </p>
@@ -80,7 +80,7 @@ export default function Suscripcion() {
 
         {/* Selector de ciclo */}
         <div className="mb-10 flex justify-center">
-          <div className="inline-flex rounded-lg border border-white/10 bg-[#11141a] p-1">
+          <div className="inline-flex rounded-lg border border-line bg-surface-2 p-1">
             {CICLOS.map((c) => (
               <button
                 key={c}
@@ -89,7 +89,7 @@ export default function Suscripcion() {
                 className={`px-6 py-2 rounded-lg text-sm font-semibold transition-colors ${
                   ciclo === c
                     ? "bg-blue-500 text-white"
-                    : "text-[#9aa1b1] hover:text-white"
+                    : "text-ink-2 hover:text-ink"
                 }`}
               >
                 {c}
@@ -145,7 +145,7 @@ export default function Suscripcion() {
               );
             })
           ) : (
-            <p className="col-span-3 text-center text-[#9aa1b1]">
+            <p className="col-span-3 text-center text-ink-2">
               Los planes están disponibles próximamente.
             </p>
           )}
@@ -154,7 +154,7 @@ export default function Suscripcion() {
         {/* Método de pago */}
         <div className="mt-10 flex items-center justify-center gap-3 rounded-xl border border-[#3b2f2f] bg-[#1a1515] p-4">
           <FaPaypal className="text-3xl text-[#0070ba]" />
-          <p className="text-sm text-[#9aa1b1]">
+          <p className="text-sm text-ink-2">
             El pago se procesa de forma segura con{" "}
             <strong className="text-white">PayPal</strong>. Por ahora es el único
             método de pago disponible.
