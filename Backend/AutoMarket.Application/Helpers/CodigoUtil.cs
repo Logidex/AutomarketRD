@@ -12,6 +12,13 @@ public static class CodigoUtil
         return numero.ToString("D6");
     }
 
+    // Token aleatorio de 64 caracteres hexadecimales para enlaces de confirmación
+    // (enlace único por correo, no adivinable).
+    public static string GenerarTokenConfirmacion()
+    {
+        return Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
+    }
+
     // Guardamos solo el hash del código, nunca el código en sí
     public static string HashCodigo(string codigo)
     {

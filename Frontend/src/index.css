@@ -12,6 +12,14 @@
   --am-ink-3: #64748b;
   --am-input: #ffffff;
   --am-hover: rgba(15, 23, 42, 0.05);
+
+  /* NUEVOS: color de marca y estado (modo claro) */
+  --am-brand: #2563eb;
+  --am-brand-hover: #1d4ed8;
+  --am-brand-soft: rgba(37, 99, 235, 0.1);
+  --am-success: #16a34a;
+  --am-success-soft: rgba(22, 163, 74, 0.12);
+
   color-scheme: light;
 }
 
@@ -25,6 +33,14 @@
   --am-ink-3: #cdd3e0;
   --am-input: #13161d;
   --am-hover: rgba(255, 255, 255, 0.06);
+
+  /* NUEVOS: color de marca y estado (modo oscuro) */
+  --am-brand: #3b82f6;
+  --am-brand-hover: #60a5fa;
+  --am-brand-soft: rgba(59, 130, 246, 0.16);
+  --am-success: #22c55e;
+  --am-success-soft: rgba(34, 197, 94, 0.16);
+
   color-scheme: dark;
 }
 

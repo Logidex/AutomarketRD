@@ -10,6 +10,7 @@ const VendedorPublico = lazy(() => import('./pages/VendedorPublico'));
 const Login = lazy(() => import('./pages/Login'));
 const Registro = lazy(() => import('./pages/Registro'));
 const RecuperarPassword = lazy(() => import('./pages/RecuperarPassword'));
+const ConfirmarCorreo = lazy(() => import('./pages/ConfirmarCorreo'));
 const Precios = lazy(() => import('./pages/Precios'));
 const Suscripcion = lazy(() => import('./pages/Suscripcion'));
 const Checkout = lazy(() => import('./pages/Checkout'));
@@ -108,6 +109,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Registro />} />
         <Route path="/recuperar-password" element={<RecuperarPassword />} />
+        <Route path="/confirmar-correo" element={<ConfirmarCorreo />} />
 
         {/* CUENTA DE COMPRADOR (INICIO DE SU ACTIVIDAD) */}
         <Route

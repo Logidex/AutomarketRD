@@ -1,5 +1,6 @@
 using AutoMarket.API.Helpers;
 using AutoMarket.Application.DTOs;
+using AutoMarket.Application.DTOs.Auth;
 using AutoMarket.Application.DTOs.Usuario;
 using AutoMarket.Application.Interfaces;
 using AutoMarket.Core.Exceptions;
@@ -145,6 +146,50 @@ public class AuthController : ControllerBase
          {
              return BadRequest(new { mensaje = ex.Message });
          }
+     }
+
+     /// <summary>
+     /// Confirma el correo de una cuenta usando el token del enlace enviado al registrarse.
+     /// Acceso anónimo permitido (el token es la credencial).
+     /// </summary>
+     /// <param name="dto">Datos que contienen el token de confirmación.</param>
+     /// <returns>Resultado de la confirmación.</returns>
+     [HttpPost("confirmar-correo")]
+     [AllowAnonymous]
+     public async Task<IActionResult> ConfirmarCorreo([FromBody] ConfirmarCorreoDto dto)
+     {
+         if (!ModelState.IsValid)
+             return BadRequest(ModelState);
+
+         try
+         {
+             await _authService.ConfirmarCorreoAsync(dto.Token);
+             return Ok(new { exito = true, mensaje = "Tu correo fue confirmado exitosamente." });
+         }
+         catch (BusinessRuleException ex)
+         {
+             return BadRequest(new { mensaje = ex.Message });
+         }
+     }
+
+     /// <summary>
+     /// Reenvía el correo de confirmación a un dealer con correo sin confirmar.
+     /// Responde igual si el correo existe o no, para no revelar cuentas registradas.
+     /// Aplica rate limiting por IP.
+     /// </summary>
+     /// <param name="dto">Datos que contienen el correo electrónico.</param>
+     /// <returns>Mensaje genérico de reenvío.</returns>
+     [HttpPost("reenviar-confirmacion")]
+     [AllowAnonymous]
+     [EnableRateLimiting("PoliticaLogin")]
+     public async Task<IActionResult> ReenviarConfirmacion([FromBody] ReenviarConfirmacionDto dto)
+     {
+         if (string.IsNullOrWhiteSpace(dto.Email))
+             return BadRequest(new { mensaje = "El correo es obligatorio." });
+
+         await _authService.ReenviarConfirmacionCorreoAsync(dto.Email);
+
+         return Ok(new { exito = true, mensaje = "Si el correo está registrado y sin confirmar, recibirás un nuevo enlace de confirmación." });
      }
 
      /// <summary>

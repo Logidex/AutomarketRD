@@ -49,6 +49,8 @@ services:
       Admin__Email: ${ADMIN_EMAIL_PROD}
       Admin__Password: ${ADMIN_PASSWORD_PROD}  # ← Contraseña de admin solo para prod
       Admin__RotatePassword: ${ADMIN_ROTATE_PASSWORD_PROD:-false}
+      # URL pública del frontend (usada en enlaces de correo, ej: confirmar correo)
+      App__FrontendUrl: ${APP_FRONTEND_URL}
 
     # En producción NO exponemos la API al exterior: solo nginx (frontend)
     # se publica en el puerto 80 y reenvía /api/* a este contenedor.

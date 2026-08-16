@@ -44,6 +44,12 @@ public class UsuarioRepository : IUsuarioRepository
         return usuarioEncontrado;
     }
 
+    public async Task<Usuario?> ObtenerPorCodigoConfirmacionEmailAsync(string codigoHash)
+    {
+        return await _context.Usuarios
+            .FirstOrDefaultAsync(u => u.CodigoConfirmacionEmailHash == codigoHash);
+    }
+
     public async Task<Usuario?> ObtenerPorIdAsync(int id)
     {
         var usuarioEncontrado = await _context.Usuarios

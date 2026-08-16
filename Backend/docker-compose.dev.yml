@@ -49,6 +49,7 @@ services:
       Admin__Email: ${ADMIN_EMAIL}
       Admin__Password: ${ADMIN_PASSWORD}
       Admin__RotatePassword: ${ADMIN_ROTATE_PASSWORD:-false}
+      App__FrontendUrl: ${APP_FRONTEND_URL:-http://localhost:5173}
 
     ports:
       - "8080:8080"  # Expuesto para desarrollo

@@ -1,3 +1,4 @@
+// Ubicación: src/pages/Home.tsx
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -9,13 +10,13 @@ import {
   FaStar,
   FaCrown,
   FaGem,
+  FaArrowRight,
+  FaCheckCircle,
 } from "react-icons/fa";
 import { useVehiculos } from "../hooks/useVehiculos";
 import type { AnuncioListado } from "../types/anuncio.types";
-import logo from "../assets/AutoMarketRD_Logo.svg";
 import { urlImagen } from "../utils/imagen";
 import { formatearPrecio } from "../utils/formato";
-import MenuPublico from "../components/layout/MenuPublico";
 import { anuncioService } from "../services/anuncio.service";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -27,16 +28,22 @@ import {
 import { nombrePlan } from "../constants/planes";
 import BadgeVerificado from "../components/BadgeVerificado";
 import FiltroTipoVehiculo from "../components/FiltroTipoVehiculo";
+import HeaderPublico from "../components/layout/HeaderPublico";
 
 const TAMANO_PAGINA = 12;
 
 type PlanNivel = "Gratis" | "Basico" | "Pro" | "Elite";
 
+/**
+ * Solo Elite lleva el gradiente dorado (elemento distintivo).
+ * El resto usa chips discretos basados en tokens para no competir
+ * con la foto del vehículo ni con el precio de marca.
+ */
 const COLOR_PLAN: Record<PlanNivel, string> = {
-  Elite: "bg-gradient-to-r from-amber-500 to-yellow-600 text-white",
-  Pro: "bg-gradient-to-r from-purple-500 to-pink-500 text-white",
-  Basico: "bg-gradient-to-r from-blue-500 to-cyan-500 text-white",
-  Gratis: "bg-gradient-to-r from-gray-500 to-gray-600 text-white",
+  Elite: "bg-gradient-to-r from-amber-500 to-yellow-600 text-white shadow-sm",
+  Pro: "bg-brand-soft text-brand border border-brand/20",
+  Basico: "bg-surface-2 text-ink-2 border border-line",
+  Gratis: "bg-surface-2 text-ink-3 border border-line",
 };
 
 const ICONO_PLAN: Record<PlanNivel, React.ReactNode> = {
@@ -163,23 +170,41 @@ function useBusquedaVehiculos() {
 interface PropsHero {
   filtros: Filtros;
   cargando: boolean;
+  totalRegistros: number;
   onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
   onSubmit: (e: React.FormEvent) => void;
   onSeleccionarTipo: (valor: string) => void;
 }
 
-function HeroBusqueda({ filtros, cargando, onChange, onSubmit, onSeleccionarTipo }: PropsHero) {
+function HeroBusqueda({ filtros, cargando, totalRegistros, onChange, onSubmit, onSeleccionarTipo }: PropsHero) {
   return (
     <section className="border-b border-line bg-gradient-to-b from-surface-2 to-page">
       <div className="mx-auto max-w-6xl px-6 py-14 text-center sm:px-8">
-        <h1 className="text-4xl font-bold sm:text-5xl">
+        <h1 className="text-balance text-4xl font-bold sm:text-5xl">
           Compra y vende vehículos
-          <span className="block text-blue-500">en República Dominicana</span>
+          <span className="block text-brand">en República Dominicana</span>
         </h1>
-        <p className="mx-auto mt-4 max-w-2xl text-ink-2">
+        <p className="mx-auto mt-4 max-w-2xl text-pretty text-ink-2">
           Explora el inventario de agencias y vendedores particulares. Encuentra
           el vehículo que buscas y contacta al vendedor directamente.
         </p>
+
+        {/* Métricas reales (solo se muestran si hay datos) */}
+        {totalRegistros > 0 && (
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-sm text-ink-2">
+            <span className="inline-flex items-center gap-2">
+              <FaCar className="text-brand" />
+              <strong className="font-semibold text-ink">
+                {totalRegistros.toLocaleString("es-DO")}
+              </strong>{" "}
+              vehículos publicados
+            </span>
+            <span className="inline-flex items-center gap-2">
+              <FaCheckCircle className="text-success" />
+              Vendedores verificados
+            </span>
+          </div>
+        )}
 
         <div className="mt-10">
           <p className="mb-4 text-sm font-semibold uppercase tracking-wide text-ink-2">
@@ -191,14 +216,12 @@ function HeroBusqueda({ filtros, cargando, onChange, onSubmit, onSeleccionarTipo
           />
         </div>
 
+        {/* Buscador protagónico: elevado con sombra y foco de marca */}
         <form onSubmit={onSubmit} className="mx-auto mt-8 max-w-5xl">
-          <div className="flex flex-col gap-3 rounded-2xl border border-line bg-surface p-4 sm:flex-row">
+          <div className="flex flex-col gap-3 rounded-2xl border border-line bg-surface p-4 shadow-lg shadow-black/5 sm:flex-row">
             <div className="relative flex-1">
-              <FaSearch className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
-              <label
-                htmlFor="buscarMarca"
-                className="sr-only"
-              >
+              <FaSearch className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-3" />
+              <label htmlFor="buscarMarca" className="sr-only">
                 Buscar por marca o modelo
               </label>
               <input
@@ -208,14 +231,14 @@ function HeroBusqueda({ filtros, cargando, onChange, onSubmit, onSeleccionarTipo
                 value={filtros.marca}
                 onChange={onChange}
                 placeholder="Buscar por marca o modelo..."
-                className="w-full rounded-xl border border-line bg-page py-3 pl-12 pr-4 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
+                className="w-full rounded-xl border border-line bg-page py-3 pl-12 pr-4 text-sm text-ink placeholder:text-ink-3 transition-colors focus:border-brand focus:outline-none"
               />
             </div>
 
             <button
               type="submit"
               disabled={cargando}
-              className="rounded-xl bg-blue-500 px-8 py-3 text-sm font-semibold transition-colors hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed"
+              className="rounded-xl bg-brand px-8 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-60"
             >
               {cargando ? "Buscando..." : "Buscar"}
             </button>
@@ -230,7 +253,7 @@ function HeroBusqueda({ filtros, cargando, onChange, onSubmit, onSeleccionarTipo
               name="transmision"
               value={filtros.transmision}
               onChange={onChange}
-              className="rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink transition-colors focus:border-blue-500 focus:outline-none"
+              className="rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink transition-colors focus:border-brand focus:outline-none"
             >
               <option value="">Transmisión</option>
               {TRANSMISIONES.map((opcion) => (
@@ -248,7 +271,7 @@ function HeroBusqueda({ filtros, cargando, onChange, onSubmit, onSeleccionarTipo
               name="combustible"
               value={filtros.combustible}
               onChange={onChange}
-              className="rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink transition-colors focus:border-blue-500 focus:outline-none"
+              className="rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink transition-colors focus:border-brand focus:outline-none"
             >
               <option value="">Combustible</option>
               {COMBUSTIBLES.map((opcion) => (
@@ -259,10 +282,7 @@ function HeroBusqueda({ filtros, cargando, onChange, onSubmit, onSeleccionarTipo
             </select>
 
             <div className="flex items-center gap-2">
-              <label
-                htmlFor="precioMinimo"
-                className="sr-only"
-              >
+              <label htmlFor="precioMinimo" className="sr-only">
                 Precio mínimo
               </label>
               <input
@@ -274,13 +294,10 @@ function HeroBusqueda({ filtros, cargando, onChange, onSubmit, onSeleccionarTipo
                 value={filtros.precioMinimo}
                 onChange={onChange}
                 placeholder="Precio mín."
-                className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
+                className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink placeholder:text-ink-3 transition-colors focus:border-brand focus:outline-none"
               />
-              <span className="text-gray-500">-</span>
-              <label
-                htmlFor="precioMaximo"
-                className="sr-only"
-              >
+              <span className="text-ink-3">-</span>
+              <label htmlFor="precioMaximo" className="sr-only">
                 Precio máximo
               </label>
               <input
@@ -292,7 +309,7 @@ function HeroBusqueda({ filtros, cargando, onChange, onSubmit, onSeleccionarTipo
                 value={filtros.precioMaximo}
                 onChange={onChange}
                 placeholder="Precio máx."
-                className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
+                className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink placeholder:text-ink-3 transition-colors focus:border-brand focus:outline-none"
               />
             </div>
           </div>
@@ -314,7 +331,7 @@ function TarjetaAnuncioHome({ anuncio, onAbrir }: PropsTarjeta) {
     <button
       type="button"
       onClick={onAbrir}
-      className="group flex flex-col overflow-hidden rounded-2xl border border-line bg-surface text-left transition-[border-color,box-shadow] hover:border-blue-500/40 hover:shadow-lg"
+      className="group flex flex-col overflow-hidden rounded-2xl border border-line bg-surface text-left transition-[border-color,box-shadow] hover:border-brand/40 hover:shadow-lg"
     >
       <div className="relative aspect-[16/10] overflow-hidden">
         <img
@@ -337,33 +354,33 @@ function TarjetaAnuncioHome({ anuncio, onAbrir }: PropsTarjeta) {
 
       <div className="flex flex-1 flex-col p-5">
         <div className="flex items-start justify-between gap-3">
-          <h3 className="truncate text-lg font-bold">
+          <h3 className="truncate text-lg font-bold text-ink">
             {anuncio.marca} {anuncio.modelo}
-            <span className="ml-2 text-sm font-normal text-gray-400">
+            <span className="ml-2 text-sm font-normal text-ink-3">
               {anuncio.version}
             </span>
           </h3>
-          <span className="shrink-0 rounded-full bg-green-500/10 px-3 py-1 text-xs font-semibold text-green-400">
+          <span className="shrink-0 rounded-full bg-success-soft px-3 py-1 text-xs font-semibold text-success">
             {anuncio.anio}
           </span>
         </div>
 
-        <p className="mt-2 text-xl font-bold text-blue-500">
+        <p className="mt-2 text-xl font-bold text-brand">
           {formatearPrecio(anuncio.precio, anuncio.moneda)}
         </p>
 
         <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 border-t border-line pt-4 text-xs text-ink-2">
           <span className="inline-flex items-center gap-1.5">
-            <FaTachometerAlt className="text-gray-500" />
+            <FaTachometerAlt className="text-ink-3" />
             {anuncio.kilometraje.toLocaleString("es-DO")} km
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <FaCalendarAlt className="text-gray-500" />
+            <FaCalendarAlt className="text-ink-3" />
             {anuncio.anio}
           </span>
           {anuncio.ubicacion && (
             <span className="inline-flex items-center gap-1.5">
-              <FaMapMarkerAlt className="text-gray-500" />
+              <FaMapMarkerAlt className="text-ink-3" />
               {anuncio.ubicacion}
             </span>
           )}
@@ -371,17 +388,17 @@ function TarjetaAnuncioHome({ anuncio, onAbrir }: PropsTarjeta) {
 
         <div className="mt-4 flex flex-wrap gap-2">
           {anuncio.tipoVehiculo && (
-            <span className="rounded-full bg-blue-500/10 px-3 py-1 text-xs font-medium text-blue-400">
+            <span className="rounded-full bg-brand-soft px-3 py-1 text-xs font-medium text-brand">
               {etiquetaDe(anuncio.tipoVehiculo, TIPOS_VEHICULO)}
             </span>
           )}
           {anuncio.combustible && (
-            <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-gray-300">
+            <span className="rounded-full bg-surface-2 px-3 py-1 text-xs font-medium text-ink-2">
               {etiquetaDe(anuncio.combustible, COMBUSTIBLES)}
             </span>
           )}
           {anuncio.transmision && (
-            <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-gray-300">
+            <span className="rounded-full bg-surface-2 px-3 py-1 text-xs font-medium text-ink-2">
               {etiquetaDe(anuncio.transmision, TRANSMISIONES)}
             </span>
           )}
@@ -414,7 +431,7 @@ function PaginacionHome({
         type="button"
         onClick={() => onIrAPagina(pagina - 1)}
         disabled={pagina <= 1}
-        className="rounded-lg border border-line px-4 py-2 text-sm font-medium transition-colors hover:border-white/30 disabled:cursor-not-allowed disabled:opacity-40"
+        className="rounded-lg border border-line px-4 py-2 text-sm font-medium transition-colors hover:border-ink-3/40 disabled:cursor-not-allowed disabled:opacity-40"
       >
         Anterior
       </button>
@@ -438,8 +455,8 @@ function PaginacionHome({
             onClick={() => onIrAPagina(p)}
             className={`min-w-10 rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${
               p === pagina
-                ? "bg-blue-500 text-white"
-                : "border border-line hover:border-white/30"
+                ? "bg-brand text-white"
+                : "border border-line hover:border-ink-3/40"
             }`}
           >
             {p}
@@ -451,11 +468,37 @@ function PaginacionHome({
         type="button"
         onClick={() => onIrAPagina(pagina + 1)}
         disabled={pagina >= totalPaginas}
-        className="rounded-lg border border-line px-4 py-2 text-sm font-medium transition-colors hover:border-white/30 disabled:cursor-not-allowed disabled:opacity-40"
+        className="rounded-lg border border-line px-4 py-2 text-sm font-medium transition-colors hover:border-ink-3/40 disabled:cursor-not-allowed disabled:opacity-40"
       >
         Siguiente
       </button>
     </div>
+  );
+}
+
+/** NUEVO: bloque CTA para captar vendedores antes del footer */
+function CtaVendedor() {
+  return (
+    <section className="mx-auto max-w-6xl px-6 py-10 sm:px-8">
+      <div className="flex flex-col items-start justify-between gap-6 rounded-2xl border border-brand/20 bg-brand-soft p-8 sm:flex-row sm:items-center">
+        <div>
+          <h2 className="text-2xl font-bold text-ink">
+            ¿Quieres vender tu vehículo?
+          </h2>
+          <p className="mt-2 max-w-xl text-pretty text-ink-2">
+            Publica tu anuncio en minutos y llega a miles de compradores en todo
+            el país. Elige el plan que mejor se ajuste a ti.
+          </p>
+        </div>
+        <Link
+          to="/precios"
+          className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-brand px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-hover"
+        >
+          Publicar vehículo
+          <FaArrowRight className="h-3.5 w-3.5" />
+        </Link>
+      </div>
+    </section>
   );
 }
 
@@ -524,23 +567,14 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-page text-ink">
-      {/* HEADER */}
-      <header className="flex items-center justify-between border-b border-line px-6 py-5 sm:px-8">
-        <Link to="/" className="flex items-center gap-4">
-          <img
-            src={logo}
-            alt="AutoMarket RD"
-            className="h-24 w-auto object-contain drop-shadow-[0_0_20px_rgba(59,130,246,0.4)]"
-          />
-        </Link>
-
-        <MenuPublico />
-      </header>
+      {/* HEADER unificado (mismo componente que LayoutPublico) */}
+      <HeaderPublico />
 
       {/* HERO + BÚSQUEDA */}
       <HeroBusqueda
         filtros={filtros}
         cargando={cargando}
+        totalRegistros={totalRegistros}
         onChange={handleChange}
         onSubmit={aplicarBusqueda}
         onSeleccionarTipo={seleccionarTipo}
@@ -550,20 +584,22 @@ export default function Home() {
       <section className="mx-auto max-w-6xl px-6 py-10 sm:px-8">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <FaCrown className="text-amber-400" />
-            <h2 className="text-xl font-bold">Destacados <span className="text-amber-400">Premium</span></h2>
+            <FaCrown className="text-amber-500" />
+            <h2 className="text-xl font-bold text-ink">
+              Destacados <span className="text-amber-500">Premium</span>
+            </h2>
           </div>
         </div>
 
         {destacadosError ? (
           <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-8 text-center">
-            <p className="text-red-400">
+            <p className="text-red-500">
               No se pudieron cargar los anuncios destacados. Inténtalo nuevamente.
             </p>
             <button
               type="button"
               onClick={() => destacadosRefetch()}
-              className="mt-4 rounded-lg bg-blue-500 px-6 py-2 text-sm font-semibold transition-colors hover:bg-blue-600"
+              className="mt-4 rounded-lg bg-brand px-6 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-hover"
             >
               Reintentar
             </button>
@@ -600,7 +636,7 @@ export default function Home() {
       {/* VITRINA */}
       <main className="mx-auto max-w-6xl px-6 py-10 sm:px-8">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-xl font-bold">
+          <h2 className="text-xl font-bold text-ink">
             Vehículos disponibles
             {totalRegistros > 0 && (
               <span className="ml-2 text-sm font-normal text-ink-2">
@@ -613,7 +649,7 @@ export default function Home() {
             type="button"
             onClick={limpiarFiltros}
             disabled={cargando}
-            className="rounded-lg border border-line px-4 py-2 text-sm font-medium text-ink-2 transition-colors hover:border-white/30 hover:text-ink disabled:opacity-50"
+            className="rounded-lg border border-line px-4 py-2 text-sm font-medium text-ink-2 transition-colors hover:border-ink-3/40 hover:text-ink disabled:opacity-50"
           >
             Limpiar filtros
           </button>
@@ -621,25 +657,25 @@ export default function Home() {
 
         {isLoading ? (
           <div className="flex items-center justify-center py-24">
-            <div className="h-10 w-10 animate-spin rounded-full border-2 border-line border-t-blue-500" />
+            <div className="h-10 w-10 animate-spin rounded-full border-2 border-line border-t-brand" />
           </div>
         ) : isError ? (
           <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-8 text-center">
-            <p className="text-red-400">
+            <p className="text-red-500">
               {error instanceof Error ? error.message : "No se pudieron cargar los vehículos. Inténtalo nuevamente."}
             </p>
             <button
               type="button"
               onClick={() => refetch()}
-              className="mt-4 rounded-lg bg-blue-500 px-6 py-2 text-sm font-semibold transition-colors hover:bg-blue-600"
+              className="mt-4 rounded-lg bg-brand px-6 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-hover"
             >
               Reintentar
             </button>
           </div>
         ) : anuncios.length === 0 ? (
           <div className="rounded-2xl border border-line bg-surface p-16 text-center">
-            <FaCar className="mx-auto text-5xl text-gray-600" />
-            <h3 className="mt-4 text-lg font-semibold">
+            <FaCar className="mx-auto text-5xl text-ink-3" />
+            <h3 className="mt-4 text-lg font-semibold text-ink">
               No encontramos vehículos
             </h3>
             <p className="mt-2 text-sm text-ink-2">
@@ -667,6 +703,9 @@ export default function Home() {
           onIrAPagina={irAPagina}
         />
       </main>
+
+      {/* CTA VENDEDOR */}
+      <CtaVendedor />
 
       {/* FOOTER */}
       <PiePaginaHome />

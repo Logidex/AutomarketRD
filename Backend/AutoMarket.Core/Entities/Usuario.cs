@@ -162,6 +162,37 @@ public class Usuario
     public DateTime? CodigoConfirmacionExpiracionUtc { get; private set; }
 
     // ==========================================
+    // CONFIRMACIÓN DE CORREO EN EL ALTA DE CUENTA
+    // (Dealer): enlace con token enviado al registrarse.
+    // ==========================================
+    public string? CodigoConfirmacionEmailHash { get; private set; }
+    public DateTime? CodigoConfirmacionEmailExpiracionUtc { get; private set; }
+
+    public void EstablecerConfirmacionEmail(string codigoHash, DateTime expiracionUtc)
+    {
+        CodigoConfirmacionEmailHash = codigoHash;
+        CodigoConfirmacionEmailExpiracionUtc = expiracionUtc;
+    }
+
+    public bool ConfirmarEmailSiValido(string codigoHash, DateTime ahoraUtc)
+    {
+        if (string.IsNullOrEmpty(CodigoConfirmacionEmailHash) ||
+            CodigoConfirmacionEmailExpiracionUtc is not DateTime expiracion)
+            return false;
+
+        if (ahoraUtc > expiracion)
+            return false;
+
+        if (!string.Equals(CodigoConfirmacionEmailHash, codigoHash, StringComparison.Ordinal))
+            return false;
+
+        EmailConfirmado = true;
+        CodigoConfirmacionEmailHash = null;
+        CodigoConfirmacionEmailExpiracionUtc = null;
+        return true;
+    }
+
+    // ==========================================
     // CAMBIO DE CONTRASEÑA EN DOS PASOS (confirmación)
     // ==========================================
     public string? PasswordPendienteHash { get; private set; }

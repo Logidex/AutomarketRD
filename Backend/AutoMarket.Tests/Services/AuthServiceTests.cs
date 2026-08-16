@@ -1,6 +1,7 @@
 using Moq;
 using Xunit;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 using AutoMarket.Application.DTOs;
 using AutoMarket.Application.Services;
 using AutoMarket.Core.Interfaces;
@@ -31,7 +32,7 @@ public class AuthServiceTests
 
         mockRepo.Setup(r => r.ExisteEmailAsync(dto.Email)).ReturnsAsync(true);
 
-        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<ILogger<AuthService>>());
+        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<IConfiguration>(), Mock.Of<ILogger<AuthService>>());
 
         var resultado = await servicio.RegistrarUsuarioAsync(dto);
 
@@ -60,7 +61,7 @@ public class AuthServiceTests
         mockRepo.Setup(r => r.CrearUsuarioAsync(It.IsAny<Usuario>()))
             .ReturnsAsync((Usuario u) => u);
 
-        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<ILogger<AuthService>>());
+        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<IConfiguration>(), Mock.Of<ILogger<AuthService>>());
 
         var resultado = await servicio.RegistrarUsuarioAsync(dto);
 
@@ -92,7 +93,7 @@ public class AuthServiceTests
 
         mockRepo.Setup(r => r.ExisteEmailAsync(dto.Email)).ReturnsAsync(false);
 
-        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<ILogger<AuthService>>());
+        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<IConfiguration>(), Mock.Of<ILogger<AuthService>>());
 
         var resultado = await servicio.RegistrarUsuarioAsync(dto);
 
@@ -125,12 +126,12 @@ Assert.False(resultado.Exito);
         mockRepo.Setup(r => r.CrearUsuarioAsync(It.IsAny<Usuario>()))
             .ReturnsAsync((Usuario u) => u);
 
-        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<ILogger<AuthService>>());
+        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<IConfiguration>(), Mock.Of<ILogger<AuthService>>());
 
         var resultado = await servicio.RegistrarUsuarioAsync(dto);
 
         Assert.True(resultado.Exito);
-        Assert.Equal("Usuario registrado exitosamente", resultado.Mensaje);
+        Assert.Contains("confirma", resultado.Mensaje, StringComparison.OrdinalIgnoreCase);
         mockRepo.Verify(r => r.CrearUsuarioAsync(It.Is<Usuario>(u =>
             u.Rol == "Dealer" &&
             u.PerfilDealer != null &&
@@ -168,7 +169,7 @@ Assert.False(resultado.Exito);
         mockRepo.Setup(r => r.CrearUsuarioAsync(It.IsAny<Usuario>()))
             .ReturnsAsync((Usuario u) => u);
 
-        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<ILogger<AuthService>>());
+        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<IConfiguration>(), Mock.Of<ILogger<AuthService>>());
 
         var resultado = await servicio.RegistrarUsuarioAsync(dto);
 
@@ -196,7 +197,7 @@ Assert.False(resultado.Exito);
 
         mockRepo.Setup(r => r.ObtenerPorEmailAsync(dto.Email)).ReturnsAsync((Usuario?)null);
 
-        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<ILogger<AuthService>>());
+        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<IConfiguration>(), Mock.Of<ILogger<AuthService>>());
 
         var ex = await Assert.ThrowsAsync<UnauthorizedAccessException>(() => servicio.LoginAsync(dto));
 
@@ -231,7 +232,7 @@ Assert.False(resultado.Exito);
 
         mockRepo.Setup(r => r.ObtenerPorEmailAsync(dto.Email)).ReturnsAsync(usuarioEnBaseDeDatos);
 
-        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<ILogger<AuthService>>());
+        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<IConfiguration>(), Mock.Of<ILogger<AuthService>>());
 
         var ex = await Assert.ThrowsAsync<UnauthorizedAccessException>(() => servicio.LoginAsync(dto));
 
@@ -269,7 +270,7 @@ Assert.False(resultado.Exito);
         mockRepo.Setup(r => r.ObtenerPorEmailAsync(dto.Email)).ReturnsAsync(usuarioEnBaseDeDatos);
         mockTokenService.Setup(t => t.GenerarToken(usuarioEnBaseDeDatos)).Returns(tokenFalso);
 
-        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<ILogger<AuthService>>());
+        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<IConfiguration>(), Mock.Of<ILogger<AuthService>>());
 
         var resultado = await servicio.LoginAsync(dto);
 
@@ -303,6 +304,7 @@ Assert.False(resultado.Exito);
                 new Mock<ITokenService>().Object,
                 new Mock<ISuscripcionService>().Object,
                 EmailSender.Object,
+                Mock.Of<IConfiguration>(),
                 Mock.Of<ILogger<AuthService>>());
         }
     }
@@ -413,5 +415,179 @@ Assert.False(resultado.Exito);
                 Codigo = "123456",
                 NuevaPassword = "NuevaClave456"
             }));
+    }
+
+    // ==========================================
+    // CONFIRMACIÓN DE CORREO EN EL ALTA DE CUENTA
+    // ==========================================
+
+    private class ConfirmacionCorreoContext
+    {
+        public Mock<IUsuarioRepository> Repo { get; } = new();
+        public Mock<IEmailSenderService> EmailSender { get; } = new();
+        public Usuario Usuario { get; }
+
+        public AuthService Servicio { get; }
+
+        public ConfirmacionCorreoContext()
+        {
+            Usuario = new Usuario(
+                "Carlos", "Mota", "dealer@test.com",
+                BCrypt.Net.BCrypt.HashPassword("ClaveSegura123"),
+                "8090000000", "Dealer");
+            typeof(Usuario).GetProperty("UsuarioId")?.SetValue(Usuario, 25);
+            Usuario.CrearPerfilDealer("Mota Motors", "130-88888-1", "Santo Domingo", "809-555-5555");
+
+            var config = new ConfigurationBuilder()
+                .AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["App:FrontendUrl"] = "http://localhost:5174"
+                })
+                .Build();
+
+            Servicio = new AuthService(
+                Repo.Object,
+                new Mock<ITokenService>().Object,
+                new Mock<ISuscripcionService>().Object,
+                EmailSender.Object,
+                config,
+                Mock.Of<ILogger<AuthService>>());
+        }
+    }
+
+    [Fact]
+    public async Task RegistrarUsuarioAsync_DealerValido_EnvíaCorreoDeConfirmacionConEnlace()
+    {
+        var dto = new RegistroDto
+        {
+            Nombre = "Carlos",
+            Apellido = "Mota",
+            Email = "dealer@test.com",
+            Password = "MiPasswordSeguro123",
+            Rol = "Dealer",
+            NombreAgencia = "Mota Motors",
+            AgenciaRNC = "130-88888-1",
+            UbicacionAgencia = "Santo Domingo",
+            TelefonoAgencia = "809-555-5555"
+        };
+
+        var mockRepo = new Mock<IUsuarioRepository>();
+        var mockSuscripcionService = new Mock<ISuscripcionService>();
+        var emailSender = new Mock<IEmailSenderService>();
+
+        mockRepo.Setup(r => r.ExisteEmailAsync(dto.Email)).ReturnsAsync(false);
+        mockRepo.Setup(r => r.CrearUsuarioAsync(It.IsAny<Usuario>()))
+            .ReturnsAsync((Usuario u) => u);
+
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["App:FrontendUrl"] = "http://localhost:5174"
+            })
+            .Build();
+
+        var servicio = new AuthService(
+            mockRepo.Object,
+            new Mock<ITokenService>().Object,
+            mockSuscripcionService.Object,
+            emailSender.Object,
+            config,
+            Mock.Of<ILogger<AuthService>>());
+
+        var resultado = await servicio.RegistrarUsuarioAsync(dto);
+
+        Assert.True(resultado.Exito);
+        Assert.Contains("confirma", resultado.Mensaje, StringComparison.OrdinalIgnoreCase);
+        mockRepo.Verify(r => r.GuardarCambiosAsync(), Times.Once);
+        emailSender.Verify(e => e.EnviarCorreoAsync(
+            dto.Email.ToLowerInvariant(),
+            It.Is<string>(s => s.Contains("Confirma tu correo", StringComparison.OrdinalIgnoreCase)),
+            It.Is<string>(c => c.Contains("/confirmar-correo?token=", StringComparison.OrdinalIgnoreCase))), Times.Once);
+    }
+
+    [Fact]
+    public async Task ConfirmarCorreoAsync_TokenValido_MarcaEmailComoConfirmado()
+    {
+        var ctx = new ConfirmacionCorreoContext();
+        var token = AutoMarket.Application.Helpers.CodigoUtil.GenerarTokenConfirmacion();
+        var hash = AutoMarket.Application.Helpers.CodigoUtil.HashCodigo(token);
+
+        ctx.Usuario.EstablecerConfirmacionEmail(hash, DateTime.UtcNow.AddHours(1));
+        ctx.Repo.Setup(r => r.ObtenerPorCodigoConfirmacionEmailAsync(hash)).ReturnsAsync(ctx.Usuario);
+
+        await ctx.Servicio.ConfirmarCorreoAsync(token);
+
+        Assert.True(ctx.Usuario.EmailConfirmado);
+        Assert.Null(ctx.Usuario.CodigoConfirmacionEmailHash);
+        Assert.Null(ctx.Usuario.CodigoConfirmacionEmailExpiracionUtc);
+        ctx.Repo.Verify(r => r.GuardarCambiosAsync(), Times.Once);
+    }
+
+    [Fact]
+    public async Task ConfirmarCorreoAsync_TokenNoExiste_DebeLanzarBusinessRule()
+    {
+        var ctx = new ConfirmacionCorreoContext();
+        ctx.Repo.Setup(r => r.ObtenerPorCodigoConfirmacionEmailAsync(It.IsAny<string>()))
+            .ReturnsAsync((Usuario?)null);
+
+        await Assert.ThrowsAsync<AutoMarket.Core.Exceptions.BusinessRuleException>(() =>
+            ctx.Servicio.ConfirmarCorreoAsync("tokenInventado123"));
+
+        Assert.False(ctx.Usuario.EmailConfirmado);
+    }
+
+    [Fact]
+    public async Task ConfirmarCorreoAsync_TokenExpirado_DebeLanzarBusinessRule()
+    {
+        var ctx = new ConfirmacionCorreoContext();
+        var token = AutoMarket.Application.Helpers.CodigoUtil.GenerarTokenConfirmacion();
+        var hash = AutoMarket.Application.Helpers.CodigoUtil.HashCodigo(token);
+
+        ctx.Usuario.EstablecerConfirmacionEmail(hash, DateTime.UtcNow.AddMinutes(-5));
+        ctx.Repo.Setup(r => r.ObtenerPorCodigoConfirmacionEmailAsync(hash)).ReturnsAsync(ctx.Usuario);
+
+        await Assert.ThrowsAsync<AutoMarket.Core.Exceptions.BusinessRuleException>(() =>
+            ctx.Servicio.ConfirmarCorreoAsync(token));
+
+        Assert.False(ctx.Usuario.EmailConfirmado);
+    }
+
+    [Fact]
+    public async Task ReenviarConfirmacionCorreoAsync_DealerSinConfirmar_RegeneraTokenYEnviaCorreo()
+    {
+        var ctx = new ConfirmacionCorreoContext();
+        ctx.Repo.Setup(r => r.ObtenerPorEmailParaEscrituraAsync(ctx.Usuario.Email)).ReturnsAsync(ctx.Usuario);
+
+        await ctx.Servicio.ReenviarConfirmacionCorreoAsync(ctx.Usuario.Email);
+
+        Assert.NotNull(ctx.Usuario.CodigoConfirmacionEmailHash);
+        Assert.NotNull(ctx.Usuario.CodigoConfirmacionEmailExpiracionUtc);
+        ctx.EmailSender.Verify(e => e.EnviarCorreoAsync(
+            ctx.Usuario.Email,
+            It.IsAny<string>(),
+            It.Is<string>(c => c.Contains("/confirmar-correo?token=", StringComparison.OrdinalIgnoreCase))), Times.Once);
+    }
+
+    [Fact]
+    public async Task ReenviarConfirmacionCorreoAsync_EmailNoExiste_NoEnviaCorreo()
+    {
+        var ctx = new ConfirmacionCorreoContext();
+        ctx.Repo.Setup(r => r.ObtenerPorEmailParaEscrituraAsync("fantasma@test.com")).ReturnsAsync((Usuario?)null);
+
+        await ctx.Servicio.ReenviarConfirmacionCorreoAsync("fantasma@test.com");
+
+        ctx.EmailSender.Verify(e => e.EnviarCorreoAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ReenviarConfirmacionCorreoAsync_CorreoYaConfirmado_NoEnviaCorreo()
+    {
+        var ctx = new ConfirmacionCorreoContext();
+        typeof(Usuario).GetProperty("EmailConfirmado")?.SetValue(ctx.Usuario, true);
+        ctx.Repo.Setup(r => r.ObtenerPorEmailParaEscrituraAsync(ctx.Usuario.Email)).ReturnsAsync(ctx.Usuario);
+
+        await ctx.Servicio.ReenviarConfirmacionCorreoAsync(ctx.Usuario.Email);
+
+        ctx.EmailSender.Verify(e => e.EnviarCorreoAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
     }
 }

@@ -10,4 +10,6 @@ public interface IAuthService
     Task<LoginResultDto> LoginAsync(LoginDto dto);
     Task SolicitarRecuperacionAsync(string email);
     Task RestablecerPasswordAsync(RestablecerPasswordDto dto);
+    Task ConfirmarCorreoAsync(string token);
+    Task ReenviarConfirmacionCorreoAsync(string email);
 }

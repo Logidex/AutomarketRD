@@ -8,6 +8,7 @@ public interface IUsuarioRepository
     Task<Usuario> CrearUsuarioAsync(Usuario usuario);
     Task<Usuario?> ObtenerPorEmailAsync(string email);
     Task<Usuario?> ObtenerPorEmailParaEscrituraAsync(string email);
+    Task<Usuario?> ObtenerPorCodigoConfirmacionEmailAsync(string codigoHash);
     Task<Usuario?> ObtenerPorIdAsync(int id);
     Task<Usuario?> ObtenerDealerConPerfilPorIdAsync(int usuarioId);
     Task EliminarPerfilDealerAsync(int usuarioId);

@@ -1,6 +1,7 @@
 using Moq;
 using Xunit;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 using AutoMarket.Application.DTOs;
 using AutoMarket.Application.Services;
 using AutoMarket.Core.Interfaces;
@@ -30,7 +31,7 @@ public class UsuarioServiceTests
         var mockTokenService = new Mock<ITokenService>();
         var mockSuscripcionService = new Mock<ISuscripcionService>();
 
-        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<ILogger<AuthService>>());
+        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<IConfiguration>(), Mock.Of<ILogger<AuthService>>());
 
         // 2. ACT
         var resultado = await servicio.RegistrarUsuarioAsync(dto);
@@ -58,7 +59,7 @@ public class UsuarioServiceTests
         var mockSuscripcionService = new Mock<ISuscripcionService>();
 
         mockRepo.Setup(r => r.ExisteEmailAsync(dto.Email)).ReturnsAsync(false);
-        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<ILogger<AuthService>>());
+        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<IConfiguration>(), Mock.Of<ILogger<AuthService>>());
 
         // 2. ACT
         var resultado = await servicio.RegistrarUsuarioAsync(dto);
@@ -89,7 +90,7 @@ public class UsuarioServiceTests
         var mockSuscripcionService = new Mock<ISuscripcionService>();
 
         mockRepo.Setup(r => r.ExisteEmailAsync(dto.Email)).ReturnsAsync(false);
-        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<ILogger<AuthService>>());
+        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<IConfiguration>(), Mock.Of<ILogger<AuthService>>());
 
         // 2. ACT
         var resultado = await servicio.RegistrarUsuarioAsync(dto);
@@ -122,14 +123,14 @@ public class UsuarioServiceTests
         var mockSuscripcionService = new Mock<ISuscripcionService>();
 
         mockRepo.Setup(r => r.ExisteEmailAsync(dto.Email)).ReturnsAsync(false);
-        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<ILogger<AuthService>>());
+        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<IConfiguration>(), Mock.Of<ILogger<AuthService>>());
 
         // 2. ACT
         var resultado = await servicio.RegistrarUsuarioAsync(dto);
 
         // 3. ASSERT
         Assert.True(resultado.Exito);
-        Assert.Equal("Usuario registrado exitosamente", resultado.Mensaje);
+        Assert.Contains("confirma", resultado.Mensaje, StringComparison.OrdinalIgnoreCase);
         mockRepo.Verify(r => r.CrearUsuarioAsync(It.Is<Usuario>(u =>
             u.Rol == "Dealer" &&
             u.PerfilDealer != null &&
@@ -152,7 +153,7 @@ public class UsuarioServiceTests
         var mockSuscripcionService = new Mock<ISuscripcionService>();
 
         mockRepo.Setup(r => r.ObtenerPorEmailAsync(dto.Email)).ReturnsAsync((Usuario?)null);
-        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<ILogger<AuthService>>());
+        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<IConfiguration>(), Mock.Of<ILogger<AuthService>>());
 
         // 2 & 3. ACT & ASSERT
         // Validamos que el método lance la excepción esperada
@@ -189,7 +190,7 @@ public class UsuarioServiceTests
         var mockSuscripcionService = new Mock<ISuscripcionService>();
 
         mockRepo.Setup(r => r.ObtenerPorEmailAsync(dto.Email)).ReturnsAsync(usuarioEnBaseDeDatos);
-        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<ILogger<AuthService>>());
+        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<IConfiguration>(), Mock.Of<ILogger<AuthService>>());
 
         // 2 & 3. ACT & ASSERT
         // Validamos que el método lance la excepción esperada por la clave incorrecta
@@ -229,7 +230,7 @@ public class UsuarioServiceTests
         mockRepo.Setup(r => r.ObtenerPorEmailAsync(dto.Email)).ReturnsAsync(usuarioEnBaseDeDatos);
         mockTokenService.Setup(t => t.GenerarToken(It.IsAny<Usuario>())).Returns(tokenFalso);
         
-        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<ILogger<AuthService>>());
+        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<IConfiguration>(), Mock.Of<ILogger<AuthService>>());
 
         // 2. ACT
         var resultado = await servicio.LoginAsync(dto);

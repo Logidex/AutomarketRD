@@ -8,6 +8,7 @@ using AutoMarket.Core.Entities.Enums;
 using AutoMarket.Core.Exceptions;
 using AutoMarket.Core.Interfaces;
 using BCrypt.Net;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace AutoMarket.Application.Services;
@@ -19,11 +20,13 @@ public class AuthService : IAuthService
 {
     private const int PASSWORD_LONGITUD_MINIMA = 8;
     private static readonly TimeSpan VIGENCIA_CODIGO = TimeSpan.FromMinutes(15);
+    private static readonly TimeSpan VIGENCIA_CONFIRMACION_EMAIL = TimeSpan.FromDays(2);
 
     private readonly IUsuarioRepository _repository;
     private readonly ITokenService _tokenService;
     private readonly ISuscripcionService _suscripcionService;
     private readonly IEmailSenderService _emailSender;
+    private readonly IConfiguration _configuration;
     private readonly ILogger<AuthService> _logger;
 
 /// <summary>
@@ -34,12 +37,14 @@ public class AuthService : IAuthService
         ITokenService tokenService,
         ISuscripcionService suscripcionService,
         IEmailSenderService emailSender,
+        IConfiguration configuration,
         ILogger<AuthService> logger)
     {
         _repository = repository;
         _tokenService = tokenService;
         _suscripcionService = suscripcionService;
         _emailSender = emailSender;
+        _configuration = configuration;
         _logger = logger;
     }
 
@@ -86,6 +91,10 @@ public class AuthService : IAuthService
                 PlanNivel.Gratis,
                 CicloFacturacion.Mensual
             );
+
+            await GenerarYEnviarConfirmacionEmailAsync(nuevoUsuario);
+
+            return (true, "Usuario registrado exitosamente. Te enviamos un correo para confirmar tu dirección de email.");
         }
 
         return (true, "Usuario registrado exitosamente");
@@ -217,6 +226,76 @@ public class AuthService : IAuthService
         {
             _logger.LogError(ex, "Error notificando restablecimiento a {Email}", usuario.Email);
         }
+    }
+
+    // ==========================================
+    // CONFIRMACIÓN DE CORREO EN EL ALTA DE CUENTA (Dealer)
+    // ==========================================
+    private async Task GenerarYEnviarConfirmacionEmailAsync(Usuario usuario)
+    {
+        if (usuario.EmailConfirmado)
+            return;
+
+        var token = CodigoUtil.GenerarTokenConfirmacion();
+
+        usuario.EstablecerConfirmacionEmail(
+            CodigoUtil.HashCodigo(token),
+            DateTime.UtcNow.Add(VIGENCIA_CONFIRMACION_EMAIL));
+
+        await _repository.GuardarCambiosAsync();
+
+        var frontendUrl = _configuration["App:FrontendUrl"] ?? "http://localhost:5173";
+        var enlace = $"{frontendUrl.TrimEnd('/')}/confirmar-correo?token={token}";
+
+        try
+        {
+            await _emailSender.EnviarCorreoAsync(
+                usuario.Email,
+                "Confirma tu correo en AutoMarket RD",
+                "<p>Hola <strong>" + usuario.Nombre + "</strong>,</p>" +
+                "<p>Gracias por crear tu cuenta Dealer en AutoMarket RD.</p>" +
+                "<p>Para activar tu correo y poder obtener la insignia de <strong>Dealer Verificado</strong>, confirma tu dirección de correo:</p>" +
+                "<p style='text-align:center'><a href='" + enlace + "' style='background-color:#2563eb;color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold'>Confirmar mi correo</a></p>" +
+                "<p>El enlace expira en 48 horas. Si no creaste esta cuenta, ignora este correo.</p>" +
+                "<p>Si el botón no funciona, copia este enlace en tu navegador: <br/>" + enlace + "</p>");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error enviando confirmación de correo a {Email}", usuario.Email);
+        }
+    }
+
+    /// <summary>
+    /// Confirma el correo de una cuenta usando el token del enlace enviado al registrarse.
+    /// </summary>
+    public async Task ConfirmarCorreoAsync(string token)
+    {
+        if (string.IsNullOrWhiteSpace(token))
+            throw new BusinessRuleException("El enlace de confirmación es inválido.");
+
+        var codigoHash = CodigoUtil.HashCodigo(token);
+
+        var usuario = await _repository.ObtenerPorCodigoConfirmacionEmailAsync(codigoHash)
+            ?? throw new BusinessRuleException("El enlace de confirmación es inválido o ya fue utilizado.");
+
+        if (!usuario.ConfirmarEmailSiValido(codigoHash, DateTime.UtcNow))
+            throw new BusinessRuleException("El enlace de confirmación ha expirado. Solicita uno nuevo.");
+
+        await _repository.GuardarCambiosAsync();
+    }
+
+    /// <summary>
+    /// Reenvía el correo de confirmación a un dealer cuyo correo aún no está confirmado.
+    /// Responde siempre igual para no revelar si un correo está registrado.
+    /// </summary>
+    public async Task ReenviarConfirmacionCorreoAsync(string email)
+    {
+        var usuario = await _repository.ObtenerPorEmailParaEscrituraAsync(email.Trim().ToLowerInvariant());
+
+        if (usuario == null || usuario.EmailConfirmado || usuario.Rol != "Dealer" || !usuario.IsActivo)
+            return;
+
+        await GenerarYEnviarConfirmacionEmailAsync(usuario);
     }
 }
 

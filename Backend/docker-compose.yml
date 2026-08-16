@@ -57,6 +57,9 @@ services:
       # CORS
       Cors__AllowedOrigins: ${CORS_ALLOWED_ORIGINS}
 
+      # URL pública del frontend (usada en enlaces de correo, ej: confirmar correo)
+      App__FrontendUrl: ${APP_FRONTEND_URL:-http://localhost:5173}
+
     ports:
       - "8080:8080"
     depends_on:

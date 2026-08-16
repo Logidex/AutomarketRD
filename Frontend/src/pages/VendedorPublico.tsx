@@ -87,11 +87,11 @@ function TarjetaAnuncioVendedor({ anuncio, destacada, onAbrir }: PropsTarjeta) {
         <div className="flex items-start justify-between gap-3">
           <h3 className="truncate text-lg font-bold">
             {anuncio.marca} {anuncio.modelo}
-            <span className="ml-2 text-sm font-normal text-gray-400">
+            <span className="ml-2 text-sm font-normal text-ink-3">
               {anuncio.version}
             </span>
           </h3>
-          <span className="shrink-0 rounded-full bg-green-500/10 px-3 py-1 text-xs font-semibold text-green-400">
+          <span className="shrink-0 rounded-full bg-success-soft px-3 py-1 text-xs font-semibold text-success">
             {anuncio.anio}
           </span>
         </div>
@@ -102,16 +102,16 @@ function TarjetaAnuncioVendedor({ anuncio, destacada, onAbrir }: PropsTarjeta) {
 
         <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 border-t border-line pt-4 text-xs text-ink-2">
           <span className="inline-flex items-center gap-1.5">
-            <FaTachometerAlt className="text-gray-500" />
+            <FaTachometerAlt className="text-ink-3" />
             {anuncio.kilometraje.toLocaleString("es-DO")} km
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <FaCalendarAlt className="text-gray-500" />
+            <FaCalendarAlt className="text-ink-3" />
             {anuncio.anio}
           </span>
           {anuncio.ubicacion && (
             <span className="inline-flex items-center gap-1.5">
-              <FaMapMarkerAlt className="text-gray-500" />
+              <FaMapMarkerAlt className="text-ink-3" />
               {anuncio.ubicacion}
             </span>
           )}
@@ -132,9 +132,9 @@ function BotonesContacto({ telefonoAgencia, whatsApp }: PropsContacto) {
       {telefonoAgencia && (
         <a
           href={`tel:${telefonoAgencia.replace(/[^\d]/g, "")}`}
-          className="inline-flex items-center justify-center gap-2 rounded-lg border border-line px-5 py-2.5 text-sm font-semibold text-gray-200 transition-colors hover:border-white/30"
+          className="inline-flex items-center justify-center gap-2 rounded-lg border border-line px-5 py-2.5 text-sm font-semibold text-ink-2 transition-colors hover:border-brand/40 hover:text-ink"
         >
-          <FaPhone className="text-blue-400" />
+          <FaPhone className="text-brand" />
           {telefonoAgencia}
         </a>
       )}
@@ -162,14 +162,14 @@ interface PropsPerfilParticular {
 
 function PerfilParticular({ perfil, anuncios, inicial, numeroWhatsApp }: PropsPerfilParticular) {
   return (
-    <section className="rounded-2xl border border-violet-500/30 bg-gradient-to-br from-[#1b1630] to-page p-6 sm:p-8">
-      <span className="inline-flex items-center gap-2 rounded-full bg-violet-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-violet-300">
+    <section className="rounded-2xl border border-violet-500/30 bg-surface p-6 sm:p-8">
+      <span className="inline-flex items-center gap-2 rounded-full bg-violet-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-violet-600 dark:text-violet-300">
         <FaUser className="text-sm" />
         Vendedor particular
       </span>
 
       <div className="mt-5 flex flex-col gap-6 sm:flex-row sm:items-center">
-        <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-violet-500/20 text-3xl font-bold text-violet-300">
+        <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-violet-500/10 text-3xl font-bold text-violet-600 dark:text-violet-300">
           {inicial}
         </div>
 
@@ -191,8 +191,8 @@ function PerfilParticular({ perfil, anuncios, inicial, numeroWhatsApp }: PropsPe
         />
       </div>
 
-      <div className="mt-6 flex items-start gap-3 rounded-xl border border-violet-500/20 bg-violet-500/5 p-4 text-sm text-ink-3">
-        <FaCar className="mt-0.5 shrink-0 text-lg text-violet-300" />
+      <div className="mt-6 flex items-start gap-3 rounded-xl border border-violet-500/20 bg-violet-500/5 p-4 text-sm text-ink-2">
+        <FaCar className="mt-0.5 shrink-0 text-lg text-violet-500" />
         <p>
           Este vendedor es un <strong>particular</strong>: publica por
           cuenta propia y actualmente solo tiene{" "}
@@ -216,18 +216,18 @@ interface PropsPerfilDealer {
 
 function PerfilDealer({ perfil, anuncios, numeroWhatsApp }: PropsPerfilDealer) {
   return (
-    <section className="relative overflow-hidden rounded-2xl border border-blue-500/30 bg-gradient-to-br from-[#0d1b2e] via-[#13161d] to-page p-6 sm:p-8">
+    <section className="relative overflow-hidden rounded-2xl border border-blue-500/30 bg-surface p-6 shadow-sm sm:p-8">
       <div className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-blue-500/10 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-24 -left-16 h-52 w-52 rounded-full bg-blue-500/5 blur-3xl" />
 
       <div className="relative">
-        <span className="inline-flex items-center gap-2 rounded-full bg-blue-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-blue-300">
+        <span className="inline-flex items-center gap-2 rounded-full bg-brand-soft px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand">
           <FaStore className="text-sm" />
           Agencia de vehículos
         </span>
 
         <div className="mt-6 flex flex-col gap-6 sm:flex-row sm:items-center">
-          <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-2 border-blue-500/30 bg-white/5 shadow-lg shadow-blue-500/10">
+          <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-2 border-blue-500/30 bg-surface-2 shadow-lg shadow-blue-500/10">
             {perfil.logoUrl ? (
               <img
                 src={urlImagen(perfil.logoUrl)}
@@ -235,7 +235,7 @@ function PerfilDealer({ perfil, anuncios, numeroWhatsApp }: PropsPerfilDealer) {
                 className="h-full w-full object-cover"
               />
             ) : (
-              <FaStore className="text-4xl text-blue-400" />
+              <FaStore className="text-4xl text-brand" />
             )}
           </div>
 
@@ -253,14 +253,14 @@ function PerfilDealer({ perfil, anuncios, numeroWhatsApp }: PropsPerfilDealer) {
 
             <div className="mt-3 flex flex-wrap gap-2">
               {perfil.ubicacion && (
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-white/5 px-3 py-1 text-xs text-gray-200">
-                  <FaMapMarkerAlt className="text-blue-400" />
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface-2 px-3 py-1 text-xs text-ink-2">
+                  <FaMapMarkerAlt className="text-brand" />
                   {perfil.ubicacion}
                 </span>
               )}
               {perfil.horarios && (
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-white/5 px-3 py-1 text-xs text-gray-200">
-                  <FaClock className="text-blue-400" />
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface-2 px-3 py-1 text-xs text-ink-2">
+                  <FaClock className="text-brand" />
                   {perfil.horarios}
                 </span>
               )}
@@ -273,12 +273,12 @@ function PerfilDealer({ perfil, anuncios, numeroWhatsApp }: PropsPerfilDealer) {
           />
         </div>
 
-        <div className="mt-6 grid grid-cols-1 gap-3 rounded-xl border border-blue-500/20 bg-blue-500/5 p-4 sm:grid-cols-3">
+        <div className="mt-6 grid grid-cols-1 gap-3 rounded-xl border border-brand/20 bg-brand-soft p-4 sm:grid-cols-3">
           <div>
             <p className="text-[11px] uppercase tracking-wide text-ink-2">
               Vehículos publicados
             </p>
-            <p className="mt-1 text-xl font-bold text-blue-400">
+            <p className="mt-1 text-xl font-bold text-brand">
               {anuncios.length}
             </p>
           </div>
@@ -286,7 +286,7 @@ function PerfilDealer({ perfil, anuncios, numeroWhatsApp }: PropsPerfilDealer) {
             <p className="text-[11px] uppercase tracking-wide text-ink-2">
               Ubicación
             </p>
-            <p className="mt-1 truncate text-sm font-semibold text-gray-200">
+            <p className="mt-1 truncate text-sm font-semibold text-ink">
               {perfil.ubicacion || "—"}
             </p>
           </div>
@@ -294,14 +294,14 @@ function PerfilDealer({ perfil, anuncios, numeroWhatsApp }: PropsPerfilDealer) {
             <p className="text-[11px] uppercase tracking-wide text-ink-2">
               Horarios
             </p>
-            <p className="mt-1 truncate text-sm font-semibold text-gray-200">
+            <p className="mt-1 truncate text-sm font-semibold text-ink">
               {perfil.horarios || "—"}
             </p>
           </div>
         </div>
 
         {perfil.descripcion && (
-          <div className="mt-6 rounded-xl border border-line bg-white/5 p-4">
+          <div className="mt-6 rounded-xl border border-line bg-surface-2 p-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-ink-2">
               Sobre la agencia
             </p>
@@ -343,7 +343,7 @@ function InventarioVendedor({ anuncios, esParticular, onAbrir }: PropsInventario
 
       {anuncios.length === 0 ? (
         <div className="mt-6 rounded-2xl border border-line bg-surface p-16 text-center">
-          <FaCar className="mx-auto text-5xl text-gray-600" />
+          <FaCar className="mx-auto text-5xl text-ink-3" />
           <h3 className="mt-4 text-lg font-semibold">
             Sin vehículos publicados
           </h3>
@@ -377,7 +377,7 @@ function InventarioVendedor({ anuncios, esParticular, onAbrir }: PropsInventario
 function NoEncontradoVendedor() {
   return (
     <main className="mx-auto max-w-2xl px-6 py-20 text-center sm:px-8">
-      <FaStore className="mx-auto text-5xl text-gray-600" />
+      <FaStore className="mx-auto text-5xl text-ink-3" />
       <h1 className="mt-4 text-2xl font-bold">Vendedor no encontrado</h1>
       <p className="mt-2 text-sm text-ink-2">
         El perfil que buscas no existe o ya no está disponible.

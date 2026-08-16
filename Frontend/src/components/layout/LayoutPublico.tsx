@@ -1,7 +1,7 @@
+// Ubicación: src/components/layout/LayoutPublico.tsx
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
-import MenuPublico from "./MenuPublico";
-import logo from "../../assets/AutoMarketRD_Logo.svg";
+import HeaderPublico from "./HeaderPublico";
 
 interface LayoutPublicoProps {
   titulo: string;
@@ -11,20 +11,8 @@ interface LayoutPublicoProps {
 export default function LayoutPublico({ titulo, children }: LayoutPublicoProps) {
   return (
     <div className="min-h-screen bg-page text-ink">
-      <header className="flex items-center justify-between border-b border-line px-8 py-5">
-        <div className="flex items-center gap-4">
-          <Link to="/">
-            <img
-              src={logo}
-              alt="AutoMarket RD"
-              className="h-12 w-auto object-contain"
-            />
-          </Link>
-          <span className="text-xl font-bold">{titulo}</span>
-        </div>
-
-        <MenuPublico />
-      </header>
+      {/* Header unificado, idéntico al de Home */}
+      <HeaderPublico titulo={titulo} />
 
       <main className="mx-auto max-w-4xl px-8 py-16">{children}</main>
 

@@ -9,6 +9,7 @@ import { nombrePlan as nombrePlanUtil } from "../../constants/planes";
 import logo from "../../assets/AutoMarketRD_Logo.svg";
 import CampanaNotificaciones from "./CampanaNotificaciones";
 import BotonTema from "../BotonTema";
+import BannerConfirmarCorreo from "../BannerConfirmarCorreo";
 
 const menuItems = [
   {
@@ -186,6 +187,7 @@ export default function DashboardLayout() {
 
         {/* CONTENIDO DINÁMICO */}
         <div className="flex-1 overflow-y-auto p-8">
+          <BannerConfirmarCorreo />
           <Outlet />
         </div>
       </main>

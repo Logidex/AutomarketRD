@@ -61,6 +61,24 @@ export const authService = {
     return response.data;
   },
 
+  // Confirma el correo usando el token del enlace recibido al registrarse.
+  async confirmarCorreo(token: string): Promise<{ exito: boolean; mensaje: string }> {
+    const response = await api.post<{ exito: boolean; mensaje: string }>(
+      '/api/auth/confirmar-correo',
+      { token }
+    );
+    return response.data;
+  },
+
+  // Reenvía el correo de confirmación a un dealer con correo sin confirmar.
+  async reenviarConfirmacion(email: string): Promise<{ exito: boolean; mensaje: string }> {
+    const response = await api.post<{ exito: boolean; mensaje: string }>(
+      '/api/auth/reenviar-confirmacion',
+      { email }
+    );
+    return response.data;
+  },
+
   logout() {
     localStorage.removeItem(USER_KEY);
     localStorage.removeItem(USER_KEY_V0);
