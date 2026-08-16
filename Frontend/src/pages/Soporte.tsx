@@ -29,6 +29,7 @@ const ESTADO_LABEL: Record<TicketEstado, string> = {
   EnProceso: "En proceso",
   Resuelto: "Resuelto",
   Cerrado: "Cerrado",
+  Detenido: "Detenido",
 };
 
 const ESTADO_CLASES: Record<TicketEstado, string> = {
@@ -36,6 +37,7 @@ const ESTADO_CLASES: Record<TicketEstado, string> = {
   EnProceso: "bg-amber-100 text-amber-700",
   Resuelto: "bg-green-100 text-green-700",
   Cerrado: "bg-gray-100 text-gray-600",
+  Detenido: "bg-slate-200 text-slate-700",
 };
 
 const PRIORIDAD_CLASES: Record<TicketPrioridad, string> = {
@@ -249,6 +251,7 @@ function DetalleTicket({
   }
 
   const estaCerrado = ticket.estado === "Cerrado";
+  const estaDetenido = ticket.estado === "Detenido";
 
   const enviarRespuesta = () => {
     const texto = mensaje.trim();
@@ -319,6 +322,22 @@ function DetalleTicket({
             <FaLock className="text-gray-400" />
             Este ticket está cerrado. Si necesitas más ayuda, abre un nuevo
             ticket.
+          </div>
+        ) : estaDetenido ? (
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 rounded-lg bg-slate-50 px-4 py-3 text-sm text-slate-600">
+              <FaLock className="text-slate-400" />
+              Este ticket está detenido mientras resolvemos tu caso. No puedes
+              enviar mensajes por ahora.
+            </div>
+            <button
+              type="button"
+              onClick={cerrarTicket}
+              disabled={cerrar.isPending}
+              className="shrink-0 rounded-xl border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-50"
+            >
+              Cerrar ticket
+            </button>
           </div>
         ) : (
           <div className="flex gap-2">

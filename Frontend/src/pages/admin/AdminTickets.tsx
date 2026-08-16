@@ -25,6 +25,7 @@ const ESTADO_LABEL: Record<TicketEstado, string> = {
   EnProceso: "En proceso",
   Resuelto: "Resuelto",
   Cerrado: "Cerrado",
+  Detenido: "Detenido",
 };
 
 const ESTADO_CLASES: Record<TicketEstado, string> = {
@@ -32,6 +33,7 @@ const ESTADO_CLASES: Record<TicketEstado, string> = {
   EnProceso: "bg-amber-100 text-amber-700",
   Resuelto: "bg-green-100 text-green-700",
   Cerrado: "bg-gray-100 text-gray-600",
+  Detenido: "bg-slate-200 text-slate-700",
 };
 
 const PRIORIDAD_CLASES: Record<TicketPrioridad, string> = {
@@ -53,6 +55,7 @@ const FILTROS_ESTADO: Array<TicketEstado | "Todos"> = [
   "Todos",
   "Abierto",
   "EnProceso",
+  "Detenido",
   "Resuelto",
   "Cerrado",
 ];
@@ -232,7 +235,7 @@ function DetalleAdminTicket({
     );
   };
 
-  const estadosAccion = (["EnProceso", "Resuelto", "Cerrado"] as TicketEstado[]).filter(
+  const estadosAccion = (["EnProceso", "Detenido", "Resuelto", "Cerrado"] as TicketEstado[]).filter(
     (e) => e !== ticket.estado,
   );
 
@@ -265,7 +268,7 @@ function DetalleAdminTicket({
           <span>Abierto: {formatearFecha(ticket.fechaCreacionUtc, true)}</span>
         </div>
 
-        {!estaCerrado && estadosAccion.length > 0 && (
+        {estadosAccion.length > 0 && (
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <span className="text-xs font-semibold text-gray-500">Cambiar estado:</span>
             {estadosAccion.map((estado) => (

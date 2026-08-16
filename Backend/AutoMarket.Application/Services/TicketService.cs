@@ -130,7 +130,7 @@ public class TicketService : ITicketService
         ticket.CambiarEstado(dto.NuevoEstado);
         await _ticketRepository.GuardarCambiosAsync();
 
-        if (dto.NuevoEstado is TicketEstado.Resuelto or TicketEstado.Cerrado)
+        if (dto.NuevoEstado is TicketEstado.Resuelto or TicketEstado.Cerrado or TicketEstado.Detenido)
             await NotificarCambioEstadoAsync(ticket, dto.NuevoEstado);
     }
 
@@ -280,11 +280,15 @@ public class TicketService : ITicketService
 
         var asunto = $"Tu ticket #{ticket.Id} fue marcado como {estado}";
 
+        var notaAdicional = estado == TicketEstado.Detenido
+            ? "Nuestro equipo está revisando tu caso y no podrás enviar mensajes temporalmente. Te responderemos aquí mismo apenas resolvamos tu incidencia."
+            : "Si necesitas más ayuda, abre un nuevo ticket desde el panel de soporte de AutoMarket RD.";
+
         var cuerpoHtml = $@"
             <h2>Actualización de tu ticket #{ticket.Id}</h2>
             <p><strong>Asunto:</strong> {ticket.Asunto}</p>
             <p><strong>Nuevo estado:</strong> {estado}</p>
-            <p>Si necesitas más ayuda, abre un nuevo ticket desde el panel de soporte de AutoMarket RD.</p>";
+            <p>{notaAdicional}</p>";
 
         await EnviarCorreoSeguroAsync(destinatario, asunto, cuerpoHtml);
     }

@@ -51,6 +51,9 @@ public class Ticket
         if (Estado == TicketEstado.Cerrado)
             throw new BusinessRuleException("Este ticket está cerrado y no admite más mensajes.");
 
+        if (Estado == TicketEstado.Detenido && !esAdmin)
+            throw new BusinessRuleException("Este ticket está detenido mientras el equipo resuelve tu caso. No puedes enviar mensajes por ahora.");
+
         if (string.IsNullOrWhiteSpace(mensaje))
             throw new ArgumentException("El mensaje no puede estar vacío.");
 
@@ -60,9 +63,10 @@ public class Ticket
 
     public void CambiarEstado(TicketEstado nuevoEstado)
     {
-        if (Estado == TicketEstado.Cerrado)
-            throw new BusinessRuleException("Este ticket está cerrado y no se puede modificar.");
+        if (Estado == nuevoEstado)
+            throw new BusinessRuleException($"El ticket ya está en estado {nuevoEstado}.");
 
+        // Un ticket cerrado puede reabrirse cambiando su estado (solo admin).
         Estado = nuevoEstado;
         FechaActualizacionUtc = DateTime.UtcNow;
     }

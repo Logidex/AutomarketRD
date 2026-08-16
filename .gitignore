@@ -32,6 +32,20 @@ session-*.md
 # Herramienta local de reset de password en staging (contiene credenciales)
 ResetPassStaging/
 
+# Load testing local (scripts temporales de prueba de carga)
+load-min.js
+seed-minimo.sql
+check-counts.sql
+load-check.sh
+*.speedscope
+
 # OS
 .DS_Store
 Thumbs.db
+
+# Load testing local
+load-min.js
+seed-minimo.sql
+check-counts.sql
+load-check.sh
+*.speedscope

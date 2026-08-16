@@ -1,4 +1,9 @@
-export type TicketEstado = "Abierto" | "EnProceso" | "Resuelto" | "Cerrado";
+export type TicketEstado =
+  | "Abierto"
+  | "EnProceso"
+  | "Resuelto"
+  | "Cerrado"
+  | "Detenido";
 export type TicketPrioridad = "Baja" | "Normal" | "Alta" | "Urgente";
 export type TicketCategoria =
   | "General"

@@ -5,7 +5,8 @@ public enum TicketEstado
     Abierto = 1,
     EnProceso = 2,
     Resuelto = 3,
-    Cerrado = 4
+    Cerrado = 4,
+    Detenido = 5
 }
 
 public enum TicketPrioridad

@@ -245,6 +245,90 @@ public class TicketServiceTests
     }
 
     // =========================================================================
+    // PRUEBA 07b: El admin puede reabrir un ticket cerrado (cambiar a EnProceso)
+    // =========================================================================
+    [Fact]
+    public async Task CambiarEstadoAdminAsync_ReabrirTicketCerrado_DebeCambiarAEnProceso()
+    {
+        // Arrange
+        var ticket = CrearTicket(id: 1, usuarioId: 7, estado: TicketEstado.Cerrado);
+        _mockTicketRepo.Setup(r => r.ObtenerPorIdConMensajesAsync(1)).ReturnsAsync(ticket);
+
+        var dto = new CambiarEstadoTicketDto { NuevoEstado = TicketEstado.EnProceso };
+
+        // Act
+        await _servicio.CambiarEstadoAdminAsync(1, dto);
+
+        // Assert
+        Assert.Equal(TicketEstado.EnProceso, ticket.Estado);
+        _mockTicketRepo.Verify(r => r.GuardarCambiosAsync(), Times.Once);
+    }
+
+    // =========================================================================
+    // PRUEBA 07c: Marcar Detenido bloquea al usuario y notifica al cliente
+    // =========================================================================
+    [Fact]
+    public async Task CambiarEstadoAdminAsync_Detenido_DebeNotificarAlCliente()
+    {
+        // Arrange
+        var ticket = CrearTicket(id: 1, usuarioId: 7);
+        _mockTicketRepo.Setup(r => r.ObtenerPorIdConMensajesAsync(1)).ReturnsAsync(ticket);
+
+        var dto = new CambiarEstadoTicketDto { NuevoEstado = TicketEstado.Detenido };
+
+        // Act
+        await _servicio.CambiarEstadoAdminAsync(1, dto);
+
+        // Assert
+        Assert.Equal(TicketEstado.Detenido, ticket.Estado);
+        _mockEmailSender.Verify(e => e.EnviarCorreoAsync(
+            "usuario7@test.com",
+            It.Is<string>(s => s.Contains("Detenido")),
+            It.IsAny<string>()), Times.Once);
+    }
+
+    // =========================================================================
+    // PRUEBA 07d: Un ticket Detenido no permite responder al usuario
+    // =========================================================================
+    [Fact]
+    public async Task ResponderTicketAsync_TicketDetenido_DebeLanzarBusinessRuleException()
+    {
+        // Arrange
+        var ticket = CrearTicket(id: 1, usuarioId: 7, estado: TicketEstado.Detenido);
+        _mockTicketRepo.Setup(r => r.ObtenerPorIdConMensajesAsync(1)).ReturnsAsync(ticket);
+
+        var dto = new TicketMensajeCreateDto { Mensaje = "¿Puedo seguir escribiendo?" };
+
+        // Act & Assert
+        var excepcion = await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            _servicio.ResponderTicketAsync(1, dto, 7));
+
+        Assert.Contains("detenido", excepcion.Message);
+        _mockTicketRepo.Verify(r => r.GuardarCambiosAsync(), Times.Never);
+    }
+
+    // =========================================================================
+    // PRUEBA 07e: El admin SÍ puede responder a un ticket Detenido
+    // =========================================================================
+    [Fact]
+    public async Task ResponderTicketAdminAsync_TicketDetenido_DebePermitirRespuesta()
+    {
+        // Arrange
+        var ticket = CrearTicket(id: 1, usuarioId: 7, estado: TicketEstado.Detenido);
+        _mockTicketRepo.Setup(r => r.ObtenerPorIdConMensajesAsync(1)).ReturnsAsync(ticket);
+
+        var dto = new TicketMensajeCreateDto { Mensaje = "Seguimos revisando tu caso." };
+
+        // Act
+        await _servicio.ResponderTicketAdminAsync(1, dto, adminId: 1);
+
+        // Assert
+        Assert.Equal(2, ticket.Mensajes.Count);
+        Assert.True(ticket.Mensajes.Last().EsAdmin);
+        _mockTicketRepo.Verify(r => r.GuardarCambiosAsync(), Times.Once);
+    }
+
+    // =========================================================================
     // PRUEBA 08: Cerrar dos veces el mismo ticket debe fallar
     // =========================================================================
     [Fact]
