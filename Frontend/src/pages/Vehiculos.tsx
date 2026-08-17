@@ -26,6 +26,7 @@ import {
 const ANIO_ACTUAL = new Date().getFullYear();
 
 interface Filtros {
+  busqueda: string;
   marca: string;
   modelo: string;
   tipoVehiculo: string;
@@ -42,6 +43,7 @@ interface Filtros {
 }
 
 const FILTROS_INICIALES: Filtros = {
+  busqueda: "",
   marca: "",
   modelo: "",
   tipoVehiculo: "",
@@ -59,6 +61,7 @@ const FILTROS_INICIALES: Filtros = {
 
 function filtrosDesdeParams(params: URLSearchParams): Filtros {
   return {
+    busqueda: params.get("busqueda") ?? "",
     marca: params.get("marca") ?? "",
     modelo: params.get("modelo") ?? "",
     tipoVehiculo: params.get("tipo") ?? "",
@@ -77,6 +80,7 @@ function filtrosDesdeParams(params: URLSearchParams): Filtros {
 
 function paramsDesdeFiltros(filtros: Filtros): URLSearchParams {
   const params = new URLSearchParams();
+  if (filtros.busqueda) params.set("busqueda", filtros.busqueda);
   if (filtros.marca) params.set("marca", filtros.marca);
   if (filtros.modelo) params.set("modelo", filtros.modelo);
   if (filtros.tipoVehiculo) params.set("tipo", filtros.tipoVehiculo);
@@ -136,30 +140,18 @@ function FormularioFiltros({
 
         <div className="relative">
           <FaSearch className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-3" />
-          <label htmlFor="filtroMarca" className="sr-only">
-            Buscar por marca
+          <label htmlFor="filtroBusqueda" className="sr-only">
+            Buscar por marca o modelo
           </label>
           <input
-            id="filtroMarca"
+            id="filtroBusqueda"
             type="text"
-            value={filtros.marca}
-            onChange={(e) => actualizar("marca", e.target.value)}
-            placeholder="Marca (ej. Toyota)"
+            value={filtros.busqueda}
+            onChange={(e) => actualizar("busqueda", e.target.value)}
+            placeholder="Buscar por marca o modelo (ej. Honda Civic)"
             className="w-full rounded-xl border border-line bg-page py-3 pl-12 pr-4 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
           />
         </div>
-
-        <label htmlFor="filtroModelo" className="sr-only">
-          Buscar por modelo
-        </label>
-        <input
-          id="filtroModelo"
-          type="text"
-          value={filtros.modelo}
-          onChange={(e) => actualizar("modelo", e.target.value)}
-          placeholder="Modelo"
-          className="w-full rounded-xl border border-line bg-page px-4 py-3 text-sm placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none"
-        />
 
         <label htmlFor="filtroCondicion" className="sr-only">
           Condición
@@ -634,8 +626,10 @@ export default function Vehiculos() {
 
   // Sincronizar filtros con URL al cargar
   useEffect(() => {
+    const desdeParams = filtrosDesdeParams(searchParams);
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setFiltros(filtrosDesdeParams(searchParams));
+    setFiltros(desdeParams);
+    setFiltrosAplicados(desdeParams);
   }, [searchParams]);
 
   const {
@@ -647,6 +641,7 @@ export default function Vehiculos() {
     refetch,
   } = useVehiculos({
     filtros: {
+      busqueda: filtrosAplicados.busqueda || undefined,
       marca: filtrosAplicados.marca || undefined,
       modelo: filtrosAplicados.modelo || undefined,
       tipoVehiculo: filtrosAplicados.tipoVehiculo || undefined,
@@ -702,7 +697,7 @@ export default function Vehiculos() {
   return (
     <div className="min-h-screen bg-page text-ink">
       {/* HEADER */}
-      <header className="flex items-center justify-between border-b border-line px-6 py-5 sm:px-8">
+      <header className="flex items-center justify-between border-b border-line px-6 py-2 sm:px-8">
         <Link to="/" className="flex items-center gap-4">
           <img
             src={logo}

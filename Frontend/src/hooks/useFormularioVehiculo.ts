@@ -19,6 +19,7 @@ export const useFormularioVehiculo = (
   isEditMode: boolean = false,
   destino: string = "/dashboard/mis-anuncios",
   maxImagenes: number = 10,
+  mostrarDestacado: boolean = true,
 ) => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -82,9 +83,9 @@ export const useFormularioVehiculo = (
           setFotosGuardadas(datos.fotos || []);
           fotosInicialesRef.current = datos.fotos || [];
           esDestacadoInicialRef.current = datos.esDestacado ?? false;
-          setDestacarAlPublicar(datos.esDestacado ?? false);
+          setDestacarAlPublicar(mostrarDestacado ? (datos.esDestacado ?? false) : false);
 
-if (!["Automatica", "Manual", "Secuencial", "CVT", "DobleEmbrague"].includes(datos.transmision)) {
+          if (!["Automatica", "Manual", "Secuencial", "CVT", "DobleEmbrague"].includes(datos.transmision)) {
             setFormData((prev) => ({ ...prev, transmision: "Otra" }));
             setTransmisionPersonalizada(datos.transmision);
             setMostrarTransmisionPersonalizada(true);
@@ -102,7 +103,7 @@ if (!["Automatica", "Manual", "Secuencial", "CVT", "DobleEmbrague"].includes(dat
         activo = false;
       };
     }
-  }, [id, isEditMode, navigate, setLoading, destino]);
+  }, [id, isEditMode, navigate, setLoading, destino, mostrarDestacado]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -196,7 +197,7 @@ if (!["Automatica", "Manual", "Secuencial", "CVT", "DobleEmbrague"].includes(dat
         }
         await aplicarFotoPrincipal(Number(id), rutasSubidas);
         if (publicarAlGuardar) await publicarAnuncio.mutateAsync(Number(id));
-        await aplicarDestacado(Number(id), esDestacadoInicialRef.current);
+        if (mostrarDestacado) await aplicarDestacado(Number(id), esDestacadoInicialRef.current);
       } else {
         const response = await crearAnuncio.mutateAsync(payload);
         let rutasSubidas: string[] = [];
@@ -205,7 +206,7 @@ if (!["Automatica", "Manual", "Secuencial", "CVT", "DobleEmbrague"].includes(dat
         }
         await aplicarFotoPrincipal(response.id, rutasSubidas);
         if (publicarAlGuardar) await publicarAnuncio.mutateAsync(response.id);
-        await aplicarDestacado(response.id, false);
+        if (mostrarDestacado) await aplicarDestacado(response.id, false);
         Swal.fire("Éxito", publicarAlGuardar ? "Publicado correctamente" : "Creado correctamente", "success");
       }
       navigate(destino);

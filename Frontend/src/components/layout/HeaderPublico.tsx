@@ -23,7 +23,7 @@ export default function HeaderPublico({ titulo }: HeaderPublicoProps) {
           <img
             src={logo}
             alt="AutoMarket RD"
-            className="h-26 w-auto object-contain"
+            className="h-16 w-auto object-contain"
             onError={() => setLogoFallido(true)}
           />
         )}

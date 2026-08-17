@@ -191,19 +191,7 @@ public class AuthController : ControllerBase
 
          return Ok(new { exito = true, mensaje = "Si el correo está registrado y sin confirmar, recibirás un nuevo enlace de confirmación." });
      }
+ }
 
-     /// <summary>
-     /// Endpoint de prueba que lanza una excepción para verificar el middleware de manejo de errores.
-     /// </summary>
-     /// <returns>No devuelve nada; lanza una excepción intencionalmente.</returns>
-     [HttpGet("test-error")]
-/// <summary>
-/// TestError Test error.. Retorna: IActionResult.
-/// </summary>
-     public IActionResult TestError()
-     {
-         throw new InvalidOperationException("Este es un error de prueba del middleware");
-     }
-}
 
 

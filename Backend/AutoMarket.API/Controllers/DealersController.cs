@@ -50,6 +50,25 @@ public class DealersController : ControllerBase
         return Ok(perfil);
     }
 
+    [HttpGet]
+    [AllowAnonymous]
+    public async Task<IActionResult> ListarAgencias(
+        [FromQuery] string? busqueda,
+        [FromQuery] bool? soloVerificadas,
+        [FromQuery] string? planNivel,
+        [FromQuery] int pagina = 1,
+        [FromQuery] int cantidadPorPagina = 12)
+    {
+        var resultado = await _perfilDealerService.ListarAgenciasAsync(
+            busqueda,
+            soloVerificadas,
+            planNivel,
+            pagina,
+            cantidadPorPagina);
+
+        return Ok(resultado);
+    }
+
     [HttpPut("me")]
     [Authorize(Roles = Roles.Dealer)]
     [Consumes("multipart/form-data")]

@@ -12,6 +12,16 @@ public interface IUsuarioRepository
     Task<Usuario?> ObtenerPorIdAsync(int id);
     Task<Usuario?> ObtenerDealerConPerfilPorIdAsync(int usuarioId);
     Task EliminarPerfilDealerAsync(int usuarioId);
+    Task<(
+        IReadOnlyCollection<PerfilDealer> Agencias,
+        IReadOnlyDictionary<int, int> AnunciosPorAgencia,
+        int TotalRegistros
+    )> BuscarAgenciasAsync(
+        string? busqueda,
+        bool? soloVerificadas,
+        string? planNivel,
+        int pagina,
+        int cantidadPorPagina);
     Task GuardarCambiosAsync();
     Task<IEnumerable<Usuario>> ObtenerTodosAsync();
     Task<bool> ActualizarContrasenaAsync(string email, string nuevoPasswordHash);

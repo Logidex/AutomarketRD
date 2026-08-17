@@ -1057,7 +1057,7 @@ export default function DetalleAnuncio() {
   return (
     <div className="min-h-screen bg-page text-ink">
       {/* HEADER */}
-      <header className="flex items-center justify-between border-b border-line px-6 py-5 sm:px-8">
+      <header className="flex items-center justify-between border-b border-line px-6 py-2 sm:px-8">
         <Link to="/" className="flex items-center gap-4">
           <img
             src={logo}

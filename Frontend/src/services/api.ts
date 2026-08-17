@@ -16,33 +16,42 @@ const api = axios.create({
 export const API_BASE_URL = baseURL;
 
 // Manejar respuestas y errores
-api.interceptors.response.use(
-  (response) => {
-    console.log("[API] Response:", response.config.url, response.status);
-    return response;
-  },
-  (error) => {
-    console.error(
-      "[API] Error:",
-      error.config?.url,
-      error.response?.status,
-      error.response?.data,
-    );
-    // Sesión expirada o cookie inválida
-    if (error.response?.status === 401) {
-      console.error("[AUTH 401]", {
-        url: error.config?.url,
-        method: error.config?.method,
-        status: error.response?.status,
-        data: error.response?.data,
-      });
+// Evita redirigir varias veces cuando varias peticiones fallan en paralelo
+// con la sesión expirada (p. ej. al cargar un dashboard con varias consultas).
+let yaRedirigidoAPorSesion = false;
 
-      // No redirigimos todavía.
-      // Primero identificaremos qué petición está fallando.
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error.response?.status;
+
+    // Sesión expirada o cookie inválida: se limpia el estado local y se
+    // redirige al login. Se omiten login/logout porque ahí la UI maneja el
+    // error (credenciales incorrectas) sin necesidad de limpiar la sesión.
+    if (status === 401) {
+      const url = error.config?.url ?? "";
+      const esCredencialesIncorrectas =
+        url.includes("/api/auth/login") || url.includes("/api/auth/logout");
+
+      if (!esCredencialesIncorrectas && !yaRedirigidoAPorSesion) {
+        yaRedirigidoAPorSesion = true;
+
+        // Limpia el usuario guardado y borra la cookie en el servidor.
+        void import("./auth.service").then(({ authService }) => {
+          authService.logout();
+        });
+
+        // Recarga completa para descartar estado en memoria con la sesión vieja.
+        if (window.location.pathname !== "/login") {
+          window.location.assign("/login");
+        } else {
+          yaRedirigidoAPorSesion = false;
+        }
+      }
     }
 
     // Rate limiting
-    if (error.response?.status === 429) {
+    if (status === 429) {
       error.message =
         "Has hecho demasiadas solicitudes. Espera unos minutos e inténtalo de nuevo.";
     }

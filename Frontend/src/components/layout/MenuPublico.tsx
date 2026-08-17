@@ -156,6 +156,14 @@ export default function MenuPublico() {
         Directorio
       </Link>
 
+      {/* AGENCIAS */}
+      <Link
+        to="/agencias"
+        className="text-ink-2 transition-colors hover:text-ink"
+      >
+        Agencias
+      </Link>
+
       {/* COMPARADOR */}
       <Link
         to="/comparador"

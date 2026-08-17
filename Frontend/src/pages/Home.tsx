@@ -18,6 +18,7 @@ import type { AnuncioListado } from "../types/anuncio.types";
 import { urlImagen } from "../utils/imagen";
 import { formatearPrecio } from "../utils/formato";
 import { anuncioService } from "../services/anuncio.service";
+import { catalogoService } from "../services/catalogo.service";
 import { useQuery } from "@tanstack/react-query";
 import {
   TIPOS_VEHICULO,
@@ -63,7 +64,7 @@ function BadgePlan({ nivel, className = "" }: { nivel: PlanNivel; className?: st
 }
 
 interface Filtros {
-  marca: string;
+  busqueda: string;
   tipoVehiculo: string;
   transmision: string;
   combustible: string;
@@ -72,7 +73,7 @@ interface Filtros {
 }
 
 const FILTROS_INICIALES: Filtros = {
-  marca: "",
+  busqueda: "",
   tipoVehiculo: "",
   transmision: "",
   combustible: "",
@@ -84,6 +85,7 @@ const fotoPrincipal = (anuncio: AnuncioListado): string =>
   urlImagen(anuncio.fotos?.[0]) || "https://via.placeholder.com/600x400?text=Sin+Foto";
 
 function useBusquedaVehiculos() {
+  const navigate = useNavigate();
   const [pagina, setPagina] = useState(1);
   const [filtros, setFiltros] = useState<Filtros>(FILTROS_INICIALES);
   const [filtrosAplicados, setFiltrosAplicados] = useState<Filtros>(FILTROS_INICIALES);
@@ -97,7 +99,7 @@ function useBusquedaVehiculos() {
     refetch,
   } = useVehiculos({
     filtros: {
-      marca: filtrosAplicados.marca || undefined,
+      busqueda: filtrosAplicados.busqueda || undefined,
       tipoVehiculo: filtrosAplicados.tipoVehiculo || undefined,
       transmision: filtrosAplicados.transmision || undefined,
       combustible: filtrosAplicados.combustible || undefined,
@@ -107,6 +109,13 @@ function useBusquedaVehiculos() {
     },
     pagina,
   });
+
+  const { data: datosTotales } = useQuery({
+    queryKey: ["total-anuncios-publicados"],
+    queryFn: () => catalogoService.buscar({ paginaActual: 1, cantidadAnuncios: 1 }),
+    staleTime: 1000 * 60 * 5,
+  });
+  const totalPublicados = datosTotales?.totalRegistros ?? 0;
 
   const anuncios = data?.items ?? [];
   const totalRegistros = data?.totalRegistros ?? 0;
@@ -128,6 +137,14 @@ function useBusquedaVehiculos() {
     e.preventDefault();
     setPagina(1);
     setFiltrosAplicados({ ...filtros });
+    const params = new URLSearchParams();
+    if (filtros.busqueda.trim()) params.set("busqueda", filtros.busqueda.trim());
+    if (filtros.tipoVehiculo) params.set("tipo", filtros.tipoVehiculo);
+    if (filtros.transmision) params.set("transmision", filtros.transmision);
+    if (filtros.combustible) params.set("combustible", filtros.combustible);
+    if (filtros.precioMinimo) params.set("precioMinimo", filtros.precioMinimo);
+    if (filtros.precioMaximo) params.set("precioMaximo", filtros.precioMaximo);
+    navigate(`/vehiculos${params.toString() ? `?${params.toString()}` : ""}`);
   };
 
   const limpiarFiltros = () => {
@@ -140,6 +157,7 @@ function useBusquedaVehiculos() {
     setFiltros((prev) => ({ ...prev, tipoVehiculo: valor }));
     setPagina(1);
     setFiltrosAplicados((prev) => ({ ...prev, tipoVehiculo: valor }));
+    navigate(valor ? `/vehiculos?tipo=${encodeURIComponent(valor)}` : "/vehiculos");
   };
 
   const irAPagina = (p: number) => {
@@ -154,6 +172,7 @@ function useBusquedaVehiculos() {
     cargando,
     anuncios,
     totalRegistros,
+    totalPublicados,
     totalPaginas,
     isLoading,
     isError,
@@ -170,13 +189,13 @@ function useBusquedaVehiculos() {
 interface PropsHero {
   filtros: Filtros;
   cargando: boolean;
-  totalRegistros: number;
+  totalPublicados: number;
   onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
   onSubmit: (e: React.FormEvent) => void;
   onSeleccionarTipo: (valor: string) => void;
 }
 
-function HeroBusqueda({ filtros, cargando, totalRegistros, onChange, onSubmit, onSeleccionarTipo }: PropsHero) {
+function HeroBusqueda({ filtros, cargando, totalPublicados, onChange, onSubmit, onSeleccionarTipo }: PropsHero) {
   return (
     <section className="border-b border-line bg-gradient-to-b from-surface-2 to-page">
       <div className="mx-auto max-w-6xl px-6 py-14 text-center sm:px-8">
@@ -190,12 +209,12 @@ function HeroBusqueda({ filtros, cargando, totalRegistros, onChange, onSubmit, o
         </p>
 
         {/* Métricas reales (solo se muestran si hay datos) */}
-        {totalRegistros > 0 && (
+        {totalPublicados > 0 && (
           <div className="mt-6 flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-sm text-ink-2">
             <span className="inline-flex items-center gap-2">
               <FaCar className="text-brand" />
               <strong className="font-semibold text-ink">
-                {totalRegistros.toLocaleString("es-DO")}
+                {totalPublicados.toLocaleString("es-DO")}
               </strong>{" "}
               vehículos publicados
             </span>
@@ -226,9 +245,9 @@ function HeroBusqueda({ filtros, cargando, totalRegistros, onChange, onSubmit, o
               </label>
               <input
                 id="buscarMarca"
-                name="marca"
+                name="busqueda"
                 type="text"
-                value={filtros.marca}
+                value={filtros.busqueda}
                 onChange={onChange}
                 placeholder="Buscar por marca o modelo..."
                 className="w-full rounded-xl border border-line bg-page py-3 pl-12 pr-4 text-sm text-ink placeholder:text-ink-3 transition-colors focus:border-brand focus:outline-none"
@@ -538,6 +557,7 @@ export default function Home() {
     cargando,
     anuncios,
     totalRegistros,
+    totalPublicados,
     totalPaginas,
     isLoading,
     isError,
@@ -574,7 +594,7 @@ export default function Home() {
       <HeroBusqueda
         filtros={filtros}
         cargando={cargando}
-        totalRegistros={totalRegistros}
+        totalPublicados={totalPublicados}
         onChange={handleChange}
         onSubmit={aplicarBusqueda}
         onSeleccionarTipo={seleccionarTipo}

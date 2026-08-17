@@ -34,8 +34,13 @@ using System.Threading.RateLimiting;
 // CONFIGURACIÓN DE SERILOG
 // =======================================================
 
+var esDesarrollo = string.Equals(
+    Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"),
+    "Development",
+    StringComparison.OrdinalIgnoreCase);
+
 Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Debug()
+    .MinimumLevel.Is(esDesarrollo ? LogEventLevel.Debug : LogEventLevel.Information)
     .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
     .MinimumLevel.Override(
         "Microsoft.EntityFrameworkCore",

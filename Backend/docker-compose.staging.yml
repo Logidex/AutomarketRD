@@ -1,100 +1,79 @@
 # docker-compose.staging.yml
-# Requiere un archivo .env.staging (no commiteado) con las credenciales reales.
-# Ver .env.staging.example como plantilla.
-#
 # Uso:
-#   docker compose -f docker-compose.staging.yml --env-file .env.staging up -d
-#   docker compose -f docker-compose.staging.yml --env-file .env.staging logs -f api
-#   docker compose -f docker-compose.staging.yml --env-file .env.staging down
+# docker compose -f docker-compose.staging.yml --env-file .env.staging up -d --build
+# docker compose -f docker-compose.staging.yml --env-file .env.staging logs -f api
+# docker compose -f docker-compose.staging.yml --env-file .env.staging down
+
 services:
   db:
     image: postgres:16
     container_name: automarket-db-staging
-
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-automarket_staging}
-      POSTGRES_USER: ${POSTGRES_USER:-staging_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-staging_pass_secure_xyz}
-
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB requerido}
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER requerido}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD requerido}
     volumes:
       - pgdata_staging:/var/lib/postgresql/data
-
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-staging_user} -d ${POSTGRES_DB:-automarket_staging}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 10s
-
     restart: unless-stopped
-    ports:
-      - "5432:5432"
 
   api:
     build:
       context: .
       dockerfile: AutoMarket.API/Dockerfile
-
     container_name: automarket-api-staging
-
     environment:
       ASPNETCORE_ENVIRONMENT: Staging
       ASPNETCORE_URLS: http://+:8080
 
-      ConnectionStrings__DefaultConnection: ${CONNECTION_STRING:-Host=db;Port=5432;Database=automarket_staging;Username=staging_user;Password=staging_pass_secure_xyz}
+      ConnectionStrings__DefaultConnection: ${CONNECTION_STRING:?CONNECTION_STRING requerido}
 
-      Jwt__Secret: ${JWT_SECRET:-staging-jwt-secret-key-32-chars-exactly}
-      Jwt__Issuer: ${JWT_ISSUER:-StagingAPI}
-      Jwt__Audience: ${JWT_AUDIENCE:-StagingClient}
+      Jwt__Secret: ${JWT_SECRET:?JWT_SECRET requerido}
+      Jwt__Issuer: ${JWT_ISSUER:?JWT_ISSUER requerido}
+      Jwt__Audience: ${JWT_AUDIENCE:?JWT_AUDIENCE requerido}
 
-      SmtpSettings__Host: ${SMTP_HOST:-smtp.staging.example.com}
-      SmtpSettings__Port: ${SMTP_PORT:-587}
-      SmtpSettings__User: ${SMTP_USER:-staging@automarketrd.com}
-      SmtpSettings__Password: ${SMTP_PASSWORD:-staging-smtp-password}
-      SmtpSettings__SenderName: ${SMTP_SENDER_NAME:-AutoMarket RD Staging}
+      SmtpSettings__Host: ${SMTP_HOST:?SMTP_HOST requerido}
+      SmtpSettings__Port: ${SMTP_PORT:?SMTP_PORT requerido}
+      SmtpSettings__User: ${SMTP_USER:?SMTP_USER requerido}
+      SmtpSettings__Password: ${SMTP_PASSWORD:?SMTP_PASSWORD requerido}
+      SmtpSettings__SenderName: ${SMTP_SENDER_NAME:?SMTP_SENDER_NAME requerido}
 
-      AWS__AccessKey: ${AWS_ACCESS_KEY:-AKIASTAGINGACCESSKEY}
-      AWS__SecretKey: ${AWS_SECRET_KEY:-STAGINGSecretKeyWith40Chars}
-      AWS__Region: ${AWS_REGION:-us-east-2}
-      AWS__BucketName: ${AWS_BUCKET_NAME:-automarketrd-s3-staging}
+      AWS__AccessKey: ${AWS_ACCESS_KEY:?AWS_ACCESS_KEY requerido}
+      AWS__SecretKey: ${AWS_SECRET_KEY:?AWS_SECRET_KEY requerido}
+      AWS__Region: ${AWS_REGION:?AWS_REGION requerido}
+      AWS__BucketName: ${AWS_BUCKET_NAME:?AWS_BUCKET_NAME requerido}
 
-      # PayPal: credenciales reales sandbox obligatorias en .env.staging
-      # (sin defaults para que falle explícito si no se configuran)
-      PayPal__Mode: ${PAYPAL_MODE:-Sandbox}
-      PayPal__UrlBase: ${PAYPAL_URL_BASE:-https://api-m.sandbox.paypal.com}
-      PayPal__ClientId: ${PAYPAL_CLIENT_ID:?PAYPAL_CLIENT_ID requerido en .env.staging}
-      PayPal__ClientSecret: ${PAYPAL_CLIENT_SECRET:?PAYPAL_CLIENT_SECRET requerido en .env.staging}
-      PayPal__ReturnUrl: ${PAYPAL_RETURN_URL:?PAYPAL_RETURN_URL requerido en .env.staging}
-      PayPal__CancelUrl: ${PAYPAL_CANCEL_URL:?PAYPAL_CANCEL_URL requerido en .env.staging}
+      PayPal__Mode: ${PAYPAL_MODE:?PAYPAL_MODE requerido}
+      PayPal__UrlBase: ${PAYPAL_URL_BASE:?PAYPAL_URL_BASE requerido}
+      PayPal__ClientId: ${PAYPAL_CLIENT_ID:?PAYPAL_CLIENT_ID requerido}
+      PayPal__ClientSecret: ${PAYPAL_CLIENT_SECRET:?PAYPAL_CLIENT_SECRET requerido}
+      PayPal__ReturnUrl: ${PAYPAL_RETURN_URL:?PAYPAL_RETURN_URL requerido}
+      PayPal__CancelUrl: ${PAYPAL_CANCEL_URL:?PAYPAL_CANCEL_URL requerido}
       PayPal__WebhookId: ${PAYPAL_WEBHOOK_ID:-}
 
-      Cors__AllowedOrigins__0: ${CORS_ALLOWED_ORIGIN_0:-http://localhost:5173}
-      Cors__AllowedOrigins__1: ${CORS_ALLOWED_ORIGIN_1:-http://localhost:3000}
-      Cors__AllowedOrigins__2: ${CORS_ALLOWED_ORIGIN_2:-http://localhost:5174}
+      Cors__AllowedOrigins__0: ${CORS_ALLOWED_ORIGIN_0:?CORS_ALLOWED_ORIGIN_0 requerido}
 
-      # Migraciones y seeder de staging
-      MigrateOnStartup: ${MIGRATE_ON_STARTUP:-true}
-      Seeder__Enabled: ${SEEDER_ENABLED:-true}
+      MigrateOnStartup: ${MIGRATE_ON_STARTUP:?MIGRATE_ON_STARTUP requerido}
+      Seeder__Enabled: ${SEEDER_ENABLED:?SEEDER_ENABLED requerido}
 
-      # Administrador de staging
-      Admin__Email: ${ADMIN_EMAIL:-admin@staging.automarketrd.com}
-      Admin__Password: ${ADMIN_PASSWORD:-StagingAdmin2024!}
-      Admin__RotatePassword: ${ADMIN_ROTATE_PASSWORD:-false}
+      Admin__Email: ${ADMIN_EMAIL:?ADMIN_EMAIL requerido}
+      Admin__Password: ${ADMIN_PASSWORD:?ADMIN_PASSWORD requerido}
+      Admin__RotatePassword: ${ADMIN_ROTATE_PASSWORD:?ADMIN_ROTATE_PASSWORD requerido}
 
-      # URL pública del frontend (usada en enlaces de correo, ej: confirmar correo)
-      App__FrontendUrl: ${APP_FRONTEND_URL:-http://localhost:5174}
-
+      App__FrontendUrl: ${APP_FRONTEND_URL:?APP_FRONTEND_URL requerido}
     ports:
       - "8081:8080"
-
     depends_on:
       db:
         condition: service_healthy
-
     dns:
       - 8.8.8.8
       - 8.8.4.4
-
     restart: unless-stopped
 
   frontend:
@@ -103,16 +82,12 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_API_URL: /api
-
     container_name: automarket-frontend-staging
-
     ports:
       - "5174:80"
-
     depends_on:
       api:
         condition: service_started
-
     restart: unless-stopped
 
 volumes:

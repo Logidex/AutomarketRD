@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { FaPaypal } from "react-icons/fa";
 import { type PlanCatalogo } from "../services/planes.service";
@@ -54,13 +54,15 @@ export default function Suscripcion() {
   return (
     <div className="min-h-screen bg-page text-ink">
       {/* Header */}
-      <header className="flex items-center justify-between border-b border-line px-8 py-5">
+      <header className="flex items-center justify-between border-b border-line px-6 py-2 sm:px-8">
         <div className="flex items-center gap-4">
-          <img
-            src={logo}
-            alt="AutoMarket RD"
-            className="h-12 w-auto object-contain"
-          />
+          <Link to="/" className="flex items-center">
+            <img
+              src={logo}
+              alt="AutoMarket RD"
+              className="h-20 w-auto object-contain"
+            />
+          </Link>
           <span className="text-xl font-bold">Suscripción</span>
         </div>
 
@@ -110,7 +112,7 @@ export default function Suscripcion() {
                 <button
                   type="button"
                   onClick={() => navigate("/dashboard")}
-                  className="block w-full rounded-lg border border-white/20 py-2.5 text-center text-sm font-semibold hover:border-white transition-colors"
+                  className="block w-full rounded-lg border border-black/10 py-2.5 text-center text-sm font-semibold text-ink-2 hover:border-black/20 dark:border-white/20 dark:text-white dark:hover:border-white transition-colors"
                 >
                   Ir a mi panel
                 </button>
@@ -152,11 +154,11 @@ export default function Suscripcion() {
         </div>
 
         {/* Método de pago */}
-        <div className="mt-10 flex items-center justify-center gap-3 rounded-xl border border-[#3b2f2f] bg-[#1a1515] p-4">
+        <div className="mt-10 flex items-center justify-center gap-3 rounded-xl border border-line bg-surface-2 p-4 dark:border-[#3b2f2f] dark:bg-[#1a1515]">
           <FaPaypal className="text-3xl text-[#0070ba]" />
-          <p className="text-sm text-ink-2">
+          <p className="text-sm text-ink-2 dark:text-gray-300">
             El pago se procesa de forma segura con{" "}
-            <strong className="text-white">PayPal</strong>. Por ahora es el único
+            <strong className="text-ink dark:text-white">PayPal</strong>. Por ahora es el único
             método de pago disponible.
           </p>
         </div>

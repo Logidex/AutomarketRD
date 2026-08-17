@@ -11,6 +11,9 @@ namespace AutoMarket.Core.Entities
         public string? Modelo { get; set; }
         public string? Version { get; set; }
 
+        // Búsqueda libre por marca, modelo o versión (términos AND).
+        public string? Busqueda { get; set; }
+
         public string? TipoVehiculo { get; set; }
         public string? Motor { get; set; }
         public string? Traccion { get; set; }

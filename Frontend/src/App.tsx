@@ -5,6 +5,7 @@ import { Routes, Route } from 'react-router-dom';
 const Home = lazy(() => import('./pages/Home'));
 const Vehiculos = lazy(() => import('./pages/Vehiculos'));
 const Comparador = lazy(() => import('./pages/Comparador'));
+const Agencias = lazy(() => import('./pages/Agencias'));
 const DetalleAnuncio = lazy(() => import('./pages/DetalleAnuncio'));
 const VendedorPublico = lazy(() => import('./pages/VendedorPublico'));
 const Login = lazy(() => import('./pages/Login'));
@@ -79,6 +80,9 @@ function App() {
 
         {/* COMPARADOR DE VEHÍCULOS */}
         <Route path="/comparador" element={<Comparador />} />
+
+        {/* DIRECTORIO DE AGENCIAS */}
+        <Route path="/agencias" element={<Agencias />} />
 
         {/* DETALLE PÚBLICO DE UN VEHÍCULO */}
         <Route path="/anuncio/:id" element={<DetalleAnuncio />} />

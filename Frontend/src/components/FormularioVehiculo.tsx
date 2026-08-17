@@ -504,6 +504,7 @@ interface FormularioVehiculoProps {
   onPublicarAlGuardarChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   destacarAlPublicar: boolean;
   onDestacarAlPublicarChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  mostrarDestacado?: boolean;
   onChange: (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => void;
@@ -522,6 +523,7 @@ export default function FormularioVehiculo({
   onPublicarAlGuardarChange,
   destacarAlPublicar,
   onDestacarAlPublicarChange,
+  mostrarDestacado = true,
   onChange,
   onKilometrajeChange,
   onAccesoriosChange,
@@ -575,7 +577,7 @@ export default function FormularioVehiculo({
       </div>
 
       {/* DESTACAR AL PUBLICAR */}
-      {publicarAlGuardar && (
+      {publicarAlGuardar && mostrarDestacado && (
         <div className="flex items-center gap-3 border-t border-amber-100 bg-amber-50/50 p-4 rounded-lg">
           <input
             id="destacarAlPublicar"
