@@ -11,6 +11,12 @@ namespace AutoMarket.Application.DTOs
         public string? Modelo { get; set; }
         public string? Version { get; set; }
 
+        /// <summary>
+        /// Búsqueda libre por marca, modelo o versión. Se divide en términos
+        /// y cada término debe coincidir con al menos uno de esos campos.
+        /// </summary>
+        public string? Busqueda { get; set; }
+
         public string? TipoVehiculo { get; set; }
         public string? Motor { get; set; }
         public string? Traccion { get; set; }

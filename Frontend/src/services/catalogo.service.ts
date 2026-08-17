@@ -5,6 +5,7 @@ import type {
 } from "../types/anuncio.types";
 
 export interface AnuncioBusquedaDto {
+  busqueda?: string;
   marca?: string;
   modelo?: string;
   tipoVehiculo?: string;
@@ -29,6 +30,7 @@ export const catalogoService = {
   async buscar(dto: AnuncioBusquedaDto): Promise<PagedResult<AnuncioListado>> {
     const params = new URLSearchParams();
 
+    if (dto.busqueda?.trim()) params.set("Busqueda", dto.busqueda.trim());
     if (dto.marca?.trim()) params.set("Marca", dto.marca.trim());
     if (dto.modelo?.trim()) params.set("Modelo", dto.modelo.trim());
     if (dto.tipoVehiculo?.trim())

@@ -113,6 +113,20 @@ public class AnuncioRepository : IAnuncioRepository
             );
         }
 
+        if (!string.IsNullOrWhiteSpace(filtro.Busqueda))
+        {
+            var terminos = NormalizadorTexto.Normalizar(filtro.Busqueda)
+                .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            foreach (var termino in terminos)
+            {
+                query = query.Where(a =>
+                    EF.Functions.ILike(a.Marca, $"%{termino}%") ||
+                    EF.Functions.ILike(a.Modelo, $"%{termino}%") ||
+                    EF.Functions.ILike(a.Version, $"%{termino}%")
+                );
+            }
+        }
+
         if (!string.IsNullOrWhiteSpace(filtro.Marca))
         {
             var termino = NormalizadorTexto.Normalizar(filtro.Marca);

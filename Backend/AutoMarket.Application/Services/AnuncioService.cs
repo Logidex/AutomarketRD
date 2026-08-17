@@ -510,6 +510,7 @@ public class AnuncioService : IAnuncioService
             Marca = dto.Marca,
             Modelo = dto.Modelo,
             Version = dto.Version,
+            Busqueda = dto.Busqueda,
 
             TipoVehiculo = dto.TipoVehiculo,
             Motor = dto.Motor,
