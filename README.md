@@ -99,23 +99,24 @@ Esta separación ayuda a mantener la base limpia y preparada para crecer sin mez
 
 ### Backend
 
-- .NET 8
-- Entity Framework Core 8
+- .NET 10
+- Entity Framework Core 10
 - PostgreSQL 16
-- JWT Authentication
+- JWT en cookie HttpOnly
 - Docker y Docker Compose
-- AutoMapper
-- FluentValidation
+- Serilog (consola + archivo)
 - Scalar para documentación de API
+- xUnit + 339 tests de backend
 
 ### Frontend
 
-- React 18
+- React 19
 - Vite
 - TypeScript
 - Tailwind CSS
-- React Router
+- React Router 7
 - Axios / React Query
+- Vitest (25 tests)
 
 ---
 
@@ -123,9 +124,9 @@ Esta separación ayuda a mantener la base limpia y preparada para crecer sin mez
 
 Antes de correr el proyecto, asegúrate de tener instalado lo siguiente:
 
-- [.NET 8 SDK](https://dotnet.microsoft.com/download)
+- [.NET 10 SDK](https://dotnet.microsoft.com/download)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
-- [Node.js 18+](https://nodejs.org/)
+- [Node.js 20+](https://nodejs.org/)
 - [Git](https://git-scm.com/)
 
 ---
@@ -203,10 +204,10 @@ flujos de pago antes de salir a producción.
 
 ```bash
 cd Backend
-# Copiar la plantilla y editar las credenciales de PayPal Sandbox
+# Copiar la plantilla y editar las credenciales (todas son obligatorias)
 cp .env.staging.example .env.staging
 
-# Levantar (el api fallara al iniciar si falta PAYPAL_CLIENT_ID/SECRET/RETURN_URL/CANCEL_URL)
+# Levantar (el api fallara al iniciar si falta cualquier variable requerida)
 docker compose -f docker-compose.staging.yml --env-file .env.staging up -d
 ```
 
@@ -228,11 +229,10 @@ URLs locales de staging:
 - API: `http://localhost:8081`
 - Health check: `http://localhost:8081/health/ready`
 
-> **Importante**: las credenciales de PayPal (`PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`)
-> son obligatorias en `.env.staging`. Si se dejan las del placeholder, el endpoint
-> `/api/pagos/generar-link` devolverá HTTP 500 porque PayPal Sandbox las rechazará
-> con `401 Unauthorized`. Obtén credenciales reales en
-> https://developer.paypal.com/dashboard/applications/sandbox.
+> **Importante**: el `docker-compose.staging.yml` exige todas las variables de
+> entorno (usa `${VAR:?}` sin defaults). Completa `.env.staging` con credenciales
+> reales de PayPal Sandbox (https://developer.paypal.com/dashboard/applications/sandbox),
+> SMTP, S3/AWS y el usuario admin. Sin ellas el contenedor `api` no arranca.
 
 ### 9. Aplicar migraciones manualmente
 
@@ -243,7 +243,7 @@ cd Backend
 dotnet ef database update --project AutoMarket.Infrastructure --startup-project AutoMarket.API
 ```
 
-### 9. Build y pruebas
+### 10. Build y pruebas
 
 ```bash
 cd Backend
@@ -274,23 +274,24 @@ npm run dev
 
 ### 4. Qué contiene hoy el frontend
 
-El frontend está en una etapa inicial, pero ya tiene la base necesaria para crecer de forma ordenada:
+El frontend está completo en sus flujos principales:
 
-- Estructura inicial en React.
-- Configuración con Vite.
-- Tipado con TypeScript.
-- Estilos base con Tailwind.
-- Carpetas preparadas para componentes, páginas, servicios, tipos, hooks y utilidades.
+- Home con búsqueda (marca, modelo, tipo, rango de precio) y vitrina de destacados.
+- Directorio de vehículos con filtros y paginación.
+- Directorio de agencias (`/agencias`) con filtros por plan y verificadas.
+- Comparador de vehículos y detalle de anuncio con leads.
+- Registro, login (cookie HttpOnly), recuperación de contraseña y confirmación de correo.
+- Paneles por rol: Vendedor, Dealer (dashboard, suscripciones y pagos PayPal) y Admin.
+- Tema claro/oscuro.
 
-### 5. Cómo debe crecer el frontend
+### 5. Tests del frontend
 
-La idea es que la interfaz se vaya construyendo por partes:
-
-- Páginas principales en `pages/`.
-- Componentes reutilizables en `components/`.
-- Llamadas a API en `services/`.
-- Tipos en `types/`.
-- Lógica reutilizable en `hooks/` y `utils/`.
+```bash
+cd Frontend
+npm test        # Vitest (25 tests)
+npm run lint    # ESLint
+npm run build   # tsc + vite build
+```
 
 ---
 
@@ -300,49 +301,67 @@ La idea es que la interfaz se vaya construyendo por partes:
 
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
-| POST | `/api/auth/registro` | Registrar nuevo usuario |
-| POST | `/api/auth/login` | Iniciar sesión y obtener JWT |
+| POST | `/api/auth/registrar` | Registrar nuevo usuario |
+| POST | `/api/auth/login` | Iniciar sesión (cookie JWT HttpOnly) |
+| POST | `/api/auth/logout` | Cerrar sesión |
+| POST | `/api/auth/recuperar-password` | Solicitar código de recuperación |
+| POST | `/api/auth/restablecer-password` | Restablecer contraseña con código |
+| POST | `/api/auth/confirmar-correo` | Confirmar correo con token del enlace |
+| POST | `/api/auth/reenviar-confirmacion` | Reenviar enlace de confirmación |
 
 ### Anuncios
 
 | Método | Endpoint | Descripción | Auth |
 |--------|----------|-------------|------|
-| GET | `/api/anuncios` | Obtener todos los anuncios | No |
+| GET | `/api/anuncios` | Listar anuncios | No |
 | GET | `/api/anuncios/{id}` | Obtener un anuncio por ID | No |
-| POST | `/api/anuncios` | Crear un nuevo anuncio | Sí |
-| PUT | `/api/anuncios/{id}` | Actualizar un anuncio | Sí |
-| DELETE | `/api/anuncios/{id}` | Eliminar un anuncio | Sí |
-| PATCH | `/api/anuncios/{id}/publicar` | Publicar un anuncio | Sí |
+| GET | `/api/anuncios/buscar` | Búsqueda con filtros y paginación | No |
+| GET | `/api/anuncios/destacados` | Anuncios destacados de la portada | No |
+| POST | `/api/anuncios` | Crear un nuevo anuncio | Sí (Dealer/Vendedor) |
+| PUT | `/api/anuncios/{id}` | Actualizar un anuncio | Sí (Dealer/Vendedor) |
+| DELETE | `/api/anuncios/{id}` | Eliminar un anuncio | Sí (Dealer/Vendedor) |
+| PATCH | `/api/anuncios/{id}/publicar` | Publicar un anuncio | Sí (Dealer/Vendedor) |
+| PATCH | `/api/anuncios/{id}/estado` | Cambiar estado | Sí (Dealer/Vendedor) |
+| POST | `/api/anuncios/{id}/imagenes` | Subir imágenes (PNG/JPEG, máx 10) | Sí (Dealer/Vendedor) |
+| DELETE | `/api/anuncios/{id}/imagenes` | Eliminar imágenes | Sí (Dealer/Vendedor) |
+| PUT | `/api/anuncios/{id}/foto-principal` | Establecer foto principal | Sí (Dealer/Vendedor) |
+| PATCH | `/api/anuncios/{id}/destacar` | Destacar anuncio (requiere cupo del plan) | Sí (Dealer) |
+| PATCH | `/api/anuncios/{id}/quitar-destacado` | Quitar destacado | Sí (Dealer) |
+| POST | `/api/anuncios/{id}/registrar-vista` | Registrar vista del anuncio | No |
 
-### Dealers
+### Dealers y Agencias
 
 | Método | Endpoint | Descripción | Auth |
 |--------|----------|-------------|------|
+| GET | `/api/dealers` | Listar agencias (búsqueda, verificadas, plan) | No |
 | GET | `/api/dealers/{id}` | Obtener perfil público de un dealer | No |
-| PUT | `/api/dealers/me` | Actualizar mi perfil | Sí (Dealer) |
+| PUT | `/api/dealers/me` | Actualizar mi perfil de agencia | Sí (Dealer) |
 
-### Favoritos
-
-| Método | Endpoint | Descripción | Auth |
-|--------|----------|-------------|------|
-| GET | `/api/favoritos` | Obtener mis favoritos | Sí |
-| POST | `/api/favoritos/anuncio/{id}` | Agregar un anuncio a favoritos | Sí |
-| DELETE | `/api/favoritos/anuncio/{id}` | Quitar un anuncio de favoritos | Sí |
-
-### Leads
+### Planes y Suscripciones
 
 | Método | Endpoint | Descripción | Auth |
 |--------|----------|-------------|------|
-| POST | `/api/leads` | Crear lead para contactar un vendedor | No |
-| GET | `/api/leads/anuncio/{anuncioId}` | Ver leads de un anuncio | Sí |
-| GET | `/api/leads/mis-leads` | Ver mis leads como dealer | Sí (Dealer) |
-
-### Pagos
-
-| Método | Endpoint | Descripción | Auth |
-|--------|----------|-------------|------|
+| GET | `/api/planes` | Catálogo público de planes | No |
 | POST | `/api/pagos/generar-link` | Generar link de pago con PayPal | Sí |
-| POST | `/api/pagos/webhook` | Recibir webhook de PayPal | No |
+| POST | `/api/pagos/confirmar-pago` | Confirmar pago al regresar de PayPal | Sí |
+| POST | `/api/pagos/webhook` | Webhook verificado de PayPal | No |
+
+### Favoritos, Leads, Tickets, Contacto y Comparador
+
+| Método | Endpoint | Descripción | Auth |
+|--------|----------|-------------|------|
+| GET/POST/DELETE | `/api/favoritos` | Gestionar favoritos | Sí |
+| POST | `/api/leads` | Crear lead para contactar un vendedor | No |
+| GET | `/api/leads/mis-leads` | Leads como dealer | Sí (Dealer) |
+| GET | `/api/leads/mis-contactos` | Contactos de mis anuncios | Sí (Dealer) |
+| POST/GET | `/api/tickets` | Soporte: abrir y listar tickets | Sí (Dealer/Vendedor) |
+| POST | `/api/tickets/{id}/mensajes` | Responder ticket | Sí (Dealer/Vendedor) |
+| POST | `/api/contacto` | Formulario de contacto | No |
+| GET | `/api/comparador` | Comparación de vehículos | No |
+| GET | `/api/admin/*` | Panel de administración | Sí (Admin) |
+
+> El catálogo completo de endpoints y sus DTOs está documentado con XML en los
+> controladores y en la UI de Scalar en entorno de desarrollo (`/scalar`).
 
 ---
 
@@ -373,35 +392,27 @@ Estas reglas ayudan a que el código se mantenga entendible para cualquier perso
 
 ### Backend
 
-- API base construida.
-- Estructura por capas definida.
-- Autenticación JWT implementada.
-- Gestión de anuncios disponible.
-- Favoritos, leads y pagos contemplados.
-- Docker configurado para desarrollo y producción.
+- API completa con arquitectura por capas (.NET 10 / EF Core 10).
+- Autenticación JWT en cookie HttpOnly + BCrypt + rate limiting.
+- Anuncios, destacados por plan, favoritos, leads, comparador y tickets de soporte.
+- Suscripciones con PayPal (webhook verificado, idempotente y con validación de monto).
+- Almacenamiento de imágenes en S3 privado con URLs firmadas.
+- Docker para desarrollo, staging y producción + script de backup de la BD.
+- 339 tests automatizados en CI.
 
 ### Frontend
 
-- Base creada.
-- Organización inicial clara.
-- Preparado para crecer en pantallas y componentes.
-- Aún en fase temprana de implementación.
-
----
+- Flujos principales completos (catálogo, búsqueda, agencias, comparador, auth, paneles por rol).
+- Tema claro/oscuro y responsive.
+- 25 tests con Vitest en CI.
 
 ## Roadmap sugerido
 
-Lo siguiente que conviene construir es:
-
-- Pantalla de inicio con navegación clara.
-- Login y registro en el frontend.
-- Listado de anuncios.
-- Detalle de vehículo.
-- Formularios para crear y editar anuncios.
-- Vista de favoritos.
-- Perfil de dealer.
-- Consumo real de la API desde el frontend.
-- Manejo de loading, error y estados vacíos.
+- HTTPS/TLS y proveedor de hosting para producción.
+- Reescrituras de imágenes y optimización de assets estáticos.
+- Tests e2e.
+- Refresh tokens o expiración de sesión deslizante.
+- Documentación de operaciones (`docs/DEPLOY.md`).
 
 ---
 
