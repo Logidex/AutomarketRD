@@ -14,7 +14,7 @@ export default function PublicarVehiculoVendedor() {
     publicarAlGuardar, setPublicarAlGuardar,
     destacarAlPublicar, setDestacarAlPublicar,
     fotoPrincipal, handleEstablecerPrincipal
-  } = useFormularioVehiculo(false, "/vendedor", maxFotos);
+  } = useFormularioVehiculo(false, "/vendedor", maxFotos, false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,6 +53,7 @@ export default function PublicarVehiculoVendedor() {
           onPublicarAlGuardarChange={(e) => setPublicarAlGuardar(e.target.checked)}
           destacarAlPublicar={destacarAlPublicar}
           onDestacarAlPublicarChange={(e) => setDestacarAlPublicar(e.target.checked)}
+          mostrarDestacado={false}
         />
         <GestorImagenes
           archivos={archivos}
