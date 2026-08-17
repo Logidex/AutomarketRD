@@ -4,7 +4,7 @@ using Microsoft.Extensions.Hosting;
 namespace AutoMarket.API.Helpers;
 
 /// <summary>
-/// Maneja el JWT como cookie HttpOnly (SameSite=Lax) en lugar de localStorage.
+/// Maneja el JWT como cookie HttpOnly (SameSite=Lax en local, None en producción) en lugar de localStorage.
 /// El token viaja únicamente en la cookie; nunca se expone al JavaScript.
 /// </summary>
 public static class AuthCookieHelper
@@ -35,15 +35,18 @@ public static class AuthCookieHelper
     private static CookieOptions CrearOpciones(
         IWebHostEnvironment environment)
     {
-        // En producción (HTTPS): Secure=true, SameSite=Lax
-        // En desarrollo/staging (HTTP local): Secure=false, SameSite=Lax
-        var esProduccion = environment.IsProduction();
-        
+        // En producción (HTTPS): Secure=true, SameSite=None.
+        // El frontend (Cloudflare Pages, p. ej. proyecto.pages.dev) y la API
+        // (Cloudflare Tunnel) viven en sitios distintos; SameSite=Lax impediría
+        // enviar la cookie en las peticiones cross-site (login/401 en bucle).
+        // En desarrollo/staging (HTTP local): Secure=false, SameSite=Lax.
+        var usaHttps = environment.IsProduction() || environment.IsStaging();
+
         return new CookieOptions
         {
             HttpOnly = true,
-            Secure = esProduccion,
-            SameSite = SameSiteMode.Lax,
+            Secure = usaHttps,
+            SameSite = usaHttps ? SameSiteMode.None : SameSiteMode.Lax,
             Path = "/",
             Expires = DateTimeOffset.UtcNow.Add(Duracion)
         };
