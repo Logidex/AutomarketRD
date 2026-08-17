@@ -1,4 +1,6 @@
+using AutoMarket.Application.Helpers;
 using AutoMarket.Core.Entities;
+using AutoMarket.Core.Entities.Enums;
 using AutoMarket.Core.Interfaces;
 using AutoMarket.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -76,6 +78,79 @@ public class UsuarioRepository : IUsuarioRepository
 
         if (perfil != null)
             _context.PerfilesDealers.Remove(perfil);
+    }
+
+    public async Task<(
+        IReadOnlyCollection<PerfilDealer> Agencias,
+        IReadOnlyDictionary<int, int> AnunciosPorAgencia,
+        int TotalRegistros
+    )> BuscarAgenciasAsync(
+        string? busqueda,
+        bool? soloVerificadas,
+        string? planNivel,
+        int pagina,
+        int cantidadPorPagina)
+    {
+        IQueryable<PerfilDealer> query = _context.PerfilesDealers
+            .Include(p => p.Usuario)
+            .Include(p => p.Suscripcion)
+            .AsNoTracking();
+
+        if (!string.IsNullOrWhiteSpace(busqueda))
+        {
+            var termino = NormalizadorTexto.Normalizar(busqueda);
+            query = query.Where(p =>
+                EF.Functions.ILike(
+                    p.NombreAgencia,
+                    $"%{termino}%"
+                )
+            );
+        }
+
+        if (soloVerificadas == true)
+        {
+            query = query.Where(p =>
+                p.Usuario.EmailConfirmado &&
+                p.Suscripcion != null &&
+                p.Suscripcion.Nivel != PlanNivel.Gratis
+            );
+        }
+
+        if (!string.IsNullOrWhiteSpace(planNivel) &&
+            Enum.TryParse<PlanNivel>(planNivel, ignoreCase: true, out var nivel))
+        {
+            query = query.Where(p =>
+                p.Suscripcion != null &&
+                p.Suscripcion.Nivel == nivel
+            );
+        }
+
+        int totalRegistros = await query.CountAsync();
+
+        int paginaSegura = pagina <= 0 ? 1 : pagina;
+        int cantidadSegura = cantidadPorPagina <= 0 ? 12 : cantidadPorPagina;
+
+        var agencias = await query
+            .OrderByDescending(p =>
+                p.Usuario.EmailConfirmado &&
+                p.Suscripcion != null &&
+                p.Suscripcion.Nivel != PlanNivel.Gratis)
+            .ThenByDescending(p =>
+                p.Suscripcion != null ? p.Suscripcion.Nivel : PlanNivel.Gratis)
+            .ThenBy(p => p.NombreAgencia)
+            .Skip((paginaSegura - 1) * cantidadSegura)
+            .Take(cantidadSegura)
+            .ToListAsync();
+
+        var anunciosPorAgencia = await _context.Anuncios
+            .Where(a =>
+                a.Estado == "Publicado" &&
+                (a.FechaVencimientoUtc == null || a.FechaVencimientoUtc > DateTime.UtcNow))
+            .GroupBy(a => a.UsuarioId)
+            .Select(g => new { UsuarioId = g.Key, Cantidad = g.Count() })
+            .ToDictionaryAsync(x => x.UsuarioId, x => x.Cantidad);
+
+        return (agencias, anunciosPorAgencia, totalRegistros);
     }
 
     public async Task GuardarCambiosAsync()

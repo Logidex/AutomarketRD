@@ -1,3 +1,5 @@
+using AutoMarket.Application.DTOs;
+using AutoMarket.Application.DTOs.Dealer;
 using AutoMarket.Application.DTOs.Usuario;
 using AutoMarket.Application.Interfaces;
 using AutoMarket.Core.Entities;
@@ -44,6 +46,47 @@ public class PerfilDealerService : IPerfilDealerService
 
         // Otros roles (comprador/admin) no tienen página pública de vendedor.
         return null;
+    }
+
+    public async Task<PagedResult<AgenciaListadoDto>> ListarAgenciasAsync(
+        string? busqueda,
+        bool? soloVerificadas,
+        string? planNivel,
+        int pagina,
+        int cantidadPorPagina)
+    {
+        int paginaSegura = pagina <= 0 ? 1 : pagina;
+        int cantidadSegura = cantidadPorPagina <= 0 ? 12 : Math.Min(cantidadPorPagina, 60);
+
+        var (agencias, anunciosPorAgencia, total) = await _usuarioRepository
+            .BuscarAgenciasAsync(
+                busqueda,
+                soloVerificadas,
+                planNivel,
+                paginaSegura,
+                cantidadSegura);
+
+        var items = agencias.Select(a => new AgenciaListadoDto
+        {
+            Id = a.UsuarioId,
+            NombreAgencia = a.NombreAgencia,
+            LogoUrl = a.LogoUrl,
+            Ubicacion = a.Ubicacion,
+            TelefonoAgencia = a.TelefonoAgencia,
+            WhatsApp = a.WhatsApp,
+            Descripcion = a.Descripcion ?? string.Empty,
+            EsDealerVerificado = a.Usuario.EmailConfirmado
+                && a.Suscripcion != null
+                && a.Suscripcion.Nivel != PlanNivel.Gratis,
+            PlanNivel = a.Suscripcion?.Nivel.ToString(),
+            CantidadAnuncios = anunciosPorAgencia.GetValueOrDefault(a.UsuarioId),
+        }).ToList();
+
+        return new PagedResult<AgenciaListadoDto>(
+            items,
+            total,
+            paginaSegura,
+            cantidadSegura);
     }
 
     public async Task<PerfilDealerPublicoDto?> ActualizarMiPerfilAsync(

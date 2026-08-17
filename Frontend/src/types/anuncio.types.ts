@@ -61,6 +61,7 @@ export interface PagedResult<T> {
   totalRegistros: number;
   paginaActual: number;
   cantidadPorPagina: number;
+  totalPaginas?: number;
 }
 
 export interface AnuncioCreateDto {
