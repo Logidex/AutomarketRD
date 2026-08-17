@@ -63,13 +63,15 @@ export default function Checkout() {
   return (
     <div className="min-h-screen bg-page text-ink">
       {/* Header */}
-      <header className="flex items-center justify-between border-b border-line px-8 py-5">
+      <header className="flex items-center justify-between border-b border-line px-6 py-2 sm:px-8">
         <div className="flex items-center gap-4">
-          <img
-            src={logo}
-            alt="AutoMarket RD"
-            className="h-12 w-auto object-contain"
-          />
+          <Link to="/" className="flex items-center">
+            <img
+              src={logo}
+              alt="AutoMarket RD"
+              className="h-20 w-auto object-contain"
+            />
+          </Link>
           <span className="text-xl font-bold">Finalizar compra</span>
         </div>
 
@@ -119,13 +121,13 @@ export default function Checkout() {
               </div>
 
               {/* Método de pago: solo PayPal */}
-              <div className="rounded-xl border border-[#3b2f2f] bg-[#1a1515] p-4 mb-6">
+              <div className="rounded-xl border border-line bg-surface-2 p-4 mb-6 dark:border-[#3b2f2f] dark:bg-[#1a1515]">
                 <p className="text-sm text-ink-2 mb-2">Método de pago</p>
                 <div className="flex items-center gap-3">
                   <FaPaypal className="text-3xl text-[#0070ba]" />
                   <div>
-                    <p className="font-semibold">PayPal</p>
-                    <p className="text-xs text-ink-2">
+                    <p className="font-semibold text-ink dark:text-white">PayPal</p>
+                    <p className="text-xs text-ink-2 dark:text-gray-300">
                       Por ahora es el único método de pago disponible.
                     </p>
                   </div>

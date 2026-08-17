@@ -17,6 +17,12 @@ export default {
         "ink-3": "var(--am-ink-3)",
         input: "var(--am-input)",
         hover: "var(--am-hover)",
+        // Nuevos tokens de marca y estado (se adaptan a claro/oscuro vía index.css)
+        brand: "var(--am-brand)",
+        "brand-hover": "var(--am-brand-hover)",
+        "brand-soft": "var(--am-brand-soft)",
+        success: "var(--am-success)",
+        "success-soft": "var(--am-success-soft)",
       },
     },
   },
