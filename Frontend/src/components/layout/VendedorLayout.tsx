@@ -1,6 +1,7 @@
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { FaCarSide, FaEnvelope, FaHeadset, FaHome, FaLevelUpAlt, FaPaperPlane, FaSignOutAlt, FaUserCog } from "react-icons/fa";
 import { authService } from "../../services/auth.service";
+import { confirmarCierreSesion } from "../../utils/confirmarCierreSesion";
 import logo from "../../assets/AutoMarketRD_Logo.svg";
 import CampanaNotificaciones from "./CampanaNotificaciones";
 import BotonTema from "../BotonTema";
@@ -15,7 +16,8 @@ export default function VendedorLayout() {
 
   const inicial = usuario?.nombre ? usuario.nombre.charAt(0).toUpperCase() : "U";
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    if (!(await confirmarCierreSesion())) return;
     authService.logout();
     navigate("/login", { replace: true });
   };

@@ -8,6 +8,7 @@ import {
   FaUserEdit,
 } from "react-icons/fa";
 import { authService } from "../services/auth.service";
+import { confirmarCierreSesion } from "../utils/confirmarCierreSesion";
 import AscenderRol from "../components/AscenderRol";
 
 export default function MiCuenta() {
@@ -20,7 +21,8 @@ export default function MiCuenta() {
     `${usuario.nombre} ${usuario.apellido ?? ""}`.trim();
   const inicial = usuario.nombre.charAt(0).toUpperCase();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    if (!(await confirmarCierreSesion())) return;
     authService.logout();
     navigate("/login", { replace: true });
   };
