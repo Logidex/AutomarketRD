@@ -6,6 +6,7 @@ import { FaCar, FaHome, FaPlusCircle, FaChartPie, FaSignOutAlt, FaEnvelope, FaSt
 import { authService } from "../../services/auth.service";
 import { suscripcionService, type SuscripcionDealer } from "../../services/suscripcion.service";
 import { nombrePlan as nombrePlanUtil } from "../../constants/planes";
+import { confirmarCierreSesion } from "../../utils/confirmarCierreSesion";
 import logo from "../../assets/AutoMarketRD_Logo.svg";
 import CampanaNotificaciones from "./CampanaNotificaciones";
 import BotonTema from "../BotonTema";
@@ -77,7 +78,9 @@ export default function DashboardLayout() {
       .catch(() => setSuscripcion(null));
   }, [location.pathname]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    if (!(await confirmarCierreSesion())) return;
+
     authService.logout();
 
     navigate("/login", {

@@ -10,6 +10,7 @@ import {
   FaUserEdit,
 } from "react-icons/fa";
 import { authService } from "../../services/auth.service";
+import { confirmarCierreSesion } from "../../utils/confirmarCierreSesion";
 import { ROLES } from "../../constants/roles";
 import CampanaNotificaciones from "./CampanaNotificaciones";
 
@@ -44,8 +45,9 @@ export default function NavbarUsuario() {
     return () => document.removeEventListener("mousedown", cerrarFuera);
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setMenuAbierto(false);
+    if (!(await confirmarCierreSesion())) return;
     authService.logout();
     navigate("/login", { replace: true });
   };

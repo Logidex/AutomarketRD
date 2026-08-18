@@ -11,6 +11,7 @@ import {
 } from "react-icons/fa";
 import { authService } from "../../services/auth.service";
 import { useResumenTicketsAdmin } from "../../hooks/useTickets";
+import { confirmarCierreSesion } from "../../utils/confirmarCierreSesion";
 import logo from "../../assets/AutoMarketRD_Logo.svg";
 import BotonTema from "../BotonTema";
 
@@ -65,7 +66,8 @@ export default function AdminLayout() {
     ? usuario.nombre.charAt(0).toUpperCase()
     : "A";
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    if (!(await confirmarCierreSesion())) return;
     authService.logout();
     navigate("/login", { replace: true });
   };
