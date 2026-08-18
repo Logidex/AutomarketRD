@@ -128,7 +128,24 @@ export const useFormularioVehiculo = (
       return;
     }
 
-    const nuevosArchivos = Array.from(e.target.files).slice(0, cupo);
+    const claveDeArchivo = (f: File) => `${f.name}-${f.size}-${f.lastModified}`;
+    const yaExistentes = new Set(archivos.map(claveDeArchivo));
+
+    const sinDuplicados = Array.from(e.target.files).filter(
+      (f) => !yaExistentes.has(claveDeArchivo(f))
+    );
+
+    if (sinDuplicados.length === 0) {
+      Swal.fire({
+        title: "Imagen duplicada",
+        text: "Esa imagen ya está en la lista. Elige otra.",
+        icon: "warning",
+        confirmButtonColor: "#ef4444",
+      });
+      return;
+    }
+
+    const nuevosArchivos = sinDuplicados.slice(0, cupo);
     setArchivos((prev) => [...prev, ...nuevosArchivos]);
   };
 

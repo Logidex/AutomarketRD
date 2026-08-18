@@ -125,9 +125,9 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-page flex items-center justify-center p-4">
-      <div className="w-full max-w-[950px] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row">
+      <div className="w-full max-w-[950px] bg-surface rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row">
         {/* Columna Izquierda - Visual */}
-        <div className="md:flex-1 bg-surface p-12 text-white flex flex-col">
+        <div className="md:flex-1 bg-[#11141a] p-12 text-white flex flex-col">
           <div className="mb-10">
             <div className="flex items-center justify-center w-full">
               <img
@@ -139,7 +139,7 @@ export default function Login() {
           </div>
 
           <h1 className="text-3xl font-bold mb-4">Bienvenido de nuevo</h1>
-          <p className="text-ink-2 mb-10">
+          <p className="text-white/70 mb-10">
             Accede a tu cuenta para explorar los mejores vehículos del mercado.
           </p>
 
@@ -151,16 +151,16 @@ export default function Login() {
         </div>
 
         {/* Columna Derecha - Formulario */}
-        <div className="md:flex-[1.2] bg-white p-12 flex flex-col justify-center">
+        <div className="md:flex-[1.2] bg-surface p-12 flex flex-col justify-center">
           <Link
             to="/"
-            className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-gray-500 transition-colors hover:text-blue-500"
+            className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-ink-3 transition-colors hover:text-blue-500"
           >
             <FaArrowLeft />
             Volver al inicio
           </Link>
 
-          <h2 className="text-2xl font-semibold mb-6 text-gray-800">
+          <h2 className="text-2xl font-semibold mb-6 text-ink">
             Iniciar Sesión
           </h2>
 
@@ -168,7 +168,7 @@ export default function Login() {
             <div>
               <label
                 htmlFor="loginEmail"
-                className="block text-sm font-medium text-gray-600 mb-2"
+                className="block text-sm font-medium text-ink-2 mb-2"
               >
                 Email
               </label>
@@ -178,7 +178,7 @@ export default function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="tu@email.com"
-                className="w-full px-4 py-3 bg-[#f7f9fc] border border-[#e1e7f0] rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full px-4 py-3 bg-input text-ink border border-line rounded-lg focus:outline-none focus:border-blue-500 transition-colors placeholder:text-ink-3"
                 required
               />
             </div>
@@ -186,7 +186,7 @@ export default function Login() {
             <div>
               <label
                 htmlFor="loginPassword"
-                className="block text-sm font-medium text-gray-600 mb-2"
+                className="block text-sm font-medium text-ink-2 mb-2"
               >
                 Contraseña
               </label>
@@ -197,14 +197,14 @@ export default function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full px-4 py-3 pr-12 bg-[#f7f9fc] border border-[#e1e7f0] rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full px-4 py-3 pr-12 bg-input text-ink border border-line rounded-lg focus:outline-none focus:border-blue-500 transition-colors placeholder:text-ink-3"
                 required
               />
               <button
                 type="button"
                 onClick={() => setMostrarPassword((v) => !v)}
                 aria-label={mostrarPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition-colors hover:text-blue-500"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-3 transition-colors hover:text-blue-500"
               >
                 {mostrarPassword ? <FaEyeSlash /> : <FaEye />}
               </button>
@@ -223,13 +223,13 @@ export default function Login() {
           <div className="mt-4 text-center">
             <Link
               to="/recuperar-password"
-              className="text-sm text-gray-500 transition-colors hover:text-blue-500"
+              className="text-sm text-ink-3 transition-colors hover:text-blue-500"
             >
               ¿Olvidaste tu contraseña?
             </Link>
           </div>
 
-          <p className="text-center text-sm text-gray-500 mt-6">
+          <p className="text-center text-sm text-ink-3 mt-6">
             ¿No tienes cuenta?{" "}
             <Link
               to="/registro"

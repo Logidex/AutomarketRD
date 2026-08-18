@@ -122,7 +122,10 @@ export default function GestorImagenes({
         type="file"
         multiple
         accept="image/png, image/jpeg"
-        onChange={onImageChange}
+        onChange={(e) => {
+          onImageChange(e);
+          e.target.value = "";
+        }}
         className="block w-full cursor-pointer rounded-md border border-line text-sm text-ink-3 file:mr-4 file:rounded-md file:border-0 file:bg-blue-50 file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-blue-700 hover:file:bg-blue-100"
       />
 
