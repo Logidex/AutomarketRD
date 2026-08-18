@@ -17,6 +17,7 @@ public class SuscripcionRepository : ISuscripcionRepository
     public async Task<SuscripcionDealer?> ObtenerPorDealerIdAsync(int perfilDealerId)
     {
         return await _context.SuscripcionDealers
+            .Include(s => s.Plan)
             .FirstOrDefaultAsync(s => s.PerfilDealerId == perfilDealerId);
     }
 

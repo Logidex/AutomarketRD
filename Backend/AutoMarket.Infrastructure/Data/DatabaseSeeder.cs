@@ -102,6 +102,9 @@ public static class DatabaseSeeder
                 PrecioMensual = p.PrecioMensual,
                 DescuentoTrimestralPorcentaje = p.DescTrim,
                 DescuentoAnualPorcentaje = p.DescAnual,
+                LimiteAnuncios = PlanConfig.LimiteAnuncios(p.Nivel),
+                MaxFotos = PlanConfig.MaxFotos(p.Nivel),
+                DiasVigencia = PlanConfig.DiasVigencia(p.Nivel),
                 CuotaDestacados = cuotaDestacados,
                 Activo = true
             });

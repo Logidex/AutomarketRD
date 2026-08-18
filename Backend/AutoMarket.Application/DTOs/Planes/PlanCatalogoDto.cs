@@ -45,6 +45,9 @@ public class PlanCatalogoCreateDto
     public decimal PrecioMensual { get; set; }
     public decimal DescuentoTrimestralPorcentaje { get; set; }
     public decimal DescuentoAnualPorcentaje { get; set; }
+    public int LimiteAnuncios { get; set; }
+    public int MaxFotos { get; set; }
+    public int DiasVigencia { get; set; }
     public int CuotaDestacados { get; set; }
     public bool Activo { get; set; } = true;
 }
@@ -56,6 +59,9 @@ public class PlanCatalogoUpdateDto
     public decimal PrecioMensual { get; set; }
     public decimal DescuentoTrimestralPorcentaje { get; set; }
     public decimal DescuentoAnualPorcentaje { get; set; }
+    public int LimiteAnuncios { get; set; }
+    public int MaxFotos { get; set; }
+    public int DiasVigencia { get; set; }
     public int CuotaDestacados { get; set; }
     public bool Activo { get; set; }
 }
