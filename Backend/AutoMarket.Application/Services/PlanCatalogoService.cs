@@ -55,6 +55,9 @@ public class PlanCatalogoService : IPlanCatalogoService
         if (dto.CuotaDestacados < 0)
             throw new BusinessRuleException("La cuota de destacados no puede ser negativa.");
 
+        if (dto.LimiteAnuncios < 0 || dto.MaxFotos < 0 || dto.DiasVigencia < 0)
+            throw new BusinessRuleException("Los límites del plan no pueden ser negativos.");
+
         var plan = new PlanCatalogo
         {
             Nivel = dto.Nivel,
@@ -63,6 +66,9 @@ public class PlanCatalogoService : IPlanCatalogoService
             PrecioMensual = dto.PrecioMensual,
             DescuentoTrimestralPorcentaje = dto.DescuentoTrimestralPorcentaje,
             DescuentoAnualPorcentaje = dto.DescuentoAnualPorcentaje,
+            LimiteAnuncios = dto.LimiteAnuncios > 0 ? dto.LimiteAnuncios : PlanConfig.LimiteAnuncios(dto.Nivel),
+            MaxFotos = dto.MaxFotos > 0 ? dto.MaxFotos : PlanConfig.MaxFotos(dto.Nivel),
+            DiasVigencia = dto.DiasVigencia > 0 ? dto.DiasVigencia : PlanConfig.DiasVigencia(dto.Nivel),
             CuotaDestacados = dto.CuotaDestacados,
             Activo = dto.Activo
         };
@@ -82,11 +88,17 @@ public class PlanCatalogoService : IPlanCatalogoService
         if (dto.CuotaDestacados < 0)
             throw new BusinessRuleException("La cuota de destacados no puede ser negativa.");
 
+        if (dto.LimiteAnuncios < 0 || dto.MaxFotos < 0 || dto.DiasVigencia < 0)
+            throw new BusinessRuleException("Los límites del plan no pueden ser negativos.");
+
         plan.Nombre = dto.Nombre;
         plan.Descripcion = dto.Descripcion;
         plan.PrecioMensual = dto.PrecioMensual;
         plan.DescuentoTrimestralPorcentaje = dto.DescuentoTrimestralPorcentaje;
         plan.DescuentoAnualPorcentaje = dto.DescuentoAnualPorcentaje;
+        plan.LimiteAnuncios = dto.LimiteAnuncios > 0 ? dto.LimiteAnuncios : PlanConfig.LimiteAnuncios(plan.Nivel);
+        plan.MaxFotos = dto.MaxFotos > 0 ? dto.MaxFotos : PlanConfig.MaxFotos(plan.Nivel);
+        plan.DiasVigencia = dto.DiasVigencia > 0 ? dto.DiasVigencia : PlanConfig.DiasVigencia(plan.Nivel);
         plan.CuotaDestacados = dto.CuotaDestacados;
         plan.Activo = dto.Activo;
 
@@ -117,10 +129,10 @@ private static PlanCatalogoDto MapearPublico(PlanCatalogo plan)
             Nivel = plan.Nivel,
             Nombre = plan.Nombre,
             Descripcion = plan.Descripcion,
-            LimiteAnuncios = plan.LimiteAnuncios,
+            LimiteAnuncios = plan.LimiteAnunciosEfectivo,
             CuotaDestacados = plan.CuotaDestacados,
-            MaxFotos = PlanConfig.MaxFotos(plan.Nivel),
-            DiasVigencia = PlanConfig.DiasVigencia(plan.Nivel),
+            MaxFotos = plan.MaxFotosEfectivo,
+            DiasVigencia = plan.DiasVigenciaEfectivo,
             PrecioMensual = plan.PrecioMensual,
             DescuentoTrimestralPorcentaje = plan.DescuentoTrimestralPorcentaje,
             DescuentoAnualPorcentaje = plan.DescuentoAnualPorcentaje
@@ -137,10 +149,10 @@ private static PlanCatalogoDto MapearPublico(PlanCatalogo plan)
             Nivel = plan.Nivel,
             Nombre = plan.Nombre,
             Descripcion = plan.Descripcion,
-            LimiteAnuncios = plan.LimiteAnuncios,
+            LimiteAnuncios = plan.LimiteAnunciosEfectivo,
             CuotaDestacados = plan.CuotaDestacados,
-            MaxFotos = PlanConfig.MaxFotos(plan.Nivel),
-            DiasVigencia = PlanConfig.DiasVigencia(plan.Nivel),
+            MaxFotos = plan.MaxFotosEfectivo,
+            DiasVigencia = plan.DiasVigenciaEfectivo,
             PrecioMensual = plan.PrecioMensual,
             DescuentoTrimestralPorcentaje = plan.DescuentoTrimestralPorcentaje,
             DescuentoAnualPorcentaje = plan.DescuentoAnualPorcentaje,

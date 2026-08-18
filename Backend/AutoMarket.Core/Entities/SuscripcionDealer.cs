@@ -12,7 +12,7 @@ public class SuscripcionDealer
     public CicloFacturacion Ciclo { get; private set; }
     public EstadoSuscripcion Estado { get; private set; }
 
-    public int LimiteAnuncios => PlanConfig.LimiteAnuncios(Nivel);
+    public int LimiteAnuncios => Plan?.LimiteAnunciosEfectivo ?? PlanConfig.LimiteAnuncios(Nivel);
 
     // Navigation to PlanCatalogo for CuotaDestacados
     public int? PlanCatalogoId { get; private set; }
@@ -49,13 +49,14 @@ public class SuscripcionDealer
         PlanCatalogoId = plan.Id;
     }
 
-    public bool PermiteNuevosAnuncios(int cantidadAnunciosActuales)
+    public bool PermiteNuevosAnuncios(int cantidadAnunciosActuales, PlanCatalogo? plan = null)
     {
         // La cancelación no revierte los días ya pagados: se permite mientras la
         // vigencia siga vigente. El freno efectivo es la fecha de vencimiento.
         if (DateTime.UtcNow > FechaVencimientoUtc) return false;
 
-        return cantidadAnunciosActuales < LimiteAnuncios;
+        var limite = plan?.LimiteAnunciosEfectivo ?? PlanConfig.LimiteAnuncios(Nivel);
+        return cantidadAnunciosActuales < limite;
     }
 
     /// <summary>

@@ -19,6 +19,8 @@ const PLAN_VACIO: PlanAdminForm = {
   descripcion: "",
   limiteAnuncios: 10,
   cuotaDestacados: 0,
+  maxFotos: 8,
+  diasVigencia: 30,
   precioMensual: 0,
   descuentoTrimestralPorcentaje: 0,
   descuentoAnualPorcentaje: 0,
@@ -55,6 +57,8 @@ function useAdminPlanesPage() {
       descripcion: plan.descripcion ?? "",
       limiteAnuncios: plan.limiteAnuncios,
       cuotaDestacados: plan.cuotaDestacados ?? 0,
+      maxFotos: plan.maxFotos,
+      diasVigencia: plan.diasVigencia,
       precioMensual: plan.precioMensual,
       descuentoTrimestralPorcentaje: plan.descuentoTrimestralPorcentaje,
       descuentoAnualPorcentaje: plan.descuentoAnualPorcentaje,
@@ -186,6 +190,8 @@ function TablaPlanes({ planes, onEditar, onEliminar }: PropsTabla) {
             <th className="px-4 py-3">Plan</th>
             <th className="px-4 py-3">Nivel</th>
             <th className="px-4 py-3">Límite anuncios</th>
+            <th className="px-4 py-3">Fotos</th>
+            <th className="px-4 py-3">Vigencia (días)</th>
             <th className="px-4 py-3">Cuota destacados</th>
             <th className="px-4 py-3">Mensual</th>
             <th className="px-4 py-3">Trimestral</th>
@@ -210,6 +216,12 @@ function TablaPlanes({ planes, onEditar, onEliminar }: PropsTabla) {
               </td>
               <td className="px-4 py-3 text-ink-2">
                 {plan.limiteAnuncios}
+              </td>
+              <td className="px-4 py-3 text-ink-2">
+                {plan.maxFotos}
+              </td>
+              <td className="px-4 py-3 text-ink-2">
+                {plan.diasVigencia}
               </td>
               <td className="px-4 py-3 text-ink-2 font-medium">
                 {plan.cuotaDestacados ?? 0}
@@ -372,6 +384,34 @@ function ModalPlan({
                 type="number"
                 min={0}
                 value={form.cuotaDestacados}
+                onChange={onChange}
+                className={inputClase}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label htmlFor="planMaxFotos" className={labelClase}>Fotos por anuncio</label>
+              <input
+                id="planMaxFotos"
+                name="maxFotos"
+                type="number"
+                min={0}
+                value={form.maxFotos}
+                onChange={onChange}
+                className={inputClase}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="planDiasVigencia" className={labelClase}>Vigencia del anuncio (días)</label>
+              <input
+                id="planDiasVigencia"
+                name="diasVigencia"
+                type="number"
+                min={0}
+                value={form.diasVigencia}
                 onChange={onChange}
                 className={inputClase}
               />

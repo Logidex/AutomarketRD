@@ -29,9 +29,24 @@ public class PlanCatalogo
 
     public bool Activo { get; set; } = true;
 
-    /// <summary>Límite de anuncios del plan, según la configuración central.</summary>
-    public int LimiteAnuncios => PlanConfig.LimiteAnuncios(Nivel);
+    /// <summary>
+    /// Límite de anuncios del plan. Si vale 0 (sin configurar), se usa el valor
+    /// por defecto de <see cref="PlanConfig.LimiteAnuncios(PlanNivel)"/>.
+    /// </summary>
+    public int LimiteAnuncios { get; set; }
+
+    /// <summary>Máximo de fotos por anuncio del plan. 0 = usar <see cref="PlanConfig.MaxFotos(PlanNivel)"/>.</summary>
+    public int MaxFotos { get; set; }
+
+    /// <summary>Días de vigencia de cada anuncio del plan. 0 = usar <see cref="PlanConfig.DiasVigencia(PlanNivel)"/>.</summary>
+    public int DiasVigencia { get; set; }
 
     /// <summary>Cuota de anuncios destacados permitidos simultáneamente.</summary>
     public int CuotaDestacados { get; set; }
+
+    public int LimiteAnunciosEfectivo => LimiteAnuncios > 0 ? LimiteAnuncios : PlanConfig.LimiteAnuncios(Nivel);
+
+    public int MaxFotosEfectivo => MaxFotos > 0 ? MaxFotos : PlanConfig.MaxFotos(Nivel);
+
+    public int DiasVigenciaEfectivo => DiasVigencia > 0 ? DiasVigencia : PlanConfig.DiasVigencia(Nivel);
 }

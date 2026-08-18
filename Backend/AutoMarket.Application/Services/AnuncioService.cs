@@ -103,9 +103,15 @@ public class AnuncioService : IAnuncioService
                 );
             }
 
+            var plan =
+                await _planCatalogoRepository.ObtenerPorNivelAsync(
+                    suscripcion.Nivel
+                );
+
             if (
                 !suscripcion.PermiteNuevosAnuncios(
-                    cantidadAnuncios
+                    cantidadAnuncios,
+                    plan
                 )
             )
             {
@@ -388,14 +394,16 @@ public class AnuncioService : IAnuncioService
             );
         }
 
-        if (!suscripcion.PermiteNuevosAnuncios(cantidadActiva))
+        var plan = await _planCatalogoRepository.ObtenerPorNivelAsync(suscripcion.Nivel);
+
+        if (!suscripcion.PermiteNuevosAnuncios(cantidadActiva, plan))
         {
             throw new BusinessRuleException(
                 "Has alcanzado el límite de anuncios permitidos por tu plan."
             );
         }
 
-        return PlanConfig.DiasVigencia(suscripcion.Nivel);
+        return plan?.DiasVigenciaEfectivo ?? PlanConfig.DiasVigencia(suscripcion.Nivel);
     }
 
     public async Task<List<string>> SubirImagenesAsync(AnuncioImagenUploadDto dto)
@@ -452,7 +460,8 @@ public class AnuncioService : IAnuncioService
         if (esVendedorParticular || usuario?.PerfilDealer?.Suscripcion == null)
             return PlanConfig.MaxFotos(PlanNivel.Gratis);
 
-        return PlanConfig.MaxFotos(usuario.PerfilDealer.Suscripcion.Nivel);
+        var plan = await _planCatalogoRepository.ObtenerPorNivelAsync(usuario.PerfilDealer.Suscripcion.Nivel);
+        return plan?.MaxFotosEfectivo ?? PlanConfig.MaxFotos(usuario.PerfilDealer.Suscripcion.Nivel);
     }
 
     public async Task<bool> EstablecerFotoPrincipalAsync(int id, int usuarioId, string urlImagen)
