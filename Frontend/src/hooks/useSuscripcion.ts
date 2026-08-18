@@ -34,6 +34,21 @@ export const useMaxFotosAnuncio = (defaultMaxFotos = 8) => {
   return plan?.maxFotos ?? defaultMaxFotos;
 };
 
+export const useCuotaDestacadosPlan = (): number => {
+  const { data: suscripcion } = useSuscripcion();
+  const { data: planes = [] } = usePlanesCatalogo();
+
+  if (!suscripcion) return 0;
+
+  const plan = planes.find((p) => p.nivel === suscripcion.nivel);
+  return plan?.cuotaDestacados ?? 0;
+};
+
+/** Indica si el plan del usuario permite destacar anuncios (cuota > 0). */
+export const usePermiteDestacarAnuncio = (): boolean => {
+  return useCuotaDestacadosPlan() > 0;
+};
+
 export const useHistorialPagos = () => {
   return useQuery<PagoSuscripcion[]>({
     queryKey: ['historial-pagos'],
