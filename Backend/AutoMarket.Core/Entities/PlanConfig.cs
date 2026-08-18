@@ -14,9 +14,9 @@ public static class PlanConfig
     public static int LimiteAnuncios(PlanNivel nivel) => nivel switch
     {
         PlanNivel.Gratis => 1,
-        PlanNivel.Basico => 15,
-        PlanNivel.Pro => 50,
-        PlanNivel.Elite => 150,
+        PlanNivel.Basico => 10,
+        PlanNivel.Pro => 40,
+        PlanNivel.Elite => 100,
         _ => 1
     };
 
