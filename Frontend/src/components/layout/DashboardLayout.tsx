@@ -99,7 +99,7 @@ export default function DashboardLayout() {
         </div>
 
         {/* MENÚ PRINCIPAL */}
-        <nav className="flex flex-1 flex-col gap-2 p-6">
+        <nav className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-6">
           {menuItems.map((item) => {
             const esDashboardPrincipal = item.path === "/dashboard";
 

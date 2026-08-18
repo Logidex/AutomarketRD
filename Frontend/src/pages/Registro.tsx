@@ -27,7 +27,7 @@ interface CamposDealerProps {
 
 function CamposDealer({ formData, handleChange }: CamposDealerProps) {
   return (
-    <div className="border-t border-[#e1e7f0] pt-5 mt-3">
+    <div className="border-t border-line pt-5 mt-3">
       <h3 className="text-lg font-semibold text-blue-500 mb-4">
         Información de la Agencia
       </h3>
@@ -36,7 +36,7 @@ function CamposDealer({ formData, handleChange }: CamposDealerProps) {
         <div>
           <label
             htmlFor="nombreAgencia"
-            className="block text-sm font-medium text-gray-600 mb-2"
+            className="block text-sm font-medium text-ink-2 mb-2"
           >
             Nombre de la Agencia <span className="text-red-500">*</span>
           </label>
@@ -47,14 +47,14 @@ function CamposDealer({ formData, handleChange }: CamposDealerProps) {
             value={formData.nombreAgencia}
             onChange={handleChange}
             placeholder="AutoVentas RD"
-            className="w-full px-4 py-3 bg-[#f7f9fc] border border-[#e1e7f0] rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+            className="w-full px-4 py-3 bg-input text-ink border border-line rounded-lg focus:outline-none focus:border-blue-500 transition-colors placeholder:text-ink-3"
             required
           />
         </div>
         <div>
           <label
             htmlFor="agenciaRNC"
-            className="block text-sm font-medium text-gray-600 mb-2"
+            className="block text-sm font-medium text-ink-2 mb-2"
           >
             RNC de la Agencia <span className="text-red-500">*</span>
           </label>
@@ -65,7 +65,7 @@ function CamposDealer({ formData, handleChange }: CamposDealerProps) {
             value={formData.agenciaRNC}
             onChange={handleChange}
             placeholder="1-30-12345-6"
-            className="w-full px-4 py-3 bg-[#f7f9fc] border border-[#e1e7f0] rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+            className="w-full px-4 py-3 bg-input text-ink border border-line rounded-lg focus:outline-none focus:border-blue-500 transition-colors placeholder:text-ink-3"
             required
           />
         </div>
@@ -75,7 +75,7 @@ function CamposDealer({ formData, handleChange }: CamposDealerProps) {
         <div>
           <label
             htmlFor="ubicacionAgencia"
-            className="block text-sm font-medium text-gray-600 mb-2"
+            className="block text-sm font-medium text-ink-2 mb-2"
           >
             Ubicación de la Agencia <span className="text-red-500">*</span>
           </label>
@@ -86,14 +86,14 @@ function CamposDealer({ formData, handleChange }: CamposDealerProps) {
             value={formData.ubicacionAgencia}
             onChange={handleChange}
             placeholder="Santo Domingo"
-            className="w-full px-4 py-3 bg-[#f7f9fc] border border-[#e1e7f0] rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+            className="w-full px-4 py-3 bg-input text-ink border border-line rounded-lg focus:outline-none focus:border-blue-500 transition-colors placeholder:text-ink-3"
             required
           />
         </div>
         <div>
           <label
             htmlFor="telefonoAgencia"
-            className="block text-sm font-medium text-gray-600 mb-2"
+            className="block text-sm font-medium text-ink-2 mb-2"
           >
             Teléfono de la Agencia <span className="text-red-500">*</span>
           </label>
@@ -104,7 +104,7 @@ function CamposDealer({ formData, handleChange }: CamposDealerProps) {
             value={formData.telefonoAgencia}
             onChange={handleChange}
             placeholder="809-555-5555"
-            className="w-full px-4 py-3 bg-[#f7f9fc] border border-[#e1e7f0] rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+            className="w-full px-4 py-3 bg-input text-ink border border-line rounded-lg focus:outline-none focus:border-blue-500 transition-colors placeholder:text-ink-3"
             required
           />
         </div>
@@ -129,6 +129,8 @@ export default function Registro() {
 
   const [loading, setLoading] = useState(false);
   const [mostrarPassword, setMostrarPassword] = useState(false);
+  const [confirmarPassword, setConfirmarPassword] = useState("");
+  const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (
@@ -142,6 +144,17 @@ export default function Registro() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (formData.password !== confirmarPassword) {
+      await Swal.fire({
+        icon: "error",
+        title: "Las contraseñas no coinciden",
+        text: "Verifica que ambos campos de contraseña sean iguales.",
+        confirmButtonColor: "#3b82f6",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -200,10 +213,10 @@ export default function Registro() {
 
   return (
     <div className="min-h-screen bg-page flex items-center justify-center p-4">
-      <div className="w-full max-w-[950px] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row">
+      <div className="w-full max-w-[950px] bg-surface rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row">
 
         {/* Columna Izquierda - Visual */}
-        <div className="md:flex-1 bg-surface p-12 text-white flex flex-col">
+        <div className="md:flex-1 bg-[#11141a] p-12 text-white flex flex-col">
           <div className="mb-10">
             <div className="flex items-center justify-center w-full">
               <img
@@ -217,7 +230,7 @@ export default function Registro() {
           <h1 className="text-3xl font-bold mb-4">
             Únete al mercado
           </h1>
-          <p className="text-ink-2 mb-10">
+          <p className="text-white/70 mb-10">
             Crea tu cuenta y comienza a explorar o publicar vehículos en
             AutoMarket RD.
           </p>
@@ -230,8 +243,8 @@ export default function Registro() {
         </div>
 
         {/* Columna Derecha - Formulario */}
-        <div className="md:flex-[1.2] bg-white p-12 flex flex-col justify-center">
-          <h2 className="text-2xl font-semibold mb-6 text-gray-800">
+        <div className="md:flex-[1.2] bg-surface p-12 flex flex-col justify-center">
+          <h2 className="text-2xl font-semibold mb-6 text-ink">
             Crear Cuenta
           </h2>
 
@@ -241,7 +254,7 @@ export default function Registro() {
               <div>
                 <label
                   htmlFor="nombre"
-                  className="block text-sm font-medium text-gray-600 mb-2"
+                  className="block text-sm font-medium text-ink-2 mb-2"
                 >
                   Nombre
                 </label>
@@ -252,14 +265,14 @@ export default function Registro() {
                   value={formData.nombre}
                   onChange={handleChange}
                   placeholder="Juan"
-                  className="w-full px-4 py-3 bg-[#f7f9fc] border border-[#e1e7f0] rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                  className="w-full px-4 py-3 bg-input text-ink border border-line rounded-lg focus:outline-none focus:border-blue-500 transition-colors placeholder:text-ink-3"
                   required
                 />
               </div>
               <div>
                 <label
                   htmlFor="apellido"
-                  className="block text-sm font-medium text-gray-600 mb-2"
+                  className="block text-sm font-medium text-ink-2 mb-2"
                 >
                   Apellido
                 </label>
@@ -270,7 +283,7 @@ export default function Registro() {
                   value={formData.apellido}
                   onChange={handleChange}
                   placeholder="Pérez"
-                  className="w-full px-4 py-3 bg-[#f7f9fc] border border-[#e1e7f0] rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                  className="w-full px-4 py-3 bg-input text-ink border border-line rounded-lg focus:outline-none focus:border-blue-500 transition-colors placeholder:text-ink-3"
                   required
                 />
               </div>
@@ -281,7 +294,7 @@ export default function Registro() {
               <div>
                 <label
                   htmlFor="email"
-                  className="block text-sm font-medium text-gray-600 mb-2"
+                  className="block text-sm font-medium text-ink-2 mb-2"
                 >
                   Email
                 </label>
@@ -292,14 +305,14 @@ export default function Registro() {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="tu@email.com"
-                  className="w-full px-4 py-3 bg-[#f7f9fc] border border-[#e1e7f0] rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                  className="w-full px-4 py-3 bg-input text-ink border border-line rounded-lg focus:outline-none focus:border-blue-500 transition-colors placeholder:text-ink-3"
                   required
                 />
               </div>
               <div>
                 <label
                   htmlFor="telefonoPersonal"
-                  className="block text-sm font-medium text-gray-600 mb-2"
+                  className="block text-sm font-medium text-ink-2 mb-2"
                 >
                   Teléfono Personal
                 </label>
@@ -310,17 +323,17 @@ export default function Registro() {
                   value={formData.telefonoPersonal}
                   onChange={handleChange}
                   placeholder="809-555-5555"
-                  className="w-full px-4 py-3 bg-[#f7f9fc] border border-[#e1e7f0] rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                  className="w-full px-4 py-3 bg-input text-ink border border-line rounded-lg focus:outline-none focus:border-blue-500 transition-colors placeholder:text-ink-3"
                 />
               </div>
             </div>
 
-            {/* Contraseña y Rol */}
+            {/* Contraseña y Confirmación */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label
                   htmlFor="password"
-                  className="block text-sm font-medium text-gray-600 mb-2"
+                  className="block text-sm font-medium text-ink-2 mb-2"
                 >
                   Contraseña
                 </label>
@@ -332,7 +345,7 @@ export default function Registro() {
                     value={formData.password}
                     onChange={handleChange}
                     placeholder="••••••••"
-                    className="w-full px-4 py-3 pr-12 bg-[#f7f9fc] border border-[#e1e7f0] rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                    className="w-full px-4 py-3 pr-12 bg-input text-ink border border-line rounded-lg focus:outline-none focus:border-blue-500 transition-colors placeholder:text-ink-3"
                     required
                     minLength={6}
                   />
@@ -340,7 +353,7 @@ export default function Registro() {
                     type="button"
                     onClick={() => setMostrarPassword((v) => !v)}
                     aria-label={mostrarPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition-colors hover:text-blue-500"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-3 transition-colors hover:text-blue-500"
                   >
                     {mostrarPassword ? <FaEyeSlash /> : <FaEye />}
                   </button>
@@ -348,8 +361,40 @@ export default function Registro() {
               </div>
               <div>
                 <label
+                  htmlFor="confirmarPassword"
+                  className="block text-sm font-medium text-ink-2 mb-2"
+                >
+                  Confirmar Contraseña
+                </label>
+                <div className="relative">
+                  <input
+                    id="confirmarPassword"
+                    type={mostrarConfirmacion ? "text" : "password"}
+                    value={confirmarPassword}
+                    onChange={(e) => setConfirmarPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full px-4 py-3 pr-12 bg-input text-ink border border-line rounded-lg focus:outline-none focus:border-blue-500 transition-colors placeholder:text-ink-3"
+                    required
+                    minLength={6}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setMostrarConfirmacion((v) => !v)}
+                    aria-label={mostrarConfirmacion ? "Ocultar contraseña" : "Mostrar contraseña"}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-3 transition-colors hover:text-blue-500"
+                  >
+                    {mostrarConfirmacion ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Tipo de Cuenta */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label
                   htmlFor="rol"
-                  className="block text-sm font-medium text-gray-600 mb-2"
+                  className="block text-sm font-medium text-ink-2 mb-2"
                 >
                   Tipo de Cuenta
                 </label>
@@ -358,7 +403,7 @@ export default function Registro() {
                   name="rol"
                   value={formData.rol}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 bg-[#f7f9fc] border border-[#e1e7f0] rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                  className="w-full px-4 py-3 bg-input text-ink border border-line rounded-lg focus:outline-none focus:border-blue-500 transition-colors placeholder:text-ink-3"
                   required
                 >
                   <option value="Comprador">Comprador</option>
@@ -382,7 +427,7 @@ export default function Registro() {
             </button>
           </form>
 
-          <p className="text-center text-sm text-gray-500 mt-6">
+          <p className="text-center text-sm text-ink-3 mt-6">
             ¿Ya tienes cuenta?{" "}
             <Link to="/login" className="text-blue-500 font-semibold hover:underline">
               Inicia sesión aquí
