@@ -47,6 +47,7 @@ services:
       AWS__SecretKey: ${AWS_SECRET_KEY:?AWS_SECRET_KEY requerido}
       AWS__Region: ${AWS_REGION:?AWS_REGION requerido}
       AWS__BucketName: ${AWS_BUCKET_NAME:?AWS_BUCKET_NAME requerido}
+      AWS__ServiceUrl: ${AWS_SERVICE_URL:?AWS_SERVICE_URL requerido}
 
       PayPal__Mode: ${PAYPAL_MODE:?PAYPAL_MODE requerido}
       PayPal__UrlBase: ${PAYPAL_URL_BASE:?PAYPAL_URL_BASE requerido}
@@ -57,6 +58,8 @@ services:
       PayPal__WebhookId: ${PAYPAL_WEBHOOK_ID:-}
 
       Cors__AllowedOrigins__0: ${CORS_ALLOWED_ORIGIN_0:?CORS_ALLOWED_ORIGIN_0 requerido}
+      Cors__AllowedOrigins__1: ${CORS_ALLOWED_ORIGIN_1:-}
+      Cors__AllowedOrigins__2: ${CORS_ALLOWED_ORIGIN_2:-}
 
       MigrateOnStartup: ${MIGRATE_ON_STARTUP:?MIGRATE_ON_STARTUP requerido}
       Seeder__Enabled: ${SEEDER_ENABLED:?SEEDER_ENABLED requerido}
