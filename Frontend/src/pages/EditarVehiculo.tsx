@@ -2,12 +2,13 @@ import { useNavigate, useParams } from "react-router-dom";
 import GestorImagenes from "../components/GestorImagenes";
 import FormularioVehiculo from "../components/FormularioVehiculo";
 import { useFormularioVehiculo } from "../hooks/useFormularioVehiculo";
-import { useMaxFotosAnuncio } from "../hooks/useSuscripcion";
+import { useMaxFotosAnuncio, usePermiteDestacarAnuncio } from "../hooks/useSuscripcion";
 
 export default function EditarVehiculo() {
   const { id } = useParams();
   const navigate = useNavigate();
   const maxFotos = useMaxFotosAnuncio();
+  const permiteDestacar = usePermiteDestacarAnuncio();
 
   const {
     formData, kilometraje, setKilometraje, accesoriosTexto, setAccesoriosTexto,
@@ -17,7 +18,7 @@ export default function EditarVehiculo() {
     publicarAlGuardar, setPublicarAlGuardar,
     destacarAlPublicar, setDestacarAlPublicar,
     fotoPrincipal, handleEstablecerPrincipal
-  } = useFormularioVehiculo(true, "/dashboard/mis-anuncios", maxFotos);
+  } = useFormularioVehiculo(true, "/dashboard/mis-anuncios", maxFotos, permiteDestacar);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,6 +53,7 @@ export default function EditarVehiculo() {
           onPublicarAlGuardarChange={(e) => setPublicarAlGuardar(e.target.checked)}
           destacarAlPublicar={destacarAlPublicar}
           onDestacarAlPublicarChange={(e) => setDestacarAlPublicar(e.target.checked)}
+          mostrarDestacado={permiteDestacar}
         />
 
         <GestorImagenes

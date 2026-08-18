@@ -3,6 +3,8 @@ import {
   formatearRD$,
   formatearPrecio,
   precioCicloDe,
+  formatearNumeroInput,
+  parsearNumeroInput,
   type Ciclo,
 } from './formato';
 
@@ -53,5 +55,48 @@ describe('precioCicloDe', () => {
 
   it('usa el mensual como valor por defecto para ciclos desconocidos', () => {
     expect(precioCicloDe(plan, 'Otro' as Ciclo)).toBe(1000);
+  });
+});
+
+describe('formatearNumeroInput', () => {
+  it('agrega separador de miles con comas', () => {
+    expect(formatearNumeroInput('1500000')).toBe('1,500,000');
+    expect(formatearNumeroInput('50000')).toBe('50,000');
+  });
+
+  it('acepta comas o puntos como separadores de miles', () => {
+    expect(formatearNumeroInput('1,500,000')).toBe('1,500,000');
+    expect(formatearNumeroInput('1.500.000')).toBe('1,500,000');
+  });
+
+  it('conserva decimales con punto (hasta 2 dígitos)', () => {
+    expect(formatearNumeroInput('1299.5')).toBe('1,299.5');
+    expect(formatearNumeroInput('1299,50')).toBe('1,299.50');
+  });
+
+  it('permite decimal en construcción con separador final', () => {
+    expect(formatearNumeroInput('1500.')).toBe('1,500.');
+  });
+
+  it('ignora caracteres no numéricos', () => {
+    expect(formatearNumeroInput('abc 1500 xyz')).toBe('1,500');
+  });
+
+  it('devuelve vacío para entrada vacía', () => {
+    expect(formatearNumeroInput('')).toBe('');
+  });
+});
+
+describe('parsearNumeroInput', () => {
+  it('convierte texto formateado a número', () => {
+    expect(parsearNumeroInput('1,500,000')).toBe(1500000);
+    expect(parsearNumeroInput('50,000')).toBe(50000);
+    expect(parsearNumeroInput('1,299.5')).toBe(1299.5);
+  });
+
+  it('devuelve 0 para texto vacío o inválido', () => {
+    expect(parsearNumeroInput('')).toBe(0);
+    expect(parsearNumeroInput('   ')).toBe(0);
+    expect(parsearNumeroInput('.')).toBe(0);
   });
 });

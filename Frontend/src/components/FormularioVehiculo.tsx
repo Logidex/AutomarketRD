@@ -1,5 +1,6 @@
 import React from 'react';
 import { TIPOS_VEHICULO } from '../constants/vehiculo.opciones';
+import InputNumerico from './InputNumerico';
 
 const MAXIMO_TRANSMISION = 50;
 
@@ -127,14 +128,13 @@ function InformacionBasica({
         >
           Precio
         </label>
-        <input
+        <InputNumerico
           id="precio"
-          type="number"
-          name="precio"
+          nombre="precio"
           required
-          min="1"
-          value={formData.precio === 0 ? '' : formData.precio}
-          onChange={onChange}
+          minimo={1}
+          value={formData.precio}
+          onCambio={onChange}
           placeholder="0"
           className="w-full rounded-md border border-line p-2.5 focus:border-blue-500 focus:ring-blue-500"
         />
@@ -167,13 +167,12 @@ function InformacionBasica({
         >
           Precio anterior (opcional)
         </label>
-        <input
+        <InputNumerico
           id="precioAnterior"
-          type="number"
-          name="precioAnterior"
-          min="0"
-          value={formData.precioAnterior === 0 ? '' : formData.precioAnterior}
-          onChange={onChange}
+          nombre="precioAnterior"
+          minimo={0}
+          value={formData.precioAnterior}
+          onCambio={onChange}
           placeholder="Dejar vacío si no está en oferta"
           className="w-full rounded-md border border-line p-2.5 focus:border-blue-500 focus:ring-blue-500"
         />
@@ -189,14 +188,13 @@ function InformacionBasica({
         >
           Kilometraje
         </label>
-        <input
+        <InputNumerico
           id="kilometraje"
-          type="number"
-          name="kilometraje"
+          nombre="kilometraje"
           required
-          min="0"
+          minimo={0}
           value={kilometraje}
-          onChange={onKilometrajeChange}
+          onCambio={onKilometrajeChange}
           placeholder="Ej: 50000"
           className="w-full rounded-md border border-line p-2.5 focus:border-blue-500 focus:ring-blue-500"
         />
