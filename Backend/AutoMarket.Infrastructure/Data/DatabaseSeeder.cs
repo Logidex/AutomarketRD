@@ -83,28 +83,16 @@ public static class DatabaseSeeder
         foreach (var p in planes)
         {
             var existente = await planRepository.ObtenerPorNivelAsync(p.Nivel);
-            var cuotaDestacados = PlanConfig.CuotaDestacados(p.Nivel);
 
             if (existente != null)
             {
-                // Sincronizar el catálogo con la configuración central del seeder.
-                if (existente.Nombre != p.Nombre ||
-                    existente.Descripcion != p.Descripcion ||
-                    existente.PrecioMensual != p.PrecioMensual ||
-                    existente.DescuentoTrimestralPorcentaje != p.DescTrim ||
-                    existente.DescuentoAnualPorcentaje != p.DescAnual ||
-                    existente.CuotaDestacados != cuotaDestacados)
-                {
-                    existente.Nombre = p.Nombre;
-                    existente.Descripcion = p.Descripcion;
-                    existente.PrecioMensual = p.PrecioMensual;
-                    existente.DescuentoTrimestralPorcentaje = p.DescTrim;
-                    existente.DescuentoAnualPorcentaje = p.DescAnual;
-                    existente.CuotaDestacados = cuotaDestacados;
-                    await planRepository.ActualizarAsync(existente);
-                }
+                // No sobreescribir planes existentes: precios, descuentos, nombre,
+                // descripción y cuota de destacados son editables desde el panel de
+                // administración. El seeder solo garantiza que los planes base existan.
                 continue;
             }
+
+            var cuotaDestacados = PlanConfig.CuotaDestacados(p.Nivel);
 
             await planRepository.AgregarAsync(new PlanCatalogo
             {
