@@ -24,7 +24,7 @@ export interface FormularioVehiculoData {
   descripcion: string;
 }
 
-interface InformacionBasicaProps {
+export interface InformacionBasicaProps {
   formData: FormularioVehiculoData;
   kilometraje: string;
   onChange: (
@@ -33,7 +33,7 @@ interface InformacionBasicaProps {
   onKilometrajeChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-function InformacionBasica({
+export function InformacionBasica({
   formData,
   kilometraje,
   onChange,
@@ -210,7 +210,7 @@ function InformacionBasica({
   );
 }
 
-interface EspecificacionesProps {
+export interface EspecificacionesProps {
   formData: FormularioVehiculoData;
   mostrarTransmisionPersonalizada: boolean;
   transmisionPersonalizada: string;
@@ -220,7 +220,7 @@ interface EspecificacionesProps {
   onTransmisionPersonalizadaChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-function Especificaciones({
+export function Especificaciones({
   formData,
   mostrarTransmisionPersonalizada,
   transmisionPersonalizada,
@@ -412,7 +412,7 @@ function Especificaciones({
   );
 }
 
-interface DetallesYUbicacionProps {
+export interface DetallesYUbicacionProps {
   formData: FormularioVehiculoData;
   accesoriosTexto: string;
   onChange: (
@@ -421,7 +421,7 @@ interface DetallesYUbicacionProps {
   onAccesoriosChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-function DetallesYUbicacion({
+export function DetallesYUbicacion({
   formData,
   accesoriosTexto,
   onChange,

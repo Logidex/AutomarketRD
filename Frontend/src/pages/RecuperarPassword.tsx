@@ -4,12 +4,11 @@ import Swal from "sweetalert2";
 import {
   FaArrowLeft,
   FaEnvelope,
-  FaEye,
-  FaEyeSlash,
   FaKey,
   FaLock,
   FaPaperPlane,
 } from "react-icons/fa";
+import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 import { authService } from "../services/auth.service";
 import logo from "../assets/AutoMarketRD_Logo.svg";
 
@@ -233,9 +232,9 @@ export default function RecuperarPassword() {
                       type="button"
                       onClick={() => setMostrarNueva((v) => !v)}
                       aria-label={mostrarNueva ? "Ocultar contraseña" : "Mostrar contraseña"}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 transition-colors hover:text-blue-500"
+                      className={`absolute right-4 top-1/2 -translate-y-1/2 transition-colors hover:text-blue-500 ${mostrarNueva ? "text-blue-500" : "text-gray-400"}`}
                     >
-                      {mostrarNueva ? <FaEyeSlash /> : <FaEye />}
+                      {mostrarNueva ? <MdVisibilityOff /> : <MdVisibility />}
                     </button>
                   </div>
                 </div>
@@ -261,9 +260,9 @@ export default function RecuperarPassword() {
                       type="button"
                       onClick={() => setMostrarRepetir((v) => !v)}
                       aria-label={mostrarRepetir ? "Ocultar contraseña" : "Mostrar contraseña"}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 transition-colors hover:text-blue-500"
+                      className={`absolute right-4 top-1/2 -translate-y-1/2 transition-colors hover:text-blue-500 ${mostrarRepetir ? "text-blue-500" : "text-gray-400"}`}
                     >
-                      {mostrarRepetir ? <FaEyeSlash /> : <FaEye />}
+                      {mostrarRepetir ? <MdVisibilityOff /> : <MdVisibility />}
                     </button>
                   </div>
                 </div>

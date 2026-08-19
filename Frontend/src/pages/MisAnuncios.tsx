@@ -5,7 +5,7 @@ import Spinner from "../components/Spinner";
 import { dashboardService, type DashboardResumen } from "../services/dashboard.service";
 import type { AnuncioListado } from "../types/anuncio.types";
 import { getUserIdFromToken } from "../utils/jwt.util";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FaCar, FaPlusCircle } from "react-icons/fa";
 import {
   useMisAnuncios,
@@ -19,6 +19,7 @@ import {
 export default function MisAnuncios() {
   const [resumen, setResumen] = useState<DashboardResumen | null>(null);
   const usuarioId = getUserIdFromToken();
+  const navigate = useNavigate();
 
   const {
     data: paged,
@@ -169,6 +170,22 @@ export default function MisAnuncios() {
   };
 
   const handleDestacar = async (id: number) => {
+    if (resumen && (resumen.cuotaDestacados ?? 0) <= 0) {
+      const result = await Swal.fire({
+        title: "Destacar anuncios",
+        text: "Tu plan actual no incluye anuncios destacados. Mejora tu suscripción para destacar tus vehículos en la página principal.",
+        icon: "info",
+        showCancelButton: true,
+        confirmButtonText: "Ver planes",
+        cancelButtonText: "Cancelar",
+        confirmButtonColor: "#f59e0b",
+        cancelButtonColor: "#6b7280",
+      });
+
+      if (result.isConfirmed) navigate("/dashboard/suscripcion");
+      return;
+    }
+
     const result = await Swal.fire({
       title: "¿Destacar anuncio?",
       text: "El anuncio aparecerá en la sección de destacados de la página principal.",

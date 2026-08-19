@@ -1,5 +1,4 @@
-import GestorImagenes from "../../components/GestorImagenes";
-import FormularioVehiculo from "../../components/FormularioVehiculo";
+import FormularioVehiculoWizard from "../../components/FormularioVehiculoWizard";
 import { useFormularioVehiculo } from "../../hooks/useFormularioVehiculo";
 import { useMaxFotosAnuncio } from "../../hooks/useSuscripcion";
 
@@ -38,41 +37,33 @@ export default function PublicarVehiculoVendedor() {
         anuncio con tu cuenta de vendedor.
       </p>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <FormularioVehiculo
-          formData={formData}
-          kilometraje={kilometraje}
-          accesoriosTexto={accesoriosTexto}
-          mostrarTransmisionPersonalizada={mostrarTransmisionPersonalizada}
-          transmisionPersonalizada={transmisionPersonalizada}
-          onChange={handleChange}
-          onKilometrajeChange={(e) => setKilometraje(e.target.value)}
-          onAccesoriosChange={(e) => setAccesoriosTexto(e.target.value)}
-          onTransmisionPersonalizadaChange={(e) => setTransmisionPersonalizada(e.target.value)}
-          publicarAlGuardar={publicarAlGuardar}
-          onPublicarAlGuardarChange={(e) => setPublicarAlGuardar(e.target.checked)}
-          destacarAlPublicar={destacarAlPublicar}
-          onDestacarAlPublicarChange={(e) => setDestacarAlPublicar(e.target.checked)}
-          mostrarDestacado={false}
-        />
-        <GestorImagenes
-          archivos={archivos}
-          fotosGuardadas={fotosGuardadas}
-          fotoPrincipal={fotoPrincipal}
-          maxImagenes={maxFotos}
-          onImageChange={handleImageChange}
-          onEliminarArchivo={handleEliminarArchivo}
-          onEliminarFotoGuardada={handleEliminarFotoGuardada}
-          onEstablecerPrincipal={handleEstablecerPrincipal}
-        />
-        <button
-          type="submit"
-          disabled={submitting}
-          className="rounded-md bg-gray-800 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {submitting ? "Guardando..." : "Guardar mi vehículo"}
-        </button>
-      </form>
+      <FormularioVehiculoWizard
+        formData={formData}
+        kilometraje={kilometraje}
+        accesoriosTexto={accesoriosTexto}
+        mostrarTransmisionPersonalizada={mostrarTransmisionPersonalizada}
+        transmisionPersonalizada={transmisionPersonalizada}
+        archivos={archivos}
+        fotosGuardadas={fotosGuardadas}
+        fotoPrincipal={fotoPrincipal}
+        maxImagenes={maxFotos}
+        publicarAlGuardar={publicarAlGuardar}
+        onPublicarAlGuardarChange={(e) => setPublicarAlGuardar(e.target.checked)}
+        destacarAlPublicar={destacarAlPublicar}
+        onDestacarAlPublicarChange={(e) => setDestacarAlPublicar(e.target.checked)}
+        mostrarDestacado={false}
+        onChange={handleChange}
+        onKilometrajeChange={(e) => setKilometraje(e.target.value)}
+        onAccesoriosChange={(e) => setAccesoriosTexto(e.target.value)}
+        onTransmisionPersonalizadaChange={(e) => setTransmisionPersonalizada(e.target.value)}
+        onImageChange={handleImageChange}
+        onEliminarArchivo={handleEliminarArchivo}
+        onEliminarFotoGuardada={handleEliminarFotoGuardada}
+        onEstablecerPrincipal={handleEstablecerPrincipal}
+        submitting={submitting}
+        tituloBoton="Guardar mi vehículo"
+        onSubmit={handleSubmit}
+      />
     </div>
   );
 }
