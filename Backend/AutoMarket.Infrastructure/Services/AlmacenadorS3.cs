@@ -1,3 +1,4 @@
+using Amazon;
 using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.S3.Model;
@@ -42,6 +43,12 @@ public class AlmacenadorS3 : IAlmacenadorArchivos
             // que el SDK v4 usa por defecto al calcular checksum en streaming.
             RequestChecksumCalculation = RequestChecksumCalculation.WHEN_REQUIRED
         };
+
+        // AWS real (sin ServiceUrl) requiere RegionEndpoint; con R2 basta ServiceURL.
+        if (_esAws && !string.IsNullOrWhiteSpace(_region))
+        {
+            config.RegionEndpoint = RegionEndpoint.GetBySystemName(_region);
+        }
 
         _s3Client = new AmazonS3Client(
             s3Options["AccessKey"],
