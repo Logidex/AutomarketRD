@@ -21,6 +21,7 @@ export const useRegistrarVisita = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['historial'] });
+      queryClient.invalidateQueries({ queryKey: ['mis-anuncios'] });
     },
   });
 };
