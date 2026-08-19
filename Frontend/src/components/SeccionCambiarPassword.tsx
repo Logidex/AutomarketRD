@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Swal from "sweetalert2";
-import { FaEnvelopeOpenText, FaEye, FaEyeSlash, FaKey, FaLock } from "react-icons/fa";
+import { FaEnvelopeOpenText, FaKey, FaLock } from "react-icons/fa";
+import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 import { usuarioService } from "../services/usuario.service";
 
 const PASSWORD_MIN = 6;
@@ -127,9 +128,9 @@ export default function SeccionCambiarPassword() {
                 type="button"
                 onClick={() => setMostrarActual((v) => !v)}
                 aria-label={mostrarActual ? "Ocultar contraseña" : "Mostrar contraseña"}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-3 transition-colors hover:text-blue-500"
+                className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors hover:text-blue-500 ${mostrarActual ? "text-blue-500" : "text-ink-3"}`}
               >
-                {mostrarActual ? <FaEyeSlash /> : <FaEye />}
+                {mostrarActual ? <MdVisibilityOff /> : <MdVisibility />}
               </button>
             </div>
           </div>
@@ -153,9 +154,9 @@ export default function SeccionCambiarPassword() {
                   type="button"
                   onClick={() => setMostrarNueva((v) => !v)}
                   aria-label={mostrarNueva ? "Ocultar contraseña" : "Mostrar contraseña"}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-3 transition-colors hover:text-blue-500"
+                  className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors hover:text-blue-500 ${mostrarNueva ? "text-blue-500" : "text-ink-3"}`}
                 >
-                  {mostrarNueva ? <FaEyeSlash /> : <FaEye />}
+                  {mostrarNueva ? <MdVisibilityOff /> : <MdVisibility />}
                 </button>
               </div>
             </div>
@@ -178,9 +179,9 @@ export default function SeccionCambiarPassword() {
                   type="button"
                   onClick={() => setMostrarRepetir((v) => !v)}
                   aria-label={mostrarRepetir ? "Ocultar contraseña" : "Mostrar contraseña"}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-3 transition-colors hover:text-blue-500"
+                  className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors hover:text-blue-500 ${mostrarRepetir ? "text-blue-500" : "text-ink-3"}`}
                 >
-                  {mostrarRepetir ? <FaEyeSlash /> : <FaEye />}
+                  {mostrarRepetir ? <MdVisibilityOff /> : <MdVisibility />}
                 </button>
               </div>
             </div>

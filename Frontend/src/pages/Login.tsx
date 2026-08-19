@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Swal from "sweetalert2";
-import { FaArrowLeft, FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaArrowLeft } from "react-icons/fa";
+import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 import { authService } from "../services/auth.service";
 import logo from "../assets/AutoMarketRD_Logo.svg";
 
@@ -204,9 +205,9 @@ export default function Login() {
                 type="button"
                 onClick={() => setMostrarPassword((v) => !v)}
                 aria-label={mostrarPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-3 transition-colors hover:text-blue-500"
+                className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors hover:text-blue-500 ${mostrarPassword ? "text-blue-500" : "text-ink-3"}`}
               >
-                {mostrarPassword ? <FaEyeSlash /> : <FaEye />}
+                {mostrarPassword ? <MdVisibilityOff /> : <MdVisibility />}
               </button>
             </div>
             </div>

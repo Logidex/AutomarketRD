@@ -1,6 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
-import GestorImagenes from "../components/GestorImagenes";
-import FormularioVehiculo from "../components/FormularioVehiculo";
+import FormularioVehiculoWizard from "../components/FormularioVehiculoWizard";
 import { useFormularioVehiculo } from "../hooks/useFormularioVehiculo";
 import { useMaxFotosAnuncio, usePermiteDestacarAnuncio } from "../hooks/useSuscripcion";
 
@@ -38,52 +37,34 @@ export default function EditarVehiculo() {
         Editar Vehículo (ID: {id})
       </h2>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <FormularioVehiculo
-          formData={formData}
-          kilometraje={kilometraje}
-          accesoriosTexto={accesoriosTexto}
-          mostrarTransmisionPersonalizada={mostrarTransmisionPersonalizada}
-          transmisionPersonalizada={transmisionPersonalizada}
-          onChange={handleChange}
-          onKilometrajeChange={(e) => setKilometraje(e.target.value)}
-          onAccesoriosChange={(e) => setAccesoriosTexto(e.target.value)}
-          onTransmisionPersonalizadaChange={(e) => setTransmisionPersonalizada(e.target.value)}
-          publicarAlGuardar={publicarAlGuardar}
-          onPublicarAlGuardarChange={(e) => setPublicarAlGuardar(e.target.checked)}
-          destacarAlPublicar={destacarAlPublicar}
-          onDestacarAlPublicarChange={(e) => setDestacarAlPublicar(e.target.checked)}
-          mostrarDestacado={permiteDestacar}
-        />
-
-        <GestorImagenes
-          archivos={archivos}
-          fotosGuardadas={fotosGuardadas}
-          fotoPrincipal={fotoPrincipal}
-          maxImagenes={maxFotos}
-          onImageChange={handleImageChange}
-          onEliminarArchivo={handleEliminarArchivo}
-          onEliminarFotoGuardada={handleEliminarFotoGuardada}
-          onEstablecerPrincipal={handleEstablecerPrincipal}
-        />
-
-        <div className="flex justify-end gap-4 border-t border-line pt-6">
-          <button
-            type="button"
-            onClick={() => navigate("/dashboard")}
-            className="rounded-md border border-line px-6 py-2.5 font-medium text-ink-2 transition-colors hover:bg-hover"
-          >
-            Cancelar
-          </button>
-          <button
-            type="submit"
-            disabled={submitting}
-            className="rounded-md bg-blue-600 px-6 py-2.5 font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-400"
-          >
-            {submitting ? "Guardando..." : "Actualizar vehículo"}
-          </button>
-        </div>
-      </form>
+      <FormularioVehiculoWizard
+        formData={formData}
+        kilometraje={kilometraje}
+        accesoriosTexto={accesoriosTexto}
+        mostrarTransmisionPersonalizada={mostrarTransmisionPersonalizada}
+        transmisionPersonalizada={transmisionPersonalizada}
+        archivos={archivos}
+        fotosGuardadas={fotosGuardadas}
+        fotoPrincipal={fotoPrincipal}
+        maxImagenes={maxFotos}
+        publicarAlGuardar={publicarAlGuardar}
+        onPublicarAlGuardarChange={(e) => setPublicarAlGuardar(e.target.checked)}
+        destacarAlPublicar={destacarAlPublicar}
+        onDestacarAlPublicarChange={(e) => setDestacarAlPublicar(e.target.checked)}
+        mostrarDestacado={permiteDestacar}
+        onChange={handleChange}
+        onKilometrajeChange={(e) => setKilometraje(e.target.value)}
+        onAccesoriosChange={(e) => setAccesoriosTexto(e.target.value)}
+        onTransmisionPersonalizadaChange={(e) => setTransmisionPersonalizada(e.target.value)}
+        onImageChange={handleImageChange}
+        onEliminarArchivo={handleEliminarArchivo}
+        onEliminarFotoGuardada={handleEliminarFotoGuardada}
+        onEstablecerPrincipal={handleEstablecerPrincipal}
+        submitting={submitting}
+        tituloBoton="Actualizar vehículo"
+        onCancelar={() => navigate("/dashboard")}
+        onSubmit={handleSubmit}
+      />
     </div>
   );
 }

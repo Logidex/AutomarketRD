@@ -1,5 +1,4 @@
-import GestorImagenes from "../components/GestorImagenes";
-import FormularioVehiculo from "../components/FormularioVehiculo";
+import FormularioVehiculoWizard from "../components/FormularioVehiculoWizard";
 import { useFormularioVehiculo } from "../hooks/useFormularioVehiculo";
 import { useMaxFotosAnuncio, usePermiteDestacarAnuncio } from "../hooks/useSuscripcion";
 
@@ -32,41 +31,33 @@ export default function CrearAnuncio() {
   return (
     <div className="mx-auto max-w-4xl p-8">
       <h2 className="mb-6 text-2xl font-bold">Crear Nuevo Anuncio</h2>
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <FormularioVehiculo
-          formData={formData}
-          kilometraje={kilometraje}
-          accesoriosTexto={accesoriosTexto}
-          mostrarTransmisionPersonalizada={mostrarTransmisionPersonalizada}
-          transmisionPersonalizada={transmisionPersonalizada}
-          onChange={handleChange}
-          onKilometrajeChange={(e) => setKilometraje(e.target.value)}
-          onAccesoriosChange={(e) => setAccesoriosTexto(e.target.value)}
-          onTransmisionPersonalizadaChange={(e) => setTransmisionPersonalizada(e.target.value)}
-          publicarAlGuardar={publicarAlGuardar}
-          onPublicarAlGuardarChange={(e) => setPublicarAlGuardar(e.target.checked)}
-          destacarAlPublicar={destacarAlPublicar}
-          onDestacarAlPublicarChange={(e) => setDestacarAlPublicar(e.target.checked)}
-          mostrarDestacado={permiteDestacar}
-        />
-        <GestorImagenes
-          archivos={archivos}
-          fotosGuardadas={fotosGuardadas}
-          fotoPrincipal={fotoPrincipal}
-          maxImagenes={maxFotos}
-          onImageChange={handleImageChange}
-          onEliminarArchivo={handleEliminarArchivo}
-          onEliminarFotoGuardada={handleEliminarFotoGuardada}
-          onEstablecerPrincipal={handleEstablecerPrincipal}
-        />
-        <button
-          type="submit"
-          disabled={submitting}
-          className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition-colors disabled:cursor-not-allowed disabled:bg-blue-400"
-        >
-          {submitting ? "Guardando..." : "Publicar Anuncio"}
-        </button>
-      </form>
+      <FormularioVehiculoWizard
+        formData={formData}
+        kilometraje={kilometraje}
+        accesoriosTexto={accesoriosTexto}
+        mostrarTransmisionPersonalizada={mostrarTransmisionPersonalizada}
+        transmisionPersonalizada={transmisionPersonalizada}
+        archivos={archivos}
+        fotosGuardadas={fotosGuardadas}
+        fotoPrincipal={fotoPrincipal}
+        maxImagenes={maxFotos}
+        publicarAlGuardar={publicarAlGuardar}
+        onPublicarAlGuardarChange={(e) => setPublicarAlGuardar(e.target.checked)}
+        destacarAlPublicar={destacarAlPublicar}
+        onDestacarAlPublicarChange={(e) => setDestacarAlPublicar(e.target.checked)}
+        mostrarDestacado={permiteDestacar}
+        onChange={handleChange}
+        onKilometrajeChange={(e) => setKilometraje(e.target.value)}
+        onAccesoriosChange={(e) => setAccesoriosTexto(e.target.value)}
+        onTransmisionPersonalizadaChange={(e) => setTransmisionPersonalizada(e.target.value)}
+        onImageChange={handleImageChange}
+        onEliminarArchivo={handleEliminarArchivo}
+        onEliminarFotoGuardada={handleEliminarFotoGuardada}
+        onEstablecerPrincipal={handleEstablecerPrincipal}
+        submitting={submitting}
+        tituloBoton="Publicar Anuncio"
+        onSubmit={handleSubmit}
+      />
     </div>
   );
 }
