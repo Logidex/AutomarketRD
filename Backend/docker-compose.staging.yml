@@ -42,6 +42,7 @@ services:
       SmtpSettings__User: ${SMTP_USER:?SMTP_USER requerido}
       SmtpSettings__Password: ${SMTP_PASSWORD:?SMTP_PASSWORD requerido}
       SmtpSettings__SenderName: ${SMTP_SENDER_NAME:?SMTP_SENDER_NAME requerido}
+      SmtpSettings__SenderEmail: ${SMTP_SENDER_EMAIL:?SMTP_SENDER_EMAIL requerido}
 
       AWS__AccessKey: ${AWS_ACCESS_KEY:?AWS_ACCESS_KEY requerido}
       AWS__SecretKey: ${AWS_SECRET_KEY:?AWS_SECRET_KEY requerido}
