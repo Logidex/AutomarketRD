@@ -106,7 +106,7 @@ Esta separación ayuda a mantener la base limpia y preparada para crecer sin mez
 - Docker y Docker Compose
 - Serilog (consola + archivo)
 - Scalar para documentación de API
-- xUnit + 339 tests de backend
+- xUnit + 340 tests de backend
 
 ### Frontend
 
@@ -116,7 +116,7 @@ Esta separación ayuda a mantener la base limpia y preparada para crecer sin mez
 - Tailwind CSS
 - React Router 7
 - Axios / React Query
-- Vitest (25 tests)
+- Vitest (33 tests)
 
 ---
 
@@ -288,7 +288,7 @@ El frontend está completo en sus flujos principales:
 
 ```bash
 cd Frontend
-npm test        # Vitest (25 tests)
+npm test        # Vitest (33 tests)
 npm run lint    # ESLint
 npm run build   # tsc + vite build
 ```
@@ -398,21 +398,21 @@ Estas reglas ayudan a que el código se mantenga entendible para cualquier perso
 - Suscripciones con PayPal (webhook verificado, idempotente y con validación de monto).
 - Almacenamiento de imágenes en S3 privado con URLs firmadas.
 - Docker para desarrollo, staging y producción + script de backup de la BD.
-- 339 tests automatizados en CI.
+- 340 tests automatizados en CI.
 
 ### Frontend
 
 - Flujos principales completos (catálogo, búsqueda, agencias, comparador, auth, paneles por rol).
 - Tema claro/oscuro y responsive.
-- 25 tests con Vitest en CI.
+- 33 tests con Vitest en CI.
 
 ## Roadmap sugerido
 
-- HTTPS/TLS y proveedor de hosting para producción.
+- HTTPS/TLS y proveedor de hosting para producción (pasos en `docs/DEPLOY.md`).
 - Reescrituras de imágenes y optimización de assets estáticos.
 - Tests e2e.
 - Refresh tokens o expiración de sesión deslizante.
-- Documentación de operaciones (`docs/DEPLOY.md`).
+- Pruebas de carga básicas.
 
 ---
 

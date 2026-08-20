@@ -3,6 +3,7 @@
 Este documento es la *guía única* para saber **qué falta para salir a producción**.
 Cuando termines una tarea, marca su casilla con `[x]`. La intención es que quede claro
 qué bloquea un lanzamiento y qué es solo recomendable.
+Para el *cómo* desplegar, ver `docs/DEPLOY.md`; para el pago PayPal, `docs/verificar-paypal.md`.
 
 ---
 
@@ -74,9 +75,9 @@ qué bloquea un lanzamiento y qué es solo recomendable.
 
 ## C. Endurecimiento (recomendable antes del lanzamiento)
 
-- [ ] **Rate limiting** en login, registro y creación de leads (evitar abuso/spam).
-- [ ] **Cabeceras de seguridad** (HSTS, CSP, X-Content-Type-Options) en la respuesta HTTP.
-- [ ] **Revisión de rutas públicas** para que ninguna fuga información de borradores o leads.
+- [x] **Rate limiting** en login, registro y creación de leads (evitar abuso/spam).
+- [x] **Cabeceras de seguridad** (HSTS, CSP, X-Content-Type-Options) en la respuesta HTTP.
+- [x] **Revisión de rutas públicas** para que ninguna fuga información de borradores o leads.
 - [ ] **Pruebas de carga** básica (leads y búsqueda) para conocer el techo del servidor.
 - [x] **Playbook de rollback documentado** (sección C.5).
 
@@ -112,13 +113,30 @@ re-deploy de una tag anterior. Pasos:
 - [x] **Code splitting**: rutas con `lazy()` + `<Suspense>`; chunk principal ~308 kB (antes ~711 kB).
 - [x] **Logo optimizado**: `AutoMarketRD_Logo.svg` de 251 kB a ~70 kB (-72 %).
 - [x] Suscripciones y pagos PayPal (link + `confirmar-pago` idempotente + webhook).
-- [x] Backend: **270 tests** y compilación `net10.0`.
+- [x] Backend: **340 tests** y compilación `net10.0`.
 - [x] **CI** verde en GitHub Actions (push/PR a `main` y `develop`): .NET 10.0.x + Node 20,
       build+test backend y build+lint frontend.
-- [x] **Tests frontend** (unidad de utilidades/hooks con Vitest) — 25 tests.
+- [x] **Tests frontend** (unidad de utilidades/hooks con Vitest) — 33 tests.
 - [x] Flow de pago y reembolso PayPal verificados en staging (migraciones
       `AgregarMonedaAAnuncios` y `AgregarCaptureIdPayPalPagos` aplicadas; `/health` y
       `/health/ready` OK; login admin y `GET /api/admin/pagos` respondiendo con datos).
+
+### Preparación para producción (Fases 1–6)
+
+- [x] **Fase 1 — Logs y entorno**: sin datos sensibles en logs, `UseForwardedHeaders`
+      consolidado, SMTP con placeholder.
+- [x] **Fase 2 — Base de producción**: `docker-compose.prod.yml` (db, api, frontend,
+      db-backup), `.env.prod`/`.env.example`, fail-fast de PayPal en producción.
+- [x] **Fase 3 — Seguridad backend**: excepciones sin leaks (mensajes genéricos en prod
+      para errores internos), GUID en logos, rate limiting por IP, cabeceras de seguridad
+      (HSTS, X-Content-Type-Options, X-Frame-Options) en la API.
+- [x] **Fase 4 — Frontend**: `VITE_API_URL=/api` para producción (mismo origen, proxy
+      nginx), gitignore con case correcto, token JWT httpOnly verificado, rutas públicas
+      sin fugas de borradores/leads.
+- [x] **Fase 5 — PayPal Live**: caché del token OAuth, validación Mode/UrlBase en todos
+      los entornos, runbook de verificación (`docs/verificar-paypal.md`).
+- [x] **Fase 6 — Docs**: `docs/DEPLOY.md` (paso a paso del despliegue) y este checklist
+      al día.
 
 ---
 
