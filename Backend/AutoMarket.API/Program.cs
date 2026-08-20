@@ -178,6 +178,43 @@ try
             "Jwt:Secret debe tener al menos 32 bytes.");
     }
 
+
+    // =======================================================
+    // VALIDACIÓN DE PAYPAL
+    // En producción la API nunca debe apuntar a Sandbox: un error de
+    // configuración podría cobrar/cancelar pagos contra el entorno equivocado.
+    // =======================================================
+
+    if (builder.Environment.IsProduction())
+    {
+        var paypalUrlBase =
+            builder.Configuration["PayPal:UrlBase"];
+
+        var esLive =
+            !string.IsNullOrWhiteSpace(paypalUrlBase)
+            && paypalUrlBase.StartsWith(
+                "https://api-m.paypal.com",
+                StringComparison.OrdinalIgnoreCase);
+
+        if (!esLive)
+        {
+            throw new InvalidOperationException(
+                "En producción, PayPal:UrlBase debe ser https://api-m.paypal.com (Live). Verifica PAYPAL_URL_BASE.");
+        }
+
+        var paypalMode =
+            builder.Configuration["PayPal:Mode"];
+
+        if (!string.Equals(
+                paypalMode,
+                "Live",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                "En producción, PayPal:Mode debe ser 'Live'. Verifica PAYPAL_MODE.");
+        }
+    }
+
     builder.Services.AddAuthentication(
     JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

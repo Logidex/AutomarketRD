@@ -11,7 +11,7 @@ services:
     volumes:
       - pgdata_prod:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -35,20 +35,35 @@ services:
       SmtpSettings__User: ${SMTP_USER}
       SmtpSettings__Password: ${SMTP_PASSWORD}
       SmtpSettings__SenderName: ${SMTP_SENDER_NAME}
+      SmtpSettings__SenderEmail: ${SMTP_SENDER_EMAIL}
+      # Almacenamiento de imágenes: soporta AWS S3 real y Cloudflare R2.
+      # Con AWS__ServiceUrl vacío usa AWS real (RegionEndpoint); con el
+      # endpoint de R2 (https://<ACCOUNT_ID>.r2.cloudflarestorage.com) usa R2.
       AWS__AccessKey: ${AWS_ACCESS_KEY}
       AWS__SecretKey: ${AWS_SECRET_KEY}
       AWS__Region: ${AWS_REGION}
       AWS__BucketName: ${AWS_BUCKET_NAME}
+      AWS__ServiceUrl: ${AWS_SERVICE_URL:-}
+      AWS__ExpirationMinutes: ${AWS_EXPIRATION_MINUTES:-15}
+      PayPal__Mode: ${PAYPAL_MODE:-Live}
       PayPal__UrlBase: ${PAYPAL_URL_BASE}
       PayPal__ClientId: ${PAYPAL_CLIENT_ID}
       PayPal__ClientSecret: ${PAYPAL_CLIENT_SECRET}
       PayPal__ReturnUrl: ${PAYPAL_RETURN_URL}
       PayPal__CancelUrl: ${PAYPAL_CANCEL_URL}
       PayPal__WebhookId: ${PAYPAL_WEBHOOK_ID}
-      Cors__AllowedOrigins: ${CORS_ALLOWED_ORIGINS_PROD}  # ← Solo tu dominio real
+      Pago__TasaCambioRD_USD: ${PAGO_TASA_CAMBIO_RD_USD:-0.017}
+      Cors__AllowedOrigins: ${CORS_ALLOWED_ORIGINS_PROD}
       Admin__Email: ${ADMIN_EMAIL_PROD}
-      Admin__Password: ${ADMIN_PASSWORD_PROD}  # ← Contraseña de admin solo para prod
+      Admin__Password: ${ADMIN_PASSWORD_PROD}
       Admin__RotatePassword: ${ADMIN_ROTATE_PASSWORD_PROD:-false}
+      # En prod las migraciones y el seeder NO corren automáticamente por defecto.
+      # - MigrateOnStartup: actívalo (=true) solo si el deploy NO ejecuta
+      #   `dotnet ef database update` como paso previo.
+      # - Seeder__Enabled: actívalo UNA sola vez en el primer arranque para
+      #   crear el admin inicial y los planes; luego vuelve a false.
+      MigrateOnStartup: ${MIGRATE_ON_STARTUP:-false}
+      Seeder__Enabled: ${SEEDER_ENABLED:-false}
       # URL pública del frontend (usada en enlaces de correo, ej: confirmar correo)
       App__FrontendUrl: ${APP_FRONTEND_URL}
 
