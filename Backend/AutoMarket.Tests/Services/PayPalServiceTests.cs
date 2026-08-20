@@ -416,9 +416,62 @@ public class PayPalServiceTests
         Assert.Contains("PayPal rechazó el reembolso", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public async Task ObtenerTokenDeAccesoAsync_SeCachea_UsaUnSoloTokenParaDosOperaciones()
+    {
+        var handler = new FakeHttpMessageHandler(new[]
+        {
+            // 1: token (con expires_in para que la caché lo considere válido).
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "access_token": "token-test",
+                  "expires_in": 32400
+                }
+                """, Encoding.UTF8, "application/json")
+            },
+            // 2 y 3: dos creaciones de orden (ambas reutilizan el token).
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "links": [
+                    { "rel": "approve", "href": "https://paypal.com/checkoutnow?token=abc1" }
+                  ]
+                }
+                """, Encoding.UTF8, "application/json")
+            },
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "links": [
+                    { "rel": "approve", "href": "https://paypal.com/checkoutnow?token=abc2" }
+                  ]
+                }
+                """, Encoding.UTF8, "application/json")
+            }
+        });
+
+        var httpClient = new HttpClient(handler);
+        var config = CrearConfiguracion();
+        var service = new PayPalService(httpClient, config);
+
+        await service.CrearOrdenDeSuscripcionAsync(15, 100m, "Pro", "Mensual");
+        await service.CrearOrdenDeSuscripcionAsync(16, 120m, "Pro", "Mensual");
+
+        var llamadasToken = handler.Requests
+            .Count(r => r.AbsolutePath.EndsWith("/v1/oauth2/token"));
+
+        Assert.Equal(1, llamadasToken);
+    }
+
     private sealed class FakeHttpMessageHandler : HttpMessageHandler
     {
         private readonly Queue<HttpResponseMessage> _responses;
+
+        public List<Uri> Requests { get; } = new();
 
         public FakeHttpMessageHandler(IEnumerable<HttpResponseMessage> responses)
         {
@@ -429,6 +482,8 @@ public class PayPalServiceTests
             HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
+            Requests.Add(request.RequestUri!);
+
             if (_responses.Count == 0)
                 throw new InvalidOperationException("No hay más respuestas configuradas para este test.");
 

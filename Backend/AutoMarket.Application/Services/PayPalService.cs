@@ -22,6 +22,13 @@ public class PayPalService : IPayPalService
     private readonly string _cancelUrl;
     private readonly string _webhookId;
 
+    // El token OAuth de PayPal expira (normalmente 9 horas). Se cachea para
+    // no llamar a /v1/oauth2/token en cada operación (evita rate limits de
+    // PayPal y latencia extra en cada petición).
+    private readonly SemaphoreSlim _tokenLock = new(1, 1);
+    private string? _accessToken;
+    private DateTimeOffset _tokenExpira;
+
 /// <summary>
 /// Inicializa una nueva instancia de la clase PayPalService. Parámetro httpClient (HttpClient), Parámetro configuration (IConfiguration)
 /// </summary>
@@ -50,23 +57,58 @@ public class PayPalService : IPayPalService
 
     private async Task<string> ObtenerTokenDeAccesoAsync()
     {
-        var authBytes = Encoding.UTF8.GetBytes($"{_clientId}:{_clientSecret}");
-        var authBase64 = Convert.ToBase64String(authBytes);
+        if (_accessToken is not null &&
+            DateTimeOffset.UtcNow < _tokenExpira)
+        {
+            return _accessToken;
+        }
 
-        var request = new HttpRequestMessage(HttpMethod.Post, $"{_baseUrl}/v1/oauth2/token");
-        request.Headers.Authorization = new AuthenticationHeaderValue("Basic", authBase64);
-        request.Content = new StringContent(
-            "grant_type=client_credentials",
-            Encoding.UTF8,
-            "application/x-www-form-urlencoded");
+        await _tokenLock.WaitAsync();
 
-        var response = await _httpClient.SendAsync(request);
-        response.EnsureSuccessStatusCode();
+        try
+        {
+            // Re-verificación bajo el lock: otra tarea pudo renovar el token.
+            if (_accessToken is not null &&
+                DateTimeOffset.UtcNow < _tokenExpira)
+            {
+                return _accessToken;
+            }
 
-        var json = await response.Content.ReadAsStringAsync();
-        using var document = JsonDocument.Parse(json);
+            var authBytes = Encoding.UTF8.GetBytes($"{_clientId}:{_clientSecret}");
+            var authBase64 = Convert.ToBase64String(authBytes);
 
-        return document.RootElement.GetProperty("access_token").GetString()!;
+            var request = new HttpRequestMessage(HttpMethod.Post, $"{_baseUrl}/v1/oauth2/token");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Basic", authBase64);
+            request.Content = new StringContent(
+                "grant_type=client_credentials",
+                Encoding.UTF8,
+                "application/x-www-form-urlencoded");
+
+            var response = await _httpClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+
+            var json = await response.Content.ReadAsStringAsync();
+            using var document = JsonDocument.Parse(json);
+
+            var token = document.RootElement.GetProperty("access_token").GetString()!;
+
+            var expiraEnSegundos =
+                document.RootElement.TryGetProperty("expires_in", out var expEl) &&
+                expEl.TryGetInt32(out var segundos)
+                    ? segundos
+                    : 32400; // PayPal: por defecto 9 horas.
+
+            // Renovar con margen de seguridad (60s) antes de que expire de verdad.
+            _accessToken = token;
+            _tokenExpira = DateTimeOffset.UtcNow.AddSeconds(
+                Math.Max(expiraEnSegundos - 60, 60));
+
+            return token;
+        }
+        finally
+        {
+            _tokenLock.Release();
+        }
     }
 
     public async Task<string> CrearOrdenDeSuscripcionAsync(

@@ -181,38 +181,59 @@ try
 
     // =======================================================
     // VALIDACIÓN DE PAYPAL
-    // En producción la API nunca debe apuntar a Sandbox: un error de
-    // configuración podría cobrar/cancelar pagos contra el entorno equivocado.
+    // Un desajuste entre PayPal:Mode y PayPal:UrlBase (Sandbox/Live) es un
+    // error de configuración que podría cobrar/cancelar pagos contra el
+    // entorno equivocado. Se valida en TODOS los entornos (no solo prod):
+    // la verificación local con credenciales Live también debe fallar rápido
+    // si se apunta a Sandbox por error.
     // =======================================================
 
-    if (builder.Environment.IsProduction())
+    var paypalUrlBase =
+        builder.Configuration["PayPal:UrlBase"];
+
+    var paypalMode =
+        builder.Configuration["PayPal:Mode"];
+
+    var esUrlLive =
+        !string.IsNullOrWhiteSpace(paypalUrlBase)
+        && paypalUrlBase.StartsWith(
+            "https://api-m.paypal.com",
+            StringComparison.OrdinalIgnoreCase);
+
+    var esUrlSandbox =
+        !string.IsNullOrWhiteSpace(paypalUrlBase)
+        && paypalUrlBase.StartsWith(
+            "https://api-m.sandbox.paypal.com",
+            StringComparison.OrdinalIgnoreCase);
+
+    var esModeLive = string.Equals(
+        paypalMode, "Live", StringComparison.OrdinalIgnoreCase);
+
+    var esModeSandbox = string.Equals(
+        paypalMode, "Sandbox", StringComparison.OrdinalIgnoreCase);
+
+    if (esModeLive && !esUrlLive)
     {
-        var paypalUrlBase =
-            builder.Configuration["PayPal:UrlBase"];
+        throw new InvalidOperationException(
+            "PayPal:Mode es 'Live' pero PayPal:UrlBase no apunta a https://api-m.paypal.com. Verifica PAYPAL_MODE y PAYPAL_URL_BASE.");
+    }
 
-        var esLive =
-            !string.IsNullOrWhiteSpace(paypalUrlBase)
-            && paypalUrlBase.StartsWith(
-                "https://api-m.paypal.com",
-                StringComparison.OrdinalIgnoreCase);
+    if (esModeSandbox && !esUrlSandbox)
+    {
+        throw new InvalidOperationException(
+            "PayPal:Mode es 'Sandbox' pero PayPal:UrlBase no apunta a https://api-m.sandbox.paypal.com. Verifica PAYPAL_MODE y PAYPAL_URL_BASE.");
+    }
 
-        if (!esLive)
-        {
-            throw new InvalidOperationException(
-                "En producción, PayPal:UrlBase debe ser https://api-m.paypal.com (Live). Verifica PAYPAL_URL_BASE.");
-        }
+    if (!string.IsNullOrWhiteSpace(paypalMode) && !esModeLive && !esModeSandbox)
+    {
+        throw new InvalidOperationException(
+            "PayPal:Mode debe ser 'Live' o 'Sandbox'. Verifica PAYPAL_MODE.");
+    }
 
-        var paypalMode =
-            builder.Configuration["PayPal:Mode"];
-
-        if (!string.Equals(
-                paypalMode,
-                "Live",
-                StringComparison.OrdinalIgnoreCase))
-        {
-            throw new InvalidOperationException(
-                "En producción, PayPal:Mode debe ser 'Live'. Verifica PAYPAL_MODE.");
-        }
+    if (builder.Environment.IsProduction() && (!esModeLive || !esUrlLive))
+    {
+        throw new InvalidOperationException(
+            "En producción, PayPal debe estar en Live (PAYPAL_MODE=Live, PAYPAL_URL_BASE=https://api-m.paypal.com).");
     }
 
     builder.Services.AddAuthentication(
