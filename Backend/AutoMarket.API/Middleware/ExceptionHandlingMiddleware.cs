@@ -43,11 +43,22 @@ public class ExceptionHandlingMiddleware
 
         context.Response.ContentType = "application/json";
 
+        // En producción NO se exponen mensajes que puedan filtrar detalles
+        // internos (configuración, respuestas de terceros, EF/BD). El detalle
+        // completo siempre va a Serilog (LogError de arriba). Los tipos
+        // BusinessRuleException/ArgumentException/KeyNotFoundException/
+        // UnauthorizedAccessException sí son el "contrato" de mensajes
+        // dirigidos al usuario (validaciones y reglas de negocio), así que
+        // se conservan en cualquier entorno.
+        var mostrarMensaje =
+            _env.IsDevelopment()
+            || exception is not InvalidOperationException;
+
         var (statusCode, message, error) = exception switch
         {
             UnauthorizedAccessException => (
                 (int)HttpStatusCode.Unauthorized,
-                exception.Message,  // ← Usa el mensaje de la excepción
+                exception.Message,
                 "Unauthorized"
             ),
             KeyNotFoundException => (
@@ -62,7 +73,9 @@ public class ExceptionHandlingMiddleware
             ),
             InvalidOperationException => (
                 (int)HttpStatusCode.BadRequest,
-                exception.Message,
+                mostrarMensaje
+                    ? exception.Message
+                    : "La operación no se pudo completar en este momento.",
                 "InvalidOperation"
             ),
             BusinessRuleException => (

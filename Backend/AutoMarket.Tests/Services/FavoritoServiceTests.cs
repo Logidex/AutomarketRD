@@ -1,5 +1,6 @@
 using AutoMarket.Application.Services;
 using AutoMarket.Core.Entities;
+using AutoMarket.Core.Exceptions;
 using AutoMarket.Core.Interfaces;
 using Moq;
 using Xunit;
@@ -84,7 +85,7 @@ public class FavoritoServiceTests
             .Setup(r => r.ObtenerAsync(123, 10))
             .ReturnsAsync(new UsuarioFavorito(123, 10));
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        var ex = await Assert.ThrowsAsync<BusinessRuleException>(() =>
             _service.AgregarFavoritoAsync(123, 10));
 
         Assert.Equal("El vehículo ya está en tus favoritos.", ex.Message);

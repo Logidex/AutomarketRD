@@ -2,6 +2,7 @@ using AutoMarket.Application.DTOs.Favorito;
 using AutoMarket.Application.Helpers;
 using AutoMarket.Application.Interfaces;
 using AutoMarket.Core.Entities;
+using AutoMarket.Core.Exceptions;
 using AutoMarket.Core.Interfaces;
 
 namespace AutoMarket.Application.Services;
@@ -37,7 +38,7 @@ public class FavoritoService : IFavoritoService
 
         var existente = await _favoritoRepository.ObtenerAsync(usuarioId, anuncioId);
         if (existente != null) 
-            throw new InvalidOperationException("El vehículo ya está en tus favoritos.");
+            throw new BusinessRuleException("El vehículo ya está en tus favoritos.");
 
         var nuevoFavorito = new UsuarioFavorito(usuarioId, anuncioId);
         await _favoritoRepository.AgregarAsync(nuevoFavorito);

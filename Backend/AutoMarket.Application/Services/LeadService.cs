@@ -52,7 +52,7 @@ public class LeadService : ILeadService
         var vendedor = await _usuarioRepository.ObtenerDealerConPerfilPorIdAsync(anuncio.UsuarioId);
 
         if (vendedor == null)
-            throw new InvalidOperationException("No se encontró el propietario de este anuncio.");
+            throw new BusinessRuleException("No se encontró el propietario de este anuncio.");
 
         ValidarAutocontacto(dto, anuncio, vendedor, usuarioIdRemitente);
 

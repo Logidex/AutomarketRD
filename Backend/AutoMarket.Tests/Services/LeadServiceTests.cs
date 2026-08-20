@@ -122,7 +122,7 @@ public class LeadServiceTests
         _mockUsuarioRepo.Setup(r => r.ObtenerDealerConPerfilPorIdAsync(5)).ReturnsAsync((Usuario?)null);
 
         // Act & Assert
-        var excepcion = await Assert.ThrowsAsync<InvalidOperationException>(() => 
+        var excepcion = await Assert.ThrowsAsync<BusinessRuleException>(() => 
             _servicio.CrearLeadAsync(dto));
 
         Assert.Equal("No se encontró el propietario de este anuncio.", excepcion.Message);

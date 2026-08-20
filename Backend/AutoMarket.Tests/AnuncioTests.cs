@@ -1,4 +1,5 @@
 using AutoMarket.Core.Entities;
+using AutoMarket.Core.Exceptions;
 using Xunit;
 
 namespace AutoMarket.Tests.Entities;
@@ -234,7 +235,7 @@ public class AnuncioTests
         anuncio.Publicar(diasVigencia: 30);
 
         // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => anuncio.Publicar(diasVigencia: 30));
+        Assert.Throws<BusinessRuleException>(() => anuncio.Publicar(diasVigencia: 30));
     }
 
     // =========================================================================
@@ -248,7 +249,7 @@ public class AnuncioTests
         anuncio.AgregarFotos(new List<string> { "f1", "f2", "f3", "f4", "f5" });
 
         // Act & Assert (máximo 8, agregar 4 más supera el límite)
-        Assert.Throws<InvalidOperationException>(() =>
+        Assert.Throws<BusinessRuleException>(() =>
             anuncio.AgregarFotos(new List<string> { "f6", "f7", "f8", "f9" }, maxFotos: 8));
     }
 

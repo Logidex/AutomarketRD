@@ -283,12 +283,10 @@ public class PayPalService : IPayPalService
 
         if (!response.IsSuccessStatusCode)
         {
-            var cuerpo = await response.Content.ReadAsStringAsync();
-            if (!string.IsNullOrWhiteSpace(cuerpo))
-            {
-                throw new InvalidOperationException(
-                    $"PayPal rechazó el reembolso ({response.StatusCode}): {cuerpo}");
-            }
+            // No incrustar el cuerpo crudo de PayPal en la excepción: podría
+            // filtrar detalles internos en el mensaje de error. Solo el status.
+            throw new InvalidOperationException(
+                $"PayPal rechazó el reembolso (HTTP {(int)response.StatusCode}).");
         }
 
         return response.IsSuccessStatusCode;

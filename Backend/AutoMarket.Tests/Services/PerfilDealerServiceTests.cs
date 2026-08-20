@@ -194,6 +194,15 @@ public class PerfilDealerServiceTests
             Times.Never);
     }
 
+    private static bool EsNombreLogoGUID(string nombre)
+    {
+        if (!nombre.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        var sinExtension = nombre.Substring(0, nombre.Length - 4);
+        return Guid.TryParse(sinExtension, out _);
+    }
+
     private static Usuario CrearDealerConPerfil()
     {
         var dealer = new Usuario(
@@ -255,11 +264,18 @@ public class PerfilDealerServiceTests
             .Setup(r => r.ObtenerDealerConPerfilPorIdAsync(dealerId))
             .ReturnsAsync(dealer);
 
+        // El nombre del archivo ahora es un GUID con la extensión original,
+        // para evitar colisiones/sobrescrituras entre dealers. Capturamos el
+        // nombre real para asertar su formato después.
+        string? nombreCapturado = null;
+
         _almacenadorArchivosMock
             .Setup(a => a.GuardarArchivoAsync(
                 It.IsAny<Stream>(),
-                "logo-dealer.png",
-                "image/png"))
+                It.IsAny<string>(),
+                It.IsAny<string>()))
+            .Callback<Stream, string, string>((_, nombre, _) =>
+                nombreCapturado = nombre)
             .ReturnsAsync(rutaLogo);
 
         _usuarioRepositoryMock
@@ -274,10 +290,14 @@ public class PerfilDealerServiceTests
         Assert.Equal(rutaLogo, resultado.LogoUrl);
         Assert.Equal(rutaLogo, dealer.PerfilDealer!.LogoUrl);
 
+        // El nombre guardado debe ser un GUID con extensión .png (nombre único).
+        Assert.NotNull(nombreCapturado);
+        Assert.True(EsNombreLogoGUID(nombreCapturado));
+
         _almacenadorArchivosMock.Verify(
             a => a.GuardarArchivoAsync(
                 It.IsAny<Stream>(),
-                "logo-dealer.png",
+                It.IsAny<string>(),
                 "image/png"),
             Times.Once);
 

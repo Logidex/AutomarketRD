@@ -1,5 +1,7 @@
 namespace AutoMarket.Core.Entities;
 
+using AutoMarket.Core.Exceptions;
+
 public class Anuncio
 {
     public int Id { get; private set; }
@@ -213,7 +215,7 @@ public class Anuncio
 
         if (_fotos.Count + rutasFotos.Count > maxFotos)
         {
-            throw new InvalidOperationException($"Límite excedido. El anuncio ya tiene {_fotos.Count} fotos y el máximo total es {maxFotos}.");
+            throw new BusinessRuleException($"Límite excedido. El anuncio ya tiene {_fotos.Count} fotos y el máximo total es {maxFotos}.");
         }
 
         _fotos.AddRange(rutasFotos);
@@ -228,10 +230,10 @@ public class Anuncio
         // Un anuncio publicado y vigente no se puede volver a publicar;
         // uno vencido sí (equivale a renovarlo).
         if (Estado == "Publicado" && !EstaVencido)
-            throw new InvalidOperationException("El anuncio ya está publicado.");
+            throw new BusinessRuleException("El anuncio ya está publicado.");
 
         if (_fotos.Count < 5)
-            throw new InvalidOperationException("Imposible publicar: Un anuncio requiere un mínimo de 5 fotos.");
+            throw new BusinessRuleException("Imposible publicar: Un anuncio requiere un mínimo de 5 fotos.");
 
         Estado = "Publicado";
         FechaVencimientoUtc = DateTime.UtcNow.AddDays(diasVigencia);
@@ -484,7 +486,7 @@ public class Anuncio
     public void RenovarDestacado(DateTime nuevoHasta)
     {
         if (!EsDestacado)
-            throw new InvalidOperationException("El anuncio no está marcado como destacado.");
+            throw new BusinessRuleException("El anuncio no está marcado como destacado.");
 
         if (nuevoHasta <= DateTime.UtcNow)
             throw new ArgumentException("La fecha de fin debe ser futura.");

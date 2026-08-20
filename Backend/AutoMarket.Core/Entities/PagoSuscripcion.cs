@@ -1,4 +1,5 @@
 using AutoMarket.Core.Entities.Enums;
+using AutoMarket.Core.Exceptions;
 
 namespace AutoMarket.Core.Entities;
 
@@ -73,7 +74,7 @@ public class PagoSuscripcion
     public void MarcarComoReembolsado()
     {
         if (Estado == EstadoPago.Reembolsado)
-            throw new InvalidOperationException("El pago ya se encuentra reembolsado.");
+            throw new BusinessRuleException("El pago ya se encuentra reembolsado.");
 
         Estado = EstadoPago.Reembolsado;
     }

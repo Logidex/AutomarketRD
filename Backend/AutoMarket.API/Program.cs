@@ -344,15 +344,11 @@ try
 
                 var clave = $"ip:{ip}";
 
-                if (!builder.Environment.IsProduction())
-                {
-                    // En Dev/Staging: usar partición por IP simple.
-                    // La extracción de email del body causa consumos múltiples
-                    // y rate limiting inconsistente (ya consumido por model binder).
-                    // Si se necesita límites por cuenta, usar JWT claims en lugar
-                    // de leer el body consumido.
-                }
-
+                // Partición por IP en todos los entornos. Un límite por cuenta
+                // requeriría leer el email del body (ya consumido por el model
+                // binder) o los claims JWT, generando consumos múltiples e
+                // inconsistencia. Con ForwardedHeaders activo, RemoteIpAddress
+                // es la IP real del cliente detrás de nginx/proxy.
                 return RateLimitPartition
                     .GetFixedWindowLimiter(
                         clave,
@@ -514,6 +510,8 @@ try
     // =======================================================
     // PIPELINE HTTP
     // =======================================================
+
+    app.UseMiddleware<SecurityHeadersMiddleware>();
 
     app.UseCors(frontendPolicy);
 

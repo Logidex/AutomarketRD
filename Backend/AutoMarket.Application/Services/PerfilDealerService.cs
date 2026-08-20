@@ -125,11 +125,16 @@ public class PerfilDealerService : IPerfilDealerService
         {
             ValidarLogo(dto.Logo);
 
+            // Nombre único con GUID: evita claves adivinables/enumerables en
+            // el bucket (S3/R2) como ocurría con el nombre original del archivo.
+            var extension = Path.GetExtension(dto.Logo.FileName);
+            var nombreUnico = $"{Guid.NewGuid()}{extension}";
+
             await using var stream = dto.Logo.OpenReadStream();
 
             var rutaLogo = await _almacenadorArchivos.GuardarArchivoAsync(
                 stream,
-                dto.Logo.FileName,
+                nombreUnico,
                 dto.Logo.ContentType
             );
 
