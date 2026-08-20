@@ -24,6 +24,7 @@ using Serilog;
 using Serilog.Events;
 
 using System.Security.Claims;
+using System.Net;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -212,9 +213,14 @@ try
                 var token =
                     context.Request.Cookies["automarket_token"];
 
-                Console.WriteLine(
-                    $"[JWT] Cookie recibida: {!string.IsNullOrWhiteSpace(token)}"
-                );
+                var logger =
+                    context.HttpContext.RequestServices
+                        .GetRequiredService<ILoggerFactory>()
+                        .CreateLogger("JwtBearer");
+
+                logger.LogDebug(
+                    "[JWT] Cookie recibida: {TieneCookie}",
+                    !string.IsNullOrWhiteSpace(token));
 
                 context.Token = token;
 
@@ -364,8 +370,22 @@ try
                 ForwardedHeaders.XForwardedFor
                 | ForwardedHeaders.XForwardedProto;
 
+            options.ForwardLimit = 2;
+
             options.KnownIPNetworks.Clear();
             options.KnownProxies.Clear();
+
+            // Solo confiar en headers provenientes de proxies privados
+            // (red de Docker/nginx). Si la lista está vacía, .NET confía en
+            // TODOS los proxies, lo cual permite spoofear X-Forwarded-For.
+            options.KnownIPNetworks.Add(
+                new System.Net.IPNetwork(IPAddress.Parse("10.0.0.0"), 8));
+            options.KnownIPNetworks.Add(
+                new System.Net.IPNetwork(IPAddress.Parse("172.16.0.0"), 12));
+            options.KnownIPNetworks.Add(
+                new System.Net.IPNetwork(IPAddress.Parse("192.168.0.0"), 16));
+            options.KnownIPNetworks.Add(
+                new System.Net.IPNetwork(IPAddress.Loopback, 8));
         });
 
 

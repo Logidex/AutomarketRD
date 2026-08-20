@@ -21,6 +21,7 @@ public class SmtpEmailSenderService : IEmailSenderService
         var user = _configuration["SmtpSettings:User"];
         var password = _configuration["SmtpSettings:Password"];
         var senderName = _configuration["SmtpSettings:SenderName"];
+        var senderEmail = _configuration["SmtpSettings:SenderEmail"] ?? user!;
 
         using var client = new SmtpClient(host, port)
         {
@@ -31,7 +32,7 @@ public class SmtpEmailSenderService : IEmailSenderService
 
         using var mailMessage = new MailMessage
         {
-            From = new MailAddress(user!, senderName),
+            From = new MailAddress(senderEmail, senderName),
             Subject = asunto,
             Body = cuerpoHtml,
             IsBodyHtml = true // Permite enviar correos con diseño en lugar de texto plano

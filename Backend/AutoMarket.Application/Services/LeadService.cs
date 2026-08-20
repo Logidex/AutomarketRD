@@ -93,11 +93,12 @@ public class LeadService : ILeadService
         }
     }
 
-    private static void ValidarAutocontacto(LeadCreateDto dto, Anuncio anuncio, Usuario vendedor, int? usuarioIdRemitente)
+    private void ValidarAutocontacto(LeadCreateDto dto, Anuncio anuncio, Usuario vendedor, int? usuarioIdRemitente)
     {
-        Console.WriteLine($"[DEBUG] anuncio.UsuarioId = {anuncio.UsuarioId}, usuarioIdRemitente = {usuarioIdRemitente}");
-        Console.WriteLine($"[DEBUG] vendedor.Email = {vendedor.Email}, dto.EmailContacto = {dto.EmailContacto}");
-        Console.WriteLine($"[DEBUG] vendedor.TelefonoPersonal = {vendedor.TelefonoPersonal}, dto.TelefonoContacto = {dto.TelefonoContacto}");
+        _logger.LogDebug(
+            "Validando autocontacto: anuncio {AnuncioId}, remitente {UsuarioIdRemitente}",
+            anuncio.Id,
+            usuarioIdRemitente);
         // Regla 1: remitente autenticado dueño del anuncio
         if (usuarioIdRemitente is int usuarioId && usuarioId == anuncio.UsuarioId)
             throw new BusinessRuleException("No puedes crear un contacto sobre tu propio vehículo.");
