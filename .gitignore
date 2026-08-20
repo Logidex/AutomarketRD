@@ -9,8 +9,8 @@
 # Build outputs
 bin/
 obj/
-frontend/dist/
-frontend/node_modules/
+Frontend/dist/
+Frontend/node_modules/
 
 # IDE
 .vscode/
