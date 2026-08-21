@@ -3,6 +3,9 @@
 # Todas las variables criticas usan la sintaxis ${VAR:?mensaje}: si falta
 # cualquiera en .env.prod, el compose ABORTA al levantar en lugar de arrancar
 # con secretos vacios (mismo criterio fail-fast que docker-compose.staging.yml).
+
+name: automarket-prod
+
 services:
   db:
     image: postgres:16

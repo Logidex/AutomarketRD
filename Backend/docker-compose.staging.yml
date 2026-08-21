@@ -1,8 +1,10 @@
 # docker-compose.staging.yml
-# Uso:
-# docker compose -f docker-compose.staging.yml --env-file .env.staging up -d --build
-# docker compose -f docker-compose.staging.yml --env-file .env.staging logs -f api
-# docker compose -f docker-compose.staging.yml --env-file .env.staging down
+# Uso (desde Backend/):
+# docker compose -f docker-compose.staging.yml --env-file ../.env.staging up -d --build
+# docker compose -f docker-compose.staging.yml --env-file ../.env.staging logs -f api
+# docker compose -f docker-compose.staging.yml --env-file ../.env.staging down
+
+name: automarket-staging
 
 services:
   db:
