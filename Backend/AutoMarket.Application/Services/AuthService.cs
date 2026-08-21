@@ -7,7 +7,6 @@ using AutoMarket.Core.Entities;
 using AutoMarket.Core.Entities.Enums;
 using AutoMarket.Core.Exceptions;
 using AutoMarket.Core.Interfaces;
-using BCrypt.Net;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -54,7 +53,7 @@ public class AuthService : IAuthService
 
         if (existeEmail) return (false, "El correo electrónico ya está registrado.");
 
-        var passwordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
+        var passwordHash = HasherPassword.Hash(dto.Password);
 
         var nuevoUsuario = new Usuario(
             nombre: dto.Nombre,
@@ -122,7 +121,7 @@ public class AuthService : IAuthService
         }
 
         // 3. Verificar la contraseña
-        bool passwordValido = BCrypt.Net.BCrypt.Verify(
+        bool passwordValido = HasherPassword.Verificar(
             dto.Password,
             usuario.PasswordHash
         );
@@ -209,7 +208,7 @@ public class AuthService : IAuthService
         if (!usuario.AplicarCodigoRecuperacionSiValido(CodigoUtil.HashCodigo(dto.Codigo), DateTime.UtcNow))
             throw new BusinessRuleException("El código es inválido o ha expirado. Solicita un nuevo código.");
 
-        usuario.CambiarPassword(BCrypt.Net.BCrypt.HashPassword(dto.NuevaPassword));
+        usuario.CambiarPassword(HasherPassword.Hash(dto.NuevaPassword));
 
         await _repository.GuardarCambiosAsync();
 

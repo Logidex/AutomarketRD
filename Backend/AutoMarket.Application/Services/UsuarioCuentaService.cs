@@ -153,7 +153,7 @@ public class UsuarioCuentaService : IUsuarioCuentaService
         var usuario = await ObtenerUsuarioAsync(usuarioId);
 
         // Confirmación: solo el dueño conoce la contraseña actual
-        if (!BCrypt.Net.BCrypt.Verify(dto.PasswordActual, usuario.PasswordHash))
+        if (!HasherPassword.Verificar(dto.PasswordActual, usuario.PasswordHash))
             throw new UnauthorizedAccessException("La contraseña actual es incorrecta.");
 
         if (dto.NuevaPassword.Length < PASSWORD_LONGITUD_MINIMA)
@@ -162,7 +162,7 @@ public class UsuarioCuentaService : IUsuarioCuentaService
         if (string.Equals(dto.PasswordActual, dto.NuevaPassword, StringComparison.Ordinal))
             throw new BusinessRuleException("La nueva contraseña debe ser diferente a la actual.");
 
-        var nuevoHash = BCrypt.Net.BCrypt.HashPassword(dto.NuevaPassword);
+        var nuevoHash = HasherPassword.Hash(dto.NuevaPassword);
         var codigo = CodigoUtil.GenerarCodigoNumerico();
 
         usuario.EstablecerCambioPassword(
@@ -211,7 +211,7 @@ public class UsuarioCuentaService : IUsuarioCuentaService
         var usuario = await ObtenerUsuarioAsync(usuarioId);
 
         // Confirmación: solo el dueño conoce la contraseña actual
-        if (!BCrypt.Net.BCrypt.Verify(dto.PasswordActual, usuario.PasswordHash))
+        if (!HasherPassword.Verificar(dto.PasswordActual, usuario.PasswordHash))
             throw new UnauthorizedAccessException("La contraseña actual es incorrecta.");
 
         var nuevoEmail = dto.NuevoEmail.Trim().ToLowerInvariant();
