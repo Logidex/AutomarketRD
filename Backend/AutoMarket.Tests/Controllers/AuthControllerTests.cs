@@ -3,7 +3,6 @@ using AutoMarket.Application.DTOs;
 using AutoMarket.Application.DTOs.Auth;
 using AutoMarket.Application.DTOs.Usuario;
 using AutoMarket.Application.Interfaces;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -21,12 +20,7 @@ public class AuthControllerTests
     {
         _mockAuthService = new Mock<IAuthService>();
 
-        var env = new Mock<IWebHostEnvironment>();
-        env.Setup(e => e.EnvironmentName).Returns("Development");
-
-        _controller = new AuthController(
-            _mockAuthService.Object,
-            env.Object);
+        _controller = new AuthController(_mockAuthService.Object);
 
         _httpContext = new DefaultHttpContext();
         _controller.ControllerContext = new ControllerContext

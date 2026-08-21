@@ -1,11 +1,10 @@
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Hosting;
 
 namespace AutoMarket.API.Helpers;
 
 /// <summary>
-/// Maneja el JWT como cookie HttpOnly (SameSite=Lax en local, None en producción) en lugar de localStorage.
-/// El token viaja únicamente en la cookie; nunca se expone al JavaScript.
+/// Maneja el JWT como cookie HttpOnly (SameSite=Lax sobre HTTP, None+Secure sobre HTTPS)
+/// en lugar de localStorage. El token viaja únicamente en la cookie; nunca se expone al JavaScript.
 /// </summary>
 public static class AuthCookieHelper
 {
@@ -20,33 +19,33 @@ public static class AuthCookieHelper
     public static void EstablecerTokenCookie(
         HttpResponse response,
         string token,
-        IWebHostEnvironment environment)
+        HttpRequest request)
     {
-        response.Cookies.Append(CookieName, token, CrearOpciones(environment));
+        response.Cookies.Append(CookieName, token, CrearOpciones(request));
     }
 
     public static void LimpiarTokenCookie(
         HttpResponse response,
-        IWebHostEnvironment environment)
+        HttpRequest request)
     {
-        response.Cookies.Delete(CookieName, CrearOpciones(environment));
+        response.Cookies.Delete(CookieName, CrearOpciones(request));
     }
 
     private static CookieOptions CrearOpciones(
-        IWebHostEnvironment environment)
+        HttpRequest request)
     {
-        // En producción (HTTPS): Secure=true, SameSite=None.
-        // El frontend (Cloudflare Pages, p. ej. proyecto.pages.dev) y la API
-        // (Cloudflare Tunnel) viven en sitios distintos; SameSite=Lax impediría
-        // enviar la cookie en las peticiones cross-site (login/401 en bucle).
-        // En desarrollo/staging (HTTP local): Secure=false, SameSite=Lax.
-        var usaHttps = environment.IsProduction() || environment.IsStaging();
+        // La cookie se marca Secure+SameSite=None solo cuando la petición llegó
+        // realmente por HTTPS (UseForwardedHeaders ya procesó X-Forwarded-Proto
+        // detrás del proxy/túnel). Así el frontend (Cloudflare Pages) y la API
+        // (Cloudflare Tunnel) cross-site pueden enviarla, mientras que en local
+        // o staging por HTTP simple (SameSite=Lax) el navegador no la descarta.
+        var esHttps = request.IsHttps;
 
         return new CookieOptions
         {
             HttpOnly = true,
-            Secure = usaHttps,
-            SameSite = usaHttps ? SameSiteMode.None : SameSiteMode.Lax,
+            Secure = esHttps,
+            SameSite = esHttps ? SameSiteMode.None : SameSiteMode.Lax,
             Path = "/",
             Expires = DateTimeOffset.UtcNow.Add(Duracion)
         };

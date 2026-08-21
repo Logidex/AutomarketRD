@@ -7,7 +7,6 @@ using AutoMarket.Core.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.Extensions.Hosting;
 
 /// <summary>
 /// Controlador para manejar la autenticación de usuarios: registro, inicio de sesión,
@@ -21,17 +20,13 @@ using Microsoft.Extensions.Hosting;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
-    private readonly IWebHostEnvironment _environment;
 
 /// <summary>
 /// Inicializa una nueva instancia de la clase AuthController. Parámetro authService (IAuthService)
 /// </summary>
-    public AuthController(
-        IAuthService authService,
-        IWebHostEnvironment environment)
+    public AuthController(IAuthService authService)
     {
         _authService = authService;
-        _environment = environment;
     }
 
      /// <summary>
@@ -76,7 +71,7 @@ public class AuthController : ControllerBase
          AuthCookieHelper.EstablecerTokenCookie(
              Response,
              resultado.Token!,
-             _environment);
+             Request);
 
          return Ok(new
          {
@@ -95,7 +90,7 @@ public class AuthController : ControllerBase
      [AllowAnonymous]
      public IActionResult Logout()
      {
-         AuthCookieHelper.LimpiarTokenCookie(Response, _environment);
+         AuthCookieHelper.LimpiarTokenCookie(Response, Request);
          return Ok(new { exito = true, mensaje = "Sesión cerrada." });
      }
 

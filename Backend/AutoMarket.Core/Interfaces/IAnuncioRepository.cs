@@ -16,4 +16,5 @@ public interface IAnuncioRepository
     Task<IEnumerable<Anuncio>> ObtenerPorIdsAsync(IEnumerable<int> ids);
     Task<(IEnumerable<Anuncio> Anuncios, int Total)> ObtenerPaginadosAsync(int pagina, int tamanoPagina);
     Task<(IEnumerable<Anuncio> Anuncios, int Total)> ObtenerDestacadosPaginadosAsync(int pagina, int tamanoPagina);
+    Task<bool> ExisteFotoAsync(string claveOUrl);
 }

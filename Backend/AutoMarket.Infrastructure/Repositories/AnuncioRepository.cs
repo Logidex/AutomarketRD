@@ -435,4 +435,52 @@ public class AnuncioRepository : IAnuncioRepository
             total
         );
     }
+
+    public async Task<bool> ExisteFotoAsync(string claveOUrl)
+    {
+        var clave = NormalizarClave(claveOUrl);
+
+        if (string.IsNullOrWhiteSpace(clave))
+            return false;
+
+        /*
+         * La columna "Fotos" guarda claves ("uploads/x.jpg") o URLs públicas
+         * legadas ("https://bucket/uploads/x.jpg"); un LIKE por sufijo cubre
+         * ambos formatos. La propiedad usa un value converter, por lo que la
+         * pre-filtración debe hacerse con SQL y la verificación exacta en memoria.
+         */
+        var patron = "%" + clave;
+
+        var candidatos = await _context.Anuncios
+            .FromSqlInterpolated(
+                $@"SELECT * FROM ""Anuncios"" WHERE ""Fotos"" LIKE {patron}")
+            .AsNoTracking()
+            .ToListAsync();
+
+        return candidatos.Any(a => a.Fotos.Any(
+            f => f.Equals(clave, StringComparison.OrdinalIgnoreCase) ||
+                 f.EndsWith("/" + clave, StringComparison.OrdinalIgnoreCase)));
+    }
+
+    /// <summary>
+    /// Convierte una URL pública legada o una clave en la clave de objeto
+    /// correspondiente (espejo de AlmacenadorS3.NormalizarClave).
+    /// </summary>
+    private static string NormalizarClave(string claveOUrl)
+    {
+        const string prefijo = "uploads/";
+
+        var candidato = claveOUrl.Trim();
+
+        if (Uri.TryCreate(candidato, UriKind.Absolute, out var uri) &&
+            !string.IsNullOrEmpty(uri.Host))
+        {
+            var path = uri.AbsolutePath.TrimStart('/');
+            return path.StartsWith(prefijo, StringComparison.OrdinalIgnoreCase)
+                ? path
+                : $"{prefijo}{path.TrimStart('/')}";
+        }
+
+        return candidato;
+    }
 }

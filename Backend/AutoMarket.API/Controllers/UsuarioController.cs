@@ -5,7 +5,6 @@ using AutoMarket.Application.Interfaces;
 using AutoMarket.Core.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Hosting;
 
 namespace AutoMarket.API.Controllers;
 
@@ -23,17 +22,13 @@ namespace AutoMarket.API.Controllers;
 public class UsuarioController : ControllerBase
 {
     private readonly IUsuarioCuentaService _cuentaService;
-    private readonly IWebHostEnvironment _environment;
 
 /// <summary>
 /// Inicializa una nueva instancia de la clase UsuarioController. Parámetro cuentaService (IUsuarioCuentaService)
 /// </summary>
-    public UsuarioController(
-        IUsuarioCuentaService cuentaService,
-        IWebHostEnvironment environment)
+    public UsuarioController(IUsuarioCuentaService cuentaService)
     {
         _cuentaService = cuentaService;
-        _environment = environment;
     }
 
      /// <summary>
@@ -85,7 +80,7 @@ public class UsuarioController : ControllerBase
              AuthCookieHelper.EstablecerTokenCookie(
                  Response,
                  sesion.Token!,
-                 _environment);
+                 Request);
 
              return Ok(new
              {
