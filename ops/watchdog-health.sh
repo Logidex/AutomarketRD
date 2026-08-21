@@ -34,7 +34,8 @@ ALERT_TO="${ALERT_TO:-${SMTP_USER}}"
 
 fails_anteriores=$(cat "$STATE_FILE" 2>/dev/null || echo 0)
 
-codigo=$(curl -s -o /dev/null -w "%{http_code}" --max-time "$TIMEOUT_SEG" "$URL" 2>/dev/null || echo 000)
+codigo=$(curl -s -o /dev/null -w "%{http_code}" --max-time "$TIMEOUT_SEG" "$URL" 2>/dev/null)
+if [ -z "$codigo" ]; then codigo=000; fi
 
 if [ "$codigo" = "200" ]; then
     if [ "$fails_anteriores" -ge "$FALLOS_PARA_ALERTA" ]; then
