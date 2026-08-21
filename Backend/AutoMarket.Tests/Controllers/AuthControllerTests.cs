@@ -103,6 +103,7 @@ public class AuthControllerTests
                 Exito = true,
                 Mensaje = "Inicio de sesión exitoso.",
                 Token = "token-jwt-demo",
+                RefreshToken = "refresh-token-demo",
                 Usuario = new UsuarioAuthDto
                 {
                     UsuarioId = 1,
@@ -176,9 +177,9 @@ public class AuthControllerTests
     }
 
     [Fact]
-    public void Logout_DebeEliminarLaCookieDelToken()
+    public async Task Logout_DebeEliminarLaCookieDelToken()
     {
-        var resultado = _controller.Logout();
+        var resultado = await _controller.Logout();
 
         Assert.IsType<OkObjectResult>(resultado);
 

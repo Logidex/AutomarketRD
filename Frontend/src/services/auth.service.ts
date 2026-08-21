@@ -22,6 +22,16 @@ export const authService = {
     return response.data;
   },
 
+  // Renueva la sesión con la cookie automarket_rt (HttpOnly). El backend
+  // rota ambos tokens y devuelve los datos del usuario actualizados.
+  async refrescarSesion(): Promise<AuthResponse> {
+    const response = await api.post<AuthResponse>('/api/auth/refrescar');
+
+    this.guardarSesion(response.data);
+
+    return response.data;
+  },
+
   // El JWT vive en una cookie HttpOnly (el servidor la establece en el login).
   // Aquí solo se guarda el usuario (metadatos no sensibles) en localStorage.
   guardarSesion(authData: AuthResponse) {

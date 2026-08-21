@@ -17,6 +17,7 @@ public class UsuarioCuentaServiceTests
     private readonly Mock<ISuscripcionService> _mockSuscripcion;
     private readonly Mock<ITokenService> _mockToken;
     private readonly Mock<IEmailSenderService> _mockEmailSender;
+    private readonly Mock<IRefreshTokenRepository> _mockRefreshTokens;
     private readonly Mock<ILogger<UsuarioCuentaService>> _mockLogger;
     private readonly UsuarioCuentaService _service;
 
@@ -26,12 +27,14 @@ public class UsuarioCuentaServiceTests
         _mockSuscripcion = new Mock<ISuscripcionService>();
         _mockToken = new Mock<ITokenService>();
         _mockEmailSender = new Mock<IEmailSenderService>();
+        _mockRefreshTokens = new Mock<IRefreshTokenRepository>();
         _mockLogger = new Mock<ILogger<UsuarioCuentaService>>();
         _service = new UsuarioCuentaService(
             _mockRepo.Object,
             _mockSuscripcion.Object,
             _mockToken.Object,
             _mockEmailSender.Object,
+            _mockRefreshTokens.Object,
             _mockLogger.Object);
     }
 

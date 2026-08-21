@@ -23,6 +23,7 @@ public class UsuarioCuentaService : IUsuarioCuentaService
     private readonly ISuscripcionService _suscripcionService;
     private readonly ITokenService _tokenService;
     private readonly IEmailSenderService _emailSender;
+    private readonly IRefreshTokenRepository _refreshTokens;
     private readonly ILogger<UsuarioCuentaService> _logger;
 
 /// <summary>
@@ -33,12 +34,14 @@ public class UsuarioCuentaService : IUsuarioCuentaService
         ISuscripcionService suscripcionService,
         ITokenService tokenService,
         IEmailSenderService emailSender,
+        IRefreshTokenRepository refreshTokens,
         ILogger<UsuarioCuentaService> logger)
     {
         _usuarioRepository = usuarioRepository;
         _suscripcionService = suscripcionService;
         _tokenService = tokenService;
         _emailSender = emailSender;
+        _refreshTokens = refreshTokens;
         _logger = logger;
     }
 
@@ -192,6 +195,9 @@ public class UsuarioCuentaService : IUsuarioCuentaService
 
         if (!usuario.AplicarCambioPasswordSiValido(codigoHash, DateTime.UtcNow))
             throw new BusinessRuleException("El código es inválido o ha expirado. Solicita un nuevo código.");
+
+        // Seguridad: la contraseña cambió; se cierran todas las sesiones activas
+        await _refreshTokens.RevocarActivosDeUsuarioAsync(usuario.UsuarioId);
 
         await _usuarioRepository.GuardarCambiosAsync();
 

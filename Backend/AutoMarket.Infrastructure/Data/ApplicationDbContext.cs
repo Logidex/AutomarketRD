@@ -21,6 +21,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<PagoSuscripcion> PagosSuscripcion { get; set; }
     public DbSet<Ticket> Tickets { get; set; }
     public DbSet<TicketMensaje> TicketMensajes { get; set; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -289,6 +290,31 @@ public class ApplicationDbContext : DbContext
                 .WithMany(a => a.Leads)
                 .HasForeignKey(l => l.AnuncioId)
                 .OnDelete(DeleteBehavior.Cascade); // Si se elimina un anuncio, se borran sus leads asociados
+        });
+
+        // ==========================================
+        // CONFIGURACIÓN: REFRESH TOKENS (sesiones)
+        // ==========================================
+        modelBuilder.Entity<RefreshToken>(entity =>
+        {
+            entity.ToTable("RefreshTokens");
+
+            entity.HasKey(t => t.Id);
+
+            entity.Property(t => t.TokenHash)
+                .IsRequired()
+                .HasMaxLength(64);
+
+            entity.HasIndex(t => t.TokenHash)
+                .IsUnique();
+
+            entity.Property(t => t.ReplacedByTokenHash)
+                .HasMaxLength(64);
+
+            entity.HasOne(t => t.Usuario)
+                .WithMany()
+                .HasForeignKey(t => t.UsuarioId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         // ==========================================

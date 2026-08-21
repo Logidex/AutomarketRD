@@ -20,6 +20,7 @@ public class AuthService : IAuthService
     private const int PASSWORD_LONGITUD_MINIMA = 8;
     private static readonly TimeSpan VIGENCIA_CODIGO = TimeSpan.FromMinutes(15);
     private static readonly TimeSpan VIGENCIA_CONFIRMACION_EMAIL = TimeSpan.FromDays(2);
+    private static readonly TimeSpan VIGENCIA_REFRESH_TOKEN = TimeSpan.FromDays(14);
 
     private readonly IUsuarioRepository _repository;
     private readonly ITokenService _tokenService;
@@ -27,6 +28,7 @@ public class AuthService : IAuthService
     private readonly IEmailSenderService _emailSender;
     private readonly IConfiguration _configuration;
     private readonly ILogger<AuthService> _logger;
+    private readonly IRefreshTokenRepository _refreshTokens;
 
 /// <summary>
 /// Inicializa una nueva instancia de la clase AuthService.
@@ -37,7 +39,8 @@ public class AuthService : IAuthService
         ISuscripcionService suscripcionService,
         IEmailSenderService emailSender,
         IConfiguration configuration,
-        ILogger<AuthService> logger)
+        ILogger<AuthService> logger,
+        IRefreshTokenRepository refreshTokens)
     {
         _repository = repository;
         _tokenService = tokenService;
@@ -45,6 +48,7 @@ public class AuthService : IAuthService
         _emailSender = emailSender;
         _configuration = configuration;
         _logger = logger;
+        _refreshTokens = refreshTokens;
     }
 
     public async Task<(bool Exito, string Mensaje)> RegistrarUsuarioAsync(RegistroDto dto)
@@ -133,8 +137,9 @@ public class AuthService : IAuthService
             );
         }
 
-        // 4. Generar el token
+        // 4. Generar el token de acceso y el refresh token de la sesión
         var token = _tokenService.GenerarToken(usuario);
+        var refreshToken = await EmitirRefreshTokenAsync(usuario.UsuarioId);
 
         // 5. Devolver solamente los datos públicos del usuario
         return new LoginResultDto
@@ -142,6 +147,7 @@ public class AuthService : IAuthService
             Exito = true,
             Mensaje = "Inicio de sesión exitoso.",
             Token = token,
+            RefreshToken = refreshToken,
             Usuario = new UsuarioAuthDto
             {
                 UsuarioId = usuario.UsuarioId,
@@ -151,6 +157,96 @@ public class AuthService : IAuthService
                 Rol = usuario.Rol
             }
         };
+    }
+
+    public async Task<LoginResultDto> RefrescarSesionAsync(string refreshTokenCrudo)
+    {
+        if (string.IsNullOrWhiteSpace(refreshTokenCrudo))
+            throw new UnauthorizedAccessException("Sesión inválida.");
+
+        var hash = _tokenService.HashRefreshToken(refreshTokenCrudo);
+
+        var token = await _refreshTokens.ObtenerPorHashAsync(hash);
+
+        if (token == null)
+            throw new UnauthorizedAccessException("Sesión inválida.");
+
+        if (!token.EstaActivo)
+        {
+            // Reuso de un token ya rotado/expirado: señal de robo.
+            // Se revoca toda la familia activa del usuario como contención.
+            await _refreshTokens.RevocarActivosDeUsuarioAsync(token.UsuarioId);
+            await _refreshTokens.GuardarCambiosAsync();
+            _logger.LogWarning(
+                "Reuso de refresh token detectado (usuario {UsuarioId}); familia revocada.",
+                token.UsuarioId);
+
+            throw new UnauthorizedAccessException("Sesión inválida.");
+        }
+
+        var usuario = await _repository.ObtenerPorIdAsync(token.UsuarioId);
+
+        if (usuario == null || !usuario.IsActivo)
+            throw new UnauthorizedAccessException("Sesión inválida.");
+
+        // Rotación: el token usado muere apuntando a su reemplazo.
+        var nuevoRefresh = _tokenService.GenerarRefreshToken();
+        var nuevoHash = _tokenService.HashRefreshToken(nuevoRefresh);
+
+        token.Revocar(nuevoHash);
+        await _refreshTokens.AgregarAsync(new RefreshToken(
+            usuario.UsuarioId,
+            nuevoHash,
+            DateTime.UtcNow,
+            DateTime.UtcNow.Add(VIGENCIA_REFRESH_TOKEN)));
+        await _refreshTokens.GuardarCambiosAsync();
+
+        return new LoginResultDto
+        {
+            Exito = true,
+            Mensaje = "Sesión renovada.",
+            Token = _tokenService.GenerarToken(usuario),
+            RefreshToken = nuevoRefresh,
+            Usuario = new UsuarioAuthDto
+            {
+                UsuarioId = usuario.UsuarioId,
+                Nombre = usuario.Nombre,
+                Apellido = usuario.Apellido ?? string.Empty,
+                Email = usuario.Email,
+                Rol = usuario.Rol
+            }
+        };
+    }
+
+    public async Task RevocarSesionAsync(string? refreshTokenCrudo)
+    {
+        if (string.IsNullOrWhiteSpace(refreshTokenCrudo))
+            return;
+
+        var hash = _tokenService.HashRefreshToken(refreshTokenCrudo);
+
+        var token = await _refreshTokens.ObtenerPorHashAsync(hash);
+
+        if (token != null && token.EstaActivo)
+        {
+            token.Revocar();
+            await _refreshTokens.GuardarCambiosAsync();
+        }
+    }
+
+    /// <summary>Crea y persiste un refresh token nuevo para el usuario.</summary>
+    private async Task<string> EmitirRefreshTokenAsync(int usuarioId)
+    {
+        var crudo = _tokenService.GenerarRefreshToken();
+
+        await _refreshTokens.AgregarAsync(new RefreshToken(
+            usuarioId,
+            _tokenService.HashRefreshToken(crudo),
+            DateTime.UtcNow,
+            DateTime.UtcNow.Add(VIGENCIA_REFRESH_TOKEN)));
+        await _refreshTokens.GuardarCambiosAsync();
+
+        return crudo;
     }
 
     // ==========================================
@@ -209,6 +305,9 @@ public class AuthService : IAuthService
             throw new BusinessRuleException("El código es inválido o ha expirado. Solicita un nuevo código.");
 
         usuario.CambiarPassword(HasherPassword.Hash(dto.NuevaPassword));
+
+        // Seguridad: la contraseña cambió; se cierran todas las sesiones activas
+        await _refreshTokens.RevocarActivosDeUsuarioAsync(usuario.UsuarioId);
 
         await _repository.GuardarCambiosAsync();
 
