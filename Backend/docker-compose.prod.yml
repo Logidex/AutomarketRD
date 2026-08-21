@@ -1,12 +1,16 @@
 # docker-compose.prod.yml
+#
+# Todas las variables criticas usan la sintaxis ${VAR:?mensaje}: si falta
+# cualquiera en .env.prod, el compose ABORTA al levantar en lugar de arrancar
+# con secretos vacios (mismo criterio fail-fast que docker-compose.staging.yml).
 services:
   db:
     image: postgres:16
     container_name: automarket-db-prod
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_PROD}  # ← Password diferente para prod
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB requerido}
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER requerido}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_PROD:?POSTGRES_PASSWORD_PROD requerido}  # ← Password diferente para prod
     # NO exponemos el puerto 5432 al exterior (más seguro)
     volumes:
       - pgdata_prod:/var/lib/postgresql/data
@@ -26,36 +30,36 @@ services:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:8080
 
-      ConnectionStrings__DefaultConnection: ${CONNECTION_STRING_PROD}
-      Jwt__Secret: ${JWT_SECRET_PROD}  # ← Secret diferente para prod
-      Jwt__Issuer: ${JWT_ISSUER}
-      Jwt__Audience: ${JWT_AUDIENCE}
-      SmtpSettings__Host: ${SMTP_HOST}
-      SmtpSettings__Port: ${SMTP_PORT}
-      SmtpSettings__User: ${SMTP_USER}
-      SmtpSettings__Password: ${SMTP_PASSWORD}
-      SmtpSettings__SenderName: ${SMTP_SENDER_NAME}
-      SmtpSettings__SenderEmail: ${SMTP_SENDER_EMAIL}
+      ConnectionStrings__DefaultConnection: ${CONNECTION_STRING_PROD:?CONNECTION_STRING_PROD requerido}
+      Jwt__Secret: ${JWT_SECRET_PROD:?JWT_SECRET_PROD requerido}  # ← Secret diferente para prod
+      Jwt__Issuer: ${JWT_ISSUER:?JWT_ISSUER requerido}
+      Jwt__Audience: ${JWT_AUDIENCE:?JWT_AUDIENCE requerido}
+      SmtpSettings__Host: ${SMTP_HOST:?SMTP_HOST requerido}
+      SmtpSettings__Port: ${SMTP_PORT:?SMTP_PORT requerido}
+      SmtpSettings__User: ${SMTP_USER:?SMTP_USER requerido}
+      SmtpSettings__Password: ${SMTP_PASSWORD:?SMTP_PASSWORD requerido}
+      SmtpSettings__SenderName: ${SMTP_SENDER_NAME:?SMTP_SENDER_NAME requerido}
+      SmtpSettings__SenderEmail: ${SMTP_SENDER_EMAIL:?SMTP_SENDER_EMAIL requerido}
       # Almacenamiento de imágenes: soporta AWS S3 real y Cloudflare R2.
       # Con AWS__ServiceUrl vacío usa AWS real (RegionEndpoint); con el
       # endpoint de R2 (https://<ACCOUNT_ID>.r2.cloudflarestorage.com) usa R2.
-      AWS__AccessKey: ${AWS_ACCESS_KEY}
-      AWS__SecretKey: ${AWS_SECRET_KEY}
-      AWS__Region: ${AWS_REGION}
-      AWS__BucketName: ${AWS_BUCKET_NAME}
+      AWS__AccessKey: ${AWS_ACCESS_KEY:?AWS_ACCESS_KEY requerido}
+      AWS__SecretKey: ${AWS_SECRET_KEY:?AWS_SECRET_KEY requerido}
+      AWS__Region: ${AWS_REGION:?AWS_REGION requerido}
+      AWS__BucketName: ${AWS_BUCKET_NAME:?AWS_BUCKET_NAME requerido}
       AWS__ServiceUrl: ${AWS_SERVICE_URL:-}
       AWS__ExpirationMinutes: ${AWS_EXPIRATION_MINUTES:-15}
       PayPal__Mode: ${PAYPAL_MODE:-Live}
-      PayPal__UrlBase: ${PAYPAL_URL_BASE}
-      PayPal__ClientId: ${PAYPAL_CLIENT_ID}
-      PayPal__ClientSecret: ${PAYPAL_CLIENT_SECRET}
-      PayPal__ReturnUrl: ${PAYPAL_RETURN_URL}
-      PayPal__CancelUrl: ${PAYPAL_CANCEL_URL}
-      PayPal__WebhookId: ${PAYPAL_WEBHOOK_ID}
+      PayPal__UrlBase: ${PAYPAL_URL_BASE:?PAYPAL_URL_BASE requerido}
+      PayPal__ClientId: ${PAYPAL_CLIENT_ID:?PAYPAL_CLIENT_ID requerido}
+      PayPal__ClientSecret: ${PAYPAL_CLIENT_SECRET:?PAYPAL_CLIENT_SECRET requerido}
+      PayPal__ReturnUrl: ${PAYPAL_RETURN_URL:?PAYPAL_RETURN_URL requerido}
+      PayPal__CancelUrl: ${PAYPAL_CANCEL_URL:?PAYPAL_CANCEL_URL requerido}
+      PayPal__WebhookId: ${PAYPAL_WEBHOOK_ID:?PAYPAL_WEBHOOK_ID requerido}
       Pago__TasaCambioRD_USD: ${PAGO_TASA_CAMBIO_RD_USD:-0.017}
-      Cors__AllowedOrigins: ${CORS_ALLOWED_ORIGINS_PROD}
-      Admin__Email: ${ADMIN_EMAIL_PROD}
-      Admin__Password: ${ADMIN_PASSWORD_PROD}
+      Cors__AllowedOrigins: ${CORS_ALLOWED_ORIGINS_PROD:?CORS_ALLOWED_ORIGINS_PROD requerido}
+      Admin__Email: ${ADMIN_EMAIL_PROD:?ADMIN_EMAIL_PROD requerido}
+      Admin__Password: ${ADMIN_PASSWORD_PROD:?ADMIN_PASSWORD_PROD requerido}
       Admin__RotatePassword: ${ADMIN_ROTATE_PASSWORD_PROD:-false}
       # En prod las migraciones y el seeder NO corren automáticamente por defecto.
       # - MigrateOnStartup: actívalo (=true) solo si el deploy NO ejecuta
@@ -65,7 +69,7 @@ services:
       MigrateOnStartup: ${MIGRATE_ON_STARTUP:-false}
       Seeder__Enabled: ${SEEDER_ENABLED:-false}
       # URL pública del frontend (usada en enlaces de correo, ej: confirmar correo)
-      App__FrontendUrl: ${APP_FRONTEND_URL}
+      App__FrontendUrl: ${APP_FRONTEND_URL:?APP_FRONTEND_URL requerido}
 
     # En producción NO exponemos la API al exterior: solo nginx (frontend)
     # se publica en el puerto 80 y reenvía /api/* a este contenedor.
@@ -91,9 +95,9 @@ services:
     container_name: automarket-db-backup
     environment:
       POSTGRES_HOST: db
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_PROD}
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB requerido}
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER requerido}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_PROD:?POSTGRES_PASSWORD_PROD requerido}
       BACKUP_DIR: /backups
       BACKUP_RETENTION_DAYS: 14
       # Ejecutar a las 03:00 todos los días (formato cron)

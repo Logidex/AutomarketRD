@@ -173,14 +173,19 @@ docker compose -f docker-compose.prod.yml --env-file .env.prod exec db-backup sh
 
 ## 7. Actualizar a una nueva versión
 
+Manual:
+
 ```bash
-git pull origin main
+git fetch --tags origin
+git checkout v1.x.y            # la tag del release a desplegar
 docker compose -f docker-compose.prod.yml --env-file .env.prod build
 docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
 ```
 
 Si la versión incluye migraciones, ejecútalas una vez:
 `MIGRATE_ON_STARTUP=true` en `.env.prod` → `up -d` → verificar → volver a `false`.
+
+Con el CD activado (§10), basta pushear la tag y el servidor se actualiza solo.
 
 Rollback y releases por tags: ver el playbook en `docs/PRODUCCION.md` §C.5.
 
@@ -205,3 +210,38 @@ Rollback y releases por tags: ver el playbook en `docs/PRODUCCION.md` §C.5.
 - [ ] Un pago real (monto pequeño) se confirma y el webhook llega.
 - [ ] Un reembolso deja el pago en `Reembolsado`.
 - [ ] El backup diario genera archivos en `db_backups`.
+
+## 10. CD por tags (release automatizado)
+
+El workflow `.github/workflows/release.yml` se dispara al pushear una tag `v*`
+(`git push origin v1.0.0`). Tres etapas:
+
+1. **Quality gate**: corre los tests del backend contra el código de la tag.
+2. **Build & push**: construye y publica las imágenes en GHCR
+   (`ghcr.io/logidex/automarketrd/api:<tag>`, `.../web:<tag>` y `:latest`),
+   quedando como artefacto versionado para el rollback (§C.5 de PRODUCCION.md).
+3. **Deploy** (opcional): solo si el repositorio tiene la variable
+   `DEPLOY_ENABLED=true`; si no, se salta y el deploy queda manual (§7).
+
+### Configuración para activar el deploy automático
+
+En GitHub: *Settings → Secrets and variables → Actions*.
+
+| Tipo | Nombre | Valor |
+|---|---|---|
+| Variable | `DEPLOY_ENABLED` | `true` |
+| Secret | `DEPLOY_HOST` | IP/host del servidor de producción |
+| Secret | `DEPLOY_USER` | usuario SSH (ej. `ubuntu`) |
+| Secret | `DEPLOY_SSH_KEY` | clave privada PEM completa |
+| Secret | `DEPLOY_PATH` | ruta absoluta del clon en el servidor |
+
+El job hace checkout de la tag desplegada y ejecuta
+`docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build`.
+
+### Releases con migraciones vía CD
+
+Si la tag incluye migraciones nuevas, edita el paso final del workflow
+descomentando la línea `MIGRATE_ON_STARTUP=true ...` para ese release (o hazlo
+manual según §7). El flag solo actúa al arrancar el contenedor; no necesitas
+revertirlo después, pero sí quitarlo del siguiente release que no tenga
+migraciones.
