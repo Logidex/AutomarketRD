@@ -102,6 +102,12 @@ services:
       BACKUP_RETENTION_DAYS: 14
       # Ejecutar a las 03:00 todos los días (formato cron)
       CRON_SCHEDULE: "0 3 * * *"
+      # Copia offsite a S3/R2 (usa las mismas credenciales que la API)
+      BACKUP_S3_BUCKET: ${AWS_BUCKET_NAME:?AWS_BUCKET_NAME requerido}
+      BACKUP_S3_PREFIX: db-backups/prod
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY:?AWS_ACCESS_KEY requerido}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_KEY:?AWS_SECRET_KEY requerido}
+      AWS_S3_ENDPOINT: ${AWS_SERVICE_URL:-}
     volumes:
       - ./scripts/backup-db.sh:/backup-db.sh:ro
       - db_backups:/backups
@@ -109,7 +115,7 @@ services:
       - sh
       - -c
       - |
-        apk add --no-cache dcron
+        apk add --no-cache dcron aws-cli
         chmod +x /backup-db.sh
         chmod 0600 /etc/crontabs/root || true
         echo "$${CRON_SCHEDULE} /backup-db.sh >> /backups/backup.log 2>&1" > /etc/crontabs/root
