@@ -42,7 +42,7 @@ import {
   etiquetaDe,
 } from "../constants/vehiculo.opciones";
 
-const IMAGEN_VACIA = "https://via.placeholder.com/800x500?text=Sin+Foto";
+const IMAGEN_VACIA = "/sin-foto.svg";
 
 interface PropsFotos {
   anuncio: AnuncioDetalle;

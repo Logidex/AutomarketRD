@@ -82,7 +82,7 @@ const FILTROS_INICIALES: Filtros = {
 };
 
 const fotoPrincipal = (anuncio: AnuncioListado): string =>
-  urlImagen(anuncio.fotos?.[0]) || "https://via.placeholder.com/600x400?text=Sin+Foto";
+  urlImagen(anuncio.fotos?.[0]) || "/sin-foto.svg";
 
 function useBusquedaVehiculos() {
   const navigate = useNavigate();

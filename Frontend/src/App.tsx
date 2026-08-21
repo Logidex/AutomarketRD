@@ -257,9 +257,20 @@ function App() {
         <Route
           path="*"
           element={
-            <h1 className="p-8 text-2xl font-bold">
-              Página no encontrada
-            </h1>
+            <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-[#0c101b] px-6 text-center">
+              <h1 className="text-2xl font-bold text-white">
+                Página no encontrada
+              </h1>
+              <p className="text-sm text-slate-400">
+                La dirección que buscas no existe o fue movida.
+              </p>
+              <a
+                href="/"
+                className="rounded-lg bg-blue-500 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-600"
+              >
+                Volver al inicio
+              </a>
+            </div>
           }
         />
       </Routes>

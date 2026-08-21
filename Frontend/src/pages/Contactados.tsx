@@ -4,8 +4,7 @@ import { formatearFecha } from "../utils/fecha";
 import { useMisContactos } from "../hooks/useLeads";
 import { urlImagen } from "../utils/imagen";
 
-const IMAGEN_VACIA =
-  "https://via.placeholder.com/600x400?text=Sin+Foto";
+const IMAGEN_VACIA = "/sin-foto.svg";
 
 type Tema = "oscuro" | "claro";
 
