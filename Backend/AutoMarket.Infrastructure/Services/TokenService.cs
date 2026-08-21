@@ -47,4 +47,24 @@ public class TokenService : ITokenService
         // 4. Escribir el token como una cadena de texto (String)
         return new JwtSecurityTokenHandler().WriteToken(tokenOptions);
     }
+
+    public string GenerarRefreshToken()
+    {
+        // 64 bytes aleatorios criptográficamente seguros, base64url (sin
+        // caracteres problemáticos para cookies).
+        var bytes = System.Security.Cryptography.RandomNumberGenerator.GetBytes(64);
+
+        return Convert.ToBase64String(bytes)
+            .TrimEnd('=')
+            .Replace('+', '-')
+            .Replace('/', '_');
+    }
+
+    public string HashRefreshToken(string token)
+    {
+        var bytes = System.Security.Cryptography.SHA256.HashData(
+            Encoding.UTF8.GetBytes(token));
+
+        return Convert.ToHexString(bytes);
+    }
 }

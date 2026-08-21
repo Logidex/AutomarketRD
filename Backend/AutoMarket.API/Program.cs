@@ -110,6 +110,7 @@ try
 
     builder.Services.AddScoped<IAnuncioService, AnuncioService>();
     builder.Services.AddScoped<IAnuncioRepository, AnuncioRepository>();
+    builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
     builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
     builder.Services.AddScoped<IUsuarioCuentaService, UsuarioCuentaService>();

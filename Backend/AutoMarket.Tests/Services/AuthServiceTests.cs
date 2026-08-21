@@ -32,7 +32,7 @@ public class AuthServiceTests
 
         mockRepo.Setup(r => r.ExisteEmailAsync(dto.Email)).ReturnsAsync(true);
 
-        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<IConfiguration>(), Mock.Of<ILogger<AuthService>>());
+        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<IConfiguration>(), Mock.Of<ILogger<AuthService>>(), new Mock<IRefreshTokenRepository>().Object);
 
         var resultado = await servicio.RegistrarUsuarioAsync(dto);
 
@@ -61,7 +61,7 @@ public class AuthServiceTests
         mockRepo.Setup(r => r.CrearUsuarioAsync(It.IsAny<Usuario>()))
             .ReturnsAsync((Usuario u) => u);
 
-        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<IConfiguration>(), Mock.Of<ILogger<AuthService>>());
+        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<IConfiguration>(), Mock.Of<ILogger<AuthService>>(), new Mock<IRefreshTokenRepository>().Object);
 
         var resultado = await servicio.RegistrarUsuarioAsync(dto);
 
@@ -93,7 +93,7 @@ public class AuthServiceTests
 
         mockRepo.Setup(r => r.ExisteEmailAsync(dto.Email)).ReturnsAsync(false);
 
-        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<IConfiguration>(), Mock.Of<ILogger<AuthService>>());
+        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<IConfiguration>(), Mock.Of<ILogger<AuthService>>(), new Mock<IRefreshTokenRepository>().Object);
 
         var resultado = await servicio.RegistrarUsuarioAsync(dto);
 
@@ -126,7 +126,7 @@ Assert.False(resultado.Exito);
         mockRepo.Setup(r => r.CrearUsuarioAsync(It.IsAny<Usuario>()))
             .ReturnsAsync((Usuario u) => u);
 
-        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<IConfiguration>(), Mock.Of<ILogger<AuthService>>());
+        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<IConfiguration>(), Mock.Of<ILogger<AuthService>>(), new Mock<IRefreshTokenRepository>().Object);
 
         var resultado = await servicio.RegistrarUsuarioAsync(dto);
 
@@ -169,7 +169,7 @@ Assert.False(resultado.Exito);
         mockRepo.Setup(r => r.CrearUsuarioAsync(It.IsAny<Usuario>()))
             .ReturnsAsync((Usuario u) => u);
 
-        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<IConfiguration>(), Mock.Of<ILogger<AuthService>>());
+        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<IConfiguration>(), Mock.Of<ILogger<AuthService>>(), new Mock<IRefreshTokenRepository>().Object);
 
         var resultado = await servicio.RegistrarUsuarioAsync(dto);
 
@@ -197,7 +197,7 @@ Assert.False(resultado.Exito);
 
         mockRepo.Setup(r => r.ObtenerPorEmailAsync(dto.Email)).ReturnsAsync((Usuario?)null);
 
-        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<IConfiguration>(), Mock.Of<ILogger<AuthService>>());
+        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<IConfiguration>(), Mock.Of<ILogger<AuthService>>(), new Mock<IRefreshTokenRepository>().Object);
 
         var ex = await Assert.ThrowsAsync<UnauthorizedAccessException>(() => servicio.LoginAsync(dto));
 
@@ -232,7 +232,7 @@ Assert.False(resultado.Exito);
 
         mockRepo.Setup(r => r.ObtenerPorEmailAsync(dto.Email)).ReturnsAsync(usuarioEnBaseDeDatos);
 
-        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<IConfiguration>(), Mock.Of<ILogger<AuthService>>());
+        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<IConfiguration>(), Mock.Of<ILogger<AuthService>>(), new Mock<IRefreshTokenRepository>().Object);
 
         var ex = await Assert.ThrowsAsync<UnauthorizedAccessException>(() => servicio.LoginAsync(dto));
 
@@ -260,6 +260,7 @@ Assert.False(resultado.Exito);
             rol: "Comprador",
             emailConfirmado: true
         );
+        typeof(Usuario).GetProperty("UsuarioId")?.SetValue(usuarioEnBaseDeDatos, 1);
 
         var tokenFalso = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.UnTokenFalsoParaPruebas.FirmaFalsa";
 
@@ -269,8 +270,10 @@ Assert.False(resultado.Exito);
 
         mockRepo.Setup(r => r.ObtenerPorEmailAsync(dto.Email)).ReturnsAsync(usuarioEnBaseDeDatos);
         mockTokenService.Setup(t => t.GenerarToken(usuarioEnBaseDeDatos)).Returns(tokenFalso);
+        mockTokenService.Setup(t => t.GenerarRefreshToken()).Returns("refresh-crudo");
+        mockTokenService.Setup(t => t.HashRefreshToken(It.IsAny<string>())).Returns("HASH-REFRESH");
 
-        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<IConfiguration>(), Mock.Of<ILogger<AuthService>>());
+        var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<IConfiguration>(), Mock.Of<ILogger<AuthService>>(), new Mock<IRefreshTokenRepository>().Object);
 
         var resultado = await servicio.LoginAsync(dto);
 
@@ -305,7 +308,7 @@ Assert.False(resultado.Exito);
                 new Mock<ISuscripcionService>().Object,
                 EmailSender.Object,
                 Mock.Of<IConfiguration>(),
-                Mock.Of<ILogger<AuthService>>());
+                Mock.Of<ILogger<AuthService>>(), new Mock<IRefreshTokenRepository>().Object);
         }
     }
 
@@ -451,7 +454,7 @@ Assert.False(resultado.Exito);
                 new Mock<ISuscripcionService>().Object,
                 EmailSender.Object,
                 config,
-                Mock.Of<ILogger<AuthService>>());
+                Mock.Of<ILogger<AuthService>>(), new Mock<IRefreshTokenRepository>().Object);
         }
     }
 
@@ -492,7 +495,7 @@ Assert.False(resultado.Exito);
             mockSuscripcionService.Object,
             emailSender.Object,
             config,
-            Mock.Of<ILogger<AuthService>>());
+            Mock.Of<ILogger<AuthService>>(), new Mock<IRefreshTokenRepository>().Object);
 
         var resultado = await servicio.RegistrarUsuarioAsync(dto);
 
