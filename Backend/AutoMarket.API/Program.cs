@@ -384,6 +384,34 @@ try
                             });
             });
 
+        // Límite global por IP para toda la API (defensa contra abuso general).
+        // Los endpoints sensibles llevan además sus políticas específicas
+        // (login, leads, contacto). Los health checks quedan exentos porque
+        // los sondean Docker y el balanceador cada pocos segundos.
+        options.GlobalLimiter =
+            PartitionedRateLimiter.Create<HttpContext, string>(context =>
+            {
+                if (context.Request.Path.StartsWithSegments("/health"))
+                {
+                    return RateLimitPartition.GetNoLimiter("sin-limite-health");
+                }
+
+                var ipGlobal =
+                    context.Connection.RemoteIpAddress?.ToString()
+                    ?? "desconocido";
+
+                return RateLimitPartition.GetFixedWindowLimiter(
+                    $"global:{ipGlobal}",
+                    _ =>
+                        new FixedWindowRateLimiterOptions
+                        {
+                            AutoReplenishment = true,
+                            PermitLimit = 300,
+                            Window = TimeSpan.FromMinutes(1),
+                            QueueLimit = 0
+                        });
+            });
+
         options.RejectionStatusCode =
             StatusCodes.Status429TooManyRequests;
     });
