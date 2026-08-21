@@ -1,9 +1,9 @@
+using AutoMarket.Application.Helpers;
 using AutoMarket.Core.Entities;
 using AutoMarket.Core.Entities.Enums;
 using AutoMarket.Core.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using BCrypt.Net;
 
 namespace AutoMarket.Infrastructure.Data;
 
@@ -37,7 +37,7 @@ public static class DatabaseSeeder
 
         if (!adminExiste)
         {
-            var passwordHash = BCrypt.Net.BCrypt.HashPassword(adminPassword);
+            var passwordHash = HasherPassword.Hash(adminPassword);
 
             var adminUser = Usuario.CrearAdministradorInterno(
                 nombre: "Administrador",
@@ -59,7 +59,7 @@ public static class DatabaseSeeder
         var rotarPassword = string.Equals(config["Admin:RotatePassword"], "true", StringComparison.OrdinalIgnoreCase);
         if (rotarPassword && !string.IsNullOrWhiteSpace(adminPassword))
         {
-            var nuevoHash = BCrypt.Net.BCrypt.HashPassword(adminPassword);
+            var nuevoHash = HasherPassword.Hash(adminPassword);
             var actualizado = await usuarioRepository.ActualizarContrasenaAsync(adminEmail, nuevoHash);
 
             Console.WriteLine(actualizado

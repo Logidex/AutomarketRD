@@ -74,6 +74,10 @@ services:
       # URL pública del frontend (usada en enlaces de correo, ej: confirmar correo)
       App__FrontendUrl: ${APP_FRONTEND_URL:?APP_FRONTEND_URL requerido}
 
+    # Persiste los file logs de Serilog entre redeploys (logs/api-*.log)
+    volumes:
+      - api_logs_prod:/app/logs
+
     # En producción NO exponemos la API al exterior: solo nginx (frontend)
     # se publica en el puerto 80 y reenvía /api/* a este contenedor.
     depends_on:
@@ -130,3 +134,4 @@ services:
 volumes:
   pgdata_prod:
   db_backups:
+  api_logs_prod:

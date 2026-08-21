@@ -74,6 +74,9 @@ services:
       App__FrontendUrl: ${APP_FRONTEND_URL:?APP_FRONTEND_URL requerido}
     ports:
       - "8081:8080"
+    volumes:
+      # Persiste los file logs de Serilog entre redeploys (logs/api-*.log)
+      - api_logs_staging:/app/logs
     depends_on:
       db:
         condition: service_healthy
@@ -131,3 +134,4 @@ services:
 volumes:
   pgdata_staging:
   db_backups_staging:
+  api_logs_staging:
