@@ -445,11 +445,12 @@ public class AnuncioRepository : IAnuncioRepository
 
         /*
          * La columna "Fotos" guarda claves ("uploads/x.jpg") o URLs públicas
-         * legadas ("https://bucket/uploads/x.jpg"); un LIKE por sufijo cubre
-         * ambos formatos. La propiedad usa un value converter, por lo que la
-         * pre-filtración debe hacerse con SQL y la verificación exacta en memoria.
+         * legadas ("https://bucket/uploads/x.jpg") separadas por coma; un LIKE
+         * de contención cubre ambos formatos y cualquier posición en la lista.
+         * La propiedad usa un value converter, por lo que la pre-filtración
+         * debe hacerse con SQL y la verificación exacta en memoria.
          */
-        var patron = "%" + clave;
+        var patron = $"%{clave}%";
 
         var candidatos = await _context.Anuncios
             .FromSqlInterpolated(
