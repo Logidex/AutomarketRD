@@ -9,8 +9,7 @@ import { useMisFavoritos, useQuitarFavorito } from "../hooks/useFavoritos";
 import { urlImagen } from "../utils/imagen";
 import { formatearPrecio } from "../utils/formato";
 
-const IMAGEN_VACIA =
-  "https://via.placeholder.com/600x400?text=Sin+Foto";
+const IMAGEN_VACIA = "/sin-foto.svg";
 
 export default function Favoritos() {
   const navigate = useNavigate();

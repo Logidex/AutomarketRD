@@ -95,8 +95,6 @@ export default function Login() {
         replace: true,
       });
     } catch (err) {
-      console.log(err);
-
       const status = (err as { response?: { status?: number } })?.response?.status;
 
       let mensaje = "Correo electrónico o contraseña incorrectos.";

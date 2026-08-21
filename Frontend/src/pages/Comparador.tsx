@@ -32,10 +32,10 @@ import {
 } from "../constants/vehiculo.opciones";
 
 const fotoPrincipal = (v: VehiculoComparador): string =>
-  urlImagen(v.fotoPrincipal) || "https://via.placeholder.com/600x400?text=Sin+Foto";
+  urlImagen(v.fotoPrincipal) || "/sin-foto.svg";
 
 const fotoAnuncio = (a: AnuncioListado): string =>
-  urlImagen(a.fotos?.[0]) || "https://via.placeholder.com/600x400?text=Sin+Foto";
+  urlImagen(a.fotos?.[0]) || "/sin-foto.svg";
 
 
 const MAX_VEHICULOS = 4;
