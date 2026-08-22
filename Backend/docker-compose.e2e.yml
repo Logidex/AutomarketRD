@@ -27,7 +27,9 @@ services:
       context: .
       dockerfile: AutoMarket.API/Dockerfile
     environment:
-      ASPNETCORE_ENVIRONMENT: Production
+      # Development: permite credenciales dummy de PayPal Sandbox coherentes
+      # y auto-migraciones; es el entorno pensado para pruebas locales/CI.
+      ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
 
       ConnectionStrings__DefaultConnection: Host=db;Port=5432;Database=automarket_e2e;Username=e2e;Password=e2e_pass
