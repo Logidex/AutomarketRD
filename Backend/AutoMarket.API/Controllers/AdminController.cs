@@ -5,6 +5,7 @@ using AutoMarket.Application.DTOs.Planes;
 using AutoMarket.Application.DTOs.Ticket;
 using AutoMarket.Application.Interfaces;
 using AutoMarket.Application.Services;
+using AutoMarket.Core.Entities;
 using AutoMarket.Core.Entities.Enums;
 using AutoMarket.Core.Exceptions;
 using AutoMarket.Core.Interfaces;
@@ -110,6 +111,68 @@ public class AdminController : ControllerBase
         {
             exito = true,
             mensaje = $"El usuario {usuario.Email} ha sido reactivado exitosamente."
+        });
+    }
+
+    /// <summary>
+    /// Elimina definitivamente un usuario junto con sus anuncios (y fotos en
+    /// S3), perfil dealer, tickets, favoritos, historial y sesiones.
+    /// Protegido: no se puede eliminar a sí mismo ni a otro administrador.
+    /// Acción irreversible.
+    /// </summary>
+    [HttpDelete("usuarios/{id:int}")]
+    public async Task<IActionResult> EliminarUsuario(int id)
+    {
+        var adminId = User.ObtenerUsuarioId();
+
+        if (id == adminId)
+            return BadRequest(new { mensaje = "No puedes eliminar tu propia cuenta." });
+
+        var objetivo = await _usuarioRepository.ObtenerPorIdAsync(id);
+
+        if (objetivo == null)
+            return NotFound(new { mensaje = "Usuario no encontrado." });
+
+        if (string.Equals(objetivo.Rol, Roles.Admin, StringComparison.OrdinalIgnoreCase))
+            return BadRequest(new { mensaje = "No se puede eliminar una cuenta de administrador." });
+
+        // Limpieza de fotos en S3 de todos sus anuncios (incluidos borradores);
+        // las filas de BD desaparecen por cascade al eliminar el usuario.
+        var pagina = 1;
+        var fotosEliminadas = 0;
+
+        while (true)
+        {
+            var (anunciosPagina, _) = await _anuncioRepository.BuscarPaginadoAsync(
+                new AnuncioQueryFilter
+                {
+                    UsuarioId = id,
+                    PaginaActual = pagina,
+                    CantidadPorPagina = 50
+                });
+
+            if (!anunciosPagina.Any())
+                break;
+
+            foreach (var anuncio in anunciosPagina)
+            {
+                foreach (var foto in anuncio.Fotos)
+                {
+                    await _almacenadorArchivos.EliminarArchivoAsync(foto);
+                    fotosEliminadas++;
+                }
+            }
+
+            pagina++;
+        }
+
+        await _usuarioRepository.EliminarAsync(objetivo);
+        await _usuarioRepository.GuardarCambiosAsync();
+
+        return Ok(new
+        {
+            exito = true,
+            mensaje = $"El usuario {objetivo.Email} fue eliminado definitivamente ({fotosEliminadas} fotos limpiadas)."
         });
     }
 
