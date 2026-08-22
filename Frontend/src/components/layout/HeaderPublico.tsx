@@ -13,7 +13,7 @@ export default function HeaderPublico({ titulo }: HeaderPublicoProps) {
   const [logoFallido, setLogoFallido] = useState(false);
 
   return (
-    <header className="sticky top-0 z-30 flex items-center justify-between border-b border-line bg-page/80 px-6 py-2 backdrop-blur sm:px-8">
+    <header className="sticky top-0 z-40 relative flex items-center justify-between border-b border-line bg-page/80 px-4 py-2 backdrop-blur sm:px-8">
       <Link to="/" className="flex items-center gap-3">
         {logoFallido ? (
           <span className="text-lg font-bold text-ink">
@@ -23,7 +23,7 @@ export default function HeaderPublico({ titulo }: HeaderPublicoProps) {
           <img
             src={logo}
             alt="AutoMarket RD"
-            className="h-16 w-auto object-contain"
+            className="h-12 w-auto object-contain sm:h-16"
             onError={() => setLogoFallido(true)}
           />
         )}
