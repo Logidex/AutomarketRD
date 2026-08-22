@@ -15,7 +15,9 @@ test.describe("Público", () => {
   test("/vehiculos carga el catálogo sin errores", async ({ page }) => {
     await page.goto("/vehiculos");
 
-    await expect(page.getByRole("heading")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Todos los vehículos" })
+    ).toBeVisible();
   });
 
   test("/precios muestra los planes sembrados", async ({ page }) => {
