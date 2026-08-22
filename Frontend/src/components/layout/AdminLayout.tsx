@@ -1,4 +1,4 @@
-import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
   FaChartPie,
   FaUsers,
@@ -16,6 +16,7 @@ import { useContarReportesPendientes } from "../../hooks/useAdmin";
 import { confirmarCierreSesion } from "../../utils/confirmarCierreSesion";
 import logo from "../../assets/AutoMarketRD_Logo.svg";
 import BotonTema from "../BotonTema";
+import OutletAnimada from "../OutletAnimada";
 
 const menuItems = [
   {
@@ -169,7 +170,7 @@ export default function AdminLayout() {
         </header>
 
         <div className="flex-1 overflow-y-auto p-8">
-          <Outlet />
+          <OutletAnimada />
         </div>
       </main>
     </div>

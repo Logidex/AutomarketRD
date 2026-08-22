@@ -1,4 +1,4 @@
-import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 import { FaCar, FaHome, FaPlusCircle, FaChartPie, FaSignOutAlt, FaEnvelope, FaStore, FaCreditCard, FaPaperPlane, FaHeadset } from "react-icons/fa";
@@ -11,6 +11,7 @@ import logo from "../../assets/AutoMarketRD_Logo.svg";
 import CampanaNotificaciones from "./CampanaNotificaciones";
 import BotonTema from "../BotonTema";
 import BannerConfirmarCorreo from "../BannerConfirmarCorreo";
+import OutletAnimada from "../OutletAnimada";
 
 const menuItems = [
   {
@@ -191,7 +192,7 @@ export default function DashboardLayout() {
         {/* CONTENIDO DINÁMICO */}
         <div className="flex-1 overflow-y-auto p-8">
           <BannerConfirmarCorreo />
-          <Outlet />
+          <OutletAnimada />
         </div>
       </main>
     </div>

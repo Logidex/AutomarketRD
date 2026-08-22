@@ -67,11 +67,14 @@ const CuentaVendedor = lazy(() => import('./pages/vendedor/CuentaVendedor'));
 function App() {
   const location = useLocation();
 
+  // La key cambia solo con el SEGMENTO SUPERIOR de la ruta (/dashboard,
+  // /vehiculos, ...): navegar dentro de un panel no remonta su layout;
+  // pasar de una sección a otra sí remonta y reproduce el cross-fade.
+  const segmentoRaiz = "/" + (location.pathname.split("/")[1] ?? "");
+
   return (
     <Suspense fallback={<BarraProgresoNavegacion />}>
-      {/* key por ruta: remonta el árbol al navegar para que la animación
-          de entrada (cross-fade sutil) se aplique a cada cambio de página */}
-      <div key={location.pathname} className="animar-pagina">
+      <div key={segmentoRaiz} className="animar-pagina">
       <Routes>
         {/* INICIO PÚBLICO */}
         <Route path="/" element={<Home />} />
