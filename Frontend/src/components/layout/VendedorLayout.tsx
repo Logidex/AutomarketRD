@@ -1,10 +1,11 @@
-import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { FaCarSide, FaEnvelope, FaHeadset, FaHome, FaLevelUpAlt, FaPaperPlane, FaSignOutAlt, FaUserCog } from "react-icons/fa";
 import { authService } from "../../services/auth.service";
 import { confirmarCierreSesion } from "../../utils/confirmarCierreSesion";
 import logo from "../../assets/AutoMarketRD_Logo.svg";
 import CampanaNotificaciones from "./CampanaNotificaciones";
 import BotonTema from "../BotonTema";
+import OutletAnimada from "../OutletAnimada";
 
 export default function VendedorLayout() {
   const navigate = useNavigate();
@@ -153,7 +154,7 @@ export default function VendedorLayout() {
 
       {/* CONTENIDO */}
       <main className="flex-1 overflow-y-auto p-6">
-        <Outlet />
+          <OutletAnimada />
       </main>
     </div>
   );
