@@ -129,3 +129,26 @@
 .sin-scroll-horizontal::-webkit-scrollbar {
   display: none;
 }
+
+/* ============================================
+   SCROLLBAR DISCRETA para areas con scroll
+   (Firefox usa scrollbar-width/color; el resto, webkit)
+   ============================================ */
+.scroll-fino {
+  scrollbar-width: thin;
+  scrollbar-color: var(--am-line) transparent;
+}
+.scroll-fino::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.scroll-fino::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scroll-fino::-webkit-scrollbar-thumb {
+  background: var(--am-line);
+  border-radius: 999px;
+}
+.scroll-fino::-webkit-scrollbar-thumb:hover {
+  background: var(--am-ink-3);
+}

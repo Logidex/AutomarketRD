@@ -153,7 +153,7 @@ export default function VendedorLayout() {
       </div>
 
       {/* CONTENIDO */}
-      <main className="flex-1 overflow-y-auto p-4 sm:p-6">
+      <main className="scroll-fino flex-1 overflow-y-auto p-4 sm:p-6">
           <OutletAnimada />
       </main>
     </div>
