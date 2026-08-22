@@ -389,6 +389,11 @@ try
         // Los endpoints sensibles llevan además sus políticas específicas
         // (login, leads, contacto). Los health checks quedan exentos porque
         // los sondean Docker y el balanceador cada pocos segundos.
+        // Ajustable vía RateLimiting__GlobalPermitLimit (p. ej. para pruebas
+        // de carga); el default de 300/min queda como comportamiento normal.
+        var limiteGlobal = builder.Configuration
+            .GetValue("RateLimiting:GlobalPermitLimit", 300);
+
         options.GlobalLimiter =
             PartitionedRateLimiter.Create<HttpContext, string>(context =>
             {
@@ -407,7 +412,7 @@ try
                         new FixedWindowRateLimiterOptions
                         {
                             AutoReplenishment = true,
-                            PermitLimit = 300,
+                            PermitLimit = limiteGlobal,
                             Window = TimeSpan.FromMinutes(1),
                             QueueLimit = 0
                         });
