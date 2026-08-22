@@ -128,7 +128,7 @@ export default function AdminLayout() {
           </span>
         </div>
 
-        <nav className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-6">
+        <nav className="scroll-fino flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-6">
           {menuItems.map((item) => {
             const esDashboardPrincipal = item.path === "/admin";
 
@@ -165,13 +165,14 @@ export default function AdminLayout() {
           })}
         </nav>
 
-        <div className="border-t border-white/5 p-4">
+        {/* CERRAR SESIÓN (compacto para pantallas bajas) */}
+        <div className="border-t border-white/5 p-3">
           <button
             type="button"
             onClick={handleLogout}
-            className="flex w-full items-center justify-center rounded-lg px-4 py-3 font-medium text-red-400 transition-colors hover:bg-red-500/10"
+            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-red-400 transition-colors hover:bg-red-500/10"
           >
-            <FaSignOutAlt className="mr-3" />
+            <FaSignOutAlt />
             Cerrar Sesión
           </button>
         </div>
@@ -211,7 +212,7 @@ export default function AdminLayout() {
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+        <div className="scroll-fino flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
           <OutletAnimada />
         </div>
       </main>

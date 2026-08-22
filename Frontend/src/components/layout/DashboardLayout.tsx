@@ -130,7 +130,7 @@ export default function DashboardLayout() {
         </div>
 
         {/* MENÚ PRINCIPAL */}
-        <nav className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-6">
+        <nav className="scroll-fino flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-6">
           {menuItems.map((item) => {
             const esDashboardPrincipal = item.path === "/dashboard";
 
@@ -158,26 +158,22 @@ export default function DashboardLayout() {
           })}
         </nav>
 
-        {/* BOTÓN VOLVER AL INICIO */}
-        <div className="border-t border-white/5 p-4">
+        {/* ACCIONES DEL SIDEBAR (compactas para pantallas bajas) */}
+        <div className="space-y-1 border-t border-white/5 p-3">
           <Link
             to="/"
             onClick={cerrarMenu}
-            className="flex w-full items-center justify-center rounded-lg px-4 py-3 font-medium text-[#8a94a6] transition-colors hover:bg-white/5 hover:text-white"
+            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-[#8a94a6] transition-colors hover:bg-white/5 hover:text-white"
           >
-            <FaHome className="mr-3" />
+            <FaHome />
             Volver al inicio
           </Link>
-        </div>
-
-        {/* BOTÓN CERRAR SESIÓN */}
-        <div className="border-t border-white/5 p-4">
           <button
             type="button"
             onClick={handleLogout}
-            className="flex w-full items-center justify-center rounded-lg px-4 py-3 font-medium text-red-500 transition-colors hover:bg-red-500/10"
+            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-red-500 transition-colors hover:bg-red-500/10"
           >
-            <FaSignOutAlt className="mr-3" />
+            <FaSignOutAlt />
             Cerrar Sesión
           </button>
         </div>
@@ -230,7 +226,7 @@ export default function DashboardLayout() {
         </header>
 
         {/* CONTENIDO DINÁMICO */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+        <div className="scroll-fino flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
           <BannerConfirmarCorreo />
           <OutletAnimada />
         </div>
