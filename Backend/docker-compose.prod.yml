@@ -74,6 +74,10 @@ services:
       # URL pública del frontend (usada en enlaces de correo, ej: confirmar correo)
       App__FrontendUrl: ${APP_FRONTEND_URL:?APP_FRONTEND_URL requerido}
 
+      # Límite global por IP (default 300/min). Elevable temporalmente para
+      # pruebas de carga vía RATE_LIMIT_GLOBAL en el entorno del comando.
+      RateLimiting__GlobalPermitLimit: ${RATE_LIMIT_GLOBAL:-300}
+
     # Persiste los file logs de Serilog entre redeploys (logs/api-*.log)
     volumes:
       - api_logs_prod:/app/logs
