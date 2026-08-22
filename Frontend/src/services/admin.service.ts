@@ -212,4 +212,9 @@ export const adminService = {
   async resolverReporte(id: number): Promise<{ exito: boolean; mensaje: string }> {
     return respuesta(api.patch(`/api/admin/reportes/${id}/resolver`));
   },
+
+  // ===== Eliminación de usuarios =====
+  async eliminarUsuario(id: number): Promise<{ exito: boolean; mensaje: string }> {
+    return respuesta(api.delete(`/api/admin/usuarios/${id}`));
+  },
 };

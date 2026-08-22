@@ -177,4 +177,13 @@ public class UsuarioRepository : IUsuarioRepository
         await _context.SaveChangesAsync();
         return true;
     }
+
+    public Task EliminarAsync(Usuario usuario)
+    {
+        // El cascade de EF (configurado en ApplicationDbContext) elimina sus
+        // anuncios, perfil dealer, tickets, favoritos, historial, refresh
+        // tokens y mensajes de ticket al guardar cambios.
+        _context.Usuarios.Remove(usuario);
+        return Task.CompletedTask;
+    }
 }

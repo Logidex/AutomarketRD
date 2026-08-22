@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Swal from "sweetalert2";
-import { FaBan, FaCheckCircle, FaCoins, FaRedoAlt, FaUserTag } from "react-icons/fa";
+import { FaBan, FaCheckCircle, FaCoins, FaRedoAlt, FaTrashAlt, FaUserTag } from "react-icons/fa";
 import type { UsuarioAdmin } from "../../services/admin.service";
 import Spinner from "../../components/Spinner";
 import { formatearFecha } from "../../utils/fecha";
@@ -11,6 +11,7 @@ import {
   useCambiarPlanDealer,
   useRenovarSuscripcion,
   useCambiarRolUsuario,
+  useEliminarUsuario,
 } from "../../hooks/useAdmin";
 
 const COLOR_ROL: Record<string, string> = {
@@ -29,6 +30,7 @@ function useAdminUsuariosPage() {
   const cambiarPlan = useCambiarPlanDealer();
   const renovarSuscripcion = useRenovarSuscripcion();
   const cambiarRol = useCambiarRolUsuario();
+  const eliminar = useEliminarUsuario();
 
   const toggleEstado = async (usuario: UsuarioAdmin) => {
     if (procesando !== null) return;
@@ -271,6 +273,72 @@ function useAdminUsuariosPage() {
     }
   };
 
+  const eliminarUsuarioCuenta = async (usuario: UsuarioAdmin) => {
+    if (procesando !== null) return;
+
+    // Primera confirmación: advertencia de irreversibilidad
+    const primera = await Swal.fire({
+      icon: "warning",
+      title: "¿Eliminar usuario definitivamente?",
+      html: `Se eliminarán <strong>todos</strong> los datos de
+             <strong>${usuario.nombre} ${usuario.apellido}</strong>
+             (${usuario.email}): sus anuncios con sus fotos, leads, favoritos,
+             historial, tickets y sesiones.<br/><br/>
+             <strong>Esta acción no se puede deshacer.</strong>`,
+      showCancelButton: true,
+      confirmButtonText: "Continuar",
+      cancelButtonText: "Cancelar",
+      confirmButtonColor: "#dc2626",
+    });
+
+    if (!primera.isConfirmed) return;
+
+    // Segunda confirmación: escribir el email exacto del usuario
+    const segunda = await Swal.fire({
+      icon: "error",
+      title: "Confirmación final",
+      html: `Escribe el correo del usuario para confirmar:<br/>
+             <strong>${usuario.email}</strong>`,
+      input: "text",
+      inputPlaceholder: usuario.email,
+      showCancelButton: true,
+      confirmButtonText: "Eliminar definitivamente",
+      cancelButtonText: "Cancelar",
+      confirmButtonColor: "#dc2626",
+      preConfirm: (valor: string) => {
+        if (valor?.trim().toLowerCase() !== usuario.email.toLowerCase()) {
+          Swal.showValidationMessage("El correo no coincide.");
+          return false;
+        }
+        return valor;
+      },
+    });
+
+    if (!segunda.isConfirmed) return;
+
+    setProcesando(usuario.usuarioId);
+    try {
+      const respuesta = await eliminar.mutateAsync(usuario.usuarioId);
+
+      await Swal.fire({
+        icon: "success",
+        title: "Usuario eliminado",
+        text: respuesta.mensaje,
+        confirmButtonColor: "#7c3aed",
+      });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      await Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: error.message || "No se pudo eliminar el usuario.",
+        confirmButtonColor: "#7c3aed",
+      });
+    } finally {
+      setProcesando(null);
+    }
+  };
+
   return {
     loading,
     usuarios,
@@ -279,6 +347,7 @@ function useAdminUsuariosPage() {
     cambiarPlanDealer,
     renovarDealer,
     cambiarRolUsuario,
+    eliminarUsuarioCuenta,
   };
 }
 
@@ -289,6 +358,7 @@ interface PropsTabla {
   onCambiarPlan: (usuario: UsuarioAdmin) => void;
   onRenovar: (usuario: UsuarioAdmin) => void;
   onCambiarRol: (usuario: UsuarioAdmin) => void;
+  onEliminar: (usuario: UsuarioAdmin) => void;
 }
 
 function TablaUsuarios({
@@ -298,6 +368,7 @@ function TablaUsuarios({
   onCambiarPlan,
   onRenovar,
   onCambiarRol,
+  onEliminar,
 }: PropsTabla) {
   return (
     <div className="overflow-x-auto rounded-lg border border-line bg-surface shadow-sm">
@@ -394,6 +465,19 @@ function TablaUsuarios({
                       {usuario.isActivo ? "Suspender" : "Reactivar"}
                     </button>
                   )}
+
+                  {usuario.rol !== "Admin" && (
+                    <button
+                      type="button"
+                      onClick={() => onEliminar(usuario)}
+                      disabled={procesando !== null}
+                      title="Eliminar definitivamente"
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-red-300 bg-surface px-3 py-1.5 text-xs font-semibold text-red-700 transition-colors hover:bg-red-600 hover:text-white disabled:opacity-50"
+                    >
+                      <FaTrashAlt />
+                      Eliminar
+                    </button>
+                  )}
                 </div>
               </td>
             </tr>
@@ -413,6 +497,7 @@ export default function AdminUsuarios() {
     cambiarPlanDealer,
     renovarDealer,
     cambiarRolUsuario,
+    eliminarUsuarioCuenta,
   } = useAdminUsuariosPage();
 
   if (loading) {
@@ -434,6 +519,7 @@ export default function AdminUsuarios() {
         onCambiarPlan={cambiarPlanDealer}
         onRenovar={renovarDealer}
         onCambiarRol={cambiarRolUsuario}
+        onEliminar={eliminarUsuarioCuenta}
       />
     </div>
   );

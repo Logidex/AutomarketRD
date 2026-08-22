@@ -182,3 +182,14 @@ export const useResolverReporte = () => {
     },
   });
 };
+
+export const useEliminarUsuario = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => adminService.eliminarUsuario(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-usuarios'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-resumen'] });
+    },
+  });
+};

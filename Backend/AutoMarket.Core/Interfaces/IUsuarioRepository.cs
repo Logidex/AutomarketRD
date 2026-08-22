@@ -26,4 +26,6 @@ public interface IUsuarioRepository
     Task<IEnumerable<Usuario>> ObtenerTodosAsync();
     Task<bool> ActualizarContrasenaAsync(string email, string nuevoPasswordHash);
 
+    /// <summary>Marca el usuario para eliminación (cascade de dependientes al guardar).</summary>
+    Task EliminarAsync(Usuario usuario);
 }

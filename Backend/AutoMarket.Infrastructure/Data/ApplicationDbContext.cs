@@ -201,7 +201,8 @@ public class ApplicationDbContext : DbContext
 
             b.HasOne(u => u.PerfilDealer)
              .WithOne(u => u.Usuario)
-             .HasForeignKey<PerfilDealer>(p => p.UsuarioId);
+             .HasForeignKey<PerfilDealer>(p => p.UsuarioId)
+             .OnDelete(DeleteBehavior.Cascade);
         });
 
         // ==========================================
@@ -533,7 +534,7 @@ public class ApplicationDbContext : DbContext
             b.HasOne(m => m.Autor)
                 .WithMany()
                 .HasForeignKey(m => m.AutorId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
             b.HasIndex(m => m.TicketId);
             b.HasIndex(m => m.AutorId);
