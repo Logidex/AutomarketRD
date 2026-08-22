@@ -8,9 +8,11 @@ import {
   FaSignOutAlt,
   FaMoneyCheckAlt,
   FaHeadset,
+  FaFlag,
 } from "react-icons/fa";
 import { authService } from "../../services/auth.service";
 import { useResumenTicketsAdmin } from "../../hooks/useTickets";
+import { useContarReportesPendientes } from "../../hooks/useAdmin";
 import { confirmarCierreSesion } from "../../utils/confirmarCierreSesion";
 import logo from "../../assets/AutoMarketRD_Logo.svg";
 import BotonTema from "../BotonTema";
@@ -30,6 +32,11 @@ const menuItems = [
     path: "/admin/anuncios",
     label: "Anuncios",
     icon: <FaCar />,
+  },
+  {
+    path: "/admin/reportes",
+    label: "Reportes",
+    icon: <FaFlag />,
   },
   {
     path: "/admin/planes",
@@ -55,8 +62,10 @@ export default function AdminLayout() {
   const usuario = authService.getCurrentUser();
 
   const { data: resumenTickets } = useResumenTicketsAdmin();
+  const { data: contadorReportes } = useContarReportesPendientes();
 
   const cantidadAbiertos = resumenTickets?.cantidadAbiertos ?? 0;
+  const reportesPendientes = contadorReportes?.total ?? 0;
 
   const nombreUsuario = usuario
     ? `${usuario.nombre} ${usuario.apellido ?? ""}`.trim()
@@ -109,6 +118,11 @@ export default function AdminLayout() {
               >
                 <span className="mr-3 text-lg">{item.icon}</span>
                 <span>{item.label}</span>
+                {item.path === "/admin/reportes" && reportesPendientes > 0 && (
+                  <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
+                    {reportesPendientes}
+                  </span>
+                )}
                 {item.path === "/admin/soporte" && cantidadAbiertos > 0 && (
                   <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
                     {cantidadAbiertos}

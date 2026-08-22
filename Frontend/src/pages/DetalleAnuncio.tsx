@@ -8,6 +8,7 @@ import {
   FaCar,
   FaCheckCircle,
   FaEnvelope,
+FaFlag,
   FaHeart,
   FaMapMarkerAlt,
   FaPaperPlane,
@@ -1017,6 +1018,65 @@ function useDetalleAnuncio(anuncioId: number, idValido: boolean) {
 export default function DetalleAnuncio() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [reportando, setReportando] = useState(false);
+
+  const handleReportar = async () => {
+    if (!idValido || reportando) return;
+
+    const resultado = await Swal.fire({
+      icon: "warning",
+      title: "Reportar anuncio",
+      html: `
+        <p class="text-sm text-left mb-3">Cuéntanos qué pasa con este anuncio. Nuestro equipo lo revisará.</p>
+        <select id="reporte-motivo" class="swal2-select w-full">
+          <option value="ContenidoInapropiado">Contenido inapropiado (+18, violencia, etc.)</option>
+          <option value="FraudeEstafa">Fraude o estafa</option>
+          <option value="InformacionFalsa">Información falsa</option>
+          <option value="Duplicado">Anuncio duplicado</option>
+          <option value="Otro" selected>Otro motivo</option>
+        </select>
+        <textarea id="reporte-detalle" class="swal2-textarea mt-2" placeholder="Detalles opcionales (máx. 500 caracteres)" maxlength="500"></textarea>
+      `,
+      showCancelButton: true,
+      confirmButtonText: "Enviar reporte",
+      cancelButtonText: "Cancelar",
+      confirmButtonColor: "#dc2626",
+      preConfirm: () => {
+        const motivo = document.getElementById("reporte-motivo") as HTMLSelectElement | null;
+        const detalle = document.getElementById("reporte-detalle") as HTMLTextAreaElement | null;
+        return {
+          motivo: motivo?.value ?? "Otro",
+          detalle: detalle?.value.trim() ?? "",
+        };
+      },
+    });
+
+    if (!resultado.isConfirmed || !resultado.value) return;
+
+    setReportando(true);
+    try {
+      const { reportesService } = await import("../services/reportes.service");
+      await reportesService.reportar({
+        anuncioId: anuncioId,
+        motivo: resultado.value.motivo,
+        detalle: resultado.value.detalle || undefined,
+      });
+
+      await Swal.fire({
+        icon: "success",
+        title: "Gracias por tu reporte",
+        text: "Nuestro equipo lo revisará a la brevedad.",
+        timer: 2500,
+        showConfirmButton: false,
+      });
+    } catch (err) {
+      const mensaje =
+        (err as { message?: string })?.message ?? "No pudimos enviar tu reporte.";
+      await Swal.fire({ icon: "error", title: "Error", text: mensaje });
+    } finally {
+      setReportando(false);
+    }
+  };
 
   const anuncioId = Number(id);
   const idValido = Number.isInteger(anuncioId) && anuncioId > 0;
@@ -1150,6 +1210,18 @@ export default function DetalleAnuncio() {
                 onEnviar={handleEnviar}
                 onWhatsApp={handleWhatsApp}
               />
+
+              {!esPropietario && (
+                <button
+                  type="button"
+                  onClick={handleReportar}
+                  disabled={reportando}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-xs font-medium text-ink-3 transition-colors hover:bg-hover hover:text-red-400 disabled:opacity-50"
+                >
+                  <FaFlag />
+                  {reportando ? "Enviando reporte..." : "Reportar este anuncio"}
+                </button>
+              )}
             </div>
           </div>
         ) : null}

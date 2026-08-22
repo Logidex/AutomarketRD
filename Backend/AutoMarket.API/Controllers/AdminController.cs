@@ -29,6 +29,7 @@ public class AdminController : ControllerBase
     private readonly IPlanCatalogoService _planCatalogoService;
     private readonly IUsuarioCuentaService _usuarioCuentaService;
     private readonly ITicketService _ticketService;
+    private readonly IReporteAnuncioService _reporteAnuncioService;
 
 /// <summary>
 /// Inicializa una nueva instancia de la clase AdminController.
@@ -41,7 +42,8 @@ public class AdminController : ControllerBase
         ISuscripcionService suscripcionService,
         IPlanCatalogoService planCatalogoService,
         IUsuarioCuentaService usuarioCuentaService,
-        ITicketService ticketService)
+        ITicketService ticketService,
+        IReporteAnuncioService reporteAnuncioService)
     {
         _dashboardService = dashboardService;
         _usuarioRepository = usuarioRepository;
@@ -51,6 +53,7 @@ public class AdminController : ControllerBase
         _planCatalogoService = planCatalogoService;
         _usuarioCuentaService = usuarioCuentaService;
         _ticketService = ticketService;
+        _reporteAnuncioService = reporteAnuncioService;
     }
 
     [HttpGet("dashboard/resumen")]
@@ -360,6 +363,59 @@ public class AdminController : ControllerBase
         catch (BusinessRuleException ex)
         {
             return BadRequest(new { exito = false, mensaje = ex.Message });
+        }
+    }
+
+    // ==========================================
+    // REPORTES DE ANUNCIOS
+    // ==========================================
+
+    [HttpGet("reportes")]
+    public async Task<IActionResult> ListarReportes([FromQuery] string estado = "Pendiente")
+    {
+        if (!Enum.TryParse<ReporteEstado>(estado, ignoreCase: true, out var reporteEstado))
+            return BadRequest(new { mensaje = $"Estado inválido: {estado}. Usa Pendiente, Descartado o Resuelto." });
+
+        var reportes = await _reporteAnuncioService.ListarPorEstadoAsync(reporteEstado);
+        return Ok(reportes);
+    }
+
+    [HttpGet("reportes/pendientes/contador")]
+    public async Task<IActionResult> ContarReportesPendientes()
+    {
+        var total = await _reporteAnuncioService.ContarPendientesAsync();
+        return Ok(new { total });
+    }
+
+    [HttpPatch("reportes/{id:int}/descartar")]
+    public async Task<IActionResult> DescartarReporte(int id)
+    {
+        try
+        {
+            await _reporteAnuncioService.DescartarAsync(id, User.ObtenerUsuarioId());
+            return Ok(new { exito = true, mensaje = "Reporte descartado." });
+        }
+        catch (BusinessRuleException ex)
+        {
+            return BadRequest(new { mensaje = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Resuelve el reporte eliminando el anuncio reportado con sus fotos.
+    /// Acción irreversible.
+    /// </summary>
+    [HttpPatch("reportes/{id:int}/resolver")]
+    public async Task<IActionResult> ResolverReporte(int id)
+    {
+        try
+        {
+            await _reporteAnuncioService.ResolverEliminandoAnuncioAsync(id, User.ObtenerUsuarioId());
+            return Ok(new { exito = true, mensaje = "Reporte resuelto: el anuncio fue eliminado." });
+        }
+        catch (BusinessRuleException ex)
+        {
+            return BadRequest(new { mensaje = ex.Message });
         }
     }
 }

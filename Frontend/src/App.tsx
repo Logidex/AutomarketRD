@@ -53,6 +53,7 @@ const AdminAnuncios = lazy(() => import('./pages/admin/AdminAnuncios'));
 const AdminPlanes = lazy(() => import('./pages/admin/AdminPlanes'));
   const AdminPagos = lazy(() => import('./pages/admin/AdminPagos'));
   const AdminTickets = lazy(() => import('./pages/admin/AdminTickets'));
+const AdminReportes = lazy(() => import('./pages/admin/AdminReportes'));
 
 // Páginas del área de Vendedor
 const MiVehiculoVendedor = lazy(() => import('./pages/vendedor/MiVehiculoVendedor'));
@@ -250,6 +251,9 @@ function App() {
 
             {/* /admin/soporte */}
             <Route path="soporte" element={<AdminTickets />} />
+
+            {/* /admin/reportes */}
+            <Route path="reportes" element={<AdminReportes />} />
           </Route>
         </Route>
 
