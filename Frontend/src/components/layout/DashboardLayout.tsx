@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 
-import { FaCar, FaHome, FaPlusCircle, FaChartPie, FaSignOutAlt, FaEnvelope, FaStore, FaCreditCard, FaPaperPlane, FaHeadset } from "react-icons/fa";
+import { FaBars, FaCar, FaHome, FaPlusCircle, FaChartPie, FaSignOutAlt, FaEnvelope, FaStore, FaCreditCard, FaPaperPlane, FaHeadset, FaTimes } from "react-icons/fa";
 
 import { authService } from "../../services/auth.service";
 import { suscripcionService, type SuscripcionDealer } from "../../services/suscripcion.service";
@@ -71,6 +71,7 @@ export default function DashboardLayout() {
     : "U";
 
   const [suscripcion, setSuscripcion] = useState<SuscripcionDealer | null>(null);
+  const [menuAbierto, setMenuAbierto] = useState(false);
 
   useEffect(() => {
     suscripcionService
@@ -78,6 +79,9 @@ export default function DashboardLayout() {
       .then(setSuscripcion)
       .catch(() => setSuscripcion(null));
   }, [location.pathname]);
+
+  // El drawer se cierra al hacer clic en cualquier enlace del menú
+  const cerrarMenu = () => setMenuAbierto(false);
 
   const handleLogout = async () => {
     if (!(await confirmarCierreSesion())) return;
@@ -91,8 +95,31 @@ export default function DashboardLayout() {
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-page font-sans">
-      {/* SIDEBAR */}
-      <aside className="z-10 flex h-full w-[260px] flex-col bg-[#11141a] text-white shadow-lg">
+      {/* BACKDROP MÓVIL */}
+      {menuAbierto && (
+        <div
+          className="fixed inset-0 z-30 bg-black/50 lg:hidden"
+          onClick={() => setMenuAbierto(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* SIDEBAR (drawer en móvil, fija en escritorio) */}
+      <aside
+        className={`z-40 flex h-full w-[260px] max-lg:fixed max-lg:inset-y-0 max-lg:left-0 flex-col bg-[#11141a] text-white shadow-lg transition-transform duration-200 max-lg:transition-transform ${
+          menuAbierto ? "max-lg:translate-x-0" : "max-lg:-translate-x-full"
+        }`}
+      >
+        {/* CERRAR (móvil) */}
+        <button
+          type="button"
+          onClick={() => setMenuAbierto(false)}
+          aria-label="Cerrar menú"
+          className="absolute right-3 top-3 rounded-lg p-2 text-white/70 hover:bg-white/10 lg:hidden"
+        >
+          <FaTimes />
+        </button>
+
         {/* LOGO */}
         <div className="flex h-[120px] items-center justify-center px-4 py-3">
           <img
@@ -116,6 +143,7 @@ export default function DashboardLayout() {
               <Link
                 key={item.path}
                 to={item.path}
+                onClick={cerrarMenu}
                 className={`flex items-center rounded-lg px-4 py-3 font-medium transition-colors ${
                   isActive
                     ? "bg-blue-600 text-white"
@@ -134,6 +162,7 @@ export default function DashboardLayout() {
         <div className="border-t border-white/5 p-4">
           <Link
             to="/"
+            onClick={cerrarMenu}
             className="flex w-full items-center justify-center rounded-lg px-4 py-3 font-medium text-[#8a94a6] transition-colors hover:bg-white/5 hover:text-white"
           >
             <FaHome className="mr-3" />
@@ -157,10 +186,21 @@ export default function DashboardLayout() {
       {/* ÁREA PRINCIPAL */}
       <main className="flex h-full flex-1 flex-col overflow-hidden">
         {/* HEADER */}
-        <header className="flex h-[70px] shrink-0 items-center justify-between border-b border-line bg-surface px-8">
-          <h3 className="text-xl font-semibold text-ink">
-            Panel de Control
-          </h3>
+        <header className="flex h-[70px] shrink-0 items-center justify-between border-b border-line bg-surface px-4 sm:px-6 lg:px-8">
+          <div className="flex min-w-0 items-center gap-2">
+            {/* HAMBURGUESA (móvil) */}
+            <button
+              type="button"
+              onClick={() => setMenuAbierto(true)}
+              aria-label="Abrir menú"
+              className="rounded-lg p-2 text-ink-2 transition-colors hover:bg-hover lg:hidden"
+            >
+              <FaBars className="text-lg" />
+            </button>
+            <h3 className="truncate text-base font-semibold text-ink sm:text-xl">
+              Panel de Control
+            </h3>
+          </div>
 
           {/* INFORMACIÓN DEL USUARIO */}
           <div className="flex items-center gap-3">
@@ -190,7 +230,7 @@ export default function DashboardLayout() {
         </header>
 
         {/* CONTENIDO DINÁMICO */}
-        <div className="flex-1 overflow-y-auto p-8">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
           <BannerConfirmarCorreo />
           <OutletAnimada />
         </div>
