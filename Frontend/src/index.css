@@ -53,3 +53,71 @@
     @apply bg-page text-ink transition-colors duration-300;
   }
 }
+/* ============================================
+   TRANSICIONES DE PAGINA (Fase 3)
+   Cross-fade sutil al cambiar de ruta. Se omite
+   si el usuario prefiere movimiento reducido.
+   ============================================ */
+@keyframes am-fade-pagina {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animar-pagina {
+  animation: am-fade-pagina 200ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animar-pagina {
+    animation: none;
+  }
+}
+
+/* ============================================
+   BARRA DE PROGRESO DE NAVEGACION
+   Aparece solo si la carga de la nueva pagina
+   tarda mas de ~250 ms (ver BarraProgresoNavegacion).
+   ============================================ */
+@keyframes am-barra-desliza {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(30%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.barra-progreso-navegacion {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 9999;
+  overflow: hidden;
+  background: transparent;
+  pointer-events: none;
+}
+
+.barra-progreso-navegacion::after {
+  content: "";
+  display: block;
+  width: 60%;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    var(--am-brand),
+    #7c3aed
+  );
+  animation: am-barra-desliza 900ms ease-in-out infinite;
+}

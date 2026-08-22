@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
+import BarraProgresoNavegacion from './components/BarraProgresoNavegacion';
 
 // Páginas públicas
 const Home = lazy(() => import('./pages/Home'));
@@ -64,14 +65,13 @@ const AscenderVendedor = lazy(() => import('./pages/vendedor/AscenderVendedor'))
 const CuentaVendedor = lazy(() => import('./pages/vendedor/CuentaVendedor'));
 
 function App() {
+  const location = useLocation();
+
   return (
-    <Suspense
-      fallback={
-        <div className="flex min-h-screen items-center justify-center bg-[#0c101b]">
-          <div className="h-10 w-10 animate-spin rounded-full border-2 border-white/10 border-t-blue-500" />
-        </div>
-      }
-    >
+    <Suspense fallback={<BarraProgresoNavegacion />}>
+      {/* key por ruta: remonta el árbol al navegar para que la animación
+          de entrada (cross-fade sutil) se aplique a cada cambio de página */}
+      <div key={location.pathname} className="animar-pagina">
       <Routes>
         {/* INICIO PÚBLICO */}
         <Route path="/" element={<Home />} />
@@ -278,6 +278,7 @@ function App() {
           }
         />
       </Routes>
+      </div>
     </Suspense>
   );
 }
