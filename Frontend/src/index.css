@@ -121,3 +121,11 @@
   );
   animation: am-barra-desliza 900ms ease-in-out infinite;
 }
+
+/* Oculta el scrollbar de navegaciones con scroll horizontal (movil) */
+.sin-scroll-horizontal {
+  scrollbar-width: none;
+}
+.sin-scroll-horizontal::-webkit-scrollbar {
+  display: none;
+}
