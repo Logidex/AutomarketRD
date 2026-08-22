@@ -1,0 +1,81 @@
+# docker-compose.e2e.yml
+# Stack autocontenido para tests E2E (Playwright) en CI o local.
+# Todos los valores son dummy: NO usar para staging ni producción.
+# Uso:
+#   docker compose -f docker-compose.e2e.yml up -d --build --wait
+#   App bajo prueba: http://localhost:5173
+
+name: automarket-e2e
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: automarket_e2e
+      POSTGRES_USER: e2e
+      POSTGRES_PASSWORD: e2e_pass
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U e2e -d automarket_e2e"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    tmpfs:
+      - /var/lib/postgresql/data
+
+  api:
+    build:
+      context: .
+      dockerfile: AutoMarket.API/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+
+      ConnectionStrings__DefaultConnection: Host=db;Port=5432;Database=automarket_e2e;Username=e2e;Password=e2e_pass
+
+      Jwt__Secret: e2e-secret-key-for-tests-only-not-for-production-32chars
+      Jwt__Issuer: E2E
+      Jwt__Audience: E2EClient
+
+      SmtpSettings__Host: localhost
+      SmtpSettings__Port: "2525"
+      SmtpSettings__User: e2e@example.local
+      SmtpSettings__Password: dummy
+      SmtpSettings__SenderName: AutoMarket E2E
+      SmtpSettings__SenderEmail: e2e@example.local
+
+      AWS__AccessKey: dummy
+      AWS__SecretKey: dummy
+      AWS__Region: us-east-1
+      AWS__BucketName: dummy-bucket
+
+      PayPal__Mode: Sandbox
+      PayPal__UrlBase: https://api-m.sandbox.paypal.com
+      PayPal__ClientId: dummy
+      PayPal__ClientSecret: dummy
+      PayPal__ReturnUrl: http://localhost:5173/pago-exitoso
+      PayPal__CancelUrl: http://localhost:5173/pago-cancelado
+
+      Cors__AllowedOrigins: http://localhost:5173
+
+      MigrateOnStartup: "true"
+      Seeder__Enabled: "true"
+      Admin__Email: admin@e2e.local
+      Admin__Password: AdminE2e_123
+      Admin__RotatePassword: "false"
+
+      App__FrontendUrl: http://localhost:5173
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ../Frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: /api
+    ports:
+      - "5173:80"
+    depends_on:
+      api:
+        condition: service_healthy
