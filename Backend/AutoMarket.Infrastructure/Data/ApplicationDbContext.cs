@@ -22,6 +22,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Ticket> Tickets { get; set; }
     public DbSet<TicketMensaje> TicketMensajes { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
+    public DbSet<ReporteAnuncio> ReportesAnuncios { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -314,6 +315,31 @@ public class ApplicationDbContext : DbContext
             entity.HasOne(t => t.Usuario)
                 .WithMany()
                 .HasForeignKey(t => t.UsuarioId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // ==========================================
+        // CONFIGURACIÓN: REPORTES DE ANUNCIOS
+        // ==========================================
+        modelBuilder.Entity<ReporteAnuncio>(entity =>
+        {
+            entity.ToTable("ReportesAnuncios");
+
+            entity.HasKey(r => r.Id);
+
+            entity.Property(r => r.IpReportante)
+                .IsRequired()
+                .HasMaxLength(45); // IPv6 máx
+
+            entity.Property(r => r.Detalle)
+                .HasMaxLength(500);
+
+            // Índice para el panel: pendientes primero, más recientes arriba
+            entity.HasIndex(r => new { r.Estado, r.FechaCreacionUtc });
+
+            entity.HasOne(r => r.Anuncio)
+                .WithMany()
+                .HasForeignKey(r => r.AnuncioId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 

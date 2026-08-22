@@ -95,6 +95,36 @@ export interface PlanAdminForm {
 const respuesta = async <T>(promesa: Promise<{ data: T }>): Promise<T> =>
   (await promesa).data;
 
+// ===== Reportes de anuncios =====
+export type MotivoReporte =
+  | "ContenidoInapropiado"
+  | "FraudeEstafa"
+  | "InformacionFalsa"
+  | "Duplicado"
+  | "Otro";
+
+export interface ReporteAdmin {
+  id: number;
+  motivo: MotivoReporte;
+  detalle: string | null;
+  estado: "Pendiente" | "Descartado" | "Resuelto";
+  fechaCreacionUtc: string;
+  ipReportante: string;
+  anuncioId: number;
+  anuncioTitulo: string;
+  anuncioEstado: string;
+  anuncioFotoPrincipal: string | null;
+  anuncioPrecio: number;
+  anuncioMoneda: string;
+}
+
+export interface CrearReportePublicoDto {
+  anuncioId: number;
+  motivo: MotivoReporte;
+  detalle?: string;
+}
+
+
 export const adminService = {
   // ===== Dashboard / Resumen =====
   async obtenerResumen(): Promise<AdminResumen> {
@@ -164,5 +194,22 @@ export const adminService = {
 
   async eliminarPlan(id: number): Promise<{ exito: boolean; mensaje: string }> {
     return respuesta(api.delete(`/api/admin/planes/${id}`));
+  },
+
+  // ===== Reportes de anuncios =====
+  async listarReportes(estado: "Pendiente" | "Descartado" | "Resuelto" = "Pendiente"): Promise<ReporteAdmin[]> {
+    return respuesta(api.get<ReporteAdmin[]>("/api/admin/reportes", { params: { estado } }));
+  },
+
+  async contarReportesPendientes(): Promise<{ total: number }> {
+    return respuesta(api.get<{ total: number }>("/api/admin/reportes/pendientes/contador"));
+  },
+
+  async descartarReporte(id: number): Promise<{ exito: boolean; mensaje: string }> {
+    return respuesta(api.patch(`/api/admin/reportes/${id}/descartar`));
+  },
+
+  async resolverReporte(id: number): Promise<{ exito: boolean; mensaje: string }> {
+    return respuesta(api.patch(`/api/admin/reportes/${id}/resolver`));
   },
 };

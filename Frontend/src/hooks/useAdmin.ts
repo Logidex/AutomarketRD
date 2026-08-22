@@ -8,6 +8,7 @@ import {
   type PagoAdmin,
   type CambiarRolAdminDto,
   type PlanAdminForm,
+  type ReporteAdmin,
 } from '../services/admin.service';
 
 export const useAdminResumen = () => {
@@ -134,5 +135,50 @@ export const useRenovarSuscripcion = () => {
     mutationFn: ({ dealerId, nuevaFechaVencimiento }: { dealerId: number; nuevaFechaVencimiento: string }) =>
       adminService.renovarSuscripcion(dealerId, nuevaFechaVencimiento),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-usuarios'] }),
+  });
+};
+
+// ===== Reportes de anuncios =====
+export type EstadoReporte = 'Pendiente' | 'Descartado' | 'Resuelto';
+
+export const useAdminReportes = (estado: EstadoReporte = 'Pendiente') => {
+  return useQuery<ReporteAdmin[]>({
+    queryKey: ['admin-reportes', estado],
+    queryFn: () => adminService.listarReportes(estado),
+    staleTime: 1000 * 30,
+  });
+};
+
+export const useContarReportesPendientes = () => {
+  return useQuery<{ total: number }>({
+    queryKey: ['admin-reportes-pendientes'],
+    queryFn: () => adminService.contarReportesPendientes(),
+    staleTime: 1000 * 60,
+    refetchInterval: 1000 * 60 * 5,
+  });
+};
+
+const invalidarReportes = (queryClient: ReturnType<typeof useQueryClient>) => {
+  queryClient.invalidateQueries({ queryKey: ['admin-reportes'] });
+  queryClient.invalidateQueries({ queryKey: ['admin-reportes-pendientes'] });
+};
+
+export const useDescartarReporte = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => adminService.descartarReporte(id),
+    onSuccess: () => invalidarReportes(queryClient),
+  });
+};
+
+export const useResolverReporte = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => adminService.resolverReporte(id),
+    onSuccess: () => {
+      // Resolver elimina el anuncio: refrescar también catálogos admin
+      invalidarReportes(queryClient);
+      queryClient.invalidateQueries({ queryKey: ['admin-anuncios'] });
+    },
   });
 };

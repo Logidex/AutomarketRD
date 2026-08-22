@@ -109,8 +109,10 @@ try
     builder.Services.AddScoped<IAlmacenadorArchivos, AlmacenadorS3>();
 
     builder.Services.AddScoped<IAnuncioService, AnuncioService>();
+    builder.Services.AddScoped<IReporteAnuncioService, ReporteAnuncioService>();
     builder.Services.AddScoped<IAnuncioRepository, AnuncioRepository>();
     builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+    builder.Services.AddScoped<IReporteAnuncioRepository, ReporteAnuncioRepository>();
 
     builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
     builder.Services.AddScoped<IUsuarioCuentaService, UsuarioCuentaService>();
@@ -348,6 +350,22 @@ try
                 limiterOptions.PermitLimit = 3;
                 limiterOptions.Window =
                     TimeSpan.FromMinutes(5);
+
+                limiterOptions.QueueProcessingOrder =
+                    QueueProcessingOrder.OldestFirst;
+
+                limiterOptions.QueueLimit = 0;
+            });
+
+        // Reportes de anuncios: anónimo, así que límite más estricto
+        // (3 reportes por hora por IP) para frenar abuso/spam.
+        options.AddFixedWindowLimiter(
+            "PoliticaReportes",
+            limiterOptions =>
+            {
+                limiterOptions.PermitLimit = 3;
+                limiterOptions.Window =
+                    TimeSpan.FromHours(1);
 
                 limiterOptions.QueueProcessingOrder =
                     QueueProcessingOrder.OldestFirst;
