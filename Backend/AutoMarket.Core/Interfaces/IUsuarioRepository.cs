@@ -28,4 +28,7 @@ public interface IUsuarioRepository
 
     /// <summary>Marca el usuario para eliminación (cascade de dependientes al guardar).</summary>
     Task EliminarAsync(Usuario usuario);
+
+    /// <summary>Indica si la clave corresponde al logo de algún dealer (exacta o URL legada que la contenga).</summary>
+    Task<bool> ExisteLogoDealerAsync(string clave);
 }
