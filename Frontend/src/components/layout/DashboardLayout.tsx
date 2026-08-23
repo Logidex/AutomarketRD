@@ -7,6 +7,8 @@ import { authService } from "../../services/auth.service";
 import { suscripcionService, type SuscripcionDealer } from "../../services/suscripcion.service";
 import { nombrePlan as nombrePlanUtil } from "../../constants/planes";
 import { confirmarCierreSesion } from "../../utils/confirmarCierreSesion";
+import { usePerfilDealer } from "../../hooks/usePerfilDealer";
+import { urlImagen } from "../../utils/imagen";
 import logo from "../../assets/AutoMarketRD_Logo.svg";
 import CampanaNotificaciones from "./CampanaNotificaciones";
 import BotonTema from "../BotonTema";
@@ -69,6 +71,12 @@ export default function DashboardLayout() {
   const inicialUsuario = usuario?.nombre
     ? usuario.nombre.charAt(0).toUpperCase()
     : "U";
+
+  // Perfil del dealer: nombre de la agencia y logo para el header
+  const { data: perfilDealer } = usePerfilDealer(usuario?.usuarioId ?? null);
+  const logoDealer = perfilDealer?.logoUrl ?? null;
+  const nombreMostrado =
+    perfilDealer?.nombreAgencia?.trim() || nombreUsuario;
 
   const [suscripcion, setSuscripcion] = useState<SuscripcionDealer | null>(null);
   const [menuAbierto, setMenuAbierto] = useState(false);
@@ -209,9 +217,9 @@ export default function DashboardLayout() {
             {/* INDICADOR DE PLAN */}
             <PlanBadge suscripcion={suscripcion} />
 
-            <div className="hidden text-right sm:block">
-              <p className="text-sm font-semibold text-ink">
-                {nombreUsuario}
+            <div className="hidden min-w-0 text-right sm:block">
+              <p className="truncate text-sm font-semibold text-ink">
+                {nombreMostrado}
               </p>
 
               {usuario?.rol && (
@@ -219,9 +227,17 @@ export default function DashboardLayout() {
               )}
             </div>
 
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 font-bold text-white">
-              {inicialUsuario}
-            </div>
+            {logoDealer ? (
+              <img
+                src={urlImagen(logoDealer)}
+                alt={nombreMostrado}
+                className="h-10 w-10 shrink-0 rounded-full border border-line object-cover"
+              />
+            ) : (
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-600 font-bold text-white">
+                {inicialUsuario}
+              </div>
+            )}
           </div>
         </header>
 
