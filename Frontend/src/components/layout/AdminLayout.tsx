@@ -12,6 +12,7 @@ import {
   FaMoneyCheckAlt,
   FaHeadset,
   FaFlag,
+  FaClipboardList,
 } from "react-icons/fa";
 import { authService } from "../../services/auth.service";
 import { useResumenTicketsAdmin } from "../../hooks/useTickets";
@@ -51,6 +52,11 @@ const menuItems = [
     path: "/admin/pagos",
     label: "Pagos",
     icon: <FaMoneyCheckAlt />,
+  },
+  {
+    path: "/admin/encuestas",
+    label: "Encuestas",
+    icon: <FaClipboardList />,
   },
   {
     path: "/admin/soporte",
