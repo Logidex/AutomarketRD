@@ -142,9 +142,12 @@ test.describe("Flujo Dealer: comprar plan", () => {
     await expect(page).toHaveURL(/pago-exitoso\?token=FAKE-/, { timeout: 20_000 });
     await expect(page.getByText("¡Pago exitoso!")).toBeVisible({ timeout: 20_000 });
 
-    // 4. Al panel: la suscripción quedó activa
+    // 4. Al panel: la suscripción quedó activa y el tour de bienvenida arranca
     await page.getByRole("link", { name: /Ir a mi Panel/i }).click();
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 15_000 });
+    await expect(
+      page.getByText("¡Bienvenido a tu panel!")
+    ).toBeVisible({ timeout: 10_000 });
   });
 });
 

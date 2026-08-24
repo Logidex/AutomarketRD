@@ -7,12 +7,15 @@ import { authService } from "../../services/auth.service";
 import { suscripcionService, type SuscripcionDealer } from "../../services/suscripcion.service";
 import { nombrePlan as nombrePlanUtil } from "../../constants/planes";
 import { confirmarCierreSesion } from "../../utils/confirmarCierreSesion";
+import { iniciarTourDealer } from "../../utils/tourDealer";
 import { usePerfilDealer } from "../../hooks/usePerfilDealer";
 import { urlImagen } from "../../utils/imagen";
+import { ROLES } from "../../constants/roles";
 import logo from "../../assets/AutoMarketRD_Logo.svg";
 import CampanaNotificaciones from "./CampanaNotificaciones";
 import BotonTema from "../BotonTema";
 import BannerConfirmarCorreo from "../BannerConfirmarCorreo";
+import BannerPerfilIncompleto from "../BannerPerfilIncompleto";
 import OutletAnimada from "../OutletAnimada";
 
 const menuItems = [
@@ -87,6 +90,17 @@ export default function DashboardLayout() {
       .then(setSuscripcion)
       .catch(() => setSuscripcion(null));
   }, [location.pathname]);
+
+  // Tour de bienvenida para dealers: una sola vez, en la entrada al panel
+  // y solo en escritorio (en móvil la sidebar está oculta).
+  useEffect(() => {
+    if (!usuario || usuario.rol !== ROLES.DEALER) return;
+    if (location.pathname !== "/dashboard") return;
+
+    const t = setTimeout(() => iniciarTourDealer(usuario.usuarioId), 600);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [usuario?.usuarioId, usuario?.rol, location.pathname]);
 
   // El drawer se cierra al hacer clic en cualquier enlace del menú
   const cerrarMenu = () => setMenuAbierto(false);
@@ -244,6 +258,9 @@ export default function DashboardLayout() {
         {/* CONTENIDO DINÁMICO */}
         <div className="scroll-fino flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
           <BannerConfirmarCorreo />
+          {usuario?.rol === ROLES.DEALER && perfilDealer && (
+            <BannerPerfilIncompleto usuarioId={usuario.usuarioId} perfil={perfilDealer} />
+          )}
           <OutletAnimada />
         </div>
       </main>
