@@ -148,9 +148,14 @@ function GaleriaDestacada({ anuncios }: { anuncios: AnuncioListado[] }) {
   const secundarios = anuncios.slice(1, 5);
 
   return (
-    <section className="relative -mt-8 pb-8 sm:-mt-10">
-      <div className="mx-auto max-w-6xl px-6 sm:px-8">
-        <div className="mb-5 flex items-center justify-between gap-4">
+    /* Fondo llamativo con sutil gradiente en movimiento y resplandor dinámico corporativo */
+    <section className="relative overflow-hidden border-b border-line bg-gradient-to-b from-surface-2/80 via-brand-soft/20 to-surface py-12 sm:py-16">
+      {/* Elemento decorativo flotante con movimiento sutil */}
+      <div className="absolute -top-24 -left-24 h-96 w-96 rounded-full bg-brand/10 blur-3xl animate-pulse" />
+      <div className="absolute -bottom-24 -right-24 h-96 w-96 rounded-full bg-cyan-500/10 blur-3xl animate-pulse" style={{ animationDuration: '4s' }} />
+
+      <div className="relative mx-auto max-w-6xl px-6 sm:px-8">
+        <div className="mb-6 flex items-center justify-between gap-4">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand">Selección de la semana</p>
             <h2 className="mt-1 text-2xl font-bold tracking-tight text-ink sm:text-3xl">
@@ -196,7 +201,7 @@ function GaleriaDestacada({ anuncios }: { anuncios: AnuncioListado[] }) {
 
         <Link
           to="/vehiculos"
-          className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-brand sm:hidden"
+          className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-brand sm:hidden"
         >
           Ver todo el inventario
           <FaArrowRight className="h-3.5 w-3.5" />
@@ -516,7 +521,7 @@ export default function Home() {
       </section>
 
       {destacadosCargando ? (
-        <section className="relative -mt-8 pb-8 sm:-mt-10">
+        <section className="relative bg-surface-2/70 py-12 sm:py-16">
           <div className="mx-auto max-w-6xl px-6 sm:px-8">
             <div className="h-8 w-72 animate-pulse rounded bg-surface-2" />
             <div className="mt-5 grid gap-4 lg:grid-cols-[1.45fr_1fr]">
