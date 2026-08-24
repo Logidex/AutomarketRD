@@ -109,27 +109,19 @@ function TarjetaVehiculo({
           </span>
         )}
 
-        {anuncio.esDealerVerificado && (
-          <BadgeVerificado className="shadow-sm" />
-        )}
+        {anuncio.esDealerVerificado && <BadgeVerificado className="shadow-sm" />}
       </div>
 
       <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
-        <p
-          className={`${esPrincipal ? "text-2xl sm:text-3xl" : "text-lg"} font-bold tracking-tight text-white`}
-        >
+        <p className={`${esPrincipal ? "text-2xl sm:text-3xl" : "text-lg"} font-bold tracking-tight text-white`}>
           {titulo}
         </p>
 
         {anuncio.version && !esCompacta && (
-          <p className="mt-1 truncate text-sm text-white/75">
-            {anuncio.version}
-          </p>
+          <p className="mt-1 truncate text-sm text-white/75">{anuncio.version}</p>
         )}
 
-        <p
-          className={`${esPrincipal ? "mt-3 text-xl" : "mt-2 text-base"} font-bold text-cyan-200`}
-        >
+        <p className={`${esPrincipal ? "mt-3 text-xl" : "mt-2 text-base"} font-bold text-cyan-200`}>
           {formatearPrecio(anuncio.precio, anuncio.moneda)}
         </p>
 
@@ -182,11 +174,7 @@ function GaleriaDestacada({ anuncios }: { anuncios: AnuncioListado[] }) {
           </div>
 
           <div className="mx-auto grid max-w-[1088px] gap-4 lg:grid-cols-[1.45fr_1fr]">
-            <TarjetaVehiculo
-              anuncio={principal}
-              variante="principal"
-              prioridad
-            />
+            <TarjetaVehiculo anuncio={principal} variante="principal" prioridad />
 
             <div className="grid grid-cols-2 gap-4">
               {secundarios.map((anuncio, indice) => (
@@ -199,23 +187,17 @@ function GaleriaDestacada({ anuncios }: { anuncios: AnuncioListado[] }) {
               ))}
 
               {secundarios.length < 4 &&
-                Array.from({ length: 4 - secundarios.length }).map(
-                  (_, indice) => (
-                    <Link
-                      key={`ver-todos-${indice}`}
-                      to="/vehiculos"
-                      className="flex min-h-[200px] flex-col items-center justify-center rounded-2xl border border-dashed border-brand/25 bg-surface/80 p-5 text-center shadow-sm backdrop-blur transition hover:border-brand/50 hover:bg-brand-soft"
-                    >
-                      <FaCar className="text-2xl text-brand" />
-                      <span className="mt-3 text-sm font-bold text-ink">
-                        Explorar vehículos
-                      </span>
-                      <span className="mt-1 text-xs text-ink-2">
-                        Ver todo el inventario
-                      </span>
-                    </Link>
-                  ),
-                )}
+                Array.from({ length: 4 - secundarios.length }).map((_, indice) => (
+                  <Link
+                    key={`ver-todos-${indice}`}
+                    to="/vehiculos"
+                    className="flex min-h-[200px] flex-col items-center justify-center rounded-2xl border border-dashed border-brand/25 bg-surface/80 p-5 text-center shadow-sm backdrop-blur transition hover:border-brand/50 hover:bg-brand-soft"
+                  >
+                    <FaCar className="text-2xl text-brand" />
+                    <span className="mt-3 text-sm font-bold text-ink">Explorar vehículos</span>
+                    <span className="mt-1 text-xs text-ink-2">Ver todo el inventario</span>
+                  </Link>
+                ))}
             </div>
           </div>
 
@@ -235,7 +217,9 @@ function GaleriaDestacada({ anuncios }: { anuncios: AnuncioListado[] }) {
 function BuscadorCatalogo() {
   const navigate = useNavigate();
 
-  const [filtros, setFiltros] = useState<FiltrosBusqueda>(FILTROS_INICIALES);
+  const [filtros, setFiltros] = useState<FiltrosBusqueda>(
+    FILTROS_INICIALES,
+  );
 
   const cambiar = (
     event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -254,7 +238,8 @@ function BuscadorCatalogo() {
     navigate(construirUrlCatalogo(filtros));
   };
 
-  // Actualiza visualmente el tipo, pero no navega hasta pulsar Buscar.
+  // Seleccionar un tipo solo actualiza el filtro.
+  // La navegación ocurre al pulsar "Buscar en el catálogo".
   const seleccionarTipo = (tipoVehiculo: string) => {
     setFiltros((actual) => ({
       ...actual,
@@ -282,12 +267,13 @@ function BuscadorCatalogo() {
                 que compares opciones.
               </p>
 
-              <div className="mt-7 max-w-xl rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
+              <div className="mt-7 rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
                 <p className="mb-4 text-sm font-semibold text-slate-100">
                   ¿Qué tipo de vehículo buscas?
                 </p>
 
-                <div className="max-h-[360px] overflow-y-auto pr-1">
+                {/* Mantiene el diseño original y aumenta los tipos solo 6%. */}
+                <div className="origin-top-left scale-[1.06]">
                   <FiltroTipoVehiculo
                     valor={filtros.tipoVehiculo}
                     onSeleccionar={seleccionarTipo}
@@ -433,16 +419,10 @@ function TarjetaReciente({ anuncio }: { anuncio: AnuncioListado }) {
       <div className="min-w-0 flex-1 p-4">
         <div className="flex items-start justify-between gap-2">
           <h3 className="truncate font-bold text-ink">{titulo}</h3>
-          <span className="shrink-0 text-xs font-semibold text-ink-2">
-            {anuncio.anio}
-          </span>
+          <span className="shrink-0 text-xs font-semibold text-ink-2">{anuncio.anio}</span>
         </div>
-        {anuncio.version && (
-          <p className="mt-1 truncate text-xs text-ink-2">{anuncio.version}</p>
-        )}
-        <p className="mt-2 font-bold text-brand">
-          {formatearPrecio(anuncio.precio, anuncio.moneda)}
-        </p>
+        {anuncio.version && <p className="mt-1 truncate text-xs text-ink-2">{anuncio.version}</p>}
+        <p className="mt-2 font-bold text-brand">{formatearPrecio(anuncio.precio, anuncio.moneda)}</p>
         <div className="mt-2 flex items-center gap-3 text-xs text-ink-2">
           <span className="inline-flex items-center gap-1">
             <FaTachometerAlt />
@@ -464,10 +444,7 @@ function EstadoCarga() {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {Array.from({ length: CANTIDAD_RECIENTES }).map((_, indice) => (
-        <div
-          key={indice}
-          className="overflow-hidden rounded-2xl border border-line bg-surface sm:block"
-        >
+        <div key={indice} className="overflow-hidden rounded-2xl border border-line bg-surface sm:block">
           <div className="h-32 w-36 animate-pulse bg-surface-2 sm:h-auto sm:w-auto sm:aspect-[16/10]" />
           <div className="space-y-3 p-4">
             <div className="h-4 w-3/4 animate-pulse rounded bg-surface-2" />
@@ -496,12 +473,8 @@ function Recientes({
         <div className="relative mx-auto max-w-6xl px-6 sm:px-8">
           <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand">
-                Lo más reciente
-              </p>
-              <h2 className="mt-2 text-2xl font-bold tracking-tight text-ink sm:text-3xl">
-                Recién publicados
-              </h2>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand">Lo más reciente</p>
+              <h2 className="mt-2 text-2xl font-bold tracking-tight text-ink sm:text-3xl">Recién publicados</h2>
             </div>
             <Link
               to="/vehiculos"
@@ -516,9 +489,7 @@ function Recientes({
             <EstadoCarga />
           ) : error ? (
             <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-8 text-center">
-              <p className="text-sm text-red-600">
-                No se pudieron cargar los vehículos.
-              </p>
+              <p className="text-sm text-red-600">No se pudieron cargar los vehículos.</p>
               <button
                 type="button"
                 onClick={reintentar}
@@ -529,19 +500,14 @@ function Recientes({
             </div>
           ) : anuncios.length > 0 ? (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {anuncios.map((anuncio) => (
-                <TarjetaReciente key={anuncio.id} anuncio={anuncio} />
-              ))}
+              {anuncios.map((anuncio) => <TarjetaReciente key={anuncio.id} anuncio={anuncio} />)}
             </div>
           ) : (
             <div className="rounded-2xl border border-dashed border-line bg-surface p-12 text-center">
               <FaCar className="mx-auto text-4xl text-ink-3" />
-              <h2 className="mt-4 text-xl font-bold text-ink">
-                Próximamente habrá vehículos disponibles
-              </h2>
+              <h2 className="mt-4 text-xl font-bold text-ink">Próximamente habrá vehículos disponibles</h2>
               <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-ink-2">
-                Estamos preparando el inventario. Si deseas vender, puedes ser
-                de los primeros en publicar.
+                Estamos preparando el inventario. Si deseas vender, puedes ser de los primeros en publicar.
               </p>
               <Link
                 to="/precios"
@@ -566,15 +532,12 @@ function CtaVendedor() {
           <div className="overflow-hidden rounded-3xl border border-brand/15 bg-brand-soft shadow-xl shadow-blue-950/5">
             <div className="grid lg:grid-cols-[1.15fr_0.85fr]">
               <div className="p-8 sm:p-10">
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand">
-                  Para vendedores y dealers
-                </p>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand">Para vendedores y dealers</p>
                 <h2 className="mt-3 text-balance text-3xl font-bold tracking-tight text-ink sm:text-4xl">
                   Tu inventario merece una vitrina profesional.
                 </h2>
                 <p className="mt-4 max-w-xl leading-7 text-ink-2">
-                  Crea anuncios detallados, agrega fotos, comparte tus enlaces y
-                  recibe consultas directamente de compradores interesados.
+                  Crea anuncios detallados, agrega fotos, comparte tus enlaces y recibe consultas directamente de compradores interesados.
                 </p>
                 <Link
                   to="/precios"
@@ -588,12 +551,9 @@ function CtaVendedor() {
                 <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_25%_20%,rgba(37,99,235,0.5),transparent_38%),radial-gradient(circle_at_80%_80%,rgba(14,165,233,0.36),transparent_42%)]" />
                 <div className="relative">
                   <FaCar className="mx-auto text-5xl text-cyan-300" />
-                  <p className="mt-5 text-xl font-bold">
-                    Muestra. Conecta. Vende.
-                  </p>
+                  <p className="mt-5 text-xl font-bold">Muestra. Conecta. Vende.</p>
                   <p className="mt-2 max-w-xs text-sm leading-6 text-slate-300">
-                    Una forma simple de mostrar tus vehículos a compradores de
-                    República Dominicana.
+                    Una forma simple de mostrar tus vehículos a compradores de República Dominicana.
                   </p>
                 </div>
               </div>
@@ -611,21 +571,11 @@ function PiePaginaHome() {
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 text-sm text-ink-2 sm:flex-row sm:px-8">
         <span>© 2026 AutoMarket RD. Todos los derechos reservados.</span>
         <nav className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
-          <Link to="/terminos" className="transition-colors hover:text-ink">
-            Términos
-          </Link>
-          <Link to="/privacidad" className="transition-colors hover:text-ink">
-            Privacidad
-          </Link>
-          <Link to="/reembolso" className="transition-colors hover:text-ink">
-            Reembolsos
-          </Link>
-          <Link to="/contacto" className="transition-colors hover:text-ink">
-            Contacto
-          </Link>
-          <Link to="/precios" className="transition-colors hover:text-ink">
-            Planes y precios
-          </Link>
+          <Link to="/terminos" className="transition-colors hover:text-ink">Términos</Link>
+          <Link to="/privacidad" className="transition-colors hover:text-ink">Privacidad</Link>
+          <Link to="/reembolso" className="transition-colors hover:text-ink">Reembolsos</Link>
+          <Link to="/contacto" className="transition-colors hover:text-ink">Contacto</Link>
+          <Link to="/precios" className="transition-colors hover:text-ink">Planes y precios</Link>
         </nav>
       </div>
     </footer>
@@ -671,9 +621,7 @@ export default function Home() {
               <span className="block text-brand">en República Dominicana</span>
             </h1>
             <p className="mx-auto mt-4 max-w-2xl text-pretty leading-7 text-ink-2">
-              Explora el inventario de agencias y vendedores particulares.
-              Encuentra el vehículo que buscas y contacta al vendedor
-              directamente.
+              Explora el inventario de agencias y vendedores particulares. Encuentra el vehículo que buscas y contacta al vendedor directamente.
             </p>
           </div>
         </SectionBackground>
@@ -689,10 +637,7 @@ export default function Home() {
                   <div className="min-h-[420px] animate-pulse rounded-2xl bg-surface-2 sm:min-h-[470px]" />
                   <div className="grid grid-cols-2 gap-4">
                     {Array.from({ length: 4 }).map((_, indice) => (
-                      <div
-                        key={indice}
-                        className="min-h-[200px] animate-pulse rounded-2xl bg-surface-2"
-                      />
+                      <div key={indice} className="min-h-[200px] animate-pulse rounded-2xl bg-surface-2" />
                     ))}
                   </div>
                 </div>
