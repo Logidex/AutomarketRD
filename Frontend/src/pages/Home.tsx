@@ -15,10 +15,7 @@ import { catalogoService } from "../services/catalogo.service";
 import { urlImagen } from "../utils/imagen";
 import { urlAnuncio } from "../utils/slug";
 import { formatearPrecio } from "../utils/formato";
-import {
-  COMBUSTIBLES,
-  TRANSMISIONES,
-} from "../constants/vehiculo.opciones";
+import { COMBUSTIBLES, TRANSMISIONES } from "../constants/vehiculo.opciones";
 import BadgeVerificado from "../components/BadgeVerificado";
 import FiltroTipoVehiculo from "../components/FiltroTipoVehiculo";
 import HeaderPublico from "../components/layout/HeaderPublico";
@@ -82,7 +79,11 @@ function TarjetaVehiculo({
     <Link
       to={urlAnuncio(anuncio)}
       className={`group relative block overflow-hidden rounded-2xl bg-slate-950 text-white shadow-lg shadow-slate-950/15 transition duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-slate-950/25 focus:outline-none focus:ring-4 focus:ring-brand/30 ${
-        esPrincipal ? "min-h-[420px] sm:min-h-[470px]" : esCompacta ? "min-h-[200px]" : "min-h-[290px]"
+        esPrincipal
+          ? "min-h-[420px] sm:min-h-[470px]"
+          : esCompacta
+            ? "min-h-[200px]"
+            : "min-h-[290px]"
       }`}
     >
       <img
@@ -107,18 +108,26 @@ function TarjetaVehiculo({
           </span>
         )}
 
-        {anuncio.esDealerVerificado && <BadgeVerificado className="shadow-sm" />}
+        {anuncio.esDealerVerificado && (
+          <BadgeVerificado className="shadow-sm" />
+        )}
       </div>
 
       <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
-        <p className={`${esPrincipal ? "text-2xl sm:text-3xl" : "text-lg"} font-bold tracking-tight text-white`}>
+        <p
+          className={`${esPrincipal ? "text-2xl sm:text-3xl" : "text-lg"} font-bold tracking-tight text-white`}
+        >
           {titulo}
         </p>
         {anuncio.version && !esCompacta && (
-          <p className="mt-1 truncate text-sm text-white/75">{anuncio.version}</p>
+          <p className="mt-1 truncate text-sm text-white/75">
+            {anuncio.version}
+          </p>
         )}
 
-        <p className={`${esPrincipal ? "mt-3 text-xl" : "mt-2 text-base"} font-bold text-cyan-200`}>
+        <p
+          className={`${esPrincipal ? "mt-3 text-xl" : "mt-2 text-base"} font-bold text-cyan-200`}
+        >
           {formatearPrecio(anuncio.precio, anuncio.moneda)}
         </p>
 
@@ -148,25 +157,37 @@ function GaleriaDestacada({ anuncios }: { anuncios: AnuncioListado[] }) {
   const secundarios = anuncios.slice(1, 5);
 
   return (
-    <section className="relative -mt-8 pb-8 sm:-mt-10">
-      <div className="mx-auto max-w-6xl px-6 sm:px-8">
-        <div className="mb-5 flex items-center justify-between gap-4">
+    <section className="relative overflow-hidden border-b border-line bg-page py-12 sm:py-16">
+      {/* Fondo con tonos de la marca */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_15%,rgba(37,99,235,0.12),transparent_30%),radial-gradient(circle_at_88%_80%,rgba(14,165,233,0.10),transparent_32%),linear-gradient(135deg,#f8fafc_0%,#eff6ff_48%,#f0f9ff_100%)]" />
+
+      <div className="pointer-events-none absolute -left-24 top-24 h-64 w-64 rounded-full bg-blue-500/10 blur-3xl" />
+      <div className="pointer-events-none absolute -right-24 bottom-10 h-72 w-72 rounded-full bg-cyan-400/10 blur-3xl" />
+
+      <div className="relative mx-auto max-w-6xl px-6 sm:px-8">
+        {/* Este contenedor tiene el mismo ancho que la galería */}
+        <div className="mx-auto mb-7 flex max-w-[1088px] items-end justify-between gap-4">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand">Selección de la semana</p>
-            <h2 className="mt-1 text-2xl font-bold tracking-tight text-ink sm:text-3xl">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand">
+              Selección de la semana
+            </p>
+
+            <h2 className="mt-2 text-2xl font-bold tracking-tight text-ink sm:text-3xl">
               Vehículos que merecen tu atención
             </h2>
           </div>
+
           <Link
             to="/vehiculos"
-            className="hidden items-center gap-2 text-sm font-bold text-brand transition hover:text-brand-hover sm:inline-flex"
+            className="hidden items-center gap-2 rounded-full border border-brand/20 bg-surface/80 px-4 py-2 text-sm font-bold text-brand shadow-sm backdrop-blur transition hover:border-brand/40 hover:bg-surface sm:inline-flex"
           >
             Ver inventario
             <FaArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-[1.45fr_1fr]">
+        {/* Galería centrada: mismo max-width que el título */}
+        <div className="mx-auto grid max-w-[1088px] gap-4 lg:grid-cols-[1.45fr_1fr]">
           <TarjetaVehiculo anuncio={principal} variante="principal" prioridad />
 
           <div className="grid grid-cols-2 gap-4">
@@ -180,23 +201,31 @@ function GaleriaDestacada({ anuncios }: { anuncios: AnuncioListado[] }) {
             ))}
 
             {secundarios.length < 4 &&
-              Array.from({ length: 4 - secundarios.length }).map((_, indice) => (
-                <Link
-                  key={`ver-todos-${indice}`}
-                  to="/vehiculos"
-                  className="flex min-h-[200px] flex-col items-center justify-center rounded-2xl border border-dashed border-line bg-surface p-5 text-center transition hover:border-brand/40 hover:bg-brand-soft"
-                >
-                  <FaCar className="text-2xl text-brand" />
-                  <span className="mt-3 text-sm font-bold text-ink">Explorar vehículos</span>
-                  <span className="mt-1 text-xs text-ink-2">Ver todo el inventario</span>
-                </Link>
-              ))}
+              Array.from({ length: 4 - secundarios.length }).map(
+                (_, indice) => (
+                  <Link
+                    key={`ver-todos-${indice}`}
+                    to="/vehiculos"
+                    className="flex min-h-[200px] flex-col items-center justify-center rounded-2xl border border-dashed border-brand/25 bg-surface/80 p-5 text-center shadow-sm backdrop-blur transition hover:border-brand/50 hover:bg-brand-soft"
+                  >
+                    <FaCar className="text-2xl text-brand" />
+
+                    <span className="mt-3 text-sm font-bold text-ink">
+                      Explorar vehículos
+                    </span>
+
+                    <span className="mt-1 text-xs text-ink-2">
+                      Ver todo el inventario
+                    </span>
+                  </Link>
+                ),
+              )}
           </div>
         </div>
 
         <Link
           to="/vehiculos"
-          className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-brand sm:hidden"
+          className="mx-auto mt-5 flex w-fit items-center gap-2 rounded-full border border-brand/20 bg-surface/80 px-4 py-2 text-sm font-bold text-brand shadow-sm backdrop-blur transition hover:bg-surface sm:hidden"
         >
           Ver todo el inventario
           <FaArrowRight className="h-3.5 w-3.5" />
@@ -209,9 +238,7 @@ function GaleriaDestacada({ anuncios }: { anuncios: AnuncioListado[] }) {
 function BuscadorCatalogo() {
   const navigate = useNavigate();
 
-  const [filtros, setFiltros] = useState<FiltrosBusqueda>(
-    FILTROS_INICIALES,
-  );
+  const [filtros, setFiltros] = useState<FiltrosBusqueda>(FILTROS_INICIALES);
 
   const cambiar = (
     event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -406,13 +433,27 @@ function TarjetaReciente({ anuncio }: { anuncio: AnuncioListado }) {
       <div className="min-w-0 flex-1 p-4">
         <div className="flex items-start justify-between gap-2">
           <h3 className="truncate font-bold text-ink">{titulo}</h3>
-          <span className="shrink-0 text-xs font-semibold text-ink-2">{anuncio.anio}</span>
+          <span className="shrink-0 text-xs font-semibold text-ink-2">
+            {anuncio.anio}
+          </span>
         </div>
-        {anuncio.version && <p className="mt-1 truncate text-xs text-ink-2">{anuncio.version}</p>}
-        <p className="mt-2 font-bold text-brand">{formatearPrecio(anuncio.precio, anuncio.moneda)}</p>
+        {anuncio.version && (
+          <p className="mt-1 truncate text-xs text-ink-2">{anuncio.version}</p>
+        )}
+        <p className="mt-2 font-bold text-brand">
+          {formatearPrecio(anuncio.precio, anuncio.moneda)}
+        </p>
         <div className="mt-2 flex items-center gap-3 text-xs text-ink-2">
-          <span className="inline-flex items-center gap-1"><FaTachometerAlt />{anuncio.kilometraje.toLocaleString("es-DO")} km</span>
-          {anuncio.ubicacion && <span className="hidden items-center gap-1 sm:inline-flex"><FaMapMarkerAlt />{anuncio.ubicacion}</span>}
+          <span className="inline-flex items-center gap-1">
+            <FaTachometerAlt />
+            {anuncio.kilometraje.toLocaleString("es-DO")} km
+          </span>
+          {anuncio.ubicacion && (
+            <span className="hidden items-center gap-1 sm:inline-flex">
+              <FaMapMarkerAlt />
+              {anuncio.ubicacion}
+            </span>
+          )}
         </div>
       </div>
     </Link>
@@ -423,7 +464,10 @@ function EstadoCarga() {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {Array.from({ length: CANTIDAD_RECIENTES }).map((_, indice) => (
-        <div key={indice} className="overflow-hidden rounded-2xl border border-line bg-surface sm:block">
+        <div
+          key={indice}
+          className="overflow-hidden rounded-2xl border border-line bg-surface sm:block"
+        >
           <div className="h-32 w-36 animate-pulse bg-surface-2 sm:h-auto sm:w-auto sm:aspect-[16/10]" />
           <div className="space-y-3 p-4">
             <div className="h-4 w-3/4 animate-pulse rounded bg-surface-2" />
@@ -450,10 +494,17 @@ function Recientes({
     <section className="mx-auto max-w-6xl px-6 py-16 sm:px-8">
       <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand">Lo más reciente</p>
-          <h2 className="mt-2 text-2xl font-bold tracking-tight text-ink sm:text-3xl">Recién publicados</h2>
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand">
+            Lo más reciente
+          </p>
+          <h2 className="mt-2 text-2xl font-bold tracking-tight text-ink sm:text-3xl">
+            Recién publicados
+          </h2>
         </div>
-        <Link to="/vehiculos" className="inline-flex items-center gap-2 text-sm font-bold text-brand transition hover:text-brand-hover">
+        <Link
+          to="/vehiculos"
+          className="inline-flex items-center gap-2 text-sm font-bold text-brand transition hover:text-brand-hover"
+        >
           Ver todos <FaChevronRight className="h-3.5 w-3.5" />
         </Link>
       </div>
@@ -462,19 +513,37 @@ function Recientes({
         <EstadoCarga />
       ) : error ? (
         <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-8 text-center">
-          <p className="text-sm text-red-600">No se pudieron cargar los vehículos.</p>
-          <button type="button" onClick={reintentar} className="mt-4 rounded-xl bg-brand px-5 py-2.5 text-sm font-semibold text-white">Reintentar</button>
+          <p className="text-sm text-red-600">
+            No se pudieron cargar los vehículos.
+          </p>
+          <button
+            type="button"
+            onClick={reintentar}
+            className="mt-4 rounded-xl bg-brand px-5 py-2.5 text-sm font-semibold text-white"
+          >
+            Reintentar
+          </button>
         </div>
       ) : anuncios.length > 0 ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {anuncios.map((anuncio) => <TarjetaReciente key={anuncio.id} anuncio={anuncio} />)}
+          {anuncios.map((anuncio) => (
+            <TarjetaReciente key={anuncio.id} anuncio={anuncio} />
+          ))}
         </div>
       ) : (
         <div className="rounded-2xl border border-dashed border-line bg-surface p-12 text-center">
           <FaCar className="mx-auto text-4xl text-ink-3" />
-          <h2 className="mt-4 text-xl font-bold text-ink">Próximamente habrá vehículos disponibles</h2>
-          <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-ink-2">Estamos preparando el inventario. Si deseas vender, puedes ser de los primeros en publicar.</p>
-          <Link to="/precios" className="mt-6 inline-flex items-center gap-2 rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-white">
+          <h2 className="mt-4 text-xl font-bold text-ink">
+            Próximamente habrá vehículos disponibles
+          </h2>
+          <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-ink-2">
+            Estamos preparando el inventario. Si deseas vender, puedes ser de
+            los primeros en publicar.
+          </p>
+          <Link
+            to="/precios"
+            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-white"
+          >
             Publicar vehículo <FaArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
@@ -489,10 +558,20 @@ function CtaVendedor() {
       <div className="overflow-hidden rounded-3xl border border-brand/15 bg-brand-soft">
         <div className="grid lg:grid-cols-[1.15fr_0.85fr]">
           <div className="p-8 sm:p-10">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand">Para vendedores y dealers</p>
-            <h2 className="mt-3 text-balance text-3xl font-bold tracking-tight text-ink sm:text-4xl">Tu inventario merece una vitrina profesional.</h2>
-            <p className="mt-4 max-w-xl leading-7 text-ink-2">Crea anuncios detallados, agrega fotos, comparte tus enlaces y recibe consultas directamente de compradores interesados.</p>
-            <Link to="/precios" className="mt-7 inline-flex items-center gap-2 rounded-xl bg-brand px-6 py-3.5 text-sm font-bold text-white transition hover:bg-brand-hover">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand">
+              Para vendedores y dealers
+            </p>
+            <h2 className="mt-3 text-balance text-3xl font-bold tracking-tight text-ink sm:text-4xl">
+              Tu inventario merece una vitrina profesional.
+            </h2>
+            <p className="mt-4 max-w-xl leading-7 text-ink-2">
+              Crea anuncios detallados, agrega fotos, comparte tus enlaces y
+              recibe consultas directamente de compradores interesados.
+            </p>
+            <Link
+              to="/precios"
+              className="mt-7 inline-flex items-center gap-2 rounded-xl bg-brand px-6 py-3.5 text-sm font-bold text-white transition hover:bg-brand-hover"
+            >
               Publicar un vehículo <FaArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
@@ -500,7 +579,10 @@ function CtaVendedor() {
             <div>
               <FaCar className="mx-auto text-5xl text-cyan-300" />
               <p className="mt-5 text-xl font-bold">Muestra. Conecta. Vende.</p>
-              <p className="mt-2 max-w-xs text-sm leading-6 text-slate-300">Una forma simple de mostrar tus vehículos a compradores de República Dominicana.</p>
+              <p className="mt-2 max-w-xs text-sm leading-6 text-slate-300">
+                Una forma simple de mostrar tus vehículos a compradores de
+                República Dominicana.
+              </p>
             </div>
           </div>
         </div>
@@ -515,11 +597,21 @@ function PiePaginaHome() {
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 text-sm text-ink-2 sm:flex-row sm:px-8">
         <span>© 2026 AutoMarket RD. Todos los derechos reservados.</span>
         <nav className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
-          <Link to="/terminos" className="transition-colors hover:text-ink">Términos</Link>
-          <Link to="/privacidad" className="transition-colors hover:text-ink">Privacidad</Link>
-          <Link to="/reembolso" className="transition-colors hover:text-ink">Reembolsos</Link>
-          <Link to="/contacto" className="transition-colors hover:text-ink">Contacto</Link>
-          <Link to="/precios" className="transition-colors hover:text-ink">Planes y precios</Link>
+          <Link to="/terminos" className="transition-colors hover:text-ink">
+            Términos
+          </Link>
+          <Link to="/privacidad" className="transition-colors hover:text-ink">
+            Privacidad
+          </Link>
+          <Link to="/reembolso" className="transition-colors hover:text-ink">
+            Reembolsos
+          </Link>
+          <Link to="/contacto" className="transition-colors hover:text-ink">
+            Contacto
+          </Link>
+          <Link to="/precios" className="transition-colors hover:text-ink">
+            Planes y precios
+          </Link>
         </nav>
       </div>
     </footer>
@@ -541,7 +633,11 @@ export default function Home() {
     refetch: recargarRecientes,
   } = useQuery({
     queryKey: ["anuncios-recientes-home", CANTIDAD_RECIENTES],
-    queryFn: () => catalogoService.buscar({ paginaActual: 1, cantidadAnuncios: CANTIDAD_RECIENTES }),
+    queryFn: () =>
+      catalogoService.buscar({
+        paginaActual: 1,
+        cantidadAnuncios: CANTIDAD_RECIENTES,
+      }),
     staleTime: 1000 * 60 * 5,
     retry: 1,
   });
@@ -560,19 +656,33 @@ export default function Home() {
             <span className="block text-brand">en República Dominicana</span>
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-pretty leading-7 text-ink-2">
-            Explora el inventario de agencias y vendedores particulares. Encuentra el vehículo que buscas y contacta al vendedor directamente.
+            Explora el inventario de agencias y vendedores particulares.
+            Encuentra el vehículo que buscas y contacta al vendedor
+            directamente.
           </p>
         </div>
       </section>
 
       {destacadosCargando ? (
-        <section className="relative -mt-8 pb-8 sm:-mt-10">
-          <div className="mx-auto max-w-6xl px-6 sm:px-8">
-            <div className="h-8 w-72 animate-pulse rounded bg-surface-2" />
-            <div className="mt-5 grid gap-4 lg:grid-cols-[1.45fr_1fr]">
-              <div className="min-h-[420px] animate-pulse rounded-2xl bg-surface-2" />
-              <div className="grid grid-cols-2 gap-4">
-                {Array.from({ length: 4 }).map((_, indice) => <div key={indice} className="min-h-[200px] animate-pulse rounded-2xl bg-surface-2" />)}
+        <section className="relative overflow-hidden border-b border-line bg-page py-12 sm:py-16">
+          {/* Mismo fondo de la galería final para evitar salto visual */}
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_15%,rgba(37,99,235,0.12),transparent_30%),radial-gradient(circle_at_88%_80%,rgba(14,165,233,0.10),transparent_32%),linear-gradient(135deg,#f8fafc_0%,#eff6ff_48%,#f0f9ff_100%)]" />
+
+          <div className="relative mx-auto max-w-6xl px-6 sm:px-8">
+            <div className="mx-auto max-w-[1088px]">
+              <div className="h-8 w-80 animate-pulse rounded bg-surface-2" />
+
+              <div className="mt-7 grid gap-4 lg:grid-cols-[1.45fr_1fr]">
+                <div className="min-h-[420px] animate-pulse rounded-2xl bg-surface-2 sm:min-h-[470px]" />
+
+                <div className="grid grid-cols-2 gap-4">
+                  {Array.from({ length: 4 }).map((_, indice) => (
+                    <div
+                      key={indice}
+                      className="min-h-[200px] animate-pulse rounded-2xl bg-surface-2"
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -582,7 +692,12 @@ export default function Home() {
       )}
 
       <BuscadorCatalogo />
-      <Recientes anuncios={recientes} cargando={recientesCargando} error={recientesError} reintentar={() => recargarRecientes()} />
+      <Recientes
+        anuncios={recientes}
+        cargando={recientesCargando}
+        error={recientesError}
+        reintentar={() => recargarRecientes()}
+      />
       <CtaVendedor />
       <PiePaginaHome />
     </div>
