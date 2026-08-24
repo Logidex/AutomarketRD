@@ -216,20 +216,34 @@ function GaleriaDestacada({ anuncios }: { anuncios: AnuncioListado[] }) {
 
 function BuscadorCatalogo() {
   const navigate = useNavigate();
-  const [filtros, setFiltros] = useState<FiltrosBusqueda>(FILTROS_INICIALES);
 
-  const cambiar = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const [filtros, setFiltros] = useState<FiltrosBusqueda>(
+    FILTROS_INICIALES,
+  );
+
+  const cambiar = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value } = event.target;
-    setFiltros((actual) => ({ ...actual, [name]: value }));
+
+    setFiltros((actual) => ({
+      ...actual,
+      [name]: value,
+    }));
   };
 
   const buscar = (event: React.FormEvent) => {
     event.preventDefault();
+
     navigate(construirUrlCatalogo(filtros));
   };
 
+  // Actualiza visualmente el tipo, pero no navega hasta pulsar Buscar.
   const seleccionarTipo = (tipoVehiculo: string) => {
-    setFiltros((actual) => ({ ...actual, tipoVehiculo }));
+    setFiltros((actual) => ({
+      ...actual,
+      tipoVehiculo,
+    }));
   };
 
   return (
@@ -241,22 +255,25 @@ function BuscadorCatalogo() {
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">
                 Encuentra tu opción
               </p>
+
               <h2 className="mt-3 text-balance text-3xl font-bold tracking-tight text-white sm:text-4xl">
                 Busca a tu manera.
               </h2>
+
               <p className="mt-4 max-w-md text-pretty leading-7 text-slate-300">
-                Filtra por marca, modelo, tipo de vehículo, transmisión, combustible o presupuesto.
-                El catálogo completo está listo para que compares opciones.
+                Filtra por marca, modelo, tipo de vehículo, transmisión,
+                combustible o presupuesto. El catálogo completo está listo para
+                que compares opciones.
               </p>
 
               <div className="mt-7 rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
                 <p className="mb-4 text-sm font-semibold text-slate-100">
                   ¿Qué tipo de vehículo buscas?
                 </p>
+
                 <FiltroTipoVehiculo
                   valor={filtros.tipoVehiculo}
                   onSeleccionar={seleccionarTipo}
-                  size="large"
                 />
               </div>
             </div>
@@ -267,9 +284,11 @@ function BuscadorCatalogo() {
             >
               <div className="relative">
                 <FaSearch className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-3" />
+
                 <label htmlFor="busquedaVehiculo" className="sr-only">
                   Buscar por marca o modelo
                 </label>
+
                 <input
                   id="busquedaVehiculo"
                   name="busqueda"
@@ -282,7 +301,10 @@ function BuscadorCatalogo() {
               </div>
 
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                <label htmlFor="transmision" className="sr-only">Transmisión</label>
+                <label htmlFor="transmision" className="sr-only">
+                  Transmisión
+                </label>
+
                 <select
                   id="transmision"
                   name="transmision"
@@ -291,12 +313,18 @@ function BuscadorCatalogo() {
                   className="rounded-xl border border-line bg-page px-4 py-3 text-sm text-ink outline-none transition focus:border-brand focus:ring-4 focus:ring-brand/10"
                 >
                   <option value="">Transmisión</option>
+
                   {TRANSMISIONES.map((opcion) => (
-                    <option key={opcion.valor} value={opcion.valor}>{opcion.etiqueta}</option>
+                    <option key={opcion.valor} value={opcion.valor}>
+                      {opcion.etiqueta}
+                    </option>
                   ))}
                 </select>
 
-                <label htmlFor="combustible" className="sr-only">Combustible</label>
+                <label htmlFor="combustible" className="sr-only">
+                  Combustible
+                </label>
+
                 <select
                   id="combustible"
                   name="combustible"
@@ -305,14 +333,20 @@ function BuscadorCatalogo() {
                   className="rounded-xl border border-line bg-page px-4 py-3 text-sm text-ink outline-none transition focus:border-brand focus:ring-4 focus:ring-brand/10"
                 >
                   <option value="">Combustible</option>
+
                   {COMBUSTIBLES.map((opcion) => (
-                    <option key={opcion.valor} value={opcion.valor}>{opcion.etiqueta}</option>
+                    <option key={opcion.valor} value={opcion.valor}>
+                      {opcion.etiqueta}
+                    </option>
                   ))}
                 </select>
               </div>
 
               <div className="mt-3 grid grid-cols-2 gap-3">
-                <label className="sr-only" htmlFor="precioMinimo">Precio mínimo</label>
+                <label className="sr-only" htmlFor="precioMinimo">
+                  Precio mínimo
+                </label>
+
                 <input
                   id="precioMinimo"
                   name="precioMinimo"
@@ -325,7 +359,10 @@ function BuscadorCatalogo() {
                   className="min-w-0 rounded-xl border border-line bg-page px-4 py-3 text-sm text-ink outline-none transition placeholder:text-ink-3 focus:border-brand focus:ring-4 focus:ring-brand/10"
                 />
 
-                <label className="sr-only" htmlFor="precioMaximo">Precio máximo</label>
+                <label className="sr-only" htmlFor="precioMaximo">
+                  Precio máximo
+                </label>
+
                 <input
                   id="precioMaximo"
                   name="precioMaximo"
