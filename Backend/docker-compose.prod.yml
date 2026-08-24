@@ -14,6 +14,29 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB requerido}
       POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER requerido}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_PROD:?POSTGRES_PASSWORD_PROD requerido}  # ← Password diferente para prod
+    # Tuning dimensionado para el droplet objetivo de 2 GB (2 vCPU / 2 GB).
+    # Sobrescribible desde .env.prod sin tocar este archivo (ej. al escalar
+    # a 4 GB: PG_SHARED_BUFFERS=512MB PG_EFFECTIVE_CACHE_SIZE=3GB PG_MAX_CONNECTIONS=100).
+    command:
+      - postgres
+      - -c
+      - shared_buffers=${PG_SHARED_BUFFERS:-256MB}
+      - -c
+      - effective_cache_size=${PG_EFFECTIVE_CACHE_SIZE:-768MB}
+      - -c
+      - max_connections=${PG_MAX_CONNECTIONS:-60}
+      - -c
+      - work_mem=${PG_WORK_MEM:-4MB}
+      - -c
+      - maintenance_work_mem=${PG_MAINTENANCE_WORK_MEM:-64MB}
+    # Sin esto, queries en paralelo pueden fallar por el shm default de Docker (64 MB).
+    shm_size: 256mb
+    # Tiempo para un apagado limpio (checkpoint final) antes del SIGKILL.
+    stop_grace_period: 30s
+    # Techo de memoria por contenedor (dimensionado para el droplet de 2 GB):
+    # evita que un pico de la API o del backup despierte al OOM killer contra
+    # Postgres. Al escalar a 4 GB, subir a ~1.5g.
+    mem_limit: 768m
     # NO exponemos el puerto 5432 al exterior (más seguro)
     volumes:
       - pgdata_prod:/var/lib/postgresql/data
@@ -82,6 +105,10 @@ services:
     volumes:
       - api_logs_prod:/app/logs
 
+    # Techo de memoria (droplet 2 GB): la API es quien más varía; si lo
+    # golpea repetidamente, revisar leaks antes de subir el límite.
+    mem_limit: 512m
+
     # En producción NO exponemos la API al exterior: solo nginx (frontend)
     # se publica en el puerto 80 y reenvía /api/* a este contenedor.
     depends_on:
@@ -96,6 +123,9 @@ services:
     container_name: automarket-frontend-prod
     ports:
       - "80:80"
+    # nginx sirviendo estáticos: 128m sobra (cuando el frontend migre a
+    # Cloudflare Pages, este servicio puede eliminarse del compose de prod).
+    mem_limit: 128m
     depends_on:
       api:
         condition: service_healthy
@@ -133,6 +163,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    # pg_dump en streaming: 256m cubre bases de cientos de MB.
+    mem_limit: 256m
     restart: always
 
 volumes:
