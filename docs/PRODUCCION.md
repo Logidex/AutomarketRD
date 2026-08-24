@@ -28,9 +28,10 @@ Para el *cómo* desplegar, ver `docs/DEPLOY.md`; para el pago PayPal, `docs/veri
       (`confirmar-pago` idempotente + webhook); confirmado en staging con
       credenciales sandbox reales (env `Staging`). Falta probar contra una cuenta
       **live** de PayPal antes de lanzar a producción.
-- [ ] **Correos operativos llegando a la bandeja** — depende del SMTP real (sección B).
-- [ ] **Automatización E2E (recomendado)** — Playwright que recorra registrar → publicar →
-      comprar plan; así el CI valida la UX, no solo el build y el lint.
+- [x] **Correos operativos llegando a la bandeja** — SMTP productivo activo en staging.
+- [x] **Automatización E2E (recomendado)** — Playwright recorre el flujo completo
+      registrar → publicar (wizard 5 pasos, 5 fotos) → comprar plan (PayPal simulado
+      en E2E vía `FakePayPalService`); 8 tests en CI (`ci.yml`, job `e2e`).
 
 ---
 

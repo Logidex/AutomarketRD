@@ -1,3 +1,4 @@
+using AutoMarket.API.Fakes;
 using AutoMarket.API.Middleware;
 using AutoMarket.Application.Interfaces;
 using AutoMarket.Application.Services;
@@ -106,7 +107,18 @@ try
     // SERVICIOS DE LA APLICACIÓN
     // =======================================================
 
-    builder.Services.AddScoped<IAlmacenadorArchivos, AlmacenadorS3>();
+    // Almacenamiento de archivos: S3/R2 en todos los entornos reales. En
+    // Development con credenciales "dummy" (E2E / local sin nube) se usa un
+    // almacenador local servido por UseStaticFiles (ver pipeline).
+    if (builder.Environment.IsDevelopment()
+        && string.Equals(builder.Configuration["AWS:AccessKey"], "dummy", StringComparison.OrdinalIgnoreCase))
+    {
+        builder.Services.AddScoped<IAlmacenadorArchivos, AlmacenadorArchivosLocal>();
+    }
+    else
+    {
+        builder.Services.AddScoped<IAlmacenadorArchivos, AlmacenadorS3>();
+    }
 
     builder.Services.AddScoped<IAnuncioService, AnuncioService>();
     builder.Services.AddScoped<IReporteAnuncioService, ReporteAnuncioService>();
@@ -150,7 +162,19 @@ try
 
     builder.Services.AddHostedService<SuscripcionMonitorService>();
 
-    builder.Services.AddHttpClient<IPayPalService, PayPalService>();
+    // PayPal real en todos los entornos reales. En Development con ClientId
+    // "dummy" (docker-compose.e2e.yml) se usa un simulador que evita llamar a
+    // PayPal: el flujo generar-link → pago-exitoso → confirmar-pago funciona
+    // de punta a punta sin red externa. Gate doble: entorno + credencial.
+    if (builder.Environment.IsDevelopment()
+        && string.Equals(builder.Configuration["PayPal:ClientId"], "dummy", StringComparison.OrdinalIgnoreCase))
+    {
+        builder.Services.AddSingleton<IPayPalService, FakePayPalService>();
+    }
+    else
+    {
+        builder.Services.AddHttpClient<IPayPalService, PayPalService>();
+    }
 
 
     // =======================================================
@@ -389,6 +413,13 @@ try
                 // binder) o los claims JWT, generando consumos múltiples e
                 // inconsistencia. Con ForwardedHeaders activo, RemoteIpAddress
                 // es la IP real del cliente detrás de nginx/proxy.
+                //
+                // Ajustable vía RateLimiting__LoginPermitLimit (el suite E2E
+                // lo eleva: registra y loguea varios usuarios por corrida);
+                // el default de 5/15min queda como comportamiento normal.
+                var limiteLogin = builder.Configuration
+                    .GetValue("RateLimiting:LoginPermitLimit", 5);
+
                 return RateLimitPartition
                     .GetFixedWindowLimiter(
                         clave,
@@ -396,7 +427,7 @@ try
                             new FixedWindowRateLimiterOptions
                             {
                                 AutoReplenishment = true,
-                                PermitLimit = 5,
+                                PermitLimit = limiteLogin,
                                 Window =
                                     TimeSpan.FromMinutes(15),
                                 QueueLimit = 0
@@ -575,6 +606,10 @@ try
 
     if (app.Environment.IsDevelopment())
     {
+        // Sirve wwwroot/e2e-archivos: el AlmacenadorArchivosLocal de E2E
+        // expone las fotos subidas como rutas estáticas.
+        app.UseStaticFiles();
+
         app.MapOpenApi();
         app.MapScalarApiReference();
     }
