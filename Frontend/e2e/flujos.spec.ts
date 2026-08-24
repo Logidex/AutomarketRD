@@ -191,3 +191,58 @@ test.describe("Flujo Dealer: cupón de bienvenida", () => {
     await expect(page.getByText(/días restantes/).first()).toBeVisible();
   });
 });
+
+test.describe("Encuesta de satisfacción", () => {
+  test.setTimeout(120_000);
+
+  test("Comprador la ve en su 3ra visita y responde una vez", async ({ page }, testInfo) => {
+    const email = `e2e-encuesta-${Date.now()}-${testInfo.retry}@test.local`;
+
+    // Simular 3ra visita: el contador ya viene cargado antes de cargar la app
+    await page.addInitScript(() => {
+      localStorage.setItem("am-visitas", "3");
+    });
+
+    // 1. Registro de comprador (cualquier rol autenticado puede responder)
+    await page.goto("/registro");
+    await page.locator("#nombre").fill("Encuesta");
+    await page.locator("#apellido").fill("E2E");
+    await page.locator("#email").fill(email);
+    await page.locator("#password").fill("ClaveE2E_123");
+    await page.locator("#confirmarPassword").fill("ClaveE2E_123");
+    await page.getByRole("button", { name: "Registrarse" }).click();
+    await aceptarModal(page, /Registro exitoso/i);
+    await expect(page).toHaveURL(/\/login/, { timeout: 15_000 });
+
+    // 2. Login → el modal aparece solo (tras el delay de 2.5s)
+    await iniciarSesion(page, email, "ClaveE2E_123");
+    await expect(
+      page.getByText("¿Cómo es tu experiencia en AutoMarket RD?")
+    ).toBeVisible({ timeout: 15_000 });
+
+    // 3. Responder: 5★ y 5★ en las escalas + comentario abierto
+    await page.getByRole("button", { name: "5 de 5" }).nth(0).click();
+    await page.getByRole("button", { name: "5 de 5" }).nth(1).click();
+    await page.getByPlaceholder("Cuéntanos (opcional)").fill("Excelente plataforma, sigan así");
+    await page.getByRole("button", { name: "Enviar respuestas" }).click();
+
+    await expect(
+      page.getByText("¡Gracias por tu opinión!")
+    ).toBeVisible({ timeout: 15_000 });
+  });
+
+  test("Admin ve los resultados agregados", async ({ page }) => {
+    // La respuesta la creó el test anterior (misma BD, ejecución secuencial)
+    await page.goto("/login");
+    await page.locator("#loginEmail").fill("admin@e2e.local");
+    await page.locator("#loginPassword").fill("AdminE2e_123");
+    await page.getByRole("button", { name: "Iniciar Sesión" }).click();
+    await expect(page).toHaveURL(/\/admin/, { timeout: 15_000 });
+
+    await page.goto("/admin/encuestas");
+    await expect(
+      page.getByText(/usuario ha respondido|usuarios han respondido/)
+    ).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText("Excelente plataforma, sigan así")).toBeVisible();
+  });
+});

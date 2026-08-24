@@ -27,6 +27,7 @@ const Contacto = lazy(() => import('./pages/legales/Contacto'));
 
 // Componentes de estructura
 import ProtectedRoute from './components/ProtectedRoute';
+import ModalEncuesta from './components/ModalEncuesta';
 const DashboardLayout = lazy(() => import('./components/layout/DashboardLayout'));
 const AdminLayout = lazy(() => import('./components/layout/AdminLayout'));
 const VendedorLayout = lazy(() => import('./components/layout/VendedorLayout'));
@@ -55,6 +56,7 @@ const AdminPlanes = lazy(() => import('./pages/admin/AdminPlanes'));
   const AdminPagos = lazy(() => import('./pages/admin/AdminPagos'));
   const AdminTickets = lazy(() => import('./pages/admin/AdminTickets'));
 const AdminReportes = lazy(() => import('./pages/admin/AdminReportes'));
+const AdminEncuestas = lazy(() => import('./pages/admin/AdminEncuestas'));
 
 // Páginas del área de Vendedor
 const MiVehiculoVendedor = lazy(() => import('./pages/vendedor/MiVehiculoVendedor'));
@@ -75,6 +77,7 @@ function App() {
   return (
     <Suspense fallback={<BarraProgresoNavegacion />}>
       <div key={segmentoRaiz} className="animar-pagina">
+      <ModalEncuesta />
       <Routes>
         {/* INICIO PÚBLICO */}
         <Route path="/" element={<Home />} />
@@ -257,6 +260,9 @@ function App() {
 
             {/* /admin/reportes */}
             <Route path="reportes" element={<AdminReportes />} />
+
+            {/* /admin/encuestas */}
+            <Route path="encuestas" element={<AdminEncuestas />} />
           </Route>
         </Route>
 

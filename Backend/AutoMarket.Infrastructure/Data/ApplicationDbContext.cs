@@ -25,6 +25,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<ReporteAnuncio> ReportesAnuncios { get; set; }
     public DbSet<Cupon> Cupones { get; set; }
     public DbSet<CuponRedencion> RedencionesCupon { get; set; }
+    public DbSet<Encuesta> Encuestas { get; set; }
+    public DbSet<EncuestaPregunta> EncuestasPreguntas { get; set; }
+    public DbSet<EncuestaRespuesta> EncuestasRespuestas { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -604,6 +607,90 @@ public class ApplicationDbContext : DbContext
                 .HasColumnType("timestamp with time zone");
 
             b.HasIndex(r => r.PerfilDealerId);
+        });
+
+        // ==========================================
+        // CONFIGURACIÓN: ENCUESTAS
+        // ==========================================
+        modelBuilder.Entity<Encuesta>(b =>
+        {
+            b.HasKey(e => e.Id);
+
+            b.Property(e => e.Titulo)
+                .IsRequired()
+                .HasMaxLength(200);
+
+            b.Property(e => e.Descripcion)
+                .HasMaxLength(500);
+
+            b.Property(e => e.Activa)
+                .IsRequired();
+
+            b.Property(e => e.FechaCreacionUtc)
+                .IsRequired()
+                .HasColumnType("timestamp with time zone");
+
+            b.HasIndex(e => e.Activa);
+        });
+
+        modelBuilder.Entity<EncuestaPregunta>(b =>
+        {
+            b.HasKey(p => p.Id);
+
+            b.Property(p => p.Texto)
+                .IsRequired()
+                .HasMaxLength(500);
+
+            b.Property(p => p.Orden)
+                .IsRequired();
+
+            b.Property(p => p.Tipo)
+                .IsRequired()
+                .HasColumnType("integer");
+
+            b.HasOne(p => p.Encuesta)
+                .WithMany(e => e.Preguntas)
+                .HasForeignKey(p => p.EncuestaId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            b.HasIndex(p => new { p.EncuestaId, p.Orden });
+        });
+
+        modelBuilder.Entity<EncuestaRespuesta>(b =>
+        {
+            b.HasKey(r => r.Id);
+
+            b.Property(r => r.ValorEscala);
+
+            b.Property(r => r.ValorTexto)
+                .HasMaxLength(1000);
+
+            b.Property(r => r.FechaUtc)
+                .IsRequired()
+                .HasColumnType("timestamp with time zone");
+
+            b.HasOne(r => r.Encuesta)
+                .WithMany()
+                .HasForeignKey(r => r.EncuestaId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            b.HasOne(r => r.Pregunta)
+                .WithMany(p => p.Respuestas)
+                .HasForeignKey(r => r.PreguntaId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            b.HasOne(r => r.Usuario)
+                .WithMany()
+                .HasForeignKey(r => r.UsuarioId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Una respuesta por usuario y pregunta; el servicio rechaza de
+            // antemano si el usuario ya respondió cualquier pregunta.
+            b.HasIndex(r => new { r.EncuestaId, r.UsuarioId, r.PreguntaId })
+                .IsUnique()
+                .HasDatabaseName("IX_EncuestasRespuestas_Unicas");
+
+            b.HasIndex(r => new { r.EncuestaId, r.UsuarioId });
         });
     }
 }

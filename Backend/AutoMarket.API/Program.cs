@@ -156,6 +156,9 @@ try
     builder.Services.AddScoped<ICuponRepository, CuponRepository>();
     builder.Services.AddScoped<ICuponService, CuponService>();
 
+    builder.Services.AddScoped<IEncuestaRepository, EncuestaRepository>();
+    builder.Services.AddScoped<IEncuestaService, EncuestaService>();
+
     builder.Services.AddScoped<IContactoService, ContactoService>();
 
     builder.Services.AddScoped<ITicketRepository, TicketRepository>();
