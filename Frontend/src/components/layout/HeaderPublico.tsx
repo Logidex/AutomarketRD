@@ -13,7 +13,9 @@ export default function HeaderPublico({ titulo }: HeaderPublicoProps) {
   const [logoFallido, setLogoFallido] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 relative flex items-center justify-between border-b border-line bg-page/80 px-4 py-2 backdrop-blur sm:px-8">
+    // Fondo sólido: el 80% + blur hacía ilegible el text-ink-2 del menú
+    // sobre el hero de Home.
+    <header className="sticky top-0 z-40 relative flex items-center justify-between border-b border-line bg-page px-4 py-2 sm:px-8">
       <Link to="/" className="flex items-center gap-3">
         {logoFallido ? (
           <span className="text-lg font-bold text-ink">
