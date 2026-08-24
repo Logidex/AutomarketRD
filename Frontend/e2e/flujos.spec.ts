@@ -147,3 +147,44 @@ test.describe("Flujo Dealer: comprar plan", () => {
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 15_000 });
   });
 });
+
+test.describe("Flujo Dealer: cupón de bienvenida", () => {
+  test.setTimeout(120_000);
+
+  test("Registro → aplicar cupón → Pro activa por 15 días", async ({ page }, testInfo) => {
+    const email = `e2e-cupon-${Date.now()}-${testInfo.retry}@test.local`;
+
+    // 1. Registro como Dealer; auto-login y aterrizaje en /suscripcion
+    await page.goto("/registro");
+    await page.locator("#nombre").fill("Cupon");
+    await page.locator("#apellido").fill("E2E");
+    await page.locator("#email").fill(email);
+    await page.locator("#password").fill("ClaveE2E_123");
+    await page.locator("#confirmarPassword").fill("ClaveE2E_123");
+    await page.locator("#telefonoPersonal").fill("809-555-4321");
+    await page.locator("#rol").selectOption("Dealer");
+    await page.locator("#nombreAgencia").fill("Agencia Cupón E2E");
+    await page.locator("#agenciaRNC").fill("1-30-88888-8");
+    await page.locator("#ubicacionAgencia").fill("La Romana");
+    await page.locator("#telefonoAgencia").fill("809-555-8888");
+    await page.getByRole("button", { name: "Registrarse" }).click();
+
+    await aceptarModal(page, /Registro exitoso/i);
+    await expect(page).toHaveURL(/\/suscripcion/, { timeout: 15_000 });
+
+    // 2. Aplicar el cupón de bienvenida (sembrado por el seeder)
+    await page.locator("#codigoCupon").fill("pro15bienvenida");
+    await page.getByRole("button", { name: "Aplicar cupón" }).click();
+
+    await expect(
+      page.getByRole("heading", { name: "¡Cupón aplicado!" })
+    ).toBeVisible({ timeout: 20_000 });
+    await page.getByRole("button", { name: /^OK$/i }).click();
+    await expect(page).toHaveURL(/\/dashboard/, { timeout: 15_000 });
+
+    // 3. La suscripción quedó en Pro con la vigencia del cupón (~15 días)
+    await page.goto("/dashboard/suscripcion");
+    await expect(page.getByText(/Plan Pro/).first()).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText(/días restantes/).first()).toBeVisible();
+  });
+});
