@@ -153,6 +153,9 @@ try
     builder.Services.AddScoped<IPlanCatalogoRepository, PlanCatalogoRepository>();
     builder.Services.AddScoped<IPlanCatalogoService, PlanCatalogoService>();
 
+    builder.Services.AddScoped<ICuponRepository, CuponRepository>();
+    builder.Services.AddScoped<ICuponService, CuponService>();
+
     builder.Services.AddScoped<IContactoService, ContactoService>();
 
     builder.Services.AddScoped<ITicketRepository, TicketRepository>();

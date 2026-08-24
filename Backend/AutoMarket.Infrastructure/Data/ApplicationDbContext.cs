@@ -23,6 +23,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<TicketMensaje> TicketMensajes { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
     public DbSet<ReporteAnuncio> ReportesAnuncios { get; set; }
+    public DbSet<Cupon> Cupones { get; set; }
+    public DbSet<CuponRedencion> RedencionesCupon { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -538,6 +540,70 @@ public class ApplicationDbContext : DbContext
 
             b.HasIndex(m => m.TicketId);
             b.HasIndex(m => m.AutorId);
+        });
+
+        // ==========================================
+        // CONFIGURACIÓN: CUPONES PROMOCIONALES
+        // ==========================================
+        modelBuilder.Entity<Cupon>(b =>
+        {
+            b.HasKey(c => c.Id);
+
+            b.Property(c => c.Codigo)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            b.HasIndex(c => c.Codigo)
+                .IsUnique()
+                .HasDatabaseName("IX_Cupones_Codigo");
+
+            b.Property(c => c.Nivel)
+                .IsRequired()
+                .HasColumnType("integer");
+
+            b.Property(c => c.Dias)
+                .IsRequired();
+
+            b.Property(c => c.MaximoUsos)
+                .IsRequired();
+
+            // Token de concurrencia optimista para el tope de canjes.
+            b.Property(c => c.UsosActuales)
+                .IsRequired()
+                .IsConcurrencyToken();
+
+            b.Property(c => c.Activo)
+                .IsRequired();
+
+            b.Property(c => c.FechaCreacionUtc)
+                .IsRequired()
+                .HasColumnType("timestamp with time zone");
+        });
+
+        modelBuilder.Entity<CuponRedencion>(b =>
+        {
+            b.HasKey(r => r.Id);
+
+            b.HasOne(r => r.Cupon)
+                .WithMany(c => c.Redenciones)
+                .HasForeignKey(r => r.CuponId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            b.HasOne(r => r.PerfilDealer)
+                .WithMany()
+                .HasForeignKey(r => r.PerfilDealerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Un solo canje por dealer a nivel de base de datos.
+            b.HasIndex(r => new { r.CuponId, r.PerfilDealerId })
+                .IsUnique()
+                .HasDatabaseName("IX_CuponesRedencion_Cupon_PerfilDealer");
+
+            b.Property(r => r.FechaUtc)
+                .IsRequired()
+                .HasColumnType("timestamp with time zone");
+
+            b.HasIndex(r => r.PerfilDealerId);
         });
     }
 }

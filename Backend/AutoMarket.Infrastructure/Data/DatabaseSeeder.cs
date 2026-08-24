@@ -18,6 +18,7 @@ public static class DatabaseSeeder
 
         await SeedAdminAsync(usuarioRepository, config);
         await SeedPlanesCatalogoAsync(scope.ServiceProvider);
+        await SeedCuponBienvenidaAsync(scope.ServiceProvider, config);
     }
 
     private static async Task SeedAdminAsync(IUsuarioRepository usuarioRepository, IConfiguration config)
@@ -109,5 +110,30 @@ public static class DatabaseSeeder
                 Activo = true
             });
         }
+    }
+
+    /// <summary>
+    /// Crea el cupón de bienvenida para dealers (Pro por N días, tope M usos)
+    /// si aún no existe. Código/días/tope configurables vía
+    /// Cupon__Bienvenida__Codigo / __Dias / __MaximoUsos.
+    /// </summary>
+    private static async Task SeedCuponBienvenidaAsync(IServiceProvider serviceProvider, IConfiguration config)
+    {
+        var cuponRepository = serviceProvider.GetRequiredService<ICuponRepository>();
+
+        var codigo = config["Cupon:Bienvenida:Codigo"] ?? "PRO15BIENVENIDA";
+        var dias = config.GetValue("Cupon:Bienvenida:Dias", 15);
+        var maximoUsos = config.GetValue("Cupon:Bienvenida:MaximoUsos", 15);
+
+        var existente = await cuponRepository.ObtenerPorCodigoAsync(codigo);
+
+        if (existente != null)
+        {
+            return;
+        }
+
+        var creado = await cuponRepository.AgregarAsync(new Cupon(codigo, PlanNivel.Pro, dias, maximoUsos));
+
+        Console.WriteLine($"[Seeder] Cupón de bienvenida creado: {creado.Codigo} ({creado.Dias} días Pro, tope {creado.MaximoUsos} usos).");
     }
 }
