@@ -245,6 +245,7 @@ function BuscadorCatalogo() {
               <FiltroTipoVehiculo
                 valor={filtros.tipoVehiculo}
                 onSeleccionar={seleccionarTipo}
+                size="compact"
               />
             </div>
           </div>

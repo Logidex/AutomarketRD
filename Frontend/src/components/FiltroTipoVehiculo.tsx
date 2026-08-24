@@ -30,11 +30,10 @@ interface PropsFiltroTipoVehiculo {
   className?: string;
 }
 
-// SOLUCIÓN 1: Se agregó la palabra "grid" al inicio de cada string.
 const SIZE_CLASSES: Record<Size, string> = {
   default: "grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6",
-  compact: "grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8",
-  // Menos columnas en lg/xl para que las imágenes sean más grandes de forma nativa
+  // Forzamos que 'compact' tenga exactamente 4 columnas en pantallas medianas y grandes (sm/lg)
+  compact: "grid grid-cols-2 gap-2.5 sm:grid-cols-4 lg:grid-cols-4",
   large: "grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4",
 };
 
@@ -47,7 +46,7 @@ const IMAGE_ASPECT: Record<Size, string> = {
 const LABEL_SIZE: Record<Size, string> = {
   default: "text-xs",
   compact: "text-[10px]",
-  large: "text-sm", // Ligeramente más grande para que se lea mejor
+  large: "text-sm", 
 };
 
 export default function FiltroTipoVehiculo({
@@ -68,13 +67,9 @@ export default function FiltroTipoVehiculo({
             onClick={() => onSeleccionar(seleccionado ? "" : opcion.valor)}
             className="group flex w-full flex-col items-center gap-2 outline-none"
           >
-            {/* 
-              SOLUCIÓN 2: 
-              - max-w-[120px] y mx-auto: Evita que la imagen crezca desproporcionadamente. 
-              - Puedes cambiar 120px a 100px si las quieres más pequeñas, o 140px si las quieres más grandes.
-            */}
+            {/* Aquí quitamos el max-w y mx-auto. Ahora fluye natural con el grid */}
             <span
-              className={`relative block w-full max-w-[120px] mx-auto overflow-hidden rounded-2xl border-2 transition-all duration-200 ${
+              className={`relative block w-full overflow-hidden rounded-2xl border-2 transition-all duration-200 ${
                 seleccionado
                   ? "border-brand shadow-lg shadow-brand/30"
                   : "border-transparent ring-1 ring-line group-hover:ring-brand/40 group-hover:shadow-md"
