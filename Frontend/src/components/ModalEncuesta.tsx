@@ -10,10 +10,11 @@ const VISITAS_MINIMAS = 3;
 const RETRASO_MOSTRAR_MS = 2500;
 
 /**
- * Encuesta de satisfacción: se muestra una sola vez por usuario, a partir de
- * la 3ra visita y solo si está autenticado (el límite de 1 respuesta por
- * usuario lo garantiza la BD con un índice único). Si el usuario la cierra
- * sin responder, no vuelve a aparecer.
+ * Encuesta de satisfacción: se muestra a partir de la 3ra visita y solo si
+ * está autenticado (el límite de 1 respuesta por usuario lo garantiza la BD
+ * con un índice único). Si el usuario la cierra sin responder, se oculta por
+ * el resto de la sesión y vuelve a intentar en la próxima; una vez
+ * respondida, no vuelve a aparecer nunca.
  */
 export default function ModalEncuesta() {
   const location = useLocation();
@@ -51,8 +52,9 @@ export default function ModalEncuesta() {
   const respondida = encuesta
     ? encuesta.yaRespondio || localStorage.getItem(`encuesta-respondida-${encuesta.id}`) === "1"
     : false;
+  // Descarte solo para la sesión actual: si no respondió, reaparece en la próxima.
   const descartada = encuesta
-    ? localStorage.getItem(`encuesta-descartada-${encuesta.id}`) === "1"
+    ? sessionStorage.getItem(`encuesta-descartada-${encuesta.id}`) === "1"
     : false;
 
   const mostrar =
@@ -67,7 +69,9 @@ export default function ModalEncuesta() {
 
   const cerrar = () => {
     if (encuesta) {
-      localStorage.setItem(`encuesta-descartada-${encuesta.id}`, "1");
+      // sessionStorage: el descarte dura lo que dura la sesión del navegador.
+      // En la próxima sesión vuelve a mostrarse si aún no ha respondido.
+      sessionStorage.setItem(`encuesta-descartada-${encuesta.id}`, "1");
     }
     setCerrada(true);
   };
