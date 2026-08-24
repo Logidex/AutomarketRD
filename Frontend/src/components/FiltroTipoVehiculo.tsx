@@ -21,17 +21,41 @@ const OPCIONES: OpcionTipoVehiculo[] = [
   { valor: "Motor", etiqueta: "Moto", imagen: "/imagenes-filtros/moto.jpg" },
 ];
 
+type Size = "default" | "compact" | "large";
+
 interface PropsFiltroTipoVehiculo {
   valor: string;
   onSeleccionar: (valor: string) => void;
+  size?: Size;
+  className?: string;
 }
+
+const SIZE_CLASSES: Record<Size, string> = {
+  default: "grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6",
+  compact: "grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6",
+  large: "grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6",
+};
+
+const IMAGE_ASPECT: Record<Size, string> = {
+  default: "aspect-[4/3]",
+  compact: "aspect-square",
+  large: "aspect-[4/3]",
+};
+
+const LABEL_SIZE: Record<Size, string> = {
+  default: "text-xs",
+  compact: "text-[10px]",
+  large: "text-sm",
+};
 
 export default function FiltroTipoVehiculo({
   valor,
   onSeleccionar,
+  size = "default",
+  className = "",
 }: PropsFiltroTipoVehiculo) {
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+    <div className={`${SIZE_CLASSES[size]} ${className}`}>
       {OPCIONES.map((opcion) => {
         const seleccionado = valor === opcion.valor;
         return (
@@ -40,32 +64,32 @@ export default function FiltroTipoVehiculo({
             type="button"
             aria-pressed={seleccionado}
             onClick={() => onSeleccionar(seleccionado ? "" : opcion.valor)}
-            className="group flex w-full flex-col items-center gap-2 outline-none"
+            className="group flex w-full flex-col items-center gap-1.5 outline-none"
           >
             <span
               className={`relative block w-full overflow-hidden rounded-2xl border-2 transition-all duration-200 ${
                 seleccionado
-                  ? "border-blue-500 shadow-lg shadow-blue-500/30"
-                  : "border-transparent ring-1 ring-line group-hover:ring-blue-500/40"
+                  ? "border-brand shadow-lg shadow-brand/30"
+                  : "border-transparent ring-1 ring-line group-hover:ring-brand/40"
               }`}
             >
               <img
                 src={opcion.imagen}
                 alt={opcion.etiqueta}
                 loading="lazy"
-                className="aspect-[4/3] w-full object-cover transition-transform duration-200 group-hover:scale-105"
+                className={`${IMAGE_ASPECT[size]} w-full object-cover transition-transform duration-200 group-hover:scale-105`}
               />
               {seleccionado && (
-                <span className="absolute inset-0 flex items-center justify-center bg-blue-500/30">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 text-sm text-white shadow-md">
+                <span className="absolute inset-0 flex items-center justify-center bg-brand/30">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand text-sm text-white shadow-md">
                     <FaCheck />
                   </span>
                 </span>
               )}
             </span>
             <span
-              className={`text-xs font-semibold transition-colors ${
-                seleccionado ? "text-blue-500" : "text-ink-2 group-hover:text-ink"
+              className={`${LABEL_SIZE[size]} font-semibold transition-colors ${
+                seleccionado ? "text-brand" : "text-ink-2 group-hover:text-ink"
               }`}
             >
               {opcion.etiqueta}

@@ -18,6 +18,7 @@ import { formatearPrecio } from "../utils/formato";
 import { COMBUSTIBLES, TRANSMISIONES } from "../constants/vehiculo.opciones";
 import BadgeVerificado from "../components/BadgeVerificado";
 import FiltroTipoVehiculo from "../components/FiltroTipoVehiculo";
+import SectionBackground from "../components/SectionBackground";
 import HeaderPublico from "../components/layout/HeaderPublico";
 
 const CANTIDAD_DESTACADOS = 5;
@@ -151,67 +152,64 @@ function GaleriaDestacada({ anuncios }: { anuncios: AnuncioListado[] }) {
 
   return (
     <section className="relative overflow-hidden border-b border-line bg-page py-12 sm:py-16">
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,#f8fafc_0%,#eff6ff_45%,#f0f9ff_100%)]" />
-      <div className="pointer-events-none absolute -left-36 top-0 h-[420px] w-[420px] rounded-full bg-blue-500/20 blur-3xl home-orbita-azul" />
-      <div className="pointer-events-none absolute -right-36 bottom-20 h-[480px] w-[480px] rounded-full bg-cyan-400/20 blur-3xl home-orbita-cian" />
-      <div className="pointer-events-none absolute left-[42%] top-1/2 h-72 w-72 -translate-y-1/2 rounded-full bg-indigo-400/10 blur-3xl home-orbita-indigo" />
+      <SectionBackground variant="gallery">
+        <div className="relative mx-auto max-w-6xl px-6 sm:px-8">
+          <div className="mx-auto mb-7 flex max-w-[1088px] items-end justify-between gap-4">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand">
+                Selección de la semana
+              </p>
+              <h2 className="mt-2 text-2xl font-bold tracking-tight text-ink sm:text-3xl">
+                Vehículos que merecen tu atención
+              </h2>
+            </div>
 
-      <div className="relative mx-auto max-w-6xl px-6 sm:px-8">
-        <div className="mx-auto mb-7 flex max-w-[1088px] items-end justify-between gap-4">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand">
-              Selección de la semana
-            </p>
-            <h2 className="mt-2 text-2xl font-bold tracking-tight text-ink sm:text-3xl">
-              Vehículos que merecen tu atención
-            </h2>
+            <Link
+              to="/vehiculos"
+              className="hidden items-center gap-2 rounded-full border border-brand/20 bg-surface/80 px-4 py-2 text-sm font-bold text-brand shadow-sm backdrop-blur transition hover:border-brand/40 hover:bg-surface sm:inline-flex"
+            >
+              Ver inventario
+              <FaArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+
+          <div className="mx-auto grid max-w-[1088px] gap-4 lg:grid-cols-[1.45fr_1fr]">
+            <TarjetaVehiculo anuncio={principal} variante="principal" prioridad />
+
+            <div className="grid grid-cols-2 gap-4">
+              {secundarios.map((anuncio, indice) => (
+                <TarjetaVehiculo
+                  key={anuncio.id}
+                  anuncio={anuncio}
+                  variante="compacta"
+                  prioridad={indice < 2}
+                />
+              ))}
+
+              {secundarios.length < 4 &&
+                Array.from({ length: 4 - secundarios.length }).map((_, indice) => (
+                  <Link
+                    key={`ver-todos-${indice}`}
+                    to="/vehiculos"
+                    className="flex min-h-[200px] flex-col items-center justify-center rounded-2xl border border-dashed border-brand/25 bg-surface/80 p-5 text-center shadow-sm backdrop-blur transition hover:border-brand/50 hover:bg-brand-soft"
+                  >
+                    <FaCar className="text-2xl text-brand" />
+                    <span className="mt-3 text-sm font-bold text-ink">Explorar vehículos</span>
+                    <span className="mt-1 text-xs text-ink-2">Ver todo el inventario</span>
+                  </Link>
+                ))}
+            </div>
           </div>
 
           <Link
             to="/vehiculos"
-            className="hidden items-center gap-2 rounded-full border border-brand/20 bg-surface/80 px-4 py-2 text-sm font-bold text-brand shadow-sm backdrop-blur transition hover:border-brand/40 hover:bg-surface sm:inline-flex"
+            className="mx-auto mt-5 flex w-fit items-center gap-2 rounded-full border border-brand/20 bg-surface/80 px-4 py-2 text-sm font-bold text-brand shadow-sm backdrop-blur transition hover:bg-surface sm:hidden"
           >
-            Ver inventario
+            Ver todo el inventario
             <FaArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
-
-        <div className="mx-auto grid max-w-[1088px] gap-4 lg:grid-cols-[1.45fr_1fr]">
-          <TarjetaVehiculo anuncio={principal} variante="principal" prioridad />
-
-          <div className="grid grid-cols-2 gap-4">
-            {secundarios.map((anuncio, indice) => (
-              <TarjetaVehiculo
-                key={anuncio.id}
-                anuncio={anuncio}
-                variante="compacta"
-                prioridad={indice < 2}
-              />
-            ))}
-
-            {secundarios.length < 4 &&
-              Array.from({ length: 4 - secundarios.length }).map((_, indice) => (
-                <Link
-                  key={`ver-todos-${indice}`}
-                  to="/vehiculos"
-                  className="flex min-h-[200px] flex-col items-center justify-center rounded-2xl border border-dashed border-brand/25 bg-surface/80 p-5 text-center shadow-sm backdrop-blur transition hover:border-brand/50 hover:bg-brand-soft"
-                >
-                  <FaCar className="text-2xl text-brand" />
-                  <span className="mt-3 text-sm font-bold text-ink">Explorar vehículos</span>
-                  <span className="mt-1 text-xs text-ink-2">Ver todo el inventario</span>
-                </Link>
-              ))}
-          </div>
-        </div>
-
-        <Link
-          to="/vehiculos"
-          className="mx-auto mt-5 flex w-fit items-center gap-2 rounded-full border border-brand/20 bg-surface/80 px-4 py-2 text-sm font-bold text-brand shadow-sm backdrop-blur transition hover:bg-surface sm:hidden"
-        >
-          Ver todo el inventario
-          <FaArrowRight className="h-3.5 w-3.5" />
-        </Link>
-      </div>
+      </SectionBackground>
     </section>
   );
 }
@@ -236,126 +234,122 @@ function BuscadorCatalogo() {
 
   return (
     <section className="relative overflow-hidden border-y border-line bg-slate-950">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(37,99,235,0.38),transparent_34%),radial-gradient(circle_at_85%_80%,rgba(14,165,233,0.30),transparent_36%),linear-gradient(135deg,#0f172a_0%,#172554_52%,#082f49_100%)]" />
-      <div className="pointer-events-none absolute -left-28 top-0 h-96 w-96 rounded-full bg-blue-500/30 blur-3xl home-orbita-azul" />
-      <div className="pointer-events-none absolute -right-28 bottom-0 h-96 w-96 rounded-full bg-cyan-400/20 blur-3xl home-orbita-cian" />
-
-      <div className="relative mx-auto max-w-6xl px-6 py-14 sm:px-8 sm:py-16">
-        <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">
-              Encuentra tu opción
-            </p>
-            <h2 className="mt-3 text-balance text-3xl font-bold tracking-tight text-white sm:text-4xl">
-              Busca a tu manera.
-            </h2>
-            <p className="mt-4 max-w-md text-pretty leading-7 text-slate-300">
-              Filtra por marca, modelo, tipo de vehículo, transmisión, combustible o presupuesto.
-              El catálogo completo está listo para que compares opciones.
-            </p>
-
-            <div className="mt-7 rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
-              <p className="mb-4 text-sm font-semibold text-slate-100">
-                ¿Qué tipo de vehículo buscas?
+      <SectionBackground variant="search">
+        <div className="relative mx-auto max-w-6xl px-6 py-14 sm:px-8 sm:py-16">
+          <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">
+                Encuentra tu opción
               </p>
-              {/* Las imágenes del selector se amplían desde este contenedor sin cambiar el componente compartido */}
-              <div className="home-tipos-vehiculo -mx-1 scale-[1.05] origin-left sm:scale-110">
+              <h2 className="mt-3 text-balance text-3xl font-bold tracking-tight text-white sm:text-4xl">
+                Busca a tu manera.
+              </h2>
+              <p className="mt-4 max-w-md text-pretty leading-7 text-slate-300">
+                Filtra por marca, modelo, tipo de vehículo, transmisión, combustible o presupuesto.
+                El catálogo completo está listo para que compares opciones.
+              </p>
+
+              <div className="mt-7 rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
+                <p className="mb-4 text-sm font-semibold text-slate-100">
+                  ¿Qué tipo de vehículo buscas?
+                </p>
                 <FiltroTipoVehiculo
                   valor={filtros.tipoVehiculo}
                   onSeleccionar={seleccionarTipo}
+                  size="large"
                 />
               </div>
             </div>
-          </div>
 
-          <form
-            onSubmit={buscar}
-            className="rounded-3xl border border-white/15 bg-white/95 p-5 shadow-2xl shadow-slate-950/30 backdrop-blur sm:p-7"
-          >
-            <div className="relative">
-              <FaSearch className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-3" />
-              <label htmlFor="busquedaVehiculo" className="sr-only">
-                Buscar por marca o modelo
-              </label>
-              <input
-                id="busquedaVehiculo"
-                name="busqueda"
-                type="search"
-                value={filtros.busqueda}
-                onChange={cambiar}
-                placeholder="Ej.: Toyota Corolla, Honda CR-V..."
-                className="w-full rounded-xl border border-line bg-page py-3.5 pl-11 pr-4 text-sm text-ink outline-none transition focus:border-brand focus:ring-4 focus:ring-brand/10"
-              />
-            </div>
-
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <label htmlFor="transmision" className="sr-only">Transmisión</label>
-              <select
-                id="transmision"
-                name="transmision"
-                value={filtros.transmision}
-                onChange={cambiar}
-                className="rounded-xl border border-line bg-page px-4 py-3 text-sm text-ink outline-none transition focus:border-brand focus:ring-4 focus:ring-brand/10"
-              >
-                <option value="">Transmisión</option>
-                {TRANSMISIONES.map((opcion) => (
-                  <option key={opcion.valor} value={opcion.valor}>{opcion.etiqueta}</option>
-                ))}
-              </select>
-
-              <label htmlFor="combustible" className="sr-only">Combustible</label>
-              <select
-                id="combustible"
-                name="combustible"
-                value={filtros.combustible}
-                onChange={cambiar}
-                className="rounded-xl border border-line bg-page px-4 py-3 text-sm text-ink outline-none transition focus:border-brand focus:ring-4 focus:ring-brand/10"
-              >
-                <option value="">Combustible</option>
-                {COMBUSTIBLES.map((opcion) => (
-                  <option key={opcion.valor} value={opcion.valor}>{opcion.etiqueta}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="mt-3 grid grid-cols-2 gap-3">
-              <label className="sr-only" htmlFor="precioMinimo">Precio mínimo</label>
-              <input
-                id="precioMinimo"
-                name="precioMinimo"
-                type="number"
-                min="0"
-                inputMode="numeric"
-                value={filtros.precioMinimo}
-                onChange={cambiar}
-                placeholder="Precio mínimo"
-                className="min-w-0 rounded-xl border border-line bg-page px-4 py-3 text-sm text-ink outline-none transition placeholder:text-ink-3 focus:border-brand focus:ring-4 focus:ring-brand/10"
-              />
-
-              <label className="sr-only" htmlFor="precioMaximo">Precio máximo</label>
-              <input
-                id="precioMaximo"
-                name="precioMaximo"
-                type="number"
-                min="0"
-                inputMode="numeric"
-                value={filtros.precioMaximo}
-                onChange={cambiar}
-                placeholder="Precio máximo"
-                className="min-w-0 rounded-xl border border-line bg-page px-4 py-3 text-sm text-ink outline-none transition placeholder:text-ink-3 focus:border-brand focus:ring-4 focus:ring-brand/10"
-              />
-            </div>
-
-            <button
-              type="submit"
-              className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-6 py-3.5 text-sm font-bold text-white transition hover:bg-brand-hover focus:outline-none focus:ring-4 focus:ring-brand/20"
+            <form
+              onSubmit={buscar}
+              className="rounded-3xl border border-white/15 bg-white/95 p-5 shadow-2xl shadow-slate-950/30 backdrop-blur sm:p-7"
             >
-              Buscar en el catálogo
-              <FaSearch className="h-3.5 w-3.5" />
-            </button>
-          </form>
+              <div className="relative">
+                <FaSearch className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-3" />
+                <label htmlFor="busquedaVehiculo" className="sr-only">
+                  Buscar por marca o modelo
+                </label>
+                <input
+                  id="busquedaVehiculo"
+                  name="busqueda"
+                  type="search"
+                  value={filtros.busqueda}
+                  onChange={cambiar}
+                  placeholder="Ej.: Toyota Corolla, Honda CR-V..."
+                  className="w-full rounded-xl border border-line bg-page py-3.5 pl-11 pr-4 text-sm text-ink outline-none transition focus:border-brand focus:ring-4 focus:ring-brand/10"
+                />
+              </div>
+
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <label htmlFor="transmision" className="sr-only">Transmisión</label>
+                <select
+                  id="transmision"
+                  name="transmision"
+                  value={filtros.transmision}
+                  onChange={cambiar}
+                  className="rounded-xl border border-line bg-page px-4 py-3 text-sm text-ink outline-none transition focus:border-brand focus:ring-4 focus:ring-brand/10"
+                >
+                  <option value="">Transmisión</option>
+                  {TRANSMISIONES.map((opcion) => (
+                    <option key={opcion.valor} value={opcion.valor}>{opcion.etiqueta}</option>
+                  ))}
+                </select>
+
+                <label htmlFor="combustible" className="sr-only">Combustible</label>
+                <select
+                  id="combustible"
+                  name="combustible"
+                  value={filtros.combustible}
+                  onChange={cambiar}
+                  className="rounded-xl border border-line bg-page px-4 py-3 text-sm text-ink outline-none transition focus:border-brand focus:ring-4 focus:ring-brand/10"
+                >
+                  <option value="">Combustible</option>
+                  {COMBUSTIBLES.map((opcion) => (
+                    <option key={opcion.valor} value={opcion.valor}>{opcion.etiqueta}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="mt-3 grid grid-cols-2 gap-3">
+                <label className="sr-only" htmlFor="precioMinimo">Precio mínimo</label>
+                <input
+                  id="precioMinimo"
+                  name="precioMinimo"
+                  type="number"
+                  min="0"
+                  inputMode="numeric"
+                  value={filtros.precioMinimo}
+                  onChange={cambiar}
+                  placeholder="Precio mínimo"
+                  className="min-w-0 rounded-xl border border-line bg-page px-4 py-3 text-sm text-ink outline-none transition placeholder:text-ink-3 focus:border-brand focus:ring-4 focus:ring-brand/10"
+                />
+
+                <label className="sr-only" htmlFor="precioMaximo">Precio máximo</label>
+                <input
+                  id="precioMaximo"
+                  name="precioMaximo"
+                  type="number"
+                  min="0"
+                  inputMode="numeric"
+                  value={filtros.precioMaximo}
+                  onChange={cambiar}
+                  placeholder="Precio máximo"
+                  className="min-w-0 rounded-xl border border-line bg-page px-4 py-3 text-sm text-ink outline-none transition placeholder:text-ink-3 focus:border-brand focus:ring-4 focus:ring-brand/10"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-6 py-3.5 text-sm font-bold text-white transition hover:bg-brand-hover focus:outline-none focus:ring-4 focus:ring-brand/20"
+              >
+                Buscar en el catálogo
+                <FaSearch className="h-3.5 w-3.5" />
+              </button>
+            </form>
+          </div>
         </div>
-      </div>
+      </SectionBackground>
     </section>
   );
 }
@@ -434,59 +428,57 @@ function Recientes({
 }) {
   return (
     <section className="relative overflow-hidden border-b border-line bg-page py-16">
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,#ffffff_0%,#f8faff_55%,#f5f3ff_100%)]" />
-      <div className="pointer-events-none absolute -right-28 top-12 h-80 w-80 rounded-full bg-indigo-400/10 blur-3xl home-orbita-indigo" />
-      <div className="pointer-events-none absolute -left-24 bottom-0 h-72 w-72 rounded-full bg-cyan-400/8 blur-3xl home-orbita-cian" />
-
-      <div className="relative mx-auto max-w-6xl px-6 sm:px-8">
-        <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand">Lo más reciente</p>
-            <h2 className="mt-2 text-2xl font-bold tracking-tight text-ink sm:text-3xl">Recién publicados</h2>
-          </div>
-          <Link
-            to="/vehiculos"
-            className="inline-flex items-center gap-2 rounded-full border border-brand/20 bg-surface/80 px-4 py-2 text-sm font-bold text-brand shadow-sm backdrop-blur transition hover:border-brand/40 hover:bg-surface"
-          >
-            Ver todos
-            <FaChevronRight className="h-3.5 w-3.5" />
-          </Link>
-        </div>
-
-        {cargando ? (
-          <EstadoCarga />
-        ) : error ? (
-          <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-8 text-center">
-            <p className="text-sm text-red-600">No se pudieron cargar los vehículos.</p>
-            <button
-              type="button"
-              onClick={reintentar}
-              className="mt-4 rounded-xl bg-brand px-5 py-2.5 text-sm font-semibold text-white"
-            >
-              Reintentar
-            </button>
-          </div>
-        ) : anuncios.length > 0 ? (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {anuncios.map((anuncio) => <TarjetaReciente key={anuncio.id} anuncio={anuncio} />)}
-          </div>
-        ) : (
-          <div className="rounded-2xl border border-dashed border-line bg-surface p-12 text-center">
-            <FaCar className="mx-auto text-4xl text-ink-3" />
-            <h2 className="mt-4 text-xl font-bold text-ink">Próximamente habrá vehículos disponibles</h2>
-            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-ink-2">
-              Estamos preparando el inventario. Si deseas vender, puedes ser de los primeros en publicar.
-            </p>
+      <SectionBackground variant="recent">
+        <div className="relative mx-auto max-w-6xl px-6 sm:px-8">
+          <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand">Lo más reciente</p>
+              <h2 className="mt-2 text-2xl font-bold tracking-tight text-ink sm:text-3xl">Recién publicados</h2>
+            </div>
             <Link
-              to="/precios"
-              className="mt-6 inline-flex items-center gap-2 rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-white"
+              to="/vehiculos"
+              className="inline-flex items-center gap-2 rounded-full border border-brand/20 bg-surface/80 px-4 py-2 text-sm font-bold text-brand shadow-sm backdrop-blur transition hover:border-brand/40 hover:bg-surface"
             >
-              Publicar vehículo
-              <FaArrowRight className="h-3.5 w-3.5" />
+              Ver todos
+              <FaChevronRight className="h-3.5 w-3.5" />
             </Link>
           </div>
-        )}
-      </div>
+
+          {cargando ? (
+            <EstadoCarga />
+          ) : error ? (
+            <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-8 text-center">
+              <p className="text-sm text-red-600">No se pudieron cargar los vehículos.</p>
+              <button
+                type="button"
+                onClick={reintentar}
+                className="mt-4 rounded-xl bg-brand px-5 py-2.5 text-sm font-semibold text-white"
+              >
+                Reintentar
+              </button>
+            </div>
+          ) : anuncios.length > 0 ? (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {anuncios.map((anuncio) => <TarjetaReciente key={anuncio.id} anuncio={anuncio} />)}
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-dashed border-line bg-surface p-12 text-center">
+              <FaCar className="mx-auto text-4xl text-ink-3" />
+              <h2 className="mt-4 text-xl font-bold text-ink">Próximamente habrá vehículos disponibles</h2>
+              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-ink-2">
+                Estamos preparando el inventario. Si deseas vender, puedes ser de los primeros en publicar.
+              </p>
+              <Link
+                to="/precios"
+                className="mt-6 inline-flex items-center gap-2 rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-white"
+              >
+                Publicar vehículo
+                <FaArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+          )}
+        </div>
+      </SectionBackground>
     </section>
   );
 }
@@ -494,41 +486,40 @@ function Recientes({
 function CtaVendedor() {
   return (
     <section className="relative overflow-hidden bg-page px-6 py-16 sm:px-8">
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,#f0f9ff_0%,#eff6ff_55%,#eef2ff_100%)]" />
-      <div className="pointer-events-none absolute -right-20 top-0 h-80 w-80 rounded-full bg-blue-500/10 blur-3xl home-orbita-azul" />
-
-      <div className="relative mx-auto max-w-6xl">
-        <div className="overflow-hidden rounded-3xl border border-brand/15 bg-brand-soft shadow-xl shadow-blue-950/5">
-          <div className="grid lg:grid-cols-[1.15fr_0.85fr]">
-            <div className="p-8 sm:p-10">
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand">Para vendedores y dealers</p>
-              <h2 className="mt-3 text-balance text-3xl font-bold tracking-tight text-ink sm:text-4xl">
-                Tu inventario merece una vitrina profesional.
-              </h2>
-              <p className="mt-4 max-w-xl leading-7 text-ink-2">
-                Crea anuncios detallados, agrega fotos, comparte tus enlaces y recibe consultas directamente de compradores interesados.
-              </p>
-              <Link
-                to="/precios"
-                className="mt-7 inline-flex items-center gap-2 rounded-xl bg-brand px-6 py-3.5 text-sm font-bold text-white transition hover:bg-brand-hover"
-              >
-                Publicar un vehículo
-                <FaArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            </div>
-            <div className="relative flex items-center justify-center overflow-hidden bg-slate-950 p-8 text-center text-white sm:p-10">
-              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_25%_20%,rgba(37,99,235,0.5),transparent_38%),radial-gradient(circle_at_80%_80%,rgba(14,165,233,0.36),transparent_42%)]" />
-              <div className="relative">
-                <FaCar className="mx-auto text-5xl text-cyan-300" />
-                <p className="mt-5 text-xl font-bold">Muestra. Conecta. Vende.</p>
-                <p className="mt-2 max-w-xs text-sm leading-6 text-slate-300">
-                  Una forma simple de mostrar tus vehículos a compradores de República Dominicana.
+      <SectionBackground variant="cta">
+        <div className="relative mx-auto max-w-6xl">
+          <div className="overflow-hidden rounded-3xl border border-brand/15 bg-brand-soft shadow-xl shadow-blue-950/5">
+            <div className="grid lg:grid-cols-[1.15fr_0.85fr]">
+              <div className="p-8 sm:p-10">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand">Para vendedores y dealers</p>
+                <h2 className="mt-3 text-balance text-3xl font-bold tracking-tight text-ink sm:text-4xl">
+                  Tu inventario merece una vitrina profesional.
+                </h2>
+                <p className="mt-4 max-w-xl leading-7 text-ink-2">
+                  Crea anuncios detallados, agrega fotos, comparte tus enlaces y recibe consultas directamente de compradores interesados.
                 </p>
+                <Link
+                  to="/precios"
+                  className="mt-7 inline-flex items-center gap-2 rounded-xl bg-brand px-6 py-3.5 text-sm font-bold text-white transition hover:bg-brand-hover"
+                >
+                  Publicar un vehículo
+                  <FaArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+              <div className="relative flex items-center justify-center overflow-hidden bg-slate-950 p-8 text-center text-white sm:p-10">
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_25%_20%,rgba(37,99,235,0.5),transparent_38%),radial-gradient(circle_at_80%_80%,rgba(14,165,233,0.36),transparent_42%)]" />
+                <div className="relative">
+                  <FaCar className="mx-auto text-5xl text-cyan-300" />
+                  <p className="mt-5 text-xl font-bold">Muestra. Conecta. Vende.</p>
+                  <p className="mt-2 max-w-xs text-sm leading-6 text-slate-300">
+                    Una forma simple de mostrar tus vehículos a compradores de República Dominicana.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </SectionBackground>
     </section>
   );
 }
@@ -582,40 +573,36 @@ export default function Home() {
       <HeaderPublico />
 
       <section className="relative overflow-hidden border-b border-line bg-surface">
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,#ffffff_0%,#f8fbff_45%,#eff6ff_100%)]" />
-        <div className="pointer-events-none absolute -left-32 top-0 h-72 w-72 rounded-full bg-blue-500/10 blur-3xl home-orbita-azul" />
-        <div className="pointer-events-none absolute -right-32 bottom-0 h-80 w-80 rounded-full bg-cyan-400/10 blur-3xl home-orbita-cian" />
-
-        <div className="relative mx-auto max-w-6xl px-6 py-11 text-center sm:px-8 sm:py-14">
-          <h1 className="text-balance text-4xl font-bold tracking-tight text-ink sm:text-5xl">
-            Compra y vende vehículos
-            <span className="block text-brand">en República Dominicana</span>
-          </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-pretty leading-7 text-ink-2">
-            Explora el inventario de agencias y vendedores particulares. Encuentra el vehículo que buscas y contacta al vendedor directamente.
-          </p>
-        </div>
+        <SectionBackground variant="hero">
+          <div className="relative mx-auto max-w-6xl px-6 py-11 text-center sm:px-8 sm:py-14">
+            <h1 className="text-balance text-4xl font-bold tracking-tight text-ink sm:text-5xl">
+              Compra y vende vehículos
+              <span className="block text-brand">en República Dominicana</span>
+            </h1>
+            <p className="mx-auto mt-4 max-w-2xl text-pretty leading-7 text-ink-2">
+              Explora el inventario de agencias y vendedores particulares. Encuentra el vehículo que buscas y contacta al vendedor directamente.
+            </p>
+          </div>
+        </SectionBackground>
       </section>
 
       {destacadosCargando ? (
         <section className="relative overflow-hidden border-b border-line bg-page py-12 sm:py-16">
-          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,#f8fafc_0%,#eff6ff_45%,#f0f9ff_100%)]" />
-          <div className="pointer-events-none absolute -left-36 top-0 h-[420px] w-[420px] rounded-full bg-blue-500/20 blur-3xl home-orbita-azul" />
-          <div className="pointer-events-none absolute -right-36 bottom-20 h-[480px] w-[480px] rounded-full bg-cyan-400/20 blur-3xl home-orbita-cian" />
-
-          <div className="relative mx-auto max-w-6xl px-6 sm:px-8">
-            <div className="mx-auto max-w-[1088px]">
-              <div className="h-8 w-80 animate-pulse rounded bg-surface-2" />
-              <div className="mt-7 grid gap-4 lg:grid-cols-[1.45fr_1fr]">
-                <div className="min-h-[420px] animate-pulse rounded-2xl bg-surface-2 sm:min-h-[470px]" />
-                <div className="grid grid-cols-2 gap-4">
-                  {Array.from({ length: 4 }).map((_, indice) => (
-                    <div key={indice} className="min-h-[200px] animate-pulse rounded-2xl bg-surface-2" />
-                  ))}
+          <SectionBackground variant="gallery">
+            <div className="relative mx-auto max-w-6xl px-6 sm:px-8">
+              <div className="mx-auto max-w-[1088px]">
+                <div className="h-8 w-80 animate-pulse rounded bg-surface-2" />
+                <div className="mt-7 grid gap-4 lg:grid-cols-[1.45fr_1fr]">
+                  <div className="min-h-[420px] animate-pulse rounded-2xl bg-surface-2 sm:min-h-[470px]" />
+                  <div className="grid grid-cols-2 gap-4">
+                    {Array.from({ length: 4 }).map((_, indice) => (
+                      <div key={indice} className="min-h-[200px] animate-pulse rounded-2xl bg-surface-2" />
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          </SectionBackground>
         </section>
       ) : (
         <GaleriaDestacada anuncios={destacados} />
@@ -633,4 +620,3 @@ export default function Home() {
     </div>
   );
 }
-
