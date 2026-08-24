@@ -92,10 +92,10 @@ function App() {
         <Route path="/agencias" element={<Agencias />} />
 
         {/* DETALLE PÚBLICO DE UN VEHÍCULO */}
-        <Route path="/anuncio/:id" element={<DetalleAnuncio />} />
+        <Route path="/anuncio/:slug" element={<DetalleAnuncio />} />
 
         {/* PERFIL PÚBLICO DE UN VENDEDOR */}
-        <Route path="/vendedor/:id" element={<VendedorPublico />} />
+        <Route path="/vendedor/:slug" element={<VendedorPublico />} />
 
         {/* PRECIOS PÚBLICOS */}
         <Route path="/precios" element={<Precios />} />

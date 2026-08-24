@@ -23,6 +23,7 @@ import logo from "../assets/AutoMarketRD_Logo.svg";
 import MenuPublico from "../components/layout/MenuPublico";
 import { useCompararVehiculos, useBuscarComparador } from "../hooks/useComparador";
 import { urlImagen } from "../utils/imagen";
+import { urlAnuncio } from "../utils/slug";
 import { formatearPrecio } from "../utils/formato";
 import {
   TIPOS_VEHICULO,
@@ -286,7 +287,7 @@ function ContenidoComparador({
               </th>
               {vehiculos.map((v) => (
                 <th key={v.id} className="min-w-[220px] px-6 py-5 align-bottom">
-                  <Link to={`/anuncio/${v.id}`} className="group block">
+                  <Link to={urlAnuncio(v)} className="group block">
                     <div className="relative aspect-[16/10] overflow-hidden rounded-xl">
                       <img
                         src={fotoPrincipal(v)}
@@ -419,7 +420,7 @@ function ContenidoComparador({
             </div>
 
             <div className="p-5">
-              <Link to={`/anuncio/${v.id}`} className="block">
+              <Link to={urlAnuncio(v)} className="block">
                 <h3 className="text-lg font-bold text-ink hover:text-blue-400">
                   {v.marca} {v.modelo}
                   {v.version && (

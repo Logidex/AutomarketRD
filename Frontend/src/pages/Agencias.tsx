@@ -8,6 +8,7 @@ import Spinner from "../components/Spinner";
 import BadgeVerificado from "../components/BadgeVerificado";
 import { dealerService, type AgenciaListado } from "../services/dealer.service";
 import { urlImagen } from "../utils/imagen";
+import { urlVendedor } from "../utils/slug";
 import { nombrePlan } from "../constants/planes";
 
 const CANTIDAD_POR_PAGINA = 12;
@@ -56,7 +57,7 @@ function useListaAgencias(
 function TarjetaAgencia({ agencia }: { agencia: AgenciaListado }) {
   return (
     <Link
-      to={`/vendedor/${agencia.id}`}
+      to={urlVendedor(agencia.id, agencia.nombreAgencia)}
       className="group flex flex-col rounded-2xl border border-line bg-surface p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-lg"
     >
       <div className="flex items-center gap-4">
