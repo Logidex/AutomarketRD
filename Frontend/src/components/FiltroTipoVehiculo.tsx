@@ -33,19 +33,19 @@ interface PropsFiltroTipoVehiculo {
 const SIZE_CLASSES: Record<Size, string> = {
   default: "grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6",
   compact: "grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6",
-  large: "grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6",
+  large: "grid-cols-3 gap-2.5 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-6",
 };
 
 const IMAGE_ASPECT: Record<Size, string> = {
   default: "aspect-[4/3]",
   compact: "aspect-square",
-  large: "aspect-[4/3]",
+  large: "aspect-[5/4]",
 };
 
 const LABEL_SIZE: Record<Size, string> = {
   default: "text-xs",
   compact: "text-[10px]",
-  large: "text-sm",
+  large: "text-xs",
 };
 
 export default function FiltroTipoVehiculo({
