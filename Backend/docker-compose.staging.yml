@@ -14,6 +14,27 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB requerido}
       POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER requerido}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD requerido}
+    # Tuning dimensionado para el droplet objetivo de 2 GB (2 vCPU / 2 GB),
+    # igual que docker-compose.prod.yml para que las pruebas de carga de
+    # staging sean representativas. Sobrescribible desde .env.staging.
+    command:
+      - postgres
+      - -c
+      - shared_buffers=${PG_SHARED_BUFFERS:-256MB}
+      - -c
+      - effective_cache_size=${PG_EFFECTIVE_CACHE_SIZE:-768MB}
+      - -c
+      - max_connections=${PG_MAX_CONNECTIONS:-60}
+      - -c
+      - work_mem=${PG_WORK_MEM:-4MB}
+      - -c
+      - maintenance_work_mem=${PG_MAINTENANCE_WORK_MEM:-64MB}
+    # Sin esto, queries en paralelo pueden fallar por el shm default de Docker (64 MB).
+    shm_size: 256mb
+    # Tiempo para un apagado limpio (checkpoint final) antes del SIGKILL.
+    stop_grace_period: 30s
+    # Techo de memoria por contenedor (dimensionado para el droplet de 2 GB).
+    mem_limit: 768m
     volumes:
       - pgdata_staging:/var/lib/postgresql/data
     healthcheck:
@@ -81,6 +102,8 @@ services:
     volumes:
       # Persiste los file logs de Serilog entre redeploys (logs/api-*.log)
       - api_logs_staging:/app/logs
+    # Techo de memoria (droplet 2 GB), igual que en prod.
+    mem_limit: 512m
     depends_on:
       db:
         condition: service_healthy
@@ -98,6 +121,8 @@ services:
     container_name: automarket-frontend-staging
     ports:
       - "5174:80"
+    # nginx sirviendo estáticos: 128m sobra.
+    mem_limit: 128m
     depends_on:
       api:
         condition: service_started
@@ -133,6 +158,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    # pg_dump en streaming: 256m cubre bases de cientos de MB.
+    mem_limit: 256m
     restart: unless-stopped
 
 volumes:
