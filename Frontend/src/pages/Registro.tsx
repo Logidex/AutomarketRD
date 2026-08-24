@@ -176,7 +176,7 @@ export default function Registro() {
           await Swal.fire({
             icon: "success",
             title: "¡Registro exitoso!",
-            html: `Tu cuenta Dealer fue creada con el plan <strong>Gratis</strong> (1 anuncio).<br/><br/>Te enviamos un correo de confirmación a <strong>${formData.email}</strong>. Confírmalo para poder obtener la insignia de <strong>Dealer Verificado</strong>.<br/><br/>Ahora elige la suscripción que mejor se adapte a tu agencia.`,
+            html: `Tu cuenta Dealer fue creada con el plan <strong>Gratis</strong> (1 anuncio).<br/><br/>Te enviamos un correo de confirmación a <strong>${formData.email}</strong>. Confírmalo para poder obtener la insignia de <strong>Dealer Verificado</strong>.<br/><br/>⭐ <strong>No te pierdas este paso:</strong> entra a tu panel y completa <strong>Mi Perfil</strong> con el logo, horarios y descripción de tu agencia — los compradores confían más en perfiles completos.<br/><br/>Ahora elige la suscripción que mejor se adapte a tu agencia.`,
             confirmButtonColor: "#3b82f6",
           });
           navigate("/suscripcion");
