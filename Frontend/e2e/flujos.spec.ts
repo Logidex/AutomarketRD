@@ -243,6 +243,51 @@ test.describe("Encuesta de satisfacción", () => {
     await expect(
       page.getByText(/usuario ha respondido|usuarios han respondido/)
     ).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByText("Excelente plataforma, sigan así")).toBeVisible();
+    await expect(
+      page.getByText("Excelente plataforma, sigan así").first()
+    ).toBeVisible();
+  });
+
+  test("Cerrada con X: se oculta en la sesión y reaparece en la próxima", async ({ page }, testInfo) => {
+    const email = `e2e-descarte-${Date.now()}-${testInfo.retry}@test.local`;
+
+    await page.addInitScript(() => {
+      localStorage.setItem("am-visitas", "3");
+    });
+
+    // Registrar comprador y entrar
+    await page.goto("/registro");
+    await page.locator("#nombre").fill("Descarte");
+    await page.locator("#apellido").fill("E2E");
+    await page.locator("#email").fill(email);
+    await page.locator("#password").fill("ClaveE2E_123");
+    await page.locator("#confirmarPassword").fill("ClaveE2E_123");
+    await page.getByRole("button", { name: "Registrarse" }).click();
+    await aceptarModal(page, /Registro exitoso/i);
+    await expect(page).toHaveURL(/\/login/, { timeout: 15_000 });
+    await iniciarSesion(page, email, "ClaveE2E_123");
+
+    // El modal aparece; cerrarlo con la X
+    await expect(
+      page.getByText("¿Cómo es tu experiencia en AutoMarket RD?")
+    ).toBeVisible({ timeout: 15_000 });
+    await page.getByRole("button", { name: "Cerrar encuesta" }).click();
+    await expect(
+      page.getByText("¿Cómo es tu experiencia en AutoMarket RD?")
+    ).toBeHidden();
+
+    // Misma sesión: sigue oculta incluso recargando (pasado el delay de 2.5s)
+    await page.reload();
+    await page.waitForTimeout(3200);
+    await expect(
+      page.getByText("¿Cómo es tu experiencia en AutoMarket RD?")
+    ).toBeHidden({ timeout: 1_000 });
+
+    // Nueva sesión (sessionStorage limpio): reaparece porque no la respondió
+    await page.evaluate(() => sessionStorage.clear());
+    await page.reload();
+    await expect(
+      page.getByText("¿Cómo es tu experiencia en AutoMarket RD?")
+    ).toBeVisible({ timeout: 15_000 });
   });
 });
