@@ -106,6 +106,15 @@ test.describe("Flujo Vendedor: publicar vehículo", () => {
 
     // 4. El anuncio aparece en el panel del vendedor
     await expect(page.getByText(/Corolla/i).first()).toBeVisible({ timeout: 15_000 });
+
+    // 5. SEO: la vitrina enlaza con URL descriptiva (slug + id) y el
+    //    formato antiguo /anuncio/<id> sigue funcionando
+    await page.goto("/vehiculos");
+    await page.locator("div.grid > div.group > button").first().click();
+    await expect(page).toHaveURL(/\/anuncio\/[a-z0-9-]+-\d+$/);
+    const idAnuncio = page.url().match(/(\d+)$/)?.[1];
+    await page.goto(`/anuncio/${idAnuncio}`);
+    await expect(page.getByText(/Corolla/i).first()).toBeVisible({ timeout: 15_000 });
   });
 });
 

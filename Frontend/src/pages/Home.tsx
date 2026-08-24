@@ -16,6 +16,7 @@ import {
 import { useVehiculos } from "../hooks/useVehiculos";
 import type { AnuncioListado } from "../types/anuncio.types";
 import { urlImagen } from "../utils/imagen";
+import { urlAnuncio } from "../utils/slug";
 import { formatearPrecio } from "../utils/formato";
 import { anuncioService } from "../services/anuncio.service";
 import { catalogoService } from "../services/catalogo.service";
@@ -641,7 +642,7 @@ export default function Home() {
               <TarjetaAnuncioHome
                 key={anuncio.id}
                 anuncio={anuncio}
-                onAbrir={() => navigate(`/anuncio/${anuncio.id}`)}
+                onAbrir={() => navigate(urlAnuncio(anuncio))}
               />
             ))}
           </div>
@@ -708,7 +709,7 @@ export default function Home() {
               <TarjetaAnuncioHome
                 key={anuncio.id}
                 anuncio={anuncio}
-                onAbrir={() => navigate(`/anuncio/${anuncio.id}`)}
+                onAbrir={() => navigate(urlAnuncio(anuncio))}
               />
             ))}
           </div>

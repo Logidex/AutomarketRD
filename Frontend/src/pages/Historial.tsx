@@ -3,6 +3,7 @@ import { FaCalendarAlt, FaHistory, FaClock } from "react-icons/fa";
 import { formatearFecha } from "../utils/fecha";
 import { useHistorialReciente } from "../hooks/useHistorial";
 import { urlImagen } from "../utils/imagen";
+import { urlAnuncio } from "../utils/slug";
 import { formatearPrecio } from "../utils/formato";
 
 const IMAGEN_VACIA = "/sin-foto.svg";
@@ -84,7 +85,7 @@ export default function Historial() {
               <button
                 key={`${anuncio.id}-${anuncio.vistoEnUtc}`}
                 type="button"
-                onClick={() => navigate(`/anuncio/${anuncio.id}`)}
+                onClick={() => navigate(urlAnuncio(anuncio))}
                 className="group flex flex-col overflow-hidden rounded-2xl border border-line bg-surface text-left transition-[border-color,box-shadow] hover:border-blue-500/40 hover:shadow-lg"
               >
                 <div className="relative aspect-[16/10] overflow-hidden">

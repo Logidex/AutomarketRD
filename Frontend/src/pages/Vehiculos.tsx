@@ -11,6 +11,7 @@ import {
 import { useVehiculos } from "../hooks/useVehiculos";
 import type { AnuncioListado } from "../types/anuncio.types";
 import { urlImagen } from "../utils/imagen";
+import { urlAnuncio } from "../utils/slug";
 import { formatearPrecio } from "../utils/formato";
 import { useComparador } from "../context/ComparadorContext";
 import logo from "../assets/AutoMarketRD_Logo.svg";
@@ -337,7 +338,7 @@ function FormularioFiltros({
 interface PropsTarjeta {
   anuncio: AnuncioListado;
   esSeleccionado: (id: number) => boolean;
-  onNavegar: (id: number) => void;
+  onNavegar: (anuncio: AnuncioListado) => void;
   onToggleComparar: (id: number) => void;
 }
 
@@ -359,7 +360,7 @@ function TarjetaAnuncio({
     >
       <button
         type="button"
-        onClick={() => onNavegar(anuncio.id)}
+        onClick={() => onNavegar(anuncio)}
         className="flex flex-col text-left"
       >
         <div className="relative aspect-[16/10] overflow-hidden">
@@ -771,7 +772,7 @@ export default function Vehiculos() {
                 key={anuncio.id}
                 anuncio={anuncio}
                 esSeleccionado={esSeleccionado}
-                onNavegar={(id) => navigate(`/anuncio/${id}`)}
+                onNavegar={(a) => navigate(urlAnuncio(a))}
                 onToggleComparar={toggleComparar}
               />
             ))}

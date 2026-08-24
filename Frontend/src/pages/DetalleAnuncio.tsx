@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { idDesdeSlug, urlVendedor } from "../utils/slug";
 import Swal from "sweetalert2";
 import {
   FaArrowLeft,
@@ -452,7 +453,7 @@ function SeccionContacto({
         </span>
 
         <Link
-          to={`/vendedor/${anuncio.usuarioId}`}
+          to={urlVendedor(anuncio.usuarioId, anuncio.nombreVendedor ?? "vendedor")}
           className="inline-flex items-center gap-2 text-sm font-semibold text-blue-400 transition-colors hover:text-blue-300"
         >
           <FaStore />
@@ -1016,7 +1017,7 @@ function useDetalleAnuncio(anuncioId: number, idValido: boolean) {
 }
 
 export default function DetalleAnuncio() {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const [reportando, setReportando] = useState(false);
 
@@ -1078,7 +1079,9 @@ export default function DetalleAnuncio() {
     }
   };
 
-  const anuncioId = Number(id);
+  // El slug es decorativo: el ID viaja al final ("honda-civic-2019-25" -> 25).
+  // También acepta IDs puros ("/anuncio/25") para links antiguos.
+  const anuncioId = idDesdeSlug(slug);
   const idValido = Number.isInteger(anuncioId) && anuncioId > 0;
 
   const detalle = useDetalleAnuncio(anuncioId, idValido);
@@ -1113,6 +1116,16 @@ export default function DetalleAnuncio() {
     handleEnviar,
     handleWhatsApp,
   } = detalle;
+
+  // SEO: título de la pestaña con los datos del vehículo.
+  useEffect(() => {
+    if (anuncio) {
+      document.title = `${anuncio.nombreAnuncio} | AutoMarket RD`;
+    }
+    return () => {
+      document.title = "AutoMarket RD — Compra y venta de vehículos en República Dominicana";
+    };
+  }, [anuncio]);
 
   return (
     <div className="min-h-screen bg-page text-ink">

@@ -7,6 +7,7 @@ import {
 } from "react-icons/fa";
 import { useMisFavoritos, useQuitarFavorito } from "../hooks/useFavoritos";
 import { urlImagen } from "../utils/imagen";
+import { urlAnuncio } from "../utils/slug";
 import { formatearPrecio } from "../utils/formato";
 
 const IMAGEN_VACIA = "/sin-foto.svg";
@@ -100,7 +101,7 @@ export default function Favoritos() {
               >
                 <button
                   type="button"
-                  onClick={() => navigate(`/anuncio/${favorito.id}`)}
+                  onClick={() => navigate(urlAnuncio(favorito))}
                   className="relative aspect-[16/10] overflow-hidden text-left"
                 >
                   <img
@@ -142,7 +143,7 @@ export default function Favoritos() {
                   <div className="mt-4 flex gap-2">
                     <button
                       type="button"
-                      onClick={() => navigate(`/anuncio/${favorito.id}`)}
+                      onClick={() => navigate(urlAnuncio(favorito))}
                       className="flex-1 rounded-lg bg-blue-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-600"
                     >
                       Ver anuncio
