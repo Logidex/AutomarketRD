@@ -152,3 +152,68 @@
 .scroll-fino::-webkit-scrollbar-thumb:hover {
   background: var(--am-ink-3);
 }
+
+@keyframes home-orbita-azul {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.5;
+  }
+
+  50% {
+    transform: translate3d(52px, 28px, 0) scale(1.12);
+    opacity: 0.85;
+  }
+}
+
+@keyframes home-orbita-cian {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.45;
+  }
+
+  50% {
+    transform: translate3d(-46px, -32px, 0) scale(1.14);
+    opacity: 0.78;
+  }
+}
+
+@keyframes home-orbita-indigo {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.35;
+  }
+
+  50% {
+    transform: translate3d(24px, -38px, 0) scale(1.1);
+    opacity: 0.65;
+  }
+}
+
+.home-orbita-azul,
+.home-orbita-cian,
+.home-orbita-indigo {
+  will-change: transform, opacity;
+}
+
+.home-orbita-azul {
+  animation: home-orbita-azul 18s ease-in-out infinite;
+}
+
+.home-orbita-cian {
+  animation: home-orbita-cian 23s ease-in-out infinite;
+}
+
+.home-orbita-indigo {
+  animation: home-orbita-indigo 20s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-orbita-azul,
+  .home-orbita-cian,
+  .home-orbita-indigo {
+    animation: none;
+  }
+}

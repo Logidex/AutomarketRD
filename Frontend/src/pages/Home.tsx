@@ -148,9 +148,14 @@ function GaleriaDestacada({ anuncios }: { anuncios: AnuncioListado[] }) {
   const secundarios = anuncios.slice(1, 5);
 
   return (
-    <section className="relative -mt-8 pb-8 sm:-mt-10">
-      <div className="mx-auto max-w-6xl px-6 sm:px-8">
-        <div className="mb-5 flex items-center justify-between gap-4">
+    /* Fondo llamativo con sutil gradiente en movimiento y resplandor dinámico corporativo */
+    <section className="relative overflow-hidden border-b border-line bg-gradient-to-b from-surface-2/80 via-brand-soft/20 to-surface py-12 sm:py-16">
+      {/* Elemento decorativo flotante con movimiento sutil */}
+      <div className="absolute -top-24 -left-24 h-96 w-96 rounded-full bg-brand/10 blur-3xl animate-pulse" />
+      <div className="absolute -bottom-24 -right-24 h-96 w-96 rounded-full bg-cyan-500/10 blur-3xl animate-pulse" style={{ animationDuration: '4s' }} />
+
+      <div className="relative mx-auto max-w-6xl px-6 sm:px-8">
+        <div className="mb-6 flex items-center justify-between gap-4">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand">Selección de la semana</p>
             <h2 className="mt-1 text-2xl font-bold tracking-tight text-ink sm:text-3xl">
@@ -196,7 +201,7 @@ function GaleriaDestacada({ anuncios }: { anuncios: AnuncioListado[] }) {
 
         <Link
           to="/vehiculos"
-          className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-brand sm:hidden"
+          className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-brand sm:hidden"
         >
           Ver todo el inventario
           <FaArrowRight className="h-3.5 w-3.5" />
@@ -208,35 +213,22 @@ function GaleriaDestacada({ anuncios }: { anuncios: AnuncioListado[] }) {
 
 function BuscadorCatalogo() {
   const navigate = useNavigate();
+  const [filtros, setFiltros] = useState<FiltrosBusqueda>(FILTROS_INICIALES);
 
-  const [filtros, setFiltros] = useState<FiltrosBusqueda>(
-    FILTROS_INICIALES,
-  );
-
-  const cambiar = (
-    event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-  ) => {
+  const cambiar = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = event.target;
-
-    setFiltros((actual) => ({
-      ...actual,
-      [name]: value,
-    }));
+    setFiltros((actual) => ({ ...actual, [name]: value }));
   };
 
   const buscar = (event: React.FormEvent) => {
     event.preventDefault();
-
     navigate(construirUrlCatalogo(filtros));
   };
 
-  // Solo actualiza la selección visual.
-  // No navega hasta que el usuario presione “Buscar en el catálogo”.
   const seleccionarTipo = (tipoVehiculo: string) => {
-    setFiltros((actual) => ({
-      ...actual,
-      tipoVehiculo,
-    }));
+    const nuevosFiltros = { ...filtros, tipoVehiculo };
+    setFiltros(nuevosFiltros);
+    navigate(construirUrlCatalogo(nuevosFiltros));
   };
 
   return (
@@ -244,43 +236,29 @@ function BuscadorCatalogo() {
       <div className="mx-auto max-w-6xl px-6 py-14 sm:px-8 sm:py-16">
         <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand">
-              Encuentra tu opción
-            </p>
-
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand">Encuentra tu opción</p>
             <h2 className="mt-3 text-balance text-3xl font-bold tracking-tight text-ink sm:text-4xl">
               Busca a tu manera.
             </h2>
-
             <p className="mt-4 max-w-md text-pretty leading-7 text-ink-2">
-              Filtra por marca, modelo, tipo de vehículo, transmisión,
-              combustible o presupuesto. El catálogo completo está listo para
-              que compares opciones.
+              Filtra por marca, modelo, tipo de vehículo, transmisión, combustible o presupuesto.
+              El catálogo completo está listo para que compares opciones.
             </p>
 
             <div className="mt-7">
-              <p className="mb-3 text-sm font-semibold text-ink">
-                ¿Qué tipo de vehículo buscas?
-              </p>
-
+              <p className="mb-3 text-sm font-semibold text-ink">¿Qué tipo de vehículo buscas?</p>
               <FiltroTipoVehiculo
                 valor={filtros.tipoVehiculo}
                 onSeleccionar={seleccionarTipo}
+                size="compact"
               />
             </div>
           </div>
 
-          <form
-            onSubmit={buscar}
-            className="rounded-3xl border border-line bg-surface p-5 shadow-xl shadow-slate-900/5 sm:p-7"
-          >
+          <form onSubmit={buscar} className="rounded-3xl border border-line bg-surface p-5 shadow-xl shadow-slate-900/5 sm:p-7">
             <div className="relative">
               <FaSearch className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-3" />
-
-              <label htmlFor="busquedaVehiculo" className="sr-only">
-                Buscar por marca o modelo
-              </label>
-
+              <label htmlFor="busquedaVehiculo" className="sr-only">Buscar por marca o modelo</label>
               <input
                 id="busquedaVehiculo"
                 name="busqueda"
@@ -293,52 +271,33 @@ function BuscadorCatalogo() {
             </div>
 
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <label htmlFor="transmision" className="sr-only">
-                Transmisión
-              </label>
-
               <select
-                id="transmision"
                 name="transmision"
                 value={filtros.transmision}
                 onChange={cambiar}
                 className="rounded-xl border border-line bg-page px-4 py-3 text-sm text-ink outline-none transition focus:border-brand focus:ring-4 focus:ring-brand/10"
               >
                 <option value="">Transmisión</option>
-
                 {TRANSMISIONES.map((opcion) => (
-                  <option key={opcion.valor} value={opcion.valor}>
-                    {opcion.etiqueta}
-                  </option>
+                  <option key={opcion.valor} value={opcion.valor}>{opcion.etiqueta}</option>
                 ))}
               </select>
 
-              <label htmlFor="combustible" className="sr-only">
-                Combustible
-              </label>
-
               <select
-                id="combustible"
                 name="combustible"
                 value={filtros.combustible}
                 onChange={cambiar}
                 className="rounded-xl border border-line bg-page px-4 py-3 text-sm text-ink outline-none transition focus:border-brand focus:ring-4 focus:ring-brand/10"
               >
                 <option value="">Combustible</option>
-
                 {COMBUSTIBLES.map((opcion) => (
-                  <option key={opcion.valor} value={opcion.valor}>
-                    {opcion.etiqueta}
-                  </option>
+                  <option key={opcion.valor} value={opcion.valor}>{opcion.etiqueta}</option>
                 ))}
               </select>
             </div>
 
             <div className="mt-3 grid grid-cols-2 gap-3">
-              <label className="sr-only" htmlFor="precioMinimo">
-                Precio mínimo
-              </label>
-
+              <label className="sr-only" htmlFor="precioMinimo">Precio mínimo</label>
               <input
                 id="precioMinimo"
                 name="precioMinimo"
@@ -350,11 +309,7 @@ function BuscadorCatalogo() {
                 placeholder="Precio mínimo"
                 className="min-w-0 rounded-xl border border-line bg-page px-4 py-3 text-sm text-ink outline-none transition placeholder:text-ink-3 focus:border-brand focus:ring-4 focus:ring-brand/10"
               />
-
-              <label className="sr-only" htmlFor="precioMaximo">
-                Precio máximo
-              </label>
-
+              <label className="sr-only" htmlFor="precioMaximo">Precio máximo</label>
               <input
                 id="precioMaximo"
                 name="precioMaximo"
@@ -566,7 +521,7 @@ export default function Home() {
       </section>
 
       {destacadosCargando ? (
-        <section className="relative -mt-8 pb-8 sm:-mt-10">
+        <section className="relative bg-surface-2/70 py-12 sm:py-16">
           <div className="mx-auto max-w-6xl px-6 sm:px-8">
             <div className="h-8 w-72 animate-pulse rounded bg-surface-2" />
             <div className="mt-5 grid gap-4 lg:grid-cols-[1.45fr_1fr]">
