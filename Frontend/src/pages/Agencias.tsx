@@ -146,7 +146,7 @@ export default function Agencias() {
   return (
     <div className="min-h-screen bg-page text-ink">
       {/* Header */}
-      <header className="relative flex items-center justify-between border-b border-line bg-page/80 px-4 py-2 backdrop-blur sm:px-8">
+      <header className="sticky top-0 z-40 flex items-center justify-between border-b border-line bg-page/80 px-4 py-2 backdrop-blur sm:px-8">
         <div className="flex items-center gap-4">
           <Link to="/" className="flex items-center">
             <img src={logo} alt="AutoMarket RD" className="h-12 w-auto object-contain sm:h-16" />

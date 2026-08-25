@@ -51,6 +51,7 @@ public class RefreshTokenFlowTests
         const string crudo = "refresh-crudo";
 
         _repo.Setup(r => r.ObtenerPorEmailAsync("juan@test.com")).ReturnsAsync(usuario);
+        _repo.Setup(r => r.ObtenerPorEmailParaEscrituraAsync("juan@test.com")).ReturnsAsync(usuario);
         _tokenService.Setup(t => t.GenerarToken(usuario)).Returns("jwt");
         _tokenService.Setup(t => t.GenerarRefreshToken()).Returns(crudo);
         _tokenService.Setup(t => t.HashRefreshToken(crudo)).Returns("HASH-CRUDO");

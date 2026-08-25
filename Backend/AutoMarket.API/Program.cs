@@ -420,11 +420,14 @@ try
                 // inconsistencia. Con ForwardedHeaders activo, RemoteIpAddress
                 // es la IP real del cliente detrás de nginx/proxy.
                 //
+                // Este límite es SOLO un respaldo anti fuerza bruta masiva: el
+                // bloqueo real de cuentas vive en la entidad Usuario (por cuenta,
+                // no por red). El default de 30/15min no interfiere con el uso
+                // normal (incluso fallando en varias cuentas distintas).
                 // Ajustable vía RateLimiting__LoginPermitLimit (el suite E2E
-                // lo eleva: registra y loguea varios usuarios por corrida);
-                // el default de 5/15min queda como comportamiento normal.
+                // lo eleva: registra y loguea varios usuarios por corrida).
                 var limiteLogin = builder.Configuration
-                    .GetValue("RateLimiting:LoginPermitLimit", 5);
+                    .GetValue("RateLimiting:LoginPermitLimit", 30);
 
                 return RateLimitPartition
                     .GetFixedWindowLimiter(

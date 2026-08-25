@@ -1,9 +1,11 @@
+using AutoMarket.Application.Constants;
 using AutoMarket.Application.DTOs;
 using AutoMarket.Application.DTOs.Auth;
 using AutoMarket.Application.DTOs.Usuario;
 using AutoMarket.Application.Helpers;
 using AutoMarket.Application.Interfaces;
 using AutoMarket.Core.Entities;
+using AutoMarket.Core.Entities.Constants;
 using AutoMarket.Core.Entities.Enums;
 using AutoMarket.Core.Exceptions;
 using AutoMarket.Core.Interfaces;
@@ -21,6 +23,8 @@ public class AuthService : IAuthService
     private static readonly TimeSpan VIGENCIA_CODIGO = TimeSpan.FromMinutes(15);
     private static readonly TimeSpan VIGENCIA_CONFIRMACION_EMAIL = TimeSpan.FromDays(2);
     private static readonly TimeSpan VIGENCIA_REFRESH_TOKEN = TimeSpan.FromDays(14);
+    private const int MAX_INTENTOS_DEFECTO = 5;
+    private const int VENTANA_BLOQUEO_MINUTOS_DEFECTO = 15;
 
     private readonly IUsuarioRepository _repository;
     private readonly ITokenService _tokenService;
@@ -111,8 +115,9 @@ public class AuthService : IAuthService
 
     public async Task<LoginResultDto> LoginAsync(LoginDto dto)
     {
-        // 1. Buscar el usuario por email
-        var usuario = await _repository.ObtenerPorEmailAsync(dto.Email);
+        // 1. Buscar el usuario por email (consulta tracked: un fallo de
+        //    contraseña debe persistir el incremento del contador de intentos).
+        var usuario = await _repository.ObtenerPorEmailParaEscrituraAsync(dto.Email);
 
         if (usuario == null)
         {
@@ -130,7 +135,20 @@ public class AuthService : IAuthService
             );
         }
 
-        // 3. Verificar la contraseña
+        // 3. Verificar bloqueo por intentos fallidos (por cuenta, no por red)
+        var ahoraUtc = DateTime.UtcNow;
+        if (usuario.EstaBloqueado(ahoraUtc))
+        {
+            var minutosRestantes = Math.Max(1, (int)Math.Ceiling(
+                (usuario.BloqueadoHastaUtc!.Value - ahoraUtc).TotalMinutes));
+
+            throw new UnauthorizedAccessException(
+                "Tu cuenta está bloqueada temporalmente por múltiples intentos fallidos. " +
+                $"Intenta de nuevo en {minutosRestantes} minuto(s) o restablece tu contraseña para desbloquearla."
+            );
+        }
+
+        // 4. Verificar la contraseña
         bool passwordValido = HasherPassword.Verificar(
             dto.Password,
             usuario.PasswordHash
@@ -138,16 +156,38 @@ public class AuthService : IAuthService
 
         if (!passwordValido)
         {
+            var minutosBloqueo = usuario.RegistrarIntentoFallido(
+                ObtenerMaxIntentosFallidos(),
+                ObtenerVentanaBloqueo(),
+                DateTime.UtcNow);
+
+            await _repository.GuardarCambiosAsync();
+
+            if (minutosBloqueo is int minutos)
+            {
+                throw new UnauthorizedAccessException(
+                    "Tu cuenta ha sido bloqueada temporalmente por múltiples intentos fallidos. " +
+                    $"Se desbloqueará en {minutos} minuto(s), o restablece tu contraseña para desbloquearla de inmediato."
+                );
+            }
+
             throw new UnauthorizedAccessException(
                 "Correo electrónico o contraseña incorrectos."
             );
         }
 
-        // 4. Generar el token de acceso y el refresh token de la sesión
+        // 5. Login correcto: la identidad quedó demostrada, se limpia el bloqueo
+        if (usuario.IntentosFallidos > 0 || usuario.BloqueadoHastaUtc != null)
+        {
+            usuario.ReiniciarIntentosFallidos();
+            await _repository.GuardarCambiosAsync();
+        }
+
+        // 6. Generar el token de acceso y el refresh token de la sesión
         var token = _tokenService.GenerarToken(usuario);
         var refreshToken = await EmitirRefreshTokenAsync(usuario.UsuarioId);
 
-        // 5. Devolver solamente los datos públicos del usuario
+        // 7. Devolver solamente los datos públicos del usuario
         return new LoginResultDto
         {
             Exito = true,
@@ -255,6 +295,22 @@ public class AuthService : IAuthService
         return crudo;
     }
 
+    // Bloqueo de cuenta por intentos fallidos: parámetros configurables
+    // vía Seguridad__MaxIntentosFallidos y Seguridad__VentanaBloqueoMinutos.
+    private int ObtenerMaxIntentosFallidos()
+    {
+        return int.TryParse(_configuration["Seguridad:MaxIntentosFallidos"], out var max) && max > 0
+            ? max
+            : MAX_INTENTOS_DEFECTO;
+    }
+
+    private TimeSpan ObtenerVentanaBloqueo()
+    {
+        return int.TryParse(_configuration["Seguridad:VentanaBloqueoMinutos"], out var minutos) && minutos > 0
+            ? TimeSpan.FromMinutes(minutos)
+            : TimeSpan.FromMinutes(VENTANA_BLOQUEO_MINUTOS_DEFECTO);
+    }
+
     // ==========================================
     // RECUPERACIÓN DE CONTRASEÑA (olvidada)
     // ==========================================
@@ -268,6 +324,17 @@ public class AuthService : IAuthService
 
         if (usuario == null || !usuario.IsActivo)
             return;
+
+        // Límite de correos por usuario: cooldown por tipo + tope diario
+        var espera = usuario.TryRegistrarEnvioEmail(
+            TiposEmail.Recuperacion,
+            DateTime.UtcNow,
+            ReglasEmail.CooldownPorTipo,
+            ReglasEmail.TopeDiario);
+
+        if (espera is int minutos)
+            throw new BusinessRuleException(
+                $"Ya se solicitó un código de recuperación recientemente. Espera {minutos} minuto(s) para solicitar otro.");
 
         var codigo = CodigoUtil.GenerarCodigoNumerico();
 
@@ -312,6 +379,9 @@ public class AuthService : IAuthService
 
         usuario.CambiarPassword(HasherPassword.Hash(dto.NuevaPassword));
 
+        // La identidad quedó demostrada con el código del correo: se limpia el bloqueo
+        usuario.ReiniciarIntentosFallidos();
+
         // Seguridad: la contraseña cambió; se cierran todas las sesiones activas
         await _refreshTokens.RevocarActivosDeUsuarioAsync(usuario.UsuarioId);
 
@@ -339,6 +409,18 @@ public class AuthService : IAuthService
     {
         if (usuario.EmailConfirmado)
             return;
+
+        // Límite de correos por usuario: cooldown por tipo + tope diario
+        // (cubre tanto el envío inicial al registrarse como los reenvíos).
+        var espera = usuario.TryRegistrarEnvioEmail(
+            TiposEmail.ConfirmacionCuenta,
+            DateTime.UtcNow,
+            ReglasEmail.CooldownPorTipo,
+            ReglasEmail.TopeDiario);
+
+        if (espera is int minutos)
+            throw new BusinessRuleException(
+                $"Ya se envió un correo de confirmación recientemente. Espera {minutos} minuto(s) para solicitar otro.");
 
         var token = CodigoUtil.GenerarTokenConfirmacion();
 

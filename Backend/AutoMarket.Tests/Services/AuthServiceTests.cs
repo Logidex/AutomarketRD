@@ -297,6 +297,7 @@ Assert.False(resultado.Exito);
         var mockSuscripcionService = new Mock<ISuscripcionService>();
 
         mockRepo.Setup(r => r.ObtenerPorEmailAsync(dto.Email)).ReturnsAsync(usuarioEnBaseDeDatos);
+        mockRepo.Setup(r => r.ObtenerPorEmailParaEscrituraAsync(dto.Email)).ReturnsAsync(usuarioEnBaseDeDatos);
         mockTokenService.Setup(t => t.GenerarToken(usuarioEnBaseDeDatos)).Returns(tokenFalso);
         mockTokenService.Setup(t => t.GenerarRefreshToken()).Returns("refresh-crudo");
         mockTokenService.Setup(t => t.HashRefreshToken(It.IsAny<string>())).Returns("HASH-REFRESH");

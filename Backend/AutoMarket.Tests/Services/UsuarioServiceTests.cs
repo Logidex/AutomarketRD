@@ -194,6 +194,7 @@ public class UsuarioServiceTests
         var mockSuscripcionService = new Mock<ISuscripcionService>();
 
         mockRepo.Setup(r => r.ObtenerPorEmailAsync(dto.Email)).ReturnsAsync(usuarioEnBaseDeDatos);
+        mockRepo.Setup(r => r.ObtenerPorEmailParaEscrituraAsync(dto.Email)).ReturnsAsync(usuarioEnBaseDeDatos);
         var servicio = new AuthService(mockRepo.Object, mockTokenService.Object, mockSuscripcionService.Object, new Mock<IEmailSenderService>().Object, Mock.Of<IConfiguration>(), Mock.Of<ILogger<AuthService>>(), new Mock<IRefreshTokenRepository>().Object);
 
         // 2 & 3. ACT & ASSERT
@@ -233,6 +234,7 @@ public class UsuarioServiceTests
         var mockSuscripcionService = new Mock<ISuscripcionService>();
 
         mockRepo.Setup(r => r.ObtenerPorEmailAsync(dto.Email)).ReturnsAsync(usuarioEnBaseDeDatos);
+        mockRepo.Setup(r => r.ObtenerPorEmailParaEscrituraAsync(dto.Email)).ReturnsAsync(usuarioEnBaseDeDatos);
         mockTokenService.Setup(t => t.GenerarToken(It.IsAny<Usuario>())).Returns(tokenFalso);
         mockTokenService.Setup(t => t.GenerarRefreshToken()).Returns("refresh-crudo");
         mockTokenService.Setup(t => t.HashRefreshToken(It.IsAny<string>())).Returns("HASH-REFRESH");

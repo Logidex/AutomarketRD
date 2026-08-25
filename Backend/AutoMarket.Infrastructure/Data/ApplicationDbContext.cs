@@ -193,6 +193,11 @@ public class ApplicationDbContext : DbContext
             b.Property(u => u.Email).HasMaxLength(150);
             b.Property(u => u.EmailPendiente).HasMaxLength(150);
 
+            // Bloqueo por intentos fallidos y límite de correos:
+            // contadores en 0 para las filas existentes.
+            b.Property(u => u.IntentosFallidos).HasDefaultValue(0);
+            b.Property(u => u.EmailsEnviadosHoy).HasDefaultValue(0);
+
             // Email Unico
             b.HasIndex(u => u.Email).IsUnique();
 

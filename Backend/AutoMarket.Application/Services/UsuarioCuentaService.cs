@@ -1,9 +1,11 @@
+using AutoMarket.Application.Constants;
 using AutoMarket.Application.DTOs.Admin;
 using AutoMarket.Application.DTOs.Auth;
 using AutoMarket.Application.DTOs.Usuario;
 using AutoMarket.Application.Helpers;
 using AutoMarket.Application.Interfaces;
 using AutoMarket.Core.Entities;
+using AutoMarket.Core.Entities.Constants;
 using AutoMarket.Core.Entities.Enums;
 using AutoMarket.Core.Exceptions;
 using AutoMarket.Core.Interfaces;
@@ -165,6 +167,17 @@ public class UsuarioCuentaService : IUsuarioCuentaService
         if (string.Equals(dto.PasswordActual, dto.NuevaPassword, StringComparison.Ordinal))
             throw new BusinessRuleException("La nueva contraseña debe ser diferente a la actual.");
 
+        // Límite de correos por usuario: cooldown por tipo + tope diario
+        var espera = usuario.TryRegistrarEnvioEmail(
+            TiposEmail.CambioPassword,
+            DateTime.UtcNow,
+            ReglasEmail.CooldownPorTipo,
+            ReglasEmail.TopeDiario);
+
+        if (espera is int minutosEspera)
+            throw new BusinessRuleException(
+                $"Ya se envió un código de confirmación recientemente. Espera {minutosEspera} minuto(s) para solicitar otro.");
+
         var nuevoHash = HasherPassword.Hash(dto.NuevaPassword);
         var codigo = CodigoUtil.GenerarCodigoNumerico();
 
@@ -195,6 +208,9 @@ public class UsuarioCuentaService : IUsuarioCuentaService
 
         if (!usuario.AplicarCambioPasswordSiValido(codigoHash, DateTime.UtcNow))
             throw new BusinessRuleException("El código es inválido o ha expirado. Solicita un nuevo código.");
+
+        // La identidad quedó demostrada con el código: se limpia el bloqueo por intentos fallidos
+        usuario.ReiniciarIntentosFallidos();
 
         // Seguridad: la contraseña cambió; se cierran todas las sesiones activas
         await _refreshTokens.RevocarActivosDeUsuarioAsync(usuario.UsuarioId);
@@ -227,6 +243,17 @@ public class UsuarioCuentaService : IUsuarioCuentaService
 
         if (await _usuarioRepository.ExisteEmailAsync(nuevoEmail))
             throw new BusinessRuleException("Ese correo electrónico ya está registrado.");
+
+        // Límite de correos por usuario: cooldown por tipo + tope diario
+        var espera = usuario.TryRegistrarEnvioEmail(
+            TiposEmail.CambioEmail,
+            DateTime.UtcNow,
+            ReglasEmail.CooldownPorTipo,
+            ReglasEmail.TopeDiario);
+
+        if (espera is int minutosEspera)
+            throw new BusinessRuleException(
+                $"Ya se envió un código de confirmación recientemente. Espera {minutosEspera} minuto(s) para solicitar otro.");
 
         var codigo = CodigoUtil.GenerarCodigoNumerico();
 

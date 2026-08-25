@@ -255,7 +255,7 @@ export default function MenuPublico() {
 
       {/* PANEL MÓVIL */}
       {menuMovilAbierto && (
-        <div className="absolute inset-x-0 top-full z-50 max-h-[calc(100vh-72px)] overflow-y-auto border-b border-line bg-surface shadow-2xl xl:hidden">
+        <div className="absolute inset-x-0 top-full z-50 max-h-[65vh] overflow-y-auto border-b border-line bg-surface shadow-2xl xl:hidden">
           <nav className="space-y-1 p-4 text-[15px] font-medium">
             <Link
               to="/vehiculos"

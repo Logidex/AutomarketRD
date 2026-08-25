@@ -1130,7 +1130,7 @@ export default function DetalleAnuncio() {
   return (
     <div className="min-h-screen bg-page text-ink">
       {/* HEADER */}
-      <header className="relative flex items-center justify-between border-b border-line bg-page/80 px-4 py-2 backdrop-blur sm:px-8">
+      <header className="sticky top-0 z-40 flex items-center justify-between border-b border-line bg-page/80 px-4 py-2 backdrop-blur sm:px-8">
         <Link to="/" className="flex items-center gap-4">
           <img
             src={logo}
