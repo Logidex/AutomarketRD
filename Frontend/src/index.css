@@ -217,3 +217,42 @@
     animation: none;
   }
 }
+
+/* ============================================
+   AURORA: gradiente cónico rotando muy lento
+   detrás de las secciones del Home. Solo transform
+   (GPU) y se congela con reduced-motion.
+   ============================================ */
+@keyframes home-aurora-gira {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.home-aurora {
+  position: absolute;
+  inset: -45%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    var(--am-brand-soft) 55deg,
+    rgba(6, 182, 212, 0.09) 135deg,
+    transparent 205deg,
+    rgba(124, 58, 237, 0.08) 295deg,
+    transparent 360deg
+  );
+  filter: blur(42px);
+  opacity: 0.6;
+  animation: home-aurora-gira 52s linear infinite;
+  will-change: transform;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-aurora {
+    animation: none;
+  }
+}

@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import BarraProgresoNavegacion from './components/BarraProgresoNavegacion';
+import ScrollToTop from './components/ScrollToTop';
 
 // Páginas públicas
 const Home = lazy(() => import('./pages/Home'));
@@ -76,6 +77,9 @@ function App() {
 
   return (
     <Suspense fallback={<BarraProgresoNavegacion />}>
+      <ScrollToTop />
+      {/* key por segmento superior: navegar dentro de un panel no remonta
+          su layout; pasar de una seccion a otra si reproduce el cross-fade */}
       <div key={segmentoRaiz} className="animar-pagina">
       <ModalEncuesta />
       <Routes>

@@ -15,13 +15,11 @@ import { catalogoService } from "../services/catalogo.service";
 import { urlImagen } from "../utils/imagen";
 import { urlAnuncio } from "../utils/slug";
 import { formatearPrecio } from "../utils/formato";
-import {
-  COMBUSTIBLES,
-  TRANSMISIONES,
-} from "../constants/vehiculo.opciones";
+import { COMBUSTIBLES, TRANSMISIONES } from "../constants/vehiculo.opciones";
 import BadgeVerificado from "../components/BadgeVerificado";
 import FiltroTipoVehiculo from "../components/FiltroTipoVehiculo";
 import HeaderPublico from "../components/layout/HeaderPublico";
+import SectionBackground from "../components/SectionBackground";
 
 const CANTIDAD_DESTACADOS = 5;
 const CANTIDAD_RECIENTES = 6;
@@ -82,7 +80,11 @@ function TarjetaVehiculo({
     <Link
       to={urlAnuncio(anuncio)}
       className={`group relative block overflow-hidden rounded-2xl bg-slate-950 text-white shadow-lg shadow-slate-950/15 transition duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-slate-950/25 focus:outline-none focus:ring-4 focus:ring-brand/30 ${
-        esPrincipal ? "min-h-[420px] sm:min-h-[470px]" : esCompacta ? "min-h-[200px]" : "min-h-[290px]"
+        esPrincipal
+          ? "min-h-[420px] sm:min-h-[470px]"
+          : esCompacta
+            ? "min-h-[200px]"
+            : "min-h-[290px]"
       }`}
     >
       <img
@@ -98,7 +100,11 @@ function TarjetaVehiculo({
 
       <div className="absolute left-4 right-4 top-4 flex items-start justify-between gap-3">
         {destacable ? (
-          <span className="rounded-full bg-amber-400 px-3 py-1.5 text-xs font-bold text-amber-950 shadow-sm">
+          <span
+            className={`rounded-full bg-amber-400 font-bold text-amber-950 shadow-sm ${
+              esCompacta ? "px-2.5 py-1 text-[11px]" : "px-3 py-1.5 text-xs"
+            }`}
+          >
             Destacado
           </span>
         ) : (
@@ -107,18 +113,26 @@ function TarjetaVehiculo({
           </span>
         )}
 
-        {anuncio.esDealerVerificado && <BadgeVerificado className="shadow-sm" />}
+        {anuncio.esDealerVerificado && (
+          <BadgeVerificado compacto={esCompacta} className="shadow-sm" />
+        )}
       </div>
 
       <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
-        <p className={`${esPrincipal ? "text-2xl sm:text-3xl" : "text-lg"} font-bold tracking-tight text-white`}>
+        <p
+          className={`${esPrincipal ? "text-2xl sm:text-3xl" : "text-lg"} font-bold tracking-tight text-white`}
+        >
           {titulo}
         </p>
         {anuncio.version && !esCompacta && (
-          <p className="mt-1 truncate text-sm text-white/75">{anuncio.version}</p>
+          <p className="mt-1 truncate text-sm text-white/75">
+            {anuncio.version}
+          </p>
         )}
 
-        <p className={`${esPrincipal ? "mt-3 text-xl" : "mt-2 text-base"} font-bold text-cyan-200`}>
+        <p
+          className={`${esPrincipal ? "mt-3 text-xl" : "mt-2 text-base"} font-bold text-cyan-200`}
+        >
           {formatearPrecio(anuncio.precio, anuncio.moneda)}
         </p>
 
@@ -148,16 +162,16 @@ function GaleriaDestacada({ anuncios }: { anuncios: AnuncioListado[] }) {
   const secundarios = anuncios.slice(1, 5);
 
   return (
-    /* Fondo llamativo con sutil gradiente en movimiento y resplandor dinámico corporativo */
-    <section className="relative overflow-hidden border-b border-line bg-gradient-to-b from-surface-2/80 via-brand-soft/20 to-surface py-12 sm:py-16">
-      {/* Elemento decorativo flotante con movimiento sutil */}
-      <div className="absolute -top-24 -left-24 h-96 w-96 rounded-full bg-brand/10 blur-3xl animate-pulse" />
-      <div className="absolute -bottom-24 -right-24 h-96 w-96 rounded-full bg-cyan-500/10 blur-3xl animate-pulse" style={{ animationDuration: '4s' }} />
-
-      <div className="relative mx-auto max-w-6xl px-6 sm:px-8">
+    <section className="relative overflow-hidden border-b border-line py-12 sm:py-16">
+      <SectionBackground
+        variant="gallery"
+        className="mx-auto max-w-6xl px-6 sm:px-8"
+      >
         <div className="mb-6 flex items-center justify-between gap-4">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand">Selección de la semana</p>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand">
+              Selección de la semana
+            </p>
             <h2 className="mt-1 text-2xl font-bold tracking-tight text-ink sm:text-3xl">
               Vehículos que merecen tu atención
             </h2>
@@ -185,17 +199,23 @@ function GaleriaDestacada({ anuncios }: { anuncios: AnuncioListado[] }) {
             ))}
 
             {secundarios.length < 4 &&
-              Array.from({ length: 4 - secundarios.length }).map((_, indice) => (
-                <Link
-                  key={`ver-todos-${indice}`}
-                  to="/vehiculos"
-                  className="flex min-h-[200px] flex-col items-center justify-center rounded-2xl border border-dashed border-line bg-surface p-5 text-center transition hover:border-brand/40 hover:bg-brand-soft"
-                >
-                  <FaCar className="text-2xl text-brand" />
-                  <span className="mt-3 text-sm font-bold text-ink">Explorar vehículos</span>
-                  <span className="mt-1 text-xs text-ink-2">Ver todo el inventario</span>
-                </Link>
-              ))}
+              Array.from({ length: 4 - secundarios.length }).map(
+                (_, indice) => (
+                  <Link
+                    key={`ver-todos-${indice}`}
+                    to="/vehiculos"
+                    className="flex min-h-[200px] flex-col items-center justify-center rounded-2xl border border-dashed border-line bg-surface p-5 text-center transition hover:border-brand/40 hover:bg-brand-soft"
+                  >
+                    <FaCar className="text-2xl text-brand" />
+                    <span className="mt-3 text-sm font-bold text-ink">
+                      Explorar vehículos
+                    </span>
+                    <span className="mt-1 text-xs text-ink-2">
+                      Ver todo el inventario
+                    </span>
+                  </Link>
+                ),
+              )}
           </div>
         </div>
 
@@ -206,7 +226,7 @@ function GaleriaDestacada({ anuncios }: { anuncios: AnuncioListado[] }) {
           Ver todo el inventario
           <FaArrowRight className="h-3.5 w-3.5" />
         </Link>
-      </div>
+      </SectionBackground>
     </section>
   );
 }
@@ -215,7 +235,9 @@ function BuscadorCatalogo() {
   const navigate = useNavigate();
   const [filtros, setFiltros] = useState<FiltrosBusqueda>(FILTROS_INICIALES);
 
-  const cambiar = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const cambiar = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value } = event.target;
     setFiltros((actual) => ({ ...actual, [name]: value }));
   };
@@ -225,28 +247,37 @@ function BuscadorCatalogo() {
     navigate(construirUrlCatalogo(filtros));
   };
 
+  // Solo selecciona el tipo visualmente: la navegación al directorio ocurre
+  // al presionar "Buscar en el catálogo", así el usuario puede combinar
+  // más filtros (transmisión, combustible, precios) antes de buscar.
   const seleccionarTipo = (tipoVehiculo: string) => {
-    const nuevosFiltros = { ...filtros, tipoVehiculo };
-    setFiltros(nuevosFiltros);
-    navigate(construirUrlCatalogo(nuevosFiltros));
+    setFiltros((actual) => ({ ...actual, tipoVehiculo }));
   };
 
   return (
-    <section className="border-y border-line bg-surface-2/70">
-      <div className="mx-auto max-w-6xl px-6 py-14 sm:px-8 sm:py-16">
+    <section className="relative overflow-hidden border-y border-line">
+      <SectionBackground
+        variant="search"
+        className="mx-auto max-w-6xl px-6 py-14 sm:px-8 sm:py-16"
+      >
         <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand">Encuentra tu opción</p>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand">
+              Encuentra tu opción
+            </p>
             <h2 className="mt-3 text-balance text-3xl font-bold tracking-tight text-ink sm:text-4xl">
               Busca a tu manera.
             </h2>
             <p className="mt-4 max-w-md text-pretty leading-7 text-ink-2">
-              Filtra por marca, modelo, tipo de vehículo, transmisión, combustible o presupuesto.
-              El catálogo completo está listo para que compares opciones.
+              Filtra por marca, modelo, tipo de vehículo, transmisión,
+              combustible o presupuesto. El catálogo completo está listo para
+              que compares opciones.
             </p>
 
             <div className="mt-7">
-              <p className="mb-3 text-sm font-semibold text-ink">¿Qué tipo de vehículo buscas?</p>
+              <p className="mb-3 text-sm font-semibold text-ink">
+                ¿Qué tipo de vehículo buscas?
+              </p>
               <FiltroTipoVehiculo
                 valor={filtros.tipoVehiculo}
                 onSeleccionar={seleccionarTipo}
@@ -255,10 +286,15 @@ function BuscadorCatalogo() {
             </div>
           </div>
 
-          <form onSubmit={buscar} className="rounded-3xl border border-line bg-surface p-5 shadow-xl shadow-slate-900/5 sm:p-7">
+          <form
+            onSubmit={buscar}
+            className="rounded-3xl border border-line bg-surface p-5 shadow-xl shadow-slate-900/5 sm:p-7"
+          >
             <div className="relative">
               <FaSearch className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-3" />
-              <label htmlFor="busquedaVehiculo" className="sr-only">Buscar por marca o modelo</label>
+              <label htmlFor="busquedaVehiculo" className="sr-only">
+                Buscar por marca o modelo
+              </label>
               <input
                 id="busquedaVehiculo"
                 name="busqueda"
@@ -279,7 +315,9 @@ function BuscadorCatalogo() {
               >
                 <option value="">Transmisión</option>
                 {TRANSMISIONES.map((opcion) => (
-                  <option key={opcion.valor} value={opcion.valor}>{opcion.etiqueta}</option>
+                  <option key={opcion.valor} value={opcion.valor}>
+                    {opcion.etiqueta}
+                  </option>
                 ))}
               </select>
 
@@ -291,13 +329,17 @@ function BuscadorCatalogo() {
               >
                 <option value="">Combustible</option>
                 {COMBUSTIBLES.map((opcion) => (
-                  <option key={opcion.valor} value={opcion.valor}>{opcion.etiqueta}</option>
+                  <option key={opcion.valor} value={opcion.valor}>
+                    {opcion.etiqueta}
+                  </option>
                 ))}
               </select>
             </div>
 
             <div className="mt-3 grid grid-cols-2 gap-3">
-              <label className="sr-only" htmlFor="precioMinimo">Precio mínimo</label>
+              <label className="sr-only" htmlFor="precioMinimo">
+                Precio mínimo
+              </label>
               <input
                 id="precioMinimo"
                 name="precioMinimo"
@@ -309,7 +351,9 @@ function BuscadorCatalogo() {
                 placeholder="Precio mínimo"
                 className="min-w-0 rounded-xl border border-line bg-page px-4 py-3 text-sm text-ink outline-none transition placeholder:text-ink-3 focus:border-brand focus:ring-4 focus:ring-brand/10"
               />
-              <label className="sr-only" htmlFor="precioMaximo">Precio máximo</label>
+              <label className="sr-only" htmlFor="precioMaximo">
+                Precio máximo
+              </label>
               <input
                 id="precioMaximo"
                 name="precioMaximo"
@@ -332,7 +376,7 @@ function BuscadorCatalogo() {
             </button>
           </form>
         </div>
-      </div>
+      </SectionBackground>
     </section>
   );
 }
@@ -361,13 +405,27 @@ function TarjetaReciente({ anuncio }: { anuncio: AnuncioListado }) {
       <div className="min-w-0 flex-1 p-4">
         <div className="flex items-start justify-between gap-2">
           <h3 className="truncate font-bold text-ink">{titulo}</h3>
-          <span className="shrink-0 text-xs font-semibold text-ink-2">{anuncio.anio}</span>
+          <span className="shrink-0 text-xs font-semibold text-ink-2">
+            {anuncio.anio}
+          </span>
         </div>
-        {anuncio.version && <p className="mt-1 truncate text-xs text-ink-2">{anuncio.version}</p>}
-        <p className="mt-2 font-bold text-brand">{formatearPrecio(anuncio.precio, anuncio.moneda)}</p>
+        {anuncio.version && (
+          <p className="mt-1 truncate text-xs text-ink-2">{anuncio.version}</p>
+        )}
+        <p className="mt-2 font-bold text-brand">
+          {formatearPrecio(anuncio.precio, anuncio.moneda)}
+        </p>
         <div className="mt-2 flex items-center gap-3 text-xs text-ink-2">
-          <span className="inline-flex items-center gap-1"><FaTachometerAlt />{anuncio.kilometraje.toLocaleString("es-DO")} km</span>
-          {anuncio.ubicacion && <span className="hidden items-center gap-1 sm:inline-flex"><FaMapMarkerAlt />{anuncio.ubicacion}</span>}
+          <span className="inline-flex items-center gap-1">
+            <FaTachometerAlt />
+            {anuncio.kilometraje.toLocaleString("es-DO")} km
+          </span>
+          {anuncio.ubicacion && (
+            <span className="hidden items-center gap-1 sm:inline-flex">
+              <FaMapMarkerAlt />
+              {anuncio.ubicacion}
+            </span>
+          )}
         </div>
       </div>
     </Link>
@@ -378,7 +436,10 @@ function EstadoCarga() {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {Array.from({ length: CANTIDAD_RECIENTES }).map((_, indice) => (
-        <div key={indice} className="overflow-hidden rounded-2xl border border-line bg-surface sm:block">
+        <div
+          key={indice}
+          className="overflow-hidden rounded-2xl border border-line bg-surface sm:block"
+        >
           <div className="h-32 w-36 animate-pulse bg-surface-2 sm:h-auto sm:w-auto sm:aspect-[16/10]" />
           <div className="space-y-3 p-4">
             <div className="h-4 w-3/4 animate-pulse rounded bg-surface-2" />
@@ -402,64 +463,114 @@ function Recientes({
   reintentar: () => void;
 }) {
   return (
-    <section className="mx-auto max-w-6xl px-6 py-16 sm:px-8">
-      <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand">Lo más reciente</p>
-          <h2 className="mt-2 text-2xl font-bold tracking-tight text-ink sm:text-3xl">Recién publicados</h2>
-        </div>
-        <Link to="/vehiculos" className="inline-flex items-center gap-2 text-sm font-bold text-brand transition hover:text-brand-hover">
-          Ver todos <FaChevronRight className="h-3.5 w-3.5" />
-        </Link>
-      </div>
-
-      {cargando ? (
-        <EstadoCarga />
-      ) : error ? (
-        <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-8 text-center">
-          <p className="text-sm text-red-600">No se pudieron cargar los vehículos.</p>
-          <button type="button" onClick={reintentar} className="mt-4 rounded-xl bg-brand px-5 py-2.5 text-sm font-semibold text-white">Reintentar</button>
-        </div>
-      ) : anuncios.length > 0 ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {anuncios.map((anuncio) => <TarjetaReciente key={anuncio.id} anuncio={anuncio} />)}
-        </div>
-      ) : (
-        <div className="rounded-2xl border border-dashed border-line bg-surface p-12 text-center">
-          <FaCar className="mx-auto text-4xl text-ink-3" />
-          <h2 className="mt-4 text-xl font-bold text-ink">Próximamente habrá vehículos disponibles</h2>
-          <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-ink-2">Estamos preparando el inventario. Si deseas vender, puedes ser de los primeros en publicar.</p>
-          <Link to="/precios" className="mt-6 inline-flex items-center gap-2 rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-white">
-            Publicar vehículo <FaArrowRight className="h-3.5 w-3.5" />
+    <section className="relative overflow-hidden py-16">
+      <SectionBackground
+        variant="recent"
+        className="mx-auto max-w-6xl px-6 sm:px-8"
+      >
+        <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand">
+              Lo más reciente
+            </p>
+            <h2 className="mt-2 text-2xl font-bold tracking-tight text-ink sm:text-3xl">
+              Recién publicados
+            </h2>
+          </div>
+          <Link
+            to="/vehiculos"
+            className="inline-flex items-center gap-2 text-sm font-bold text-brand transition hover:text-brand-hover"
+          >
+            Ver todos <FaChevronRight className="h-3.5 w-3.5" />
           </Link>
         </div>
-      )}
+
+        {cargando ? (
+          <EstadoCarga />
+        ) : error ? (
+          <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-8 text-center">
+            <p className="text-sm text-red-600">
+              No se pudieron cargar los vehículos.
+            </p>
+            <button
+              type="button"
+              onClick={reintentar}
+              className="mt-4 rounded-xl bg-brand px-5 py-2.5 text-sm font-semibold text-white"
+            >
+              Reintentar
+            </button>
+          </div>
+        ) : anuncios.length > 0 ? (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {anuncios.map((anuncio) => (
+              <TarjetaReciente key={anuncio.id} anuncio={anuncio} />
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-dashed border-line bg-surface p-12 text-center">
+            <FaCar className="mx-auto text-4xl text-ink-3" />
+            <h2 className="mt-4 text-xl font-bold text-ink">
+              Próximamente habrá vehículos disponibles
+            </h2>
+            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-ink-2">
+              Estamos preparando el inventario. Si deseas vender, puedes ser de
+              los primeros en publicar.
+            </p>
+            <Link
+              to="/precios"
+              className="mt-6 inline-flex items-center gap-2 rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-white"
+            >
+              Publicar vehículo <FaArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+        )}
+      </SectionBackground>
     </section>
   );
 }
 
 function CtaVendedor() {
   return (
-    <section className="mx-auto max-w-6xl px-6 pb-16 sm:px-8">
-      <div className="overflow-hidden rounded-3xl border border-brand/15 bg-brand-soft">
-        <div className="grid lg:grid-cols-[1.15fr_0.85fr]">
-          <div className="p-8 sm:p-10">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand">Para vendedores y dealers</p>
-            <h2 className="mt-3 text-balance text-3xl font-bold tracking-tight text-ink sm:text-4xl">Tu inventario merece una vitrina profesional.</h2>
-            <p className="mt-4 max-w-xl leading-7 text-ink-2">Crea anuncios detallados, agrega fotos, comparte tus enlaces y recibe consultas directamente de compradores interesados.</p>
-            <Link to="/precios" className="mt-7 inline-flex items-center gap-2 rounded-xl bg-brand px-6 py-3.5 text-sm font-bold text-white transition hover:bg-brand-hover">
-              Publicar un vehículo <FaArrowRight className="h-3.5 w-3.5" />
-            </Link>
-          </div>
-          <div className="flex items-center justify-center bg-slate-950 p-8 text-center text-white sm:p-10">
-            <div>
-              <FaCar className="mx-auto text-5xl text-cyan-300" />
-              <p className="mt-5 text-xl font-bold">Muestra. Conecta. Vende.</p>
-              <p className="mt-2 max-w-xs text-sm leading-6 text-slate-300">Una forma simple de mostrar tus vehículos a compradores de República Dominicana.</p>
+    <section className="relative overflow-hidden pt-12 pb-16 sm:pt-16">
+      <SectionBackground
+        variant="cta"
+        className="mx-auto max-w-6xl px-6 sm:px-8"
+      >
+        <div className="overflow-hidden rounded-3xl border border-brand/15 bg-brand-soft">
+          <div className="grid lg:grid-cols-[1.15fr_0.85fr]">
+            <div className="p-8 sm:p-10">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand">
+                Para vendedores y dealers
+              </p>
+              <h2 className="mt-3 text-balance text-3xl font-bold tracking-tight text-ink sm:text-4xl">
+                Tu inventario merece una vitrina profesional.
+              </h2>
+              <p className="mt-4 max-w-xl leading-7 text-ink-2">
+                Crea anuncios detallados, agrega fotos, comparte tus enlaces y
+                recibe consultas directamente de compradores interesados.
+              </p>
+              <Link
+                to="/precios"
+                className="mt-7 inline-flex items-center gap-2 rounded-xl bg-brand px-6 py-3.5 text-sm font-bold text-white transition hover:bg-brand-hover"
+              >
+                Publicar un vehículo <FaArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+            <div className="flex items-center justify-center bg-slate-950 p-8 text-center text-white sm:p-10">
+              <div>
+                <FaCar className="mx-auto text-5xl text-cyan-300" />
+                <p className="mt-5 text-xl font-bold">
+                  Muestra. Conecta. Vende.
+                </p>
+                <p className="mt-2 max-w-xs text-sm leading-6 text-slate-300">
+                  Una forma simple de mostrar tus vehículos a compradores de
+                  República Dominicana.
+                </p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </SectionBackground>
     </section>
   );
 }
@@ -470,11 +581,21 @@ function PiePaginaHome() {
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 text-sm text-ink-2 sm:flex-row sm:px-8">
         <span>© 2026 AutoMarket RD. Todos los derechos reservados.</span>
         <nav className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
-          <Link to="/terminos" className="transition-colors hover:text-ink">Términos</Link>
-          <Link to="/privacidad" className="transition-colors hover:text-ink">Privacidad</Link>
-          <Link to="/reembolso" className="transition-colors hover:text-ink">Reembolsos</Link>
-          <Link to="/contacto" className="transition-colors hover:text-ink">Contacto</Link>
-          <Link to="/precios" className="transition-colors hover:text-ink">Planes y precios</Link>
+          <Link to="/terminos" className="transition-colors hover:text-ink">
+            Términos
+          </Link>
+          <Link to="/privacidad" className="transition-colors hover:text-ink">
+            Privacidad
+          </Link>
+          <Link to="/reembolso" className="transition-colors hover:text-ink">
+            Reembolsos
+          </Link>
+          <Link to="/contacto" className="transition-colors hover:text-ink">
+            Contacto
+          </Link>
+          <Link to="/precios" className="transition-colors hover:text-ink">
+            Planes y precios
+          </Link>
         </nav>
       </div>
     </footer>
@@ -496,7 +617,11 @@ export default function Home() {
     refetch: recargarRecientes,
   } = useQuery({
     queryKey: ["anuncios-recientes-home", CANTIDAD_RECIENTES],
-    queryFn: () => catalogoService.buscar({ paginaActual: 1, cantidadAnuncios: CANTIDAD_RECIENTES }),
+    queryFn: () =>
+      catalogoService.buscar({
+        paginaActual: 1,
+        cantidadAnuncios: CANTIDAD_RECIENTES,
+      }),
     staleTime: 1000 * 60 * 5,
     retry: 1,
   });
@@ -510,34 +635,51 @@ export default function Home() {
 
       <section className="border-b border-line bg-surface">
         <div className="mx-auto max-w-6xl px-6 py-11 text-center sm:px-8 sm:py-14">
-          <h1 className="text-balance text-4xl font-bold tracking-tight text-ink sm:text-5xl">
-            Compra y vende vehículos
-            <span className="block text-brand">en República Dominicana</span>
+          <h1 className="flex justify-center">
+            <h1 className="text-balance text-4xl font-bold tracking-tight text-ink sm:text-5xl">
+              Compra y vende vehículos
+              <span className="block text-brand">en República Dominicana</span>
+            </h1>
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-pretty leading-7 text-ink-2">
-            Explora el inventario de agencias y vendedores particulares. Encuentra el vehículo que buscas y contacta al vendedor directamente.
+            Explora vehículos de agencias verificadas y vendedores particulares
+            en toda República Dominicana. Compara, contacta directo y cierra tu
+            trato hoy.
           </p>
         </div>
       </section>
 
       {destacadosCargando ? (
-        <section className="relative bg-surface-2/70 py-12 sm:py-16">
-          <div className="mx-auto max-w-6xl px-6 sm:px-8">
+        <section className="relative overflow-hidden py-12 sm:py-16">
+          <SectionBackground
+            variant="gallery"
+            className="mx-auto max-w-6xl px-6 sm:px-8"
+          >
             <div className="h-8 w-72 animate-pulse rounded bg-surface-2" />
             <div className="mt-5 grid gap-4 lg:grid-cols-[1.45fr_1fr]">
               <div className="min-h-[420px] animate-pulse rounded-2xl bg-surface-2" />
               <div className="grid grid-cols-2 gap-4">
-                {Array.from({ length: 4 }).map((_, indice) => <div key={indice} className="min-h-[200px] animate-pulse rounded-2xl bg-surface-2" />)}
+                {Array.from({ length: 4 }).map((_, indice) => (
+                  <div
+                    key={indice}
+                    className="min-h-[200px] animate-pulse rounded-2xl bg-surface-2"
+                  />
+                ))}
               </div>
             </div>
-          </div>
+          </SectionBackground>
         </section>
       ) : (
         <GaleriaDestacada anuncios={destacados} />
       )}
 
       <BuscadorCatalogo />
-      <Recientes anuncios={recientes} cargando={recientesCargando} error={recientesError} reintentar={() => recargarRecientes()} />
+      <Recientes
+        anuncios={recientes}
+        cargando={recientesCargando}
+        error={recientesError}
+        reintentar={() => recargarRecientes()}
+      />
       <CtaVendedor />
       <PiePaginaHome />
     </div>

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { FaBars, FaChevronDown, FaTimes } from "react-icons/fa";
 import NavbarUsuario from "./NavbarUsuario";
 import BotonTema from "../BotonTema";
@@ -73,6 +73,7 @@ export default function MenuPublico() {
   const [menuMovilAbierto, setMenuMovilAbierto] = useState(false);
   const contenedorRef = useRef<HTMLDivElement>(null);
   const contenedorLegalRef = useRef<HTMLDivElement>(null);
+  const location = useLocation();
 
   useEffect(() => {
     const cerrarFuera = (e: MouseEvent) => {
@@ -96,10 +97,28 @@ export default function MenuPublico() {
 
   const cerrarMenuMovil = () => setMenuMovilAbierto(false);
 
+  // Píldora de navegación: resalta la sección activa y suaviza el hover
+  const clasePildora = (to: string, conActivo = true) => {
+    const activa =
+      conActivo &&
+      (location.pathname === to ||
+        location.pathname.startsWith(`${to}/`) ||
+        location.pathname.startsWith(`${to}?`));
+
+    return `rounded-full px-3 py-2 font-medium transition-colors xl:px-3.5 xl:text-[15px] ${
+      activa
+        ? "bg-brand-soft text-brand"
+        : "text-ink-2 hover:bg-hover hover:text-ink"
+    }`;
+  };
+
+  const claseDisparador =
+    "flex items-center gap-1.5 rounded-full px-3 py-2 text-ink-2 transition-colors hover:bg-hover hover:text-ink xl:px-3.5 xl:text-[15px]";
+
   return (
     <>
       {/* NAVEGACIÓN ESCRITORIO */}
-      <nav className="hidden items-center gap-6 text-sm font-medium lg:flex">
+      <nav className="hidden items-center gap-1 text-sm font-medium lg:flex xl:gap-1.5">
         {/* COMPRA TU CARRO */}
         <div
           ref={contenedorRef}
@@ -112,7 +131,7 @@ export default function MenuPublico() {
             aria-expanded={menuAbierto}
             aria-haspopup="menu"
             onClick={() => setMenuAbierto((abierto) => !abierto)}
-            className="flex items-center gap-1.5 text-ink-2 transition-colors hover:text-ink"
+            className={claseDisparador}
           >
             Compra tu carro
             <FaChevronDown className="text-[10px]" />
@@ -146,41 +165,26 @@ export default function MenuPublico() {
         </div>
 
         {/* VENDE TU CARRO */}
-        <Link
-          to="/registro"
-          className="text-ink-2 transition-colors hover:text-ink"
-        >
+        <Link to="/registro" className={clasePildora("/registro", false)}>
           Vende tu carro
         </Link>
 
         {/* DIRECTORIO */}
-        <Link
-          to="/vehiculos"
-          className="text-ink-2 transition-colors hover:text-ink"
-        >
+        <Link to="/vehiculos" className={clasePildora("/vehiculos")}>
           Directorio
         </Link>
 
         {/* AGENCIAS */}
-        <Link
-          to="/agencias"
-          className="text-ink-2 transition-colors hover:text-ink"
-        >
+        <Link to="/agencias" className={clasePildora("/agencias")}>
           Agencias
         </Link>
 
         {/* COMPARADOR */}
-        <Link
-          to="/comparador"
-          className="text-ink-2 transition-colors hover:text-ink"
-        >
+        <Link to="/comparador" className={clasePildora("/comparador")}>
           Comparar
         </Link>
 
-        <Link
-          to="/precios"
-          className="text-ink-2 transition-colors hover:text-ink"
-        >
+        <Link to="/precios" className={clasePildora("/precios")}>
           Precios
         </Link>
 
@@ -196,7 +200,7 @@ export default function MenuPublico() {
             aria-expanded={menuLegalAbierto}
             aria-haspopup="menu"
             onClick={() => setMenuLegalAbierto((abierto) => !abierto)}
-            className="flex items-center gap-1.5 text-ink-2 transition-colors hover:text-ink"
+            className={claseDisparador}
           >
             Legal
             <FaChevronDown className="text-[10px]" />
@@ -252,44 +256,44 @@ export default function MenuPublico() {
       {/* PANEL MÓVIL */}
       {menuMovilAbierto && (
         <div className="absolute inset-x-0 top-full z-50 max-h-[calc(100vh-72px)] overflow-y-auto border-b border-line bg-surface shadow-2xl lg:hidden">
-          <nav className="space-y-1 p-4 text-sm font-medium">
+          <nav className="space-y-1 p-4 text-[15px] font-medium">
             <Link
               to="/vehiculos"
               onClick={cerrarMenuMovil}
-              className="block rounded-lg px-3 py-2.5 text-ink hover:bg-hover"
+              className="block rounded-xl px-3.5 py-3 text-ink hover:bg-hover"
             >
               Directorio
             </Link>
             <Link
               to="/agencias"
               onClick={cerrarMenuMovil}
-              className="block rounded-lg px-3 py-2.5 text-ink hover:bg-hover"
+              className="block rounded-xl px-3.5 py-3 text-ink hover:bg-hover"
             >
               Agencias
             </Link>
             <Link
               to="/comparador"
               onClick={cerrarMenuMovil}
-              className="block rounded-lg px-3 py-2.5 text-ink hover:bg-hover"
+              className="block rounded-xl px-3.5 py-3 text-ink hover:bg-hover"
             >
               Comparar
             </Link>
             <Link
               to="/precios"
               onClick={cerrarMenuMovil}
-              className="block rounded-lg px-3 py-2.5 text-ink hover:bg-hover"
+              className="block rounded-xl px-3.5 py-3 text-ink hover:bg-hover"
             >
               Precios
             </Link>
             <Link
               to="/registro"
               onClick={cerrarMenuMovil}
-              className="block rounded-lg px-3 py-2.5 text-ink hover:bg-hover"
+              className="block rounded-xl px-3.5 py-3 text-ink hover:bg-hover"
             >
               Vende tu carro
             </Link>
 
-            <p className="px-3 pt-4 pb-1 text-xs font-semibold uppercase tracking-wide text-ink-3">
+            <p className="px-3.5 pt-4 pb-1 text-xs font-semibold uppercase tracking-wide text-ink-3">
               Compra tu carro
             </p>
             {OPCIONES_COMPRA.map((opcion) => (
@@ -297,13 +301,13 @@ export default function MenuPublico() {
                 key={opcion.to}
                 to={opcion.to}
                 onClick={cerrarMenuMovil}
-                className="block rounded-lg px-3 py-2 text-ink-2 hover:bg-hover"
+                className="block rounded-xl px-3.5 py-2.5 text-ink-2 hover:bg-hover"
               >
                 {opcion.etiqueta}
               </Link>
             ))}
 
-            <p className="px-3 pt-4 pb-1 text-xs font-semibold uppercase tracking-wide text-ink-3">
+            <p className="px-3.5 pt-4 pb-1 text-xs font-semibold uppercase tracking-wide text-ink-3">
               Legal
             </p>
             {OPCIONES_LEGAL.map((opcion) => (
@@ -311,7 +315,7 @@ export default function MenuPublico() {
                 key={opcion.to}
                 to={opcion.to}
                 onClick={cerrarMenuMovil}
-                className="block rounded-lg px-3 py-2 text-ink-2 hover:bg-hover"
+                className="block rounded-xl px-3.5 py-2.5 text-ink-2 hover:bg-hover"
               >
                 {opcion.etiqueta}
               </Link>

@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import MenuPublico from "./MenuPublico";
-import logo from "../../assets/AutoMarketRD_Logo.svg";
 
 interface HeaderPublicoProps {
   /** Texto opcional junto al logo (ej. título de página interna) */
@@ -15,7 +14,7 @@ export default function HeaderPublico({ titulo }: HeaderPublicoProps) {
   return (
     // Fondo sólido: el 80% + blur hacía ilegible el text-ink-2 del menú
     // sobre el hero de Home.
-    <header className="sticky top-0 z-40 relative flex items-center justify-between border-b border-line bg-page px-4 py-2 sm:px-8">
+    <header className="sticky top-0 z-40 relative flex items-center justify-between border-b border-line bg-page px-4 py-3 sm:px-8">
       <Link to="/" className="flex items-center gap-3">
         {logoFallido ? (
           <span className="text-lg font-bold text-ink">
@@ -23,9 +22,9 @@ export default function HeaderPublico({ titulo }: HeaderPublicoProps) {
           </span>
         ) : (
           <img
-            src={logo}
+            src="/automarket-rdlogo-opt.png"
             alt="AutoMarket RD"
-            className="h-12 w-auto object-contain sm:h-16"
+            className="h-14 w-auto object-contain sm:h-20"
             onError={() => setLogoFallido(true)}
           />
         )}
