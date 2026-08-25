@@ -22,6 +22,7 @@ public class UsuarioServiceTests
             Nombre = "Erick",
             Apellido = "Hipolito",
             Email = "erick@test.com",
+                AceptaTerminos = true,
             Password = "MiPasswordSeguro123",
             Rol = "Comprador"
         };
@@ -50,6 +51,7 @@ public class UsuarioServiceTests
             Nombre = "Juan",
             Apellido = "Perez",
             Email = "nuevo@test.com",
+                AceptaTerminos = true,
             Password = "MiPasswordSeguro123",
             Rol = "Comprador" 
         };
@@ -79,6 +81,7 @@ public class UsuarioServiceTests
             Nombre = "Carlos",
             Apellido = "Santana",
             Email = "dealer_falso@test.com",
+                AceptaTerminos = true,
             Password = "MiPasswordSeguro123",
             Rol = "Dealer",
             NombreAgencia = "", 
@@ -110,6 +113,7 @@ public class UsuarioServiceTests
             Nombre = "Roberto",
             Apellido = "Gomez",
             Email = "dealer_real@test.com",
+                AceptaTerminos = true,
             Password = "MiPasswordSeguro123",
             Rol = "Dealer", 
             NombreAgencia = "AutoMotors RD", 

@@ -36,4 +36,7 @@ public class RegistroDto
     // procesa después del registro (flujo PayPal).
     // ==========================================
     public string? PlanInicial { get; set; }
+
+/// <summary>Consentimiento obligatorio de Términos y Condiciones y Política de Privacidad.</summary>
+public bool AceptaTerminos { get; set; }
 }

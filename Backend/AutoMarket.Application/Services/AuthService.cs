@@ -53,6 +53,9 @@ public class AuthService : IAuthService
 
     public async Task<(bool Exito, string Mensaje)> RegistrarUsuarioAsync(RegistroDto dto)
     {
+        if (!dto.AceptaTerminos)
+            return (false, "Debes aceptar los Términos y Condiciones y la Política de Privacidad para crear tu cuenta.");
+
         var existeEmail = await _repository.ExisteEmailAsync(dto.Email);
 
         if (existeEmail) return (false, "El correo electrónico ya está registrado.");
@@ -67,6 +70,9 @@ public class AuthService : IAuthService
             rol: dto.Rol,
             telefonoPersonal: dto.TelefonoPersonal
         );
+
+        // Respaldo legal: fecha de aceptación de términos del nuevo usuario
+        nuevoUsuario.AceptarTerminos(DateTime.UtcNow);
 
         if (nuevoUsuario.Rol == "Dealer")
         {

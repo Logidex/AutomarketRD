@@ -131,6 +131,7 @@ export default function Registro() {
   const [mostrarPassword, setMostrarPassword] = useState(false);
   const [confirmarPassword, setConfirmarPassword] = useState("");
   const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
+  const [aceptoTerminos, setAceptoTerminos] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (
@@ -144,6 +145,16 @@ export default function Registro() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!aceptoTerminos) {
+      await Swal.fire({
+        icon: "warning",
+        title: "Falta aceptar los términos",
+        text: "Debes aceptar los Términos y Condiciones y la Política de Privacidad para crear tu cuenta.",
+        confirmButtonColor: "#3b82f6",
+      });
+      return;
+    }
 
     if (formData.password !== confirmarPassword) {
       await Swal.fire({
@@ -417,6 +428,39 @@ export default function Registro() {
             {esDealer && (
               <CamposDealer formData={formData} handleChange={handleChange} />
             )}
+
+            {/* Aceptación de términos */}
+            <div className="flex items-start gap-3">
+              <input
+                id="aceptaTerminos"
+                type="checkbox"
+                checked={aceptoTerminos}
+                onChange={(e) => setAceptoTerminos(e.target.checked)}
+                required
+                className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border-line accent-blue-600"
+              />
+              <label
+                htmlFor="aceptaTerminos"
+                className="cursor-pointer text-sm leading-6 text-ink-2"
+              >
+                Acepto los{" "}
+                <Link
+                  to="/terminos"
+                  target="_blank"
+                  className="font-semibold text-blue-500 hover:underline"
+                >
+                  Términos y Condiciones
+                </Link>{" "}
+                y la{" "}
+                <Link
+                  to="/privacidad"
+                  target="_blank"
+                  className="font-semibold text-blue-500 hover:underline"
+                >
+                  Política de Privacidad
+                </Link>
+              </label>
+            </div>
 
             <button
               type="submit"

@@ -22,6 +22,7 @@ public class AuthServiceTests
             Nombre = "Erick",
             Apellido = "Hipolito",
             Email = "erick@test.com",
+                AceptaTerminos = true,
             Password = "MiPasswordSeguro123",
             Rol = "Comprador"
         };
@@ -42,6 +43,29 @@ public class AuthServiceTests
     }
 
     [Fact]
+    public async Task RegistrarUsuarioAsync_SinAceptarTerminos_DebeRetornarFalsoYNoCrearUsuario()
+    {
+        var dto = new RegistroDto
+        {
+            Nombre = "Juan",
+            Apellido = "Perez",
+            Email = "sin-terminos@test.com",
+            Password = "MiPasswordSeguro123",
+            Rol = "Comprador",
+            AceptaTerminos = false
+        };
+
+        var mockRepo = new Mock<IUsuarioRepository>();
+        var servicio = new AuthService(mockRepo.Object, new Mock<ITokenService>().Object, new Mock<ISuscripcionService>().Object, new Mock<IEmailSenderService>().Object, Mock.Of<IConfiguration>(), Mock.Of<ILogger<AuthService>>(), new Mock<IRefreshTokenRepository>().Object);
+
+        var resultado = await servicio.RegistrarUsuarioAsync(dto);
+
+        Assert.False(resultado.Exito);
+        Assert.Contains("Términos y Condiciones", resultado.Mensaje);
+        mockRepo.Verify(r => r.CrearUsuarioAsync(It.IsAny<Usuario>()), Times.Never);
+    }
+
+    [Fact]
     public async Task RegistrarUsuarioAsyncDatosValidosCompradorDebeRetornarExito()
     {
         var dto = new RegistroDto
@@ -49,6 +73,7 @@ public class AuthServiceTests
             Nombre = "Juan",
             Apellido = "Perez",
             Email = "nuevo@test.com",
+                AceptaTerminos = true,
             Password = "MiPasswordSeguro123",
             Rol = "Comprador"
         };
@@ -81,6 +106,7 @@ public class AuthServiceTests
             Nombre = "Carlos",
             Apellido = "Santana",
             Email = "dealerfalso@test.com",
+                AceptaTerminos = true,
             Password = "MiPasswordSeguro123",
             Rol = "Dealer",
             NombreAgencia = "",
@@ -110,6 +136,7 @@ Assert.False(resultado.Exito);
             Nombre = "Roberto",
             Apellido = "Gomez",
             Email = "dealerreal@test.com",
+                AceptaTerminos = true,
             Password = "MiPasswordSeguro123",
             Rol = "Dealer",
             NombreAgencia = "AutoMotors RD",
@@ -152,6 +179,7 @@ Assert.False(resultado.Exito);
             Nombre = "Pedro",
             Apellido = "Lopez",
             Email = "dealerpremium@test.com",
+                AceptaTerminos = true,
             Password = "MiPasswordSeguro123",
             Rol = "Dealer",
             NombreAgencia = "Premium Motors",
@@ -466,6 +494,7 @@ Assert.False(resultado.Exito);
             Nombre = "Carlos",
             Apellido = "Mota",
             Email = "dealer@test.com",
+                AceptaTerminos = true,
             Password = "MiPasswordSeguro123",
             Rol = "Dealer",
             NombreAgencia = "Mota Motors",

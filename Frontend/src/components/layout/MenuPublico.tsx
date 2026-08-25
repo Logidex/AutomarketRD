@@ -118,7 +118,7 @@ export default function MenuPublico() {
   return (
     <>
       {/* NAVEGACIÓN ESCRITORIO */}
-      <nav className="hidden items-center gap-1 text-sm font-medium lg:flex xl:gap-1.5">
+      <nav className="hidden items-center gap-1.5 text-sm font-medium xl:flex">
         {/* COMPRA TU CARRO */}
         <div
           ref={contenedorRef}
@@ -239,7 +239,7 @@ export default function MenuPublico() {
       </nav>
 
       {/* NAVEGACIÓN MÓVIL */}
-      <div className="flex items-center gap-2 lg:hidden">
+      <div className="flex items-center gap-2 xl:hidden">
         <BotonTema />
         <NavbarUsuario />
         <button
@@ -255,7 +255,7 @@ export default function MenuPublico() {
 
       {/* PANEL MÓVIL */}
       {menuMovilAbierto && (
-        <div className="absolute inset-x-0 top-full z-50 max-h-[calc(100vh-72px)] overflow-y-auto border-b border-line bg-surface shadow-2xl lg:hidden">
+        <div className="absolute inset-x-0 top-full z-50 max-h-[calc(100vh-72px)] overflow-y-auto border-b border-line bg-surface shadow-2xl xl:hidden">
           <nav className="space-y-1 p-4 text-[15px] font-medium">
             <Link
               to="/vehiculos"

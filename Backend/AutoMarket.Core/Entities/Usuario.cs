@@ -155,6 +155,17 @@ public class Usuario
     public bool IsActivo { get; private set; } = true;
 
     // ==========================================
+    // ACEPTACIÓN DE TÉRMINOS Y CONDICIONES
+    // (fecha del alta; null en cuentas creadas antes del requerimiento)
+    // ==========================================
+    public DateTime? TerminosAceptadosUtc { get; private set; }
+
+    public void AceptarTerminos(DateTime utc)
+    {
+        TerminosAceptadosUtc = utc;
+    }
+
+    // ==========================================
     // CAMBIO DE CORREO EN DOS PASOS (confirmación)
     // ==========================================
     public string? EmailPendiente { get; private set; }
