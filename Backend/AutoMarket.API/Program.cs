@@ -329,40 +329,28 @@ try
 
     const string frontendPolicy = "FrontendCorsPolicy";
 
-    var allowedOrigins =
-        builder.Configuration
-            .GetSection("Cors:AllowedOrigins")
-            .Get<string[]>() ?? [];
+    var allowedOrigins = builder.Configuration
+        .GetSection("Cors:AllowedOrigins")
+        .Get<string[]>() ?? Array.Empty<string>();
 
-    // En desarrollo el SPA corre en el dev server de Vite (puerto 5173).
-    // AllowCredentials exige orígenes explícitos (AllowAnyOrigin + AllowCredentials
-    // es una combinación inválida y el navegador rechaza la cookie con credenciales).
-    string[] devOrigins =
-    [
+    if (builder.Environment.IsDevelopment())
+    {
+        allowedOrigins = new[]
+        {
         "http://localhost:5173",
         "http://127.0.0.1:5173"
-    ];
+    };
+    }
 
     builder.Services.AddCors(options =>
     {
         options.AddPolicy(frontendPolicy, policy =>
         {
-            if (builder.Environment.IsDevelopment())
-            {
-                policy
-                    .WithOrigins(devOrigins)
-                    .AllowAnyHeader()
-                    .AllowAnyMethod()
-                    .AllowCredentials();
-            }
-            else if (allowedOrigins.Length > 0)
-            {
-                policy
-                    .WithOrigins(allowedOrigins)
-                    .AllowAnyHeader()
-                    .AllowAnyMethod()
-                    .AllowCredentials();
-            }
+            policy
+                .WithOrigins(allowedOrigins)
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials();
         });
     });
 
