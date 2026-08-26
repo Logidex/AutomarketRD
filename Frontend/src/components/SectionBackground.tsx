@@ -8,20 +8,25 @@ interface VariantConfig {
   base: string;
   gradient?: string;
   orbs: readonly string[];
-  /** Capa aurora (conic-gradient rotando lento) detrás de los orbes */
   aurora?: boolean;
 }
 
-const VARIANT_CONFIG: Record<SectionBackgroundProps["variant"], VariantConfig> = {
+const VARIANT_CONFIG: Record<
+  SectionBackgroundProps["variant"],
+  VariantConfig
+> = {
   hero: {
-    base: "bg-[linear-gradient(135deg,var(--am-page)_0%,var(--am-surface)_55%,var(--am-brand-soft)_100%)]",
+    base:
+      "bg-[linear-gradient(135deg,var(--am-page)_0%,var(--am-surface)_55%,var(--am-brand-soft)_100%)]",
     orbs: [
       "absolute -left-32 top-0 h-72 w-72 rounded-full bg-brand/10 blur-3xl home-orbita-azul",
       "absolute -right-32 bottom-0 h-80 w-80 rounded-full bg-brand/10 blur-3xl home-orbita-cian",
     ],
   },
+
   gallery: {
-    base: "bg-[linear-gradient(135deg,var(--am-page)_0%,var(--am-brand-soft)_45%,var(--am-surface)_100%)]",
+    base:
+      "bg-[linear-gradient(135deg,var(--am-page)_0%,var(--am-brand-soft)_45%,var(--am-surface)_100%)]",
     aurora: true,
     orbs: [
       "absolute -left-36 top-0 h-[420px] w-[420px] rounded-full bg-brand/20 blur-3xl home-orbita-azul",
@@ -29,6 +34,7 @@ const VARIANT_CONFIG: Record<SectionBackgroundProps["variant"], VariantConfig> =
       "absolute left-[42%] top-1/2 h-72 w-72 -translate-y-1/2 rounded-full bg-brand/10 blur-3xl home-orbita-indigo",
     ],
   },
+
   search: {
     base: "bg-page dark:bg-slate-950",
     gradient:
@@ -39,16 +45,20 @@ const VARIANT_CONFIG: Record<SectionBackgroundProps["variant"], VariantConfig> =
       "absolute -right-28 bottom-0 h-96 w-96 rounded-full bg-brand-hover/15 blur-3xl home-orbita-cian",
     ],
   },
+
   recent: {
-    base: "bg-[linear-gradient(135deg,var(--am-surface)_0%,var(--am-page)_55%,var(--am-brand-soft)_100%)]",
+    base:
+      "bg-[linear-gradient(135deg,var(--am-surface)_0%,var(--am-page)_55%,var(--am-brand-soft)_100%)]",
     aurora: true,
     orbs: [
       "absolute -right-28 top-12 h-80 w-80 rounded-full bg-brand/10 blur-3xl home-orbita-indigo",
       "absolute -left-24 bottom-0 h-72 w-72 rounded-full bg-brand-hover/8 blur-3xl home-orbita-cian",
     ],
   },
+
   cta: {
-    base: "bg-[linear-gradient(135deg,var(--am-brand-soft)_0%,var(--am-page)_55%,var(--am-surface)_100%)]",
+    base:
+      "bg-[linear-gradient(135deg,var(--am-brand-soft)_0%,var(--am-page)_55%,var(--am-surface)_100%)]",
     aurora: true,
     orbs: [
       "absolute -right-20 top-0 h-80 w-80 rounded-full bg-brand/10 blur-3xl home-orbita-azul",
@@ -56,19 +66,40 @@ const VARIANT_CONFIG: Record<SectionBackgroundProps["variant"], VariantConfig> =
   },
 };
 
-export default function SectionBackground({ variant, className = "", children }: SectionBackgroundProps) {
+export default function SectionBackground({
+  variant,
+  className = "",
+  children,
+}: SectionBackgroundProps) {
   const config = VARIANT_CONFIG[variant];
 
   return (
-    <>
-      <div className={`pointer-events-none absolute inset-0 ${config.base} ${config.gradient || ""}`} />
-      {config.aurora && <div className="home-aurora pointer-events-none" aria-hidden="true" />}
-      {config.orbs.map((orb, i) => (
-        <div key={i} className={`pointer-events-none ${orb}`} />
+    <section className="relative isolate overflow-hidden">
+      <div
+        className={`pointer-events-none absolute inset-0 z-0 ${config.base} ${
+          config.gradient ?? ""
+        }`}
+        aria-hidden="true"
+      />
+
+      {config.aurora && (
+        <div
+          className="home-aurora pointer-events-none absolute inset-0 z-0"
+          aria-hidden="true"
+        />
+      )}
+
+      {config.orbs.map((orb, index) => (
+        <div
+          key={index}
+          className={`pointer-events-none z-0 ${orb}`}
+          aria-hidden="true"
+        />
       ))}
+
       <div className={`relative z-10 ${className}`}>
         {children}
       </div>
-    </>
+    </section>
   );
 }
