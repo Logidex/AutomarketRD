@@ -122,7 +122,7 @@ export default function Precios() {
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch"
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, margin: "-40px" }}
+          viewport={{ once: false, margin: "-40px" }}
           variants={{
             hidden: {},
             visible: { transition: { staggerChildren: 0.08 } },
