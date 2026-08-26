@@ -2,6 +2,7 @@ interface SectionBackgroundProps {
   variant: "hero" | "gallery" | "search" | "recent" | "cta";
   className?: string;
   children?: React.ReactNode;
+  disableAurora?: boolean;
 }
 
 interface VariantConfig {
@@ -70,21 +71,22 @@ export default function SectionBackground({
   variant,
   className = "",
   children,
+  disableAurora = false,
 }: SectionBackgroundProps) {
   const config = VARIANT_CONFIG[variant];
 
   return (
-    <section className="relative isolate overflow-hidden">
+    <>
       <div
-        className={`pointer-events-none absolute inset-0 z-0 ${config.base} ${
+        className={`pointer-events-none absolute inset-0 ${config.base} ${
           config.gradient ?? ""
         }`}
         aria-hidden="true"
       />
 
-      {config.aurora && (
+      {config.aurora && !disableAurora && (
         <div
-          className="home-aurora pointer-events-none absolute inset-0 z-0"
+          className="home-aurora pointer-events-none"
           aria-hidden="true"
         />
       )}
@@ -92,7 +94,7 @@ export default function SectionBackground({
       {config.orbs.map((orb, index) => (
         <div
           key={index}
-          className={`pointer-events-none z-0 ${orb}`}
+          className={`pointer-events-none ${orb}`}
           aria-hidden="true"
         />
       ))}
@@ -100,6 +102,6 @@ export default function SectionBackground({
       <div className={`relative z-10 ${className}`}>
         {children}
       </div>
-    </section>
+    </>
   );
 }
