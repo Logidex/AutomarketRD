@@ -8,6 +8,7 @@ import { ROLES } from "../constants/roles";
 import { PAGOS_HABILITADOS } from "../constants/config";
 import { formatearRD$, precioCicloDe, type Ciclo } from "../utils/formato";
 import HeaderPublico from "../components/layout/HeaderPublico";
+import SectionBackground from "../components/SectionBackground";
 
 export default function Checkout() {
   const [searchParams] = useSearchParams();
