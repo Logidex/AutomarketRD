@@ -54,27 +54,136 @@
   }
 }
 /* ============================================
-   TRANSICIONES DE PAGINA (Fase 3)
-   Cross-fade sutil al cambiar de ruta. Se omite
-   si el usuario prefiere movimiento reducido.
+   HERO MESH GRADIENT
+   Gradiente animado tipo mesh detrás del hero.
    ============================================ */
-@keyframes am-fade-pagina {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.hero-mesh {
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 30%, var(--am-brand-soft) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 70%, rgba(6, 182, 212, 0.10) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 40% at 50% 50%, rgba(124, 58, 237, 0.06) 0%, transparent 50%),
+    linear-gradient(135deg, var(--am-page) 0%, var(--am-surface) 100%);
+  animation: hero-mesh-drift 14s ease-in-out infinite alternate;
 }
 
-.animar-pagina {
-  animation: am-fade-pagina 200ms ease-out both;
+@keyframes hero-mesh-drift {
+  0% {
+    background-position: 0% 0%, 100% 100%, 50% 50%, 0% 0%;
+  }
+  100% {
+    background-position: 20% 15%, 80% 85%, 60% 40%, 0% 0%;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .animar-pagina {
+  .hero-mesh {
+    animation: none;
+  }
+}
+
+/* ============================================
+   SHIMMER LOADING
+   Efecto de brillo deslizante para skeleton loaders.
+   ============================================ */
+@keyframes shimmer-slide {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--am-surface-2) 25%,
+    var(--am-line) 50%,
+    var(--am-surface-2) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer-slide 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shimmer {
+    animation: none;
+  }
+}
+
+/* ============================================
+   GRADIENT BORDER (PlanCard hover)
+   Borde animado con degradado giratorio.
+   ============================================ */
+@property --angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes border-spin {
+  from { --angle: 0deg; }
+  to { --angle: 360deg; }
+}
+
+.gradient-border-wrap {
+  position: relative;
+  border: none !important;
+}
+
+.gradient-border-wrap::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: conic-gradient(from var(--angle), transparent 40%, var(--am-brand) 50%, transparent 60%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.gradient-border-wrap:hover::before {
+  opacity: 1;
+  animation: border-spin 3s linear infinite;
+}
+
+/* ============================================
+   BADGE SHIMPLE (MÁS POPULAR glow)
+   ============================================ */
+@keyframes badge-glow {
+  0%, 100% { box-shadow: 0 0 8px rgba(139, 92, 246, 0.4); }
+  50% { box-shadow: 0 0 18px rgba(139, 92, 246, 0.7); }
+}
+
+.badge-popular {
+  animation: badge-glow 2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .badge-popular {
+    animation: none;
+  }
+}
+
+/* ============================================
+   CTA PANEL ORBS
+   ============================================ */
+@keyframes cta-orb-float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(12px, -10px) scale(1.1); }
+}
+
+.cta-orb {
+  animation: cta-orb-float 10s ease-in-out infinite;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cta-orb {
     animation: none;
   }
 }
@@ -249,6 +358,35 @@
   animation: home-aurora-gira 52s linear infinite;
   will-change: transform;
   pointer-events: none;
+}
+
+/* ── ShinyText ─────────────────────────────────────── */
+.shiny-text {
+  display: inline-block;
+  background: linear-gradient(
+    120deg,
+    var(--am-ink) 0%,
+    var(--am-ink) 40%,
+    var(--am-brand) 50%,
+    var(--am-ink) 60%,
+    var(--am-ink) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shiny-sweep 3s ease-in-out infinite;
+}
+
+@keyframes shiny-sweep {
+  0% { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shiny-text {
+    animation: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

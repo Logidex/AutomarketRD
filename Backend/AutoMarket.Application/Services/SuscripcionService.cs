@@ -295,7 +295,7 @@ public class SuscripcionService : ISuscripcionService
             LimiteAnuncios = suscripcion.LimiteAnuncios,
             FechaInicioUtc = suscripcion.FechaInicioUtc,
             FechaVencimientoUtc = suscripcion.FechaVencimientoUtc,
-            DiasRestantes = Math.Max(0, (int)Math.Ceiling((suscripcion.FechaVencimientoUtc - DateTime.UtcNow).TotalDays)),
+            DiasRestantes = Math.Max(0, (suscripcion.FechaVencimientoUtc.Date - DateTime.UtcNow.Date).Days),
             Activa = suscripcion.FechaVencimientoUtc > DateTime.UtcNow
         };
     }

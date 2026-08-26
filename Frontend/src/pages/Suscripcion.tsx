@@ -1,13 +1,13 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { FaPaypal, FaTicketAlt } from "react-icons/fa";
 import { type PlanCatalogo } from "../services/planes.service";
 import { authService } from "../services/auth.service";
 import { ROLES } from "../constants/roles";
 import { formatearRD$, precioCicloDe, type Ciclo } from "../utils/formato";
-import logo from "../assets/AutoMarketRD_Logo.svg";
-import MenuPublico from "../components/layout/MenuPublico";
+import HeaderPublico from "../components/layout/HeaderPublico";
+import SectionBackground from "../components/SectionBackground";
 import PlanCard from "../components/PlanCard";
 import { usePlanesCatalogo, useAplicarCupon } from "../hooks/useSuscripcion";
 
@@ -77,23 +77,10 @@ export default function Suscripcion() {
   };
 
   return (
-    <div className="min-h-screen bg-page text-ink">
-      {/* Header */}
-      <header className="relative flex items-center justify-between border-b border-line bg-page/80 px-4 py-2 backdrop-blur sm:px-8">
-        <div className="flex items-center gap-4">
-          <Link to="/" className="flex items-center">
-            <img
-              src={logo}
-              alt="AutoMarket RD"
-              className="h-12 w-auto object-contain sm:h-16"
-            />
-          </Link>
-          <span className="text-xl font-bold">Suscripción</span>
-        </div>
+    <div className="relative min-h-screen overflow-hidden bg-page text-ink">
+      <HeaderPublico titulo="Suscripción" />
 
-        <MenuPublico />
-      </header>
-
+      <SectionBackground variant="cta" className="mx-auto max-w-5xl px-8 py-16">
       <main className="mx-auto max-w-5xl px-8 py-16">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-3">
@@ -219,6 +206,7 @@ export default function Suscripcion() {
           </p>
         </div>
       </main>
+      </SectionBackground>
     </div>
   );
 }

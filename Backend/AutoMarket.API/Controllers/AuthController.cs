@@ -37,6 +37,7 @@ public class AuthController : ControllerBase
      /// <returns>Resultado del registro.</returns>
      [HttpPost("registrar")]
      [AllowAnonymous]
+     [EnableRateLimiting("PoliticaRegistro")]
      public async Task<IActionResult> Registrar([FromBody] RegistroDto dto)
      {
          var resultado = await _authService.RegistrarUsuarioAsync(dto);

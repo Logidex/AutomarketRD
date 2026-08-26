@@ -1,5 +1,6 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { AnimatePresence, motion } from "motion/react";
 import { idDesdeSlug, urlVendedor } from "../utils/slug";
 import Swal from "sweetalert2";
 import {
@@ -34,8 +35,8 @@ import { useRegistrarVisita } from "../hooks/useHistorial";
 import { useUsuarioCuenta } from "../hooks/useUsuario";
 import { urlImagen } from "../utils/imagen";
 import { formatearPrecio } from "../utils/formato";
-import logo from "../assets/AutoMarketRD_Logo.svg";
-import MenuPublico from "../components/layout/MenuPublico";
+import HeaderPublico from "../components/layout/HeaderPublico";
+import SectionBackground from "../components/SectionBackground";
 import BadgeVerificado from "../components/BadgeVerificado";
 import {
   TIPOS_VEHICULO,
@@ -72,6 +73,22 @@ function GaleriaFotos({
   onSeleccionarMiniatura,
 }: PropsFotos) {
   const hayVariasFotos = anuncio.fotos.length > 1;
+  const touchStartX = useRef(0);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  }, []);
+
+  const handleTouchEnd = useCallback(
+    (e: React.TouchEvent) => {
+      const dx = e.changedTouches[0].clientX - touchStartX.current;
+      if (Math.abs(dx) > 50) {
+        if (dx < 0) onSiguiente();
+        else onAnterior();
+      }
+    },
+    [onAnterior, onSiguiente],
+  );
 
   return (
     <div className="overflow-hidden rounded-2xl border border-line bg-surface">
@@ -79,6 +96,8 @@ function GaleriaFotos({
         className="group relative aspect-[16/10]"
         onMouseEnter={onPausar}
         onMouseLeave={onReanudar}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
       >
         <button
           type="button"
@@ -676,16 +695,26 @@ function GaleriaCompleta({ anuncio }: { anuncio: AnuncioDetalle }) {
         onSeleccionarMiniatura={seleccionarMiniatura}
       />
 
-      {fotoAmpliada && (
-        <LightboxFoto
-          anuncio={anuncio}
-          fotoActiva={fotoActiva}
-          fotoPrincipal={fotoPrincipal}
-          onCerrar={cerrarLightbox}
-          onAnterior={anteriorFoto}
-          onSiguiente={siguienteFoto}
-        />
-      )}
+      <AnimatePresence>
+        {fotoAmpliada && (
+          <motion.div
+            key="lightbox"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <LightboxFoto
+              anuncio={anuncio}
+              fotoActiva={fotoActiva}
+              fotoPrincipal={fotoPrincipal}
+              onCerrar={cerrarLightbox}
+              onAnterior={anteriorFoto}
+              onSiguiente={siguienteFoto}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
@@ -1128,20 +1157,10 @@ export default function DetalleAnuncio() {
   }, [anuncio]);
 
   return (
-    <div className="min-h-screen bg-page text-ink">
-      {/* HEADER */}
-      <header className="sticky top-0 z-40 flex items-center justify-between border-b border-line bg-page/80 px-4 py-2 backdrop-blur sm:px-8">
-        <Link to="/" className="flex items-center gap-4">
-          <img
-            src={logo}
-            alt="AutoMarket RD"
-            className="h-12 w-auto object-contain sm:h-16"
-          />
-        </Link>
+    <div className="relative min-h-screen overflow-hidden bg-page text-ink">
+      <HeaderPublico />
 
-        <MenuPublico />
-      </header>
-
+      <SectionBackground variant="gallery" className="mx-auto max-w-6xl px-6 py-8 sm:px-8">
       <main className="mx-auto max-w-6xl px-6 py-8 sm:px-8">
         {/* VOLVER */}
         <button
@@ -1188,57 +1207,75 @@ export default function DetalleAnuncio() {
             </div>
 
             {/* COLUMNA DERECHA: DATOS */}
-            <div className="space-y-6">
-              <TarjetaDatos
-                anuncio={anuncio}
-                esVehiculoNuevo={esVehiculoNuevo}
-                esOferta={esOferta}
-                esPropietario={esPropietario}
-                esFavorito={esFavorito}
-                cargandoFavorito={cargandoFavorito}
-                onToggleFavorito={toggleFavorito}
-                esSeleccionado={esSeleccionado}
-                onToggleComparar={toggleComparar}
-              />
+            <motion.div
+              className="space-y-6"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-40px" }}
+              variants={{
+                hidden: {},
+                visible: { transition: { staggerChildren: 0.08 } },
+              }}
+            >
+              <motion.div variants={{ hidden: { opacity: 0, y: 14 }, visible: { opacity: 1, y: 0 } }}>
+                <TarjetaDatos
+                  anuncio={anuncio}
+                  esVehiculoNuevo={esVehiculoNuevo}
+                  esOferta={esOferta}
+                  esPropietario={esPropietario}
+                  esFavorito={esFavorito}
+                  cargandoFavorito={cargandoFavorito}
+                  onToggleFavorito={toggleFavorito}
+                  esSeleccionado={esSeleccionado}
+                  onToggleComparar={toggleComparar}
+                />
+              </motion.div>
 
-              <FichaTecnica anuncio={anuncio} propsMostradas={propsMostradas} />
+              <motion.div variants={{ hidden: { opacity: 0, y: 14 }, visible: { opacity: 1, y: 0 } }}>
+                <FichaTecnica anuncio={anuncio} propsMostradas={propsMostradas} />
+              </motion.div>
 
-              <SeccionContacto
-                anuncio={anuncio}
-                esPropietario={esPropietario}
-                esVendedorParticular={esVendedorParticular}
-                usuario={usuario}
-                nombre={nombre}
-                email={email}
-                telefono={telefono}
-                mensaje={mensaje}
-                mostrarFormulario={mostrarFormulario}
-                enviando={enviando}
-                error={error}
-                onChangeNombre={setNombre}
-                onChangeEmail={setEmail}
-                onChangeTelefono={setTelefono}
-                onChangeMensaje={setMensaje}
-                onAbrirFormulario={abrirFormulario}
-                onEnviar={handleEnviar}
-                onWhatsApp={handleWhatsApp}
-              />
+              <motion.div variants={{ hidden: { opacity: 0, y: 14 }, visible: { opacity: 1, y: 0 } }}>
+                <SeccionContacto
+                  anuncio={anuncio}
+                  esPropietario={esPropietario}
+                  esVendedorParticular={esVendedorParticular}
+                  usuario={usuario}
+                  nombre={nombre}
+                  email={email}
+                  telefono={telefono}
+                  mensaje={mensaje}
+                  mostrarFormulario={mostrarFormulario}
+                  enviando={enviando}
+                  error={error}
+                  onChangeNombre={setNombre}
+                  onChangeEmail={setEmail}
+                  onChangeTelefono={setTelefono}
+                  onChangeMensaje={setMensaje}
+                  onAbrirFormulario={abrirFormulario}
+                  onEnviar={handleEnviar}
+                  onWhatsApp={handleWhatsApp}
+                />
+              </motion.div>
 
               {!esPropietario && (
-                <button
-                  type="button"
-                  onClick={handleReportar}
-                  disabled={reportando}
-                  className="flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-xs font-medium text-ink-3 transition-colors hover:bg-hover hover:text-red-400 disabled:opacity-50"
-                >
-                  <FaFlag />
-                  {reportando ? "Enviando reporte..." : "Reportar este anuncio"}
-                </button>
+                <motion.div variants={{ hidden: { opacity: 0, y: 14 }, visible: { opacity: 1, y: 0 } }}>
+                  <button
+                    type="button"
+                    onClick={handleReportar}
+                    disabled={reportando}
+                    className="flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-xs font-medium text-ink-3 transition-colors hover:bg-hover hover:text-red-400 disabled:opacity-50"
+                  >
+                    <FaFlag />
+                    {reportando ? "Enviando reporte..." : "Reportar este anuncio"}
+                  </button>
+                </motion.div>
               )}
-            </div>
+            </motion.div>
           </div>
         ) : null}
       </main>
+      </SectionBackground>
 
       {/* FOOTER */}
       <footer className="border-t border-line py-8">

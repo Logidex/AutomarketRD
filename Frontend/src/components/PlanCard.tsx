@@ -50,16 +50,16 @@ export default function PlanCard({
 
   return (
     <div
-      className={`relative flex flex-col rounded-2xl border p-6 transition-colors ${
+      className={`relative flex flex-col rounded-2xl border p-6 transition-all duration-300 ${
         destacado
           ? "border-violet-500/60 bg-violet-500/10 shadow-lg shadow-violet-500/10 dark:bg-[#181327]"
           : premium
             ? "border-amber-500/40 bg-amber-500/10 dark:bg-[#191410]"
-            : "border-line bg-surface hover:border-blue-500/40"
+            : "border-line bg-surface hover:border-transparent hover:shadow-lg hover:shadow-brand/10 gradient-border-wrap"
       }`}
     >
       {destacado && (
-        <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-violet-500 px-4 py-1 text-xs font-bold text-white">
+        <span className="badge-popular absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-violet-500 px-4 py-1 text-xs font-bold text-white">
           MÁS POPULAR
         </span>
       )}

@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { FaChevronLeft, FaChevronRight, FaSearch, FaStore } from "react-icons/fa";
-import logo from "../assets/AutoMarketRD_Logo.svg";
-import MenuPublico from "../components/layout/MenuPublico";
+import HeaderPublico from "../components/layout/HeaderPublico";
+import SectionBackground from "../components/SectionBackground";
 import Spinner from "../components/Spinner";
 import BadgeVerificado from "../components/BadgeVerificado";
 import { dealerService, type AgenciaListado } from "../services/dealer.service";
@@ -144,19 +144,10 @@ export default function Agencias() {
   const totalPaginas = data?.totalPaginas ?? 1;
 
   return (
-    <div className="min-h-screen bg-page text-ink">
-      {/* Header */}
-      <header className="sticky top-0 z-40 flex items-center justify-between border-b border-line bg-page/80 px-4 py-2 backdrop-blur sm:px-8">
-        <div className="flex items-center gap-4">
-          <Link to="/" className="flex items-center">
-            <img src={logo} alt="AutoMarket RD" className="h-12 w-auto object-contain sm:h-16" />
-          </Link>
-          <span className="text-xl font-bold">Agencias</span>
-        </div>
+    <div className="relative min-h-screen overflow-hidden bg-page text-ink">
+      <HeaderPublico titulo="Agencias" />
 
-        <MenuPublico />
-      </header>
-
+      <SectionBackground variant="search" className="mx-auto max-w-6xl px-6 py-12 sm:px-8">
       <main className="mx-auto max-w-6xl px-6 py-12 sm:px-8">
         <div className="text-center mb-10">
           <h1 className="text-4xl font-bold mb-3">Agencias disponibles</h1>
@@ -261,6 +252,7 @@ export default function Agencias() {
           </>
         )}
       </main>
+      </SectionBackground>
     </div>
   );
 }

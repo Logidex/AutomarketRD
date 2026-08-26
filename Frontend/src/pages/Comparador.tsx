@@ -19,8 +19,8 @@ import {
 import type { VehiculoComparador } from "../services/comparador.service";
 import type { AnuncioListado } from "../types/anuncio.types";
 import { useComparador } from "../context/ComparadorContext";
-import logo from "../assets/AutoMarketRD_Logo.svg";
-import MenuPublico from "../components/layout/MenuPublico";
+import HeaderPublico from "../components/layout/HeaderPublico";
+import SectionBackground from "../components/SectionBackground";
 import { useCompararVehiculos, useBuscarComparador } from "../hooks/useComparador";
 import { urlImagen } from "../utils/imagen";
 import { urlAnuncio } from "../utils/slug";
@@ -592,20 +592,10 @@ export default function Comparador() {
   const necesitaSeleccion = seleccionados.length < 2;
 
   return (
-    <div className="min-h-screen bg-page text-ink">
-      {/* HEADER */}
-      <header className="sticky top-0 z-40 flex items-center justify-between border-b border-line bg-page/80 px-4 py-2 backdrop-blur sm:px-8">
-        <Link to="/" className="flex items-center gap-4">
-          <img
-            src={logo}
-            alt="AutoMarket RD"
-            className="h-12 w-auto object-contain sm:h-16"
-          />
-        </Link>
+    <div className="relative min-h-screen overflow-hidden bg-page text-ink">
+      <HeaderPublico />
 
-        <MenuPublico />
-      </header>
-
+      <SectionBackground variant="search">
       {/* CABECERA */}
       <section className="border-b border-line bg-gradient-to-b from-surface-2 to-page">
         <div className="mx-auto max-w-6xl px-6 py-10 sm:px-8">
@@ -653,6 +643,7 @@ export default function Comparador() {
           onRemover={removerVehiculo}
         />
       </main>
+      </SectionBackground>
 
       {/* FOOTER */}
       <footer className="border-t border-line py-8">

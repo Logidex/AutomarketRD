@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { AnimatePresence, motion } from "motion/react";
 import Swal from "sweetalert2";
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 import { authService } from "../services/auth.service";
+import SectionBackground from "../components/SectionBackground";
 import logo from "../assets/AutoMarketRD_Logo.svg";
 
 interface RegistroFormData {
@@ -223,7 +225,8 @@ export default function Registro() {
   const esDealer = formData.rol === "Dealer";
 
   return (
-    <div className="min-h-screen bg-page flex items-center justify-center p-4">
+    <div className="relative min-h-screen overflow-hidden bg-page flex items-center justify-center p-4">
+      <SectionBackground variant="cta" className="w-full max-w-[950px]">
       <div className="w-full max-w-[950px] bg-surface rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row">
 
         {/* Columna Izquierda - Visual */}
@@ -425,9 +428,20 @@ export default function Registro() {
             </div>
 
             {/* Campos exclusivos para Dealer */}
-            {esDealer && (
-              <CamposDealer formData={formData} handleChange={handleChange} />
-            )}
+            <AnimatePresence initial={false}>
+              {esDealer && (
+                <motion.div
+                  key="campos-dealer"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.25, ease: "easeInOut" }}
+                  className="overflow-hidden"
+                >
+                  <CamposDealer formData={formData} handleChange={handleChange} />
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Aceptación de términos */}
             <div className="flex items-start gap-3">
@@ -479,6 +493,7 @@ export default function Registro() {
           </p>
         </div>
       </div>
+      </SectionBackground>
     </div>
   );
 }

@@ -297,7 +297,8 @@ public class TicketService : ITicketService
     {
         try
         {
-            await _emailSender.EnviarCorreoAsync(destinatario, asunto, cuerpoHtml);
+            var replyTo = _configuration["Soporte:ReplyTo"];
+            await _emailSender.EnviarCorreoAsync(destinatario, asunto, cuerpoHtml, replyTo);
         }
         catch (Exception ex)
         {

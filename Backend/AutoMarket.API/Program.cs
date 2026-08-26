@@ -403,6 +403,22 @@ try
                 limiterOptions.QueueLimit = 0;
             });
 
+        // Registro de cuentas: limita creación de cuentas por IP para
+        // prevenir spam/bots (5 registros cada 15 min por IP).
+        options.AddFixedWindowLimiter(
+            "PoliticaRegistro",
+            limiterOptions =>
+            {
+                limiterOptions.PermitLimit = 5;
+                limiterOptions.Window =
+                    TimeSpan.FromMinutes(15);
+
+                limiterOptions.QueueProcessingOrder =
+                    QueueProcessingOrder.OldestFirst;
+
+                limiterOptions.QueueLimit = 0;
+            });
+
         options.AddPolicy<string>(
             "PoliticaLogin",
             context =>

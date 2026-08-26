@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useCallback, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { motion } from "motion/react";
 import {
   FaArrowRight,
   FaCar,
@@ -20,6 +21,8 @@ import BadgeVerificado from "../components/BadgeVerificado";
 import FiltroTipoVehiculo from "../components/FiltroTipoVehiculo";
 import HeaderPublico from "../components/layout/HeaderPublico";
 import SectionBackground from "../components/SectionBackground";
+import MeshGradientCanvas from "../components/MeshGradientCanvas";
+import ShinyText from "../components/ShinyText";
 
 const CANTIDAD_DESTACADOS = 5;
 const CANTIDAD_RECIENTES = 6;
@@ -76,9 +79,30 @@ function TarjetaVehiculo({
   const esPrincipal = variante === "principal";
   const esCompacta = variante === "compacta";
 
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent<HTMLAnchorElement>) => {
+      const img = imgRef.current;
+      if (!img) return;
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width - 0.5) * 8;
+      const y = ((e.clientY - rect.top) / rect.height - 0.5) * 8;
+      img.style.transform = `scale(1.10) translate(${x}px, ${y}px)`;
+    },
+    [],
+  );
+
+  const handleMouseLeave = useCallback(() => {
+    const img = imgRef.current;
+    if (img) img.style.transform = "";
+  }, []);
+
   return (
     <Link
       to={urlAnuncio(anuncio)}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
       className={`group relative block overflow-hidden rounded-2xl bg-slate-950 text-white shadow-lg shadow-slate-950/15 transition duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-slate-950/25 focus:outline-none focus:ring-4 focus:ring-brand/30 ${
         esPrincipal
           ? "min-h-[420px] sm:min-h-[470px]"
@@ -88,12 +112,13 @@ function TarjetaVehiculo({
       }`}
     >
       <img
+        ref={imgRef}
         src={fotoPrincipal(anuncio)}
         alt={titulo}
         loading={prioridad ? "eager" : "lazy"}
         fetchPriority={prioridad ? "high" : "auto"}
         decoding="async"
-        className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+        className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-out will-change-transform"
       />
 
       <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/35 to-slate-950/5" />
@@ -440,10 +465,10 @@ function EstadoCarga() {
           key={indice}
           className="overflow-hidden rounded-2xl border border-line bg-surface sm:block"
         >
-          <div className="h-32 w-36 animate-pulse bg-surface-2 sm:h-auto sm:w-auto sm:aspect-[16/10]" />
+          <div className="h-32 w-36 shimmer sm:h-auto sm:w-auto sm:aspect-[16/10]" />
           <div className="space-y-3 p-4">
-            <div className="h-4 w-3/4 animate-pulse rounded bg-surface-2" />
-            <div className="h-5 w-1/2 animate-pulse rounded bg-surface-2" />
+            <div className="h-4 w-3/4 shimmer rounded" />
+            <div className="h-5 w-1/2 shimmer rounded" />
           </div>
         </div>
       ))}
@@ -508,7 +533,14 @@ function Recientes({
           </div>
         ) : (
           <div className="rounded-2xl border border-dashed border-line bg-surface p-12 text-center">
-            <FaCar className="mx-auto text-4xl text-ink-3" />
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              whileInView={{ scale: 1, opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, type: "spring", stiffness: 200 }}
+            >
+              <FaCar className="mx-auto text-4xl text-ink-3" />
+            </motion.div>
             <h2 className="mt-4 text-xl font-bold text-ink">
               Próximamente habrá vehículos disponibles
             </h2>
@@ -556,8 +588,10 @@ function CtaVendedor() {
                 Publicar un vehículo <FaArrowRight className="h-3.5 w-3.5" />
               </Link>
             </div>
-            <div className="flex items-center justify-center bg-slate-950 p-8 text-center text-white sm:p-10">
-              <div>
+            <div className="cta-mesh relative flex items-center justify-center bg-slate-950 p-8 text-center text-white sm:p-10">
+              <div className="cta-orb absolute -left-12 -top-12 h-48 w-48 rounded-full bg-cyan-500/15 blur-3xl" />
+              <div className="cta-orb absolute -bottom-10 -right-10 h-40 w-40 rounded-full bg-violet-500/15 blur-3xl" style={{ animationDelay: "2s" }} />
+              <div className="relative">
                 <FaCar className="mx-auto text-5xl text-cyan-300" />
                 <p className="mt-5 text-xl font-bold">
                   Muestra. Conecta. Vende.
@@ -633,19 +667,23 @@ export default function Home() {
     <div className="min-h-screen bg-page text-ink">
       <HeaderPublico />
 
-      <section className="border-b border-line bg-surface">
-        <div className="mx-auto max-w-6xl px-6 py-11 text-center sm:px-8 sm:py-14">
-          <h1 className="flex justify-center">
-            <h1 className="text-balance text-4xl font-bold tracking-tight text-ink sm:text-5xl">
-              Compra y vende vehículos
+      <section className="relative overflow-hidden border-b border-line bg-surface">
+        <MeshGradientCanvas />
+        <div className="relative mx-auto max-w-6xl px-6 py-16 text-center sm:px-8 sm:py-24">
+          <h1 className="text-balance text-4xl font-bold tracking-tight text-ink sm:text-5xl">
+              <ShinyText>Compra y vende vehículos</ShinyText>
               <span className="block text-brand">en República Dominicana</span>
             </h1>
-          </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-pretty leading-7 text-ink-2">
+          <motion.p
+            className="mx-auto mt-5 max-w-2xl text-pretty leading-7 text-ink-2"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
             Explora vehículos de agencias verificadas y vendedores particulares
             en toda República Dominicana. Compara, contacta directo y cierra tu
             trato hoy.
-          </p>
+          </motion.p>
         </div>
       </section>
 
@@ -655,14 +693,14 @@ export default function Home() {
             variant="gallery"
             className="mx-auto max-w-6xl px-6 sm:px-8"
           >
-            <div className="h-8 w-72 animate-pulse rounded bg-surface-2" />
+            <div className="h-8 w-72 shimmer rounded" />
             <div className="mt-5 grid gap-4 lg:grid-cols-[1.45fr_1fr]">
-              <div className="min-h-[420px] animate-pulse rounded-2xl bg-surface-2" />
+              <div className="min-h-[420px] shimmer rounded-2xl" />
               <div className="grid grid-cols-2 gap-4">
                 {Array.from({ length: 4 }).map((_, indice) => (
                   <div
                     key={indice}
-                    className="min-h-[200px] animate-pulse rounded-2xl bg-surface-2"
+                    className="min-h-[200px] shimmer rounded-2xl"
                   />
                 ))}
               </div>
@@ -670,17 +708,47 @@ export default function Home() {
           </SectionBackground>
         </section>
       ) : (
-        <GaleriaDestacada anuncios={destacados} />
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.45 }}
+        >
+          <GaleriaDestacada anuncios={destacados} />
+        </motion.div>
       )}
 
-      <BuscadorCatalogo />
-      <Recientes
-        anuncios={recientes}
-        cargando={recientesCargando}
-        error={recientesError}
-        reintentar={() => recargarRecientes()}
-      />
-      <CtaVendedor />
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-60px" }}
+        transition={{ duration: 0.45, delay: 0.05 }}
+      >
+        <BuscadorCatalogo />
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-60px" }}
+        transition={{ duration: 0.45, delay: 0.1 }}
+      >
+        <Recientes
+          anuncios={recientes}
+          cargando={recientesCargando}
+          error={recientesError}
+          reintentar={() => recargarRecientes()}
+        />
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-60px" }}
+        transition={{ duration: 0.45, delay: 0.15 }}
+      >
+        <CtaVendedor />
+      </motion.div>
       <PiePaginaHome />
     </div>
   );

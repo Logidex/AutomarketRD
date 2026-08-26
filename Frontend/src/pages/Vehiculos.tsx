@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { motion, AnimatePresence } from "motion/react";
 import {
   FaBalanceScale,
   FaCar,
@@ -14,8 +15,8 @@ import { urlImagen } from "../utils/imagen";
 import { urlAnuncio } from "../utils/slug";
 import { formatearPrecio } from "../utils/formato";
 import { useComparador } from "../context/ComparadorContext";
-import logo from "../assets/AutoMarketRD_Logo.svg";
-import MenuPublico from "../components/layout/MenuPublico";
+import HeaderPublico from "../components/layout/HeaderPublico";
+import SectionBackground from "../components/SectionBackground";
 import BadgeVerificado from "../components/BadgeVerificado";
 import {
   TIPOS_VEHICULO,
@@ -696,20 +697,10 @@ export default function Vehiculos() {
 
 
   return (
-    <div className="min-h-screen bg-page text-ink">
-      {/* HEADER */}
-      <header className="relative flex items-center justify-between border-b border-line bg-page/80 px-4 py-2 backdrop-blur sm:px-8">
-        <Link to="/" className="flex items-center gap-4">
-          <img
-            src={logo}
-            alt="AutoMarket RD"
-            className="h-12 w-auto object-contain sm:h-16"
-          />
-        </Link>
+    <div className="relative min-h-screen overflow-hidden bg-page text-ink">
+      <HeaderPublico />
 
-        <MenuPublico />
-      </header>
-
+      <SectionBackground variant="search" className="px-6 sm:px-8">
       {/* CABECERA + FILTROS */}
       <section className="border-b border-line bg-gradient-to-b from-surface-2 to-page">
         <div className="mx-auto max-w-6xl px-6 py-10 sm:px-8">
@@ -757,7 +748,14 @@ export default function Vehiculos() {
           </div>
         ) : anuncios.length === 0 ? (
           <div className="rounded-2xl border border-line bg-surface p-16 text-center">
-            <FaCar className="mx-auto text-5xl text-ink-3" />
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              whileInView={{ scale: 1, opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, type: "spring", stiffness: 200 }}
+            >
+              <FaCar className="mx-auto text-5xl text-ink-3" />
+            </motion.div>
             <h3 className="mt-4 text-lg font-semibold">
               No encontramos vehículos
             </h3>
@@ -766,17 +764,30 @@ export default function Vehiculos() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <motion.div
+            className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-40px" }}
+            variants={{
+              hidden: {},
+              visible: { transition: { staggerChildren: 0.06 } },
+            }}
+          >
             {anuncios.map((anuncio) => (
-              <TarjetaAnuncio
+              <motion.div
                 key={anuncio.id}
-                anuncio={anuncio}
-                esSeleccionado={esSeleccionado}
-                onNavegar={(a) => navigate(urlAnuncio(a))}
-                onToggleComparar={toggleComparar}
-              />
+                variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0 } }}
+              >
+                <TarjetaAnuncio
+                  anuncio={anuncio}
+                  esSeleccionado={esSeleccionado}
+                  onNavegar={(a) => navigate(urlAnuncio(a))}
+                  onToggleComparar={toggleComparar}
+                />
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         )}
 
         {/* PAGINACIÓN */}
@@ -789,16 +800,30 @@ export default function Vehiculos() {
         />
       </main>
 
+      </SectionBackground>
+
       {/* ESPACIO PARA QUE EL FOOTER NO QUEDE DETRÁS DE LA BARRA FLOTANTE */}
       <div className="h-20" />
 
       {/* BARRA FLOTANTE DE COMPARACIÓN */}
-      <BarraComparador
-        seleccionados={seleccionados}
-        maxVehiculos={maxVehiculos}
-        onLimpiar={limpiarSeleccion}
-        onComparar={irAComparador}
-      />
+      <AnimatePresence>
+        {seleccionados.length > 0 && (
+          <motion.div
+            key="barra-comparador"
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 80, opacity: 0 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+          >
+            <BarraComparador
+              seleccionados={seleccionados}
+              maxVehiculos={maxVehiculos}
+              onLimpiar={limpiarSeleccion}
+              onComparar={irAComparador}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* FOOTER */}
       <footer className="border-t border-line py-8">

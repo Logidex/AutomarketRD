@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { motion } from "motion/react";
 import {
   FaEnvelopeOpenText,
   FaEnvelope,
@@ -74,10 +75,20 @@ export default function Leads() {
           </p>
         </div>
       ) : (
-        <ul className="space-y-4">
+        <motion.ul
+          className="space-y-4"
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: {},
+            visible: { transition: { staggerChildren: 0.06 } },
+          }}
+        >
           {leads.map((lead) => (
-            <li
+            <motion.li
               key={lead.id}
+              variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }}
+              transition={{ duration: 0.3 }}
               className={`rounded-2xl border bg-surface p-5 shadow-sm transition-shadow hover:shadow-md ${
                 !lead.leido ? "border-blue-200 ring-1 ring-blue-100" : "border-line"
               }`}
@@ -129,9 +140,9 @@ export default function Leads() {
                   )}
                 </div>
               </div>
-            </li>
+            </motion.li>
           ))}
-        </ul>
+        </motion.ul>
       )}
     </div>
   );

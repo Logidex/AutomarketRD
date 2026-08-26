@@ -27,6 +27,12 @@ public class SecurityHeadersMiddleware
         // Limita la información que se envía en el header Referer.
         headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
 
+        // Restringe APIs del navegador que la app no necesita (anti-fingerprinting).
+        headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(), payment=(self)";
+
+        // Fallback de protección XSS en navegadores antiguos (CSP ya cubre modernos).
+        headers["X-XSS-Protection"] = "1; mode=block";
+
         // HSTS: solo cuando la petición llegó por HTTPS. Detrás de un proxy
         // inverso, ForwardedHeaders ya marcó Request.IsHttps con
         // X-Forwarded-Proto. El CSP se deja a nginx (frontend).

@@ -1,13 +1,16 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { motion } from "motion/react";
 import Swal from "sweetalert2";
 import { type PlanCatalogo } from "../services/planes.service";
 import { authService } from "../services/auth.service";
 import { ROLES } from "../constants/roles";
+import { PAGOS_HABILITADOS } from "../constants/config";
 import { formatearRD$, precioCicloDe, type Ciclo } from "../utils/formato";
 import { FaPaypal, FaBolt } from "react-icons/fa";
-import logo from "../assets/AutoMarketRD_Logo.svg";
-import MenuPublico from "../components/layout/MenuPublico";
+import HeaderPublico from "../components/layout/HeaderPublico";
+import SectionBackground from "../components/SectionBackground";
+import ShinyText from "../components/ShinyText";
 import PlanCard from "../components/PlanCard";
 import { usePlanesCatalogo, useGenerarLinkPago } from "../hooks/useSuscripcion";
 
@@ -47,6 +50,18 @@ export default function Precios() {
       return;
     }
 
+    if (!PAGOS_HABILITADOS) {
+      await Swal.fire({
+        icon: "warning",
+        title: "Sistema de pagos en mantenimiento",
+        html: "El sistema de pagos se encuentra temporalmente no disponible.<br/><br/>Si deseas adquirir un plan, puedes solicitarlo contactando a nuestro equipo de soporte.",
+        confirmButtonColor: "#3b82f6",
+        confirmButtonText: "Ir a Contacto",
+      });
+      navigate("/contacto?asunto=Pagos+y+suscripciones");
+      return;
+    }
+
     setComprandoPlan(plan.nivel);
 
     try {
@@ -68,27 +83,14 @@ export default function Precios() {
   const planGratis = planes.find((p) => p.nivel === "Gratis");
 
   return (
-    <div className="min-h-screen bg-page text-ink">
-      {/* Header */}
-      <header className="relative flex items-center justify-between border-b border-line bg-page/80 px-4 py-2 backdrop-blur sm:px-8">
-        <div className="flex items-center gap-4">
-          <Link to="/" className="flex items-center">
-            <img
-              src={logo}
-              alt="AutoMarket RD"
-              className="h-12 w-auto object-contain sm:h-16"
-            />
-          </Link>
-          <span className="text-xl font-bold">Precios</span>
-        </div>
+    <div className="relative min-h-screen overflow-hidden bg-page text-ink">
+      <HeaderPublico />
 
-        <MenuPublico />
-      </header>
-
+      <SectionBackground variant="cta" className="mx-auto max-w-5xl px-8 py-16">
       <main className="mx-auto max-w-5xl px-8 py-16">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-3">
-            Planes para tu agencia
+            <ShinyText>Planes para tu agencia</ShinyText>
           </h1>
           <p className="mx-auto max-w-2xl text-ink-2">
             Mientras mejor es tu plan, <strong className="text-ink">más rápido vendes</strong>:
@@ -116,23 +118,36 @@ export default function Precios() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-40px" }}
+          variants={{
+            hidden: {},
+            visible: { transition: { staggerChildren: 0.08 } },
+          }}
+        >
           {/* Tarjeta del plan Gratis */}
           {planGratis && (
-            <PlanCard
-              plan={planGratis}
-              precio="Gratis"
-              ciclo={ciclo}
-              etiqueta="Para probar"
-              boton={
-                <Link
-                  to="/registro"
-                  className="block w-full rounded-lg border border-white/20 py-2.5 text-center text-sm font-semibold hover:border-white transition-colors"
-                >
-                  Registrarme
-                </Link>
-              }
-            />
+            <motion.div
+              variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0 } }}
+            >
+              <PlanCard
+                plan={planGratis}
+                precio="Gratis"
+                ciclo={ciclo}
+                etiqueta="Para probar"
+                boton={
+                  <Link
+                    to="/registro"
+                    className="block w-full rounded-lg border border-white/20 py-2.5 text-center text-sm font-semibold hover:border-white transition-colors"
+                  >
+                    Registrarme
+                  </Link>
+                }
+              />
+            </motion.div>
           )}
 
           {/* Planes de pago */}
@@ -141,25 +156,29 @@ export default function Precios() {
               const esPopular = plan.nivel === "Pro";
               const esPremium = plan.nivel === "Elite";
               return (
-                <PlanCard
+                <motion.div
                   key={plan.nivel}
-                  plan={plan}
-                  precio={precioEtiqueta(plan)}
-                  ciclo={ciclo}
-                  etiqueta={esPopular ? "Más popular" : esPremium ? "Máximo rendimiento" : undefined}
-                  destacado={esPopular}
-                  premium={esPremium}
-                  boton={
-                    <button
-                      type="button"
-                      onClick={() => handleComprar(plan)}
-                      disabled={comprandoPlan === plan.nivel}
-                      className="w-full rounded-lg bg-blue-500 py-2.5 text-sm font-semibold hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed transition-colors"
-                    >
-                      {comprandoPlan === plan.nivel ? "Redirigiendo..." : "Comprar Plan"}
-                    </button>
-                  }
-                />
+                  variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0 } }}
+                >
+                  <PlanCard
+                    plan={plan}
+                    precio={precioEtiqueta(plan)}
+                    ciclo={ciclo}
+                    etiqueta={esPopular ? "Más popular" : esPremium ? "Máximo rendimiento" : undefined}
+                    destacado={esPopular}
+                    premium={esPremium}
+                    boton={
+                      <button
+                        type="button"
+                        onClick={() => handleComprar(plan)}
+                        disabled={comprandoPlan === plan.nivel}
+                        className="w-full rounded-lg bg-blue-500 py-2.5 text-sm font-semibold hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed transition-colors"
+                      >
+                        {comprandoPlan === plan.nivel ? "Redirigiendo..." : "Comprar Plan"}
+                      </button>
+                    }
+                  />
+                </motion.div>
               );
             })
           ) : (
@@ -167,7 +186,7 @@ export default function Precios() {
               Los planes están disponibles próximamente.
             </p>
           )}
-        </div>
+        </motion.div>
 
         {/* Por qué un mejor plan vende más rápido */}
         <section className="mt-16 rounded-2xl border border-line bg-surface-2 p-8">
@@ -219,6 +238,7 @@ export default function Precios() {
           </p>
         </div>
       </main>
+      </SectionBackground>
     </div>
   );
 }

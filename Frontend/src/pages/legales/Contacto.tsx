@@ -2,10 +2,10 @@ import { useState, type FormEvent } from 'react';
 import { FaEnvelope, FaClock, FaHeadset, FaShieldAlt, FaSpinner } from 'react-icons/fa';
 import Swal from 'sweetalert2';
 import LayoutPublico from '../../components/layout/LayoutPublico';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useEnviarContacto } from '../../hooks/useContacto';
 
-const soporteEmail = 'soporte.automarketrd@gmail.com';
+const soporteEmail = 'soporte@automarket-rd.com';
 
 const ASUNTOS_PREDEFINIDOS = [
   'Pagos y suscripciones',
@@ -18,10 +18,11 @@ const ASUNTOS_PREDEFINIDOS = [
 
 export default function Contacto() {
   const enviarContacto = useEnviarContacto();
+  const [searchParams] = useSearchParams();
   const [form, setForm] = useState({
     nombre: '',
     email: '',
-    asunto: '',
+    asunto: searchParams.get('asunto') || '',
     mensaje: '',
     website: '',
   });

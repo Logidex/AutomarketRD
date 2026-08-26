@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import Swal from "sweetalert2";
 import { FaCreditCard, FaTicketAlt } from "react-icons/fa";
@@ -9,6 +10,7 @@ import { dashboardService } from "../services/dashboard.service";
 import Spinner from "../components/Spinner";
 import { formatearRD$, precioCicloDe } from "../utils/formato";
 import { nombrePlan } from "../constants/planes";
+import { PAGOS_HABILITADOS } from "../constants/config";
 import { formatearFecha } from "../utils/fecha";
 import {
   useSuscripcion,
@@ -26,6 +28,7 @@ const CICLOS: Ciclo[] = ["Mensual", "Trimestral", "Anual"];
 function useSuscripcionPage() {
   const [ciclo, setCiclo] = useState<Ciclo>("Mensual");
   const [procesando, setProcesando] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const suscQuery = useSuscripcion();
   const planesQuery = usePlanesCatalogo();
@@ -128,6 +131,18 @@ function useSuscripcionPage() {
       });
 
       if (!confirmacion.isConfirmed) return;
+    }
+
+    if (!PAGOS_HABILITADOS) {
+      await Swal.fire({
+        icon: "warning",
+        title: "Sistema de pagos en mantenimiento",
+        html: "El sistema de pagos se encuentra temporalmente no disponible.<br/><br/>Si deseas adquirir un plan, puedes solicitarlo contactando a nuestro equipo de soporte.",
+        confirmButtonColor: "#3b82f6",
+        confirmButtonText: "Ir a Contacto",
+      });
+      navigate("/contacto?asunto=Pagos+y+suscripciones");
+      return;
     }
 
     setProcesando(plan.nivel);
@@ -586,10 +601,10 @@ function SoporteCard() {
         <p>
           Escríbenos a{" "}
           <a
-            href="mailto:noreply.automarketrd@gmail.com?subject=Cancelación por error - AutoMarket RD"
+            href="mailto:soporte@automarket-rd.com?subject=Cancelación por error - AutoMarket RD"
             className="font-semibold underline"
           >
-            noreply.automarketrd@gmail.com
+            soporte@automarket-rd.com
           </a>{" "}
           y te ayudaremos a recuperar tu suscripción.
         </p>

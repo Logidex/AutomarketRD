@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { motion } from "motion/react";
 import Swal from "sweetalert2";
 import AnuncioCard from "../components/AnuncioCard";
 import Spinner from "../components/Spinner";
@@ -360,7 +361,12 @@ export default function MisAnuncios() {
       )}
 
       {anuncios.length === 0 ? (
-        <div className="flex min-h-[420px] flex-col items-center justify-center rounded-2xl border border-line bg-surface px-6 text-center shadow-sm">
+        <motion.div
+          className="flex min-h-[420px] flex-col items-center justify-center rounded-2xl border border-line bg-surface px-6 text-center shadow-sm"
+          initial={{ scale: 0.92, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.4, type: "spring", stiffness: 180 }}
+        >
           <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-blue-50">
             <FaCar className="text-4xl text-blue-600" />
           </div>
@@ -381,21 +387,34 @@ export default function MisAnuncios() {
             <FaPlusCircle />
             Publicar vehículo
           </Link>
-        </div>
+        </motion.div>
       ) : (
-        <ul className="space-y-4">
+        <motion.ul
+          className="space-y-4"
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: {},
+            visible: { transition: { staggerChildren: 0.06 } },
+          }}
+        >
           {anuncios.map((anuncio) => (
-            <AnuncioCard
+            <motion.li
               key={anuncio.id}
-              anuncio={anuncio}
-              onPublicar={handlePublicar}
-              onCambiarEstado={handleCambiarEstado}
-              onEliminar={handleEliminar}
-              onDestacar={handleDestacar}
-              onQuitarDestacado={handleQuitarDestacado}
-            />
+              variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }}
+              transition={{ duration: 0.3 }}
+            >
+              <AnuncioCard
+                anuncio={anuncio}
+                onPublicar={handlePublicar}
+                onCambiarEstado={handleCambiarEstado}
+                onEliminar={handleEliminar}
+                onDestacar={handleDestacar}
+                onQuitarDestacado={handleQuitarDestacado}
+              />
+            </motion.li>
           ))}
-        </ul>
+        </motion.ul>
       )}
     </div>
   );

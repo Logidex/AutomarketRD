@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion } from "motion/react";
 import Swal from "sweetalert2";
 import { FaReply } from "react-icons/fa";
 import type { LeadDealer } from "../../types/lead.types";
@@ -94,10 +95,20 @@ export default function InteresadosVendedor() {
           </p>
         </div>
       ) : (
-        <ul className="space-y-4">
+        <motion.ul
+          className="space-y-4"
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: {},
+            visible: { transition: { staggerChildren: 0.06 } },
+          }}
+        >
           {visibles.map((lead) => (
-            <li
+            <motion.li
               key={lead.id}
+              variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }}
+              transition={{ duration: 0.3 }}
               className="rounded-lg border border-line bg-surface p-5 shadow-sm"
             >
               <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
@@ -152,9 +163,9 @@ export default function InteresadosVendedor() {
                   <FaReply /> Responder por correo
                 </a>
               )}
-            </li>
+            </motion.li>
           ))}
-        </ul>
+        </motion.ul>
       )}
     </div>
   );

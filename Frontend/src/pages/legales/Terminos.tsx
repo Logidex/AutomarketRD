@@ -126,10 +126,10 @@ export default function Terminos() {
             Para consultas relacionadas con estos Términos, abre un ticket de
             soporte desde tu cuenta o escríbenos a{" "}
             <a
-              href="mailto:soporte.automarketrd@gmail.com"
+              href="mailto:soporte@automarket-rd.com"
               className="text-blue-400 hover:text-blue-300 underline"
             >
-              soporte.automarketrd@gmail.com
+              soporte@automarket-rd.com
             </a>{" "}
           </p>
         </section>

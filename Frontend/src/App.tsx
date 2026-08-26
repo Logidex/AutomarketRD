@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'motion/react';
 import BarraProgresoNavegacion from './components/BarraProgresoNavegacion';
 import ScrollToTop from './components/ScrollToTop';
 
@@ -80,7 +81,14 @@ function App() {
       <ScrollToTop />
       {/* key por segmento superior: navegar dentro de un panel no remonta
           su layout; pasar de una seccion a otra si reproduce el cross-fade */}
-      <div key={segmentoRaiz} className="animar-pagina">
+      <AnimatePresence mode="wait">
+      <motion.div
+        key={segmentoRaiz}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -8 }}
+        transition={{ duration: 0.2, ease: 'easeOut' }}
+      >
       <ModalEncuesta />
       <Routes>
         {/* INICIO PÚBLICO */}
@@ -291,7 +299,8 @@ function App() {
           }
         />
       </Routes>
-      </div>
+      </motion.div>
+      </AnimatePresence>
     </Suspense>
   );
 }

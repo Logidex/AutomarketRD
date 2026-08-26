@@ -97,10 +97,10 @@ export default function Reembolso() {
           <p className="mt-4 text-sm">
             Si no puedes acceder a tu cuenta, escríbenos a{" "}
             <a
-              href="mailto:soporte.automarketrd@gmail.com"
+              href="mailto:soporte@automarket-rd.com"
               className="text-blue-400 hover:text-blue-300 underline"
             >
-              soporte.automarketrd@gmail.com
+              soporte@automarket-rd.com
             </a>{" "}
             con el asunto indicado.
           </p>
@@ -141,10 +141,10 @@ export default function Reembolso() {
             Para consultas sobre esta política, abre un ticket de soporte
             desde tu cuenta o escríbenos a{" "}
             <a
-              href="mailto:soporte.automarketrd@gmail.com"
+              href="mailto:soporte@automarket-rd.com"
               className="text-blue-400 hover:text-blue-300 underline"
             >
-              soporte.automarketrd@gmail.com
+              soporte@automarket-rd.com
             </a>{" "}
           </p>
         </section>

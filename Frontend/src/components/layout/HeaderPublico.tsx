@@ -1,5 +1,5 @@
 // Ubicación sugerida: src/components/layout/HeaderPublico.tsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import MenuPublico from "./MenuPublico";
 
@@ -10,11 +10,23 @@ interface HeaderPublicoProps {
 
 export default function HeaderPublico({ titulo }: HeaderPublicoProps) {
   const [logoFallido, setLogoFallido] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
-    // Fondo sólido: el 80% + blur hacía ilegible el text-ink-2 del menú
-    // sobre el hero de Home.
-    <header className="sticky top-0 z-40 flex items-center justify-between border-b border-line bg-page px-4 py-3 sm:px-8">
+    <header
+      className={`sticky top-0 z-40 flex items-center justify-between border-b px-4 py-3 sm:px-8 transition-all duration-300 ${
+        scrolled
+          ? "border-line/60 bg-page/80 backdrop-blur-xl shadow-sm shadow-black/5"
+          : "border-line bg-page"
+      }`}
+    >
       <Link to="/" className="flex items-center gap-3">
         {logoFallido ? (
           <span className="text-lg font-bold text-ink">
