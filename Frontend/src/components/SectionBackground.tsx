@@ -66,7 +66,7 @@ export default function SectionBackground({ variant, className = "", children }:
       {config.orbs.map((orb, i) => (
         <div key={i} className={`pointer-events-none ${orb}`} />
       ))}
-      <div className={`relative ${className}`}>
+      <div className={`relative z-10 ${className}`}>
         {children}
       </div>
     </>

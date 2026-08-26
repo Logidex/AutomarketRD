@@ -83,7 +83,7 @@ export default function Precios() {
   const planGratis = planes.find((p) => p.nivel === "Gratis");
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-page text-ink">
+    <div className="relative min-h-screen overflow-x-hidden bg-page text-ink">
       <HeaderPublico />
 
       <SectionBackground variant="cta" className="mx-auto max-w-5xl px-8 py-16">

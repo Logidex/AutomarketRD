@@ -363,6 +363,7 @@
 /* ── ShinyText ─────────────────────────────────────── */
 .shiny-text {
   display: inline-block;
+  padding-bottom: 1px;
   background: linear-gradient(
     120deg,
     var(--am-ink) 0%,
