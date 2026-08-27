@@ -82,6 +82,7 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_API_URL: /api
+        VITE_PAGOS_HABILITADOS: "true"
     ports:
       - "5173:80"
     depends_on:

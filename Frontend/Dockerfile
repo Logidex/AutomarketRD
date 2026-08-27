@@ -16,6 +16,10 @@ COPY . .
 ARG VITE_API_URL=/api
 ENV VITE_API_URL=$VITE_API_URL
 
+# Mantenimiento de pagos: deshabilitado por defecto; el stack E2E lo activa.
+ARG VITE_PAGOS_HABILITADOS=false
+ENV VITE_PAGOS_HABILITADOS=$VITE_PAGOS_HABILITADOS
+
 RUN npm run build
 
 # =========================================

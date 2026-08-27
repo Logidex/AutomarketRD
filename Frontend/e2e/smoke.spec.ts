@@ -68,6 +68,10 @@ test.describe("Autenticación", () => {
     await page.getByRole("button", { name: /^OK$/i }).click();
     await expect(page).toHaveURL(/\/login/, { timeout: 15_000 });
 
+    // Llegamos a /login vía navegación SPA, que re-monta la ruta ~235ms después
+    // y perdería valores recién escritos: recargar deja una base estable.
+    await page.goto("/login");
+
     // El usuario creado puede iniciar sesión de inmediato
     await page.locator("#loginEmail").fill(email);
     await page.locator("#loginPassword").fill("ClaveE2E_123");

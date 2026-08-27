@@ -111,7 +111,7 @@ test.describe("Flujo Vendedor: publicar vehículo", () => {
     // 5. SEO: la vitrina enlaza con URL descriptiva (slug + id) y el
     //    formato antiguo /anuncio/<id> sigue funcionando
     await page.goto("/vehiculos");
-    await page.locator("div.grid > div.group > button").first().click();
+    await page.getByRole("button", { name: /Toyota Corolla/i }).first().click();
     await expect(page).toHaveURL(/\/anuncio\/[a-z0-9-]+-\d+$/);
     const idAnuncio = page.url().match(/(\d+)$/)?.[1];
     await page.goto(`/anuncio/${idAnuncio}`);
@@ -187,7 +187,10 @@ test.describe("Flujo Dealer: cupón de bienvenida", () => {
     await aceptarModal(page, /Registro exitoso/i);
     await expect(page).toHaveURL(/\/suscripcion/, { timeout: 15_000 });
 
-    // 2. Aplicar el cupón de bienvenida (sembrado por el seeder)
+    // 2. Aplicar el cupón de bienvenida (sembrado por el seeder).
+    // Recargar /suscripcion evita un re-mount transitorio que ocurre ~235ms
+    // después de navegar por SPA y que perdería el valor recién escrito.
+    await page.goto("/suscripcion");
     await page.locator("#codigoCupon").fill("pro15bienvenida");
     await page.getByRole("button", { name: "Aplicar cupón" }).click();
 
