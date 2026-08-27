@@ -329,9 +329,22 @@ try
 
     const string frontendPolicy = "FrontendCorsPolicy";
 
-    var allowedOrigins = builder.Configuration["Cors:AllowedOrigins"]?
-    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-    ?? Array.Empty<string>();
+    // Soporta ambas formas de config:
+    //   - arreglo (Cors__AllowedOrigins__0/__1/... o JSON "AllowedOrigins": [...])
+    //   - string único separado por comas (Cors__AllowedOrigins)
+    var allowedOrigins = builder.Configuration
+        .GetSection("Cors:AllowedOrigins")
+        .GetChildren()
+        .Select(child => child.Value)
+        .Where(value => !string.IsNullOrWhiteSpace(value))
+        .ToArray();
+
+    if (allowedOrigins.Length == 0)
+    {
+        allowedOrigins = builder.Configuration["Cors:AllowedOrigins"]?
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            ?? Array.Empty<string>();
+    }
 
     if (builder.Environment.IsDevelopment())
     {
