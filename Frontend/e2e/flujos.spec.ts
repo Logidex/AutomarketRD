@@ -45,6 +45,7 @@ test.describe("Flujo Vendedor: publicar vehículo", () => {
     await page.locator("#password").fill("ClaveE2E_123");
     await page.locator("#confirmarPassword").fill("ClaveE2E_123");
     await page.locator("#rol").selectOption("Vendedor");
+    await page.locator("#aceptaTerminos").check();
     await page.getByRole("button", { name: "Registrarse" }).click();
 
     await aceptarModal(page, /Registro exitoso/i);
@@ -137,6 +138,7 @@ test.describe("Flujo Dealer: comprar plan", () => {
     await page.locator("#agenciaRNC").fill("1-30-99999-9");
     await page.locator("#ubicacionAgencia").fill("Santo Domingo");
     await page.locator("#telefonoAgencia").fill("809-555-9999");
+    await page.locator("#aceptaTerminos").check();
     await page.getByRole("button", { name: "Registrarse" }).click();
 
     await aceptarModal(page, /Registro exitoso/i);
@@ -179,6 +181,7 @@ test.describe("Flujo Dealer: cupón de bienvenida", () => {
     await page.locator("#agenciaRNC").fill("1-30-88888-8");
     await page.locator("#ubicacionAgencia").fill("La Romana");
     await page.locator("#telefonoAgencia").fill("809-555-8888");
+    await page.locator("#aceptaTerminos").check();
     await page.getByRole("button", { name: "Registrarse" }).click();
 
     await aceptarModal(page, /Registro exitoso/i);
@@ -219,6 +222,7 @@ test.describe("Encuesta de satisfacción", () => {
     await page.locator("#email").fill(email);
     await page.locator("#password").fill("ClaveE2E_123");
     await page.locator("#confirmarPassword").fill("ClaveE2E_123");
+    await page.locator("#aceptaTerminos").check();
     await page.getByRole("button", { name: "Registrarse" }).click();
     await aceptarModal(page, /Registro exitoso/i);
     await expect(page).toHaveURL(/\/login/, { timeout: 15_000 });
@@ -271,6 +275,7 @@ test.describe("Encuesta de satisfacción", () => {
     await page.locator("#email").fill(email);
     await page.locator("#password").fill("ClaveE2E_123");
     await page.locator("#confirmarPassword").fill("ClaveE2E_123");
+    await page.locator("#aceptaTerminos").check();
     await page.getByRole("button", { name: "Registrarse" }).click();
     await aceptarModal(page, /Registro exitoso/i);
     await expect(page).toHaveURL(/\/login/, { timeout: 15_000 });

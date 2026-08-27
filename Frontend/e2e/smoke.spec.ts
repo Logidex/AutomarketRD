@@ -60,6 +60,7 @@ test.describe("Autenticación", () => {
     await page.locator("#password").fill("ClaveE2E_123");
     await page.locator("#confirmarPassword").fill("ClaveE2E_123");
     // El rol por defecto es Comprador; no requiere campos de agencia
+    await page.locator("#aceptaTerminos").check();
     await page.getByRole("button", { name: "Registrarse" }).click();
 
     // Éxito: modal de confirmación (requiere clic en OK) y redirección al login
@@ -72,5 +73,25 @@ test.describe("Autenticación", () => {
     await page.locator("#loginPassword").fill("ClaveE2E_123");
     await page.getByRole("button", { name: "Iniciar Sesión" }).click();
     await expect(page).not.toHaveURL(/login/, { timeout: 15_000 });
+  });
+
+  test("Registro sin aceptar términos se bloquea con advertencia", async ({ page }, testInfo) => {
+    const email = `e2e-sin-term-${Date.now()}-${testInfo.retry}@test.local`;
+
+    await page.goto("/registro");
+
+    await page.locator("#nombre").fill("E2E");
+    await page.locator("#apellido").fill("SinTerminos");
+    await page.locator("#email").fill(email);
+    await page.locator("#password").fill("ClaveE2E_123");
+    await page.locator("#confirmarPassword").fill("ClaveE2E_123");
+    // Sin tildar #aceptaTerminos: el guard del frontend debe bloquear
+    await page.getByRole("button", { name: "Registrarse" }).click();
+
+    await expect(page.getByText(/Falta aceptar los términos/i)).toBeVisible({ timeout: 15_000 });
+    await page.getByRole("button", { name: /^OK$/i }).click();
+
+    // No se envió: sigue en /registro y no se creó el usuario
+    await expect(page).toHaveURL(/\/registro/, { timeout: 15_000 });
   });
 });
