@@ -68,8 +68,10 @@ services:
       App__FrontendUrl: http://localhost:5173
 
       # Los E2E registran y loguean varios usuarios por corrida desde la misma
-      # IP: elevar el límite de login (default 5/15min) para no 429-el auto-login.
+      # IP: elevar el límite de login (default 5/15min) y de registro
+      # (default 5/15min) para no 429-el auto-login ni los registros.
       RateLimiting__LoginPermitLimit: "50"
+      RateLimiting__RegistroPermitLimit: "50"
     depends_on:
       db:
         condition: service_healthy

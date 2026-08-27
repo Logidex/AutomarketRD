@@ -18,6 +18,7 @@ interface RegistroFormData {
   agenciaRNC: string;
   ubicacionAgencia: string;
   telefonoAgencia: string;
+  aceptaTerminos: boolean;
 }
 
 interface CamposDealerProps {
@@ -127,6 +128,7 @@ export default function Registro() {
     agenciaRNC: "",
     ubicacionAgencia: "",
     telefonoAgencia: "",
+    aceptaTerminos: false,
   });
 
   const [loading, setLoading] = useState(false);
@@ -171,7 +173,10 @@ export default function Registro() {
     setLoading(true);
 
     try {
-      const response = await authService.register(formData);
+      const response = await authService.register({
+        ...formData,
+        aceptaTerminos: aceptoTerminos,
+      });
 
       if (response.exito) {
         const esDealerRegistrado = formData.rol === "Dealer";

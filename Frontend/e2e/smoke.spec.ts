@@ -85,7 +85,12 @@ test.describe("Autenticación", () => {
     await page.locator("#email").fill(email);
     await page.locator("#password").fill("ClaveE2E_123");
     await page.locator("#confirmarPassword").fill("ClaveE2E_123");
-    // Sin tildar #aceptaTerminos: el guard del frontend debe bloquear
+    // Sin tildar #aceptaTerminos: el guard del frontend debe bloquear.
+    // El checkbox trae required nativo, que bloquea el submit ANTES de
+    // onsubmit; se quita solo para ejercitar el guard de React (SweetAlert).
+    await page.evaluate(() =>
+      document.querySelector("#aceptaTerminos")?.removeAttribute("required")
+    );
     await page.getByRole("button", { name: "Registrarse" }).click();
 
     await expect(page.getByText(/Falta aceptar los términos/i)).toBeVisible({ timeout: 15_000 });

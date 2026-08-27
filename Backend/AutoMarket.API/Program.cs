@@ -393,11 +393,16 @@ try
 
         // Registro de cuentas: limita creación de cuentas por IP para
         // prevenir spam/bots (5 registros cada 15 min por IP).
+        // Ajustable vía RateLimiting__RegistroPermitLimit (el suite E2E
+        // lo eleva: registra varios usuarios por corrida desde una sola IP).
+        var limiteRegistro = builder.Configuration
+            .GetValue("RateLimiting:RegistroPermitLimit", 5);
+
         options.AddFixedWindowLimiter(
             "PoliticaRegistro",
             limiterOptions =>
             {
-                limiterOptions.PermitLimit = 5;
+                limiterOptions.PermitLimit = limiteRegistro;
                 limiterOptions.Window =
                     TimeSpan.FromMinutes(15);
 
