@@ -332,19 +332,19 @@ try
     // Soporta ambas formas de config:
     //   - arreglo (Cors__AllowedOrigins__0/__1/... o JSON "AllowedOrigins": [...])
     //   - string único separado por comas (Cors__AllowedOrigins)
-    var allowedOrigins = builder.Configuration
+    var originsDeSeccion = builder.Configuration
         .GetSection("Cors:AllowedOrigins")
         .GetChildren()
-        .Select(child => child.Value)
-        .Where(value => !string.IsNullOrWhiteSpace(value))
-        .ToArray();
+        .ToList();
 
-    if (allowedOrigins.Length == 0)
-    {
-        allowedOrigins = builder.Configuration["Cors:AllowedOrigins"]?
+    var allowedOrigins = originsDeSeccion.Count > 0
+        ? originsDeSeccion
+            .Where(child => !string.IsNullOrWhiteSpace(child.Value))
+            .Select(child => child.Value!)
+            .ToArray()
+        : builder.Configuration["Cors:AllowedOrigins"]?
             .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             ?? Array.Empty<string>();
-    }
 
     if (builder.Environment.IsDevelopment())
     {
