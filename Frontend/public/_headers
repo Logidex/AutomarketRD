@@ -11,5 +11,8 @@
 /index.html
   Cache-Control: no-cache
 
+/ads.txt
+  Cache-Control: no-cache
+
 /sitemap.xml
   Content-Type: application/xml
