@@ -18,6 +18,7 @@ import { useComparador } from "../context/ComparadorContext";
 import HeaderPublico from "../components/layout/HeaderPublico";
 import SectionBackground from "../components/SectionBackground";
 import BadgeVerificado from "../components/BadgeVerificado";
+import AdUnit from "../components/ads/AdUnit";
 import {
   TIPOS_VEHICULO,
   TRANSMISIONES,
@@ -729,6 +730,9 @@ export default function Vehiculos() {
 
       {/* VITRINA */}
       <main className="mx-auto max-w-6xl px-6 py-10 sm:px-8">
+        <AdUnit
+          className="mb-8 rounded-2xl border border-line bg-surface/60 px-4 pt-4 pb-6"
+        />
         {isLoading ? (
           <div className="flex items-center justify-center py-24">
             <div className="h-10 w-10 animate-spin rounded-full border-2 border-line border-t-blue-500" />

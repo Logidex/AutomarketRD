@@ -6,6 +6,7 @@ import HeaderPublico from "../components/layout/HeaderPublico";
 import SectionBackground from "../components/SectionBackground";
 import Spinner from "../components/Spinner";
 import BadgeVerificado from "../components/BadgeVerificado";
+import AdUnit from "../components/ads/AdUnit";
 import { dealerService, type AgenciaListado } from "../services/dealer.service";
 import { urlImagen } from "../utils/imagen";
 import { urlVendedor } from "../utils/slug";
@@ -198,6 +199,10 @@ export default function Agencias() {
             Solo verificadas
           </label>
         </div>
+
+        <AdUnit
+          className="mb-8 rounded-2xl border border-line bg-surface/60 px-4 pt-4 pb-6"
+        />
 
         {isLoading ? (
           <Spinner />

@@ -19,6 +19,7 @@ import { formatearPrecio } from "../utils/formato";
 import { COMBUSTIBLES, TRANSMISIONES } from "../constants/vehiculo.opciones";
 import BadgeVerificado from "../components/BadgeVerificado";
 import FiltroTipoVehiculo from "../components/FiltroTipoVehiculo";
+import AdUnit from "../components/ads/AdUnit";
 import HeaderPublico from "../components/layout/HeaderPublico";
 import SectionBackground from "../components/SectionBackground";
 import MeshGradientCanvas from "../components/MeshGradientCanvas";
@@ -726,6 +727,12 @@ export default function Home() {
       >
         <BuscadorCatalogo />
       </motion.div>
+
+      <div className="mx-auto max-w-6xl px-6 pb-4 sm:px-8">
+        <AdUnit
+          className="rounded-2xl border border-line bg-surface/60 px-4 py-6"
+        />
+      </div>
 
       <motion.div
         initial={{ opacity: 0, y: 24 }}

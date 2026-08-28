@@ -7,6 +7,7 @@ import ErrorBoundary from './components/ErrorBoundary'
 import { LoadingProvider } from './context/LoadingContext'
 import { ComparadorProvider } from './context/ComparadorContext'
 import { ThemeProvider } from './context/TemaContext'
+import { ConsentProvider } from './context/ConsentContext'
 import './index.css'
 
 const Devtools = import.meta.env.DEV
@@ -33,11 +34,13 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <ThemeProvider>
-            <LoadingProvider>
-              <ComparadorProvider>
-                <App />
-              </ComparadorProvider>
-            </LoadingProvider>
+            <ConsentProvider>
+              <LoadingProvider>
+                <ComparadorProvider>
+                  <App />
+                </ComparadorProvider>
+              </LoadingProvider>
+            </ConsentProvider>
           </ThemeProvider>
         </BrowserRouter>
         {Devtools && (
