@@ -62,20 +62,22 @@ export default function AdUnit({
 
   return (
     <div className={className} aria-label={etiqueta ? "Publicidad" : undefined}>
-      {etiqueta && (
-        <p className="mb-1.5 text-center text-[10px] font-medium uppercase tracking-[0.16em] text-ink-3">
-          Publicidad
-        </p>
-      )}
-      {/* AdSense inyecta el anuncio real dentro de un iframe aquí */}
-      <ins
-        ref={insRef}
-        className="adsbygoogle block h-auto min-h-[90px] w-full"
-        data-ad-client={ADSENSE_CLIENT}
-        data-ad-slot={slot}
-        data-ad-format="auto"
-        data-full-width-responsive="true"
-      />
+      <div className="overflow-hidden pb-1 pt-2">
+        {etiqueta && (
+          <p className="mb-2 text-center text-[10px] font-medium uppercase tracking-[0.16em] text-ink-3">
+            Publicidad
+          </p>
+        )}
+        {/* AdSense inyecta el anuncio real dentro de un iframe aquí */}
+        <ins
+          ref={insRef}
+          className="adsbygoogle mx-auto block h-auto min-h-[90px] w-full"
+          data-ad-client={ADSENSE_CLIENT}
+          data-ad-slot={slot}
+          data-ad-format="auto"
+          data-full-width-responsive="true"
+        />
+      </div>
     </div>
   );
 }
