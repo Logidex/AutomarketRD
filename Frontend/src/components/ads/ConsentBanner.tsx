@@ -1,13 +1,15 @@
 import { Link } from "react-router-dom";
 import { useConsent } from "../../context/ConsentContext";
+import { ADSENSE_ENABLED } from "../../constants/adsense";
 
 /** Banner de consentimiento de cookies/publicidad. Se muestra hasta que el
  *  usuario acepta o rechaza. Cumple la política de consentimiento de Google:
- *  sin aceptación no se cargan los anuncios ni el script de AdSense. */
+ *  sin aceptación no se cargan los anuncios ni el script de AdSense.
+ *  Solo se muestra en entornos con publicidad habilitada (ADSENSE_ENABLED). */
 export default function ConsentBanner() {
   const { estado, aceptar, rechazar } = useConsent();
 
-  if (estado !== "pendiente") return null;
+  if (!ADSENSE_ENABLED || estado !== "pendiente") return null;
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 border-t border-line bg-surface/95 p-4 shadow-2xl backdrop-blur-xl sm:p-5">
