@@ -6,7 +6,7 @@ export default function Privacidad() {
       <article className="prose prose-invert max-w-none space-y-6 text-ink-3">
         <header>
           <p className="text-sm text-ink-2">
-            Última actualización: 15 de agosto de 2026
+            Última actualización: 28 de agosto de 2026
           </p>
         </header>
 
@@ -18,10 +18,10 @@ export default function Privacidad() {
             Sitio. Puedes contactarnos a través del panel de soporte de tu
             cuenta o en{" "}
             <a
-              href="mailto:soporte.automarketrd@gmail.com"
+              href="mailto:soporte@automarket-rd.com"
               className="text-blue-400 hover:text-blue-300 underline"
             >
-              soporte.automarketrd@gmail.com
+              soporte@automarket-rd.com
             </a>{" "}
           </p>
         </section>
@@ -51,8 +51,10 @@ export default function Privacidad() {
               intercambiados con nuestro equipo de soporte.
             </li>
             <li>
-              <strong>Técnicos</strong>: dirección IP, tipo de navegador y
-              cookies esenciales de sesión.
+              <strong>Técnicos</strong>: dirección IP, tipo de navegador,
+              cookies esenciales de sesión y, cuando aceptas el
+              consentimiento de anuncios, cookies de publicidad gestionadas
+              por terceros (Google AdSense).
             </li>
           </ul>
         </section>
@@ -67,6 +69,9 @@ export default function Privacidad() {
             <li>Conectar compradores con vendedores mediante leads.</li>
             <li>Enviar notificaciones operativas (recuperación de
               contraseña, confirmación de pago).</li>
+            <li>Mostrar publicidad (anuncios de Google AdSense) en las
+              páginas públicas, solo si aceptas el consentimiento de
+              anuncios.</li>
             <li>Cumplir obligaciones legales y prevenir fraude.</li>
           </ul>
         </section>
@@ -101,6 +106,23 @@ export default function Privacidad() {
               transaccionales.
             </li>
             <li>
+              <strong>Google (AdSense)</strong>, como proveedor de
+              publicidad. Google puede tratar datos no personales del
+              navegador (intereses, demografía, ubicación aproximada) para
+              mostrarte anuncios relevantes, únicamente cuando aceptas el
+              consentimiento de anuncios. Puedes revisar cómo usa los datos
+              Google en{" "}
+              <a
+                href="https://policies.google.com/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-400 hover:text-blue-300 underline"
+              >
+                policies.google.com/privacy
+              </a>
+              .
+            </li>
+            <li>
               <strong>Autoridades</strong>, cuando sea requerido por ley.
             </li>
           </ul>
@@ -131,10 +153,10 @@ export default function Privacidad() {
             Para ejercerlos, abre un ticket de soporte desde tu cuenta o
             escríbenos a{" "}
             <a
-              href="mailto:soporte.automarketrd@gmail.com"
+              href="mailto:soporte@automarket-rd.com"
               className="text-blue-400 hover:text-blue-300 underline"
             >
-              soporte.automarketrd@gmail.com
+              soporte@automarket-rd.com
             </a>{" "}
           </p>
         </section>
@@ -152,9 +174,42 @@ export default function Privacidad() {
         <section>
           <h2 className="text-2xl font-bold text-ink">9. Cookies</h2>
           <p>
-            Usamos cookies esenciales para mantener la sesión del usuario
-            autenticado. No usamos cookies de terceros con fines
-            publicitarios.
+            Usamos cookies esenciales para que la plataforma funcione
+            (mantener tu sesión autenticada, seguridad). Estas cookies son
+            necesarias y no requieren consentimiento.
+          </p>
+          <p className="mt-3">
+            Cuando aceptas nuestro aviso de consentimiento, además usamos
+            cookies de publicidad de terceros a través de{" "}
+            <strong>Google AdSense</strong> en las páginas públicas. Google
+            puede usar dichas cookies para medir la eficacia de los anuncios
+            y personalizarlos según tu actividad en este y otros sitios.
+          </p>
+          <p className="mt-3">
+            El aviso te permite <strong>aceptar o rechazar</strong> el uso de
+            cookies de publicidad. Si rechazas, no se cargan los anuncios ni
+            sus cookies. Puedes cambiar tu elección en cualquier momento
+            borrando las cookies del navegador. Para más información sobre el
+            uso de datos por parte de Google y cómo desactivar la
+            personalización, visita{" "}
+            <a
+              href="https://policies.google.com/technologies/cookies"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 hover:text-blue-300 underline"
+            >
+              Cómo usa Google las cookies
+            </a>{" "}
+            y la{" "}
+            <a
+              href="https://adssettings.google.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 hover:text-blue-300 underline"
+            >
+              Configuración de anuncios de Google
+            </a>
+            .
           </p>
         </section>
 

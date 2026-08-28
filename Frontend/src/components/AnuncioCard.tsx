@@ -54,9 +54,7 @@ export default function AnuncioCard({
   onDestacar,
   onQuitarDestacado,
 }: AnuncioCardProps) {
-  const fotoPrincipal =
-    urlImagen(anuncio.fotos?.[0]) ||
-    "https://via.placeholder.com/300x200?text=Sin+Foto";
+  const fotoPrincipal = urlImagen(anuncio.fotos?.[0]) || "/sin-foto.svg";
 
   const estadoNormalizado = (anuncio.estado ?? "").trim();
   const estadoLower = estadoNormalizado.toLowerCase();

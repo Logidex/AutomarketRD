@@ -29,4 +29,5 @@ export interface RegistroDto {
   ubicacionAgencia: string;
   telefonoAgencia: string;
   planInicial?: string;
+  aceptaTerminos: boolean;
 }

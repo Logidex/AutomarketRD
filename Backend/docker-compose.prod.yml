@@ -3,6 +3,9 @@
 # Todas las variables criticas usan la sintaxis ${VAR:?mensaje}: si falta
 # cualquiera en .env.prod, el compose ABORTA al levantar en lugar de arrancar
 # con secretos vacios (mismo criterio fail-fast que docker-compose.staging.yml).
+
+name: automarket-prod
+
 services:
   db:
     image: postgres:16
@@ -11,6 +14,29 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB requerido}
       POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER requerido}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_PROD:?POSTGRES_PASSWORD_PROD requerido}  # ← Password diferente para prod
+    # Tuning dimensionado para el droplet objetivo de 2 GB (2 vCPU / 2 GB).
+    # Sobrescribible desde .env.prod sin tocar este archivo (ej. al escalar
+    # a 4 GB: PG_SHARED_BUFFERS=512MB PG_EFFECTIVE_CACHE_SIZE=3GB PG_MAX_CONNECTIONS=100).
+    command:
+      - postgres
+      - -c
+      - shared_buffers=${PG_SHARED_BUFFERS:-256MB}
+      - -c
+      - effective_cache_size=${PG_EFFECTIVE_CACHE_SIZE:-768MB}
+      - -c
+      - max_connections=${PG_MAX_CONNECTIONS:-60}
+      - -c
+      - work_mem=${PG_WORK_MEM:-4MB}
+      - -c
+      - maintenance_work_mem=${PG_MAINTENANCE_WORK_MEM:-64MB}
+    # Sin esto, queries en paralelo pueden fallar por el shm default de Docker (64 MB).
+    shm_size: 256mb
+    # Tiempo para un apagado limpio (checkpoint final) antes del SIGKILL.
+    stop_grace_period: 30s
+    # Techo de memoria por contenedor (dimensionado para el droplet de 2 GB):
+    # evita que un pico de la API o del backup despierte al OOM killer contra
+    # Postgres. Al escalar a 4 GB, subir a ~1.5g.
+    mem_limit: 768m
     # NO exponemos el puerto 5432 al exterior (más seguro)
     volumes:
       - pgdata_prod:/var/lib/postgresql/data
@@ -57,7 +83,8 @@ services:
       PayPal__CancelUrl: ${PAYPAL_CANCEL_URL:?PAYPAL_CANCEL_URL requerido}
       PayPal__WebhookId: ${PAYPAL_WEBHOOK_ID:?PAYPAL_WEBHOOK_ID requerido}
       Pago__TasaCambioRD_USD: ${PAGO_TASA_CAMBIO_RD_USD:-0.017}
-      Cors__AllowedOrigins: ${CORS_ALLOWED_ORIGINS_PROD:?CORS_ALLOWED_ORIGINS_PROD requerido}
+      Cors__AllowedOrigins__0: ${CORS_ALLOWED_ORIGINS_PROD_0:?CORS_ALLOWED_ORIGINS_PROD_0 requerido}
+      Cors__AllowedOrigins__1: ${CORS_ALLOWED_ORIGINS_PROD_1:-}
       Admin__Email: ${ADMIN_EMAIL_PROD:?ADMIN_EMAIL_PROD requerido}
       Admin__Password: ${ADMIN_PASSWORD_PROD:?ADMIN_PASSWORD_PROD requerido}
       Admin__RotatePassword: ${ADMIN_ROTATE_PASSWORD_PROD:-false}
@@ -71,27 +98,47 @@ services:
       # URL pública del frontend (usada en enlaces de correo, ej: confirmar correo)
       App__FrontendUrl: ${APP_FRONTEND_URL:?APP_FRONTEND_URL requerido}
 
-    # En producción NO exponemos la API al exterior: solo nginx (frontend)
-    # se publica en el puerto 80 y reenvía /api/* a este contenedor.
+      # Límite global por IP (default 300/min). Elevable temporalmente para
+      # pruebas de carga vía RATE_LIMIT_GLOBAL en el entorno del comando.
+      RateLimiting__GlobalPermitLimit: ${RATE_LIMIT_GLOBAL:-300}
+
+    # Persiste los file logs de Serilog entre redeploys (logs/api-*.log)
+    volumes:
+      - api_logs_prod:/app/logs
+
+    # Techo de memoria (droplet 2 GB): la API es quien más varía; si lo
+    # golpea repetidamente, revisar leaks antes de subir el límite.
+    mem_limit: 512m
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health/ready"]
+      interval: 30s
+      timeout: 10s
+      start_period: 40s
+      retries: 3
+
+    # En producción NO exponemos la API al exterior: solo Cloudflare Pages
+    # sirve el frontend y el API queda interno (vía cloudflared o túnel).
     depends_on:
       db:
         condition: service_healthy
     restart: always
 
-  frontend:
-    build:
-      context: ../Frontend
-      dockerfile: Dockerfile
-    container_name: automarket-frontend-prod
-    ports:
-      - "80:80"
-    depends_on:
-      api:
-        condition: service_healthy
-    restart: always
+  # frontend:   ← Cloudflare Pages sirve el frontend; este servicio ya no se usa en prod.
+  #   build:
+  #     context: ../Frontend
+  #     dockerfile: Dockerfile
+  #   container_name: automarket-frontend-prod
+  #   ports:
+  #     - "80:80"
+  #   mem_limit: 128m
+  #   depends_on:
+  #     api:
+  #       condition: service_healthy
+  #   restart: always
 
   db-backup:
-    image: postgres:16
+    image: postgres:16-alpine
     container_name: automarket-db-backup
     environment:
       POSTGRES_HOST: db
@@ -102,6 +149,12 @@ services:
       BACKUP_RETENTION_DAYS: 14
       # Ejecutar a las 03:00 todos los días (formato cron)
       CRON_SCHEDULE: "0 3 * * *"
+      # Copia offsite a S3/R2 (usa las mismas credenciales que la API)
+      BACKUP_S3_BUCKET: ${AWS_BUCKET_NAME:?AWS_BUCKET_NAME requerido}
+      BACKUP_S3_PREFIX: db-backups/prod
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY:?AWS_ACCESS_KEY requerido}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_KEY:?AWS_SECRET_KEY requerido}
+      AWS_S3_ENDPOINT: ${AWS_SERVICE_URL:-}
     volumes:
       - ./scripts/backup-db.sh:/backup-db.sh:ro
       - db_backups:/backups
@@ -109,16 +162,18 @@ services:
       - sh
       - -c
       - |
-        apk add --no-cache dcron
-        chmod +x /backup-db.sh
-        chmod 0600 /etc/crontabs/root || true
-        echo "$${CRON_SCHEDULE} /backup-db.sh >> /backups/backup.log 2>&1" > /etc/crontabs/root
+        apk add --no-cache --no-progress aws-cli >/dev/null
+        echo "$${CRON_SCHEDULE} sh /backup-db.sh >> /backups/backup.log 2>&1" > /etc/crontabs/root
+        chmod 0600 /etc/crontabs/root
         crond -f -l 2
     depends_on:
       db:
         condition: service_healthy
+    # pg_dump en streaming: 256m cubre bases de cientos de MB.
+    mem_limit: 256m
     restart: always
 
 volumes:
   pgdata_prod:
   db_backups:
+  api_logs_prod:

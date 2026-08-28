@@ -168,8 +168,12 @@ docker compose -f docker-compose.prod.yml --env-file .env.prod exec db-backup sh
   "gunzip -c $BACKUP" | docker compose -f docker-compose.prod.yml --env-file .env.prod exec -T db psql -U ${POSTGRES_USER} -d ${POSTGRES_DB}
 ```
 
-> Respaldos fuera del servidor (ej. copiar el volumen `db_backups` a un storage
-> externo) es recomendable para tolerar pérdida del VPS.
+> Respaldos fuera del servidor: el contenedor `db-backup` también sube cada
+> dump a S3/R2 bajo `s3://<AWS_BUCKET_NAME>/db-backups/prod/` usando las mismas
+> credenciales de la API (`AWS_ACCESS_KEY`/`AWS_SECRET_KEY`/`AWS_SERVICE_URL`).
+> Si la subida falla, el backup local se conserva y el aviso queda en
+> `/backups/offsite.log` dentro del volumen. Verifica de vez en cuando que
+> los objetos llegan al bucket.
 
 ## 7. Actualizar a una nueva versión
 

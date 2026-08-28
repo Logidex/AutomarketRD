@@ -24,6 +24,10 @@ export default {
         success: "var(--am-success)",
         "success-soft": "var(--am-success-soft)",
       },
+      animation: {
+        "shimmer": "shimmer-slide 1.6s ease-in-out infinite",
+        "badge-glow": "badge-glow 2s ease-in-out infinite",
+      },
     },
   },
   plugins: [],

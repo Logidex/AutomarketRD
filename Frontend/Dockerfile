@@ -16,6 +16,18 @@ COPY . .
 ARG VITE_API_URL=/api
 ENV VITE_API_URL=$VITE_API_URL
 
+# Mantenimiento de pagos: deshabilitado por defecto; el stack E2E lo activa.
+ARG VITE_PAGOS_HABILITADOS=false
+ENV VITE_PAGOS_HABILITADOS=$VITE_PAGOS_HABILITADOS
+
+# Anuncios: desactivados por defecto (evita ads involuntarios en e2e/builds
+# sin configurar). docker-compose.staging.yml los activa con sus ARGs. El valor
+# de ENV (proceso) tiene prioridad sobre los .env de Vite.
+ARG VITE_ADSENSE_ENABLED=false
+ENV VITE_ADSENSE_ENABLED=$VITE_ADSENSE_ENABLED
+ARG VITE_ADSENSE_CLIENT=
+ENV VITE_ADSENSE_CLIENT=$VITE_ADSENSE_CLIENT
+
 RUN npm run build
 
 # =========================================

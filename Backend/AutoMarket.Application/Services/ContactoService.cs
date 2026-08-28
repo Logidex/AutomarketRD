@@ -70,7 +70,8 @@ public class ContactoService : IContactoService
             </body>
             </html>";
 
-        await _emailSender.EnviarCorreoAsync(soporteEmail, asunto, cuerpo);
+        var replyTo = _configuration["Soporte:ReplyTo"];
+        await _emailSender.EnviarCorreoAsync(soporteEmail, asunto, cuerpo, replyTo);
 
         _logger.LogInformation(
             "Mensaje de contacto procesado. De: {Email}, Asunto: {Asunto}",

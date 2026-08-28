@@ -2,9 +2,31 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
+    <!-- .ico en la raíz: es el formato que Google Search asocia al resultado;
+         el SVG queda para navegadores modernos. Regenerar con
+         `node scripts/generar-favicons.mjs` si cambia el logo. -->
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AutoMarket RD</title>
+    <title>AutoMarket RD — Compra y venta de vehículos en República Dominicana</title>
+    <meta
+      name="description"
+      content="AutoMarket RD: marketplace automotriz de República Dominicana. Encuentra carros nuevos y usados, compara vehículos, contacta dealers y vendedores verificados."
+    />
+    <meta name="theme-color" content="#0c101b" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="AutoMarket RD" />
+    <meta property="og:title" content="AutoMarket RD — Compra y venta de vehículos" />
+    <meta
+      property="og:description"
+      content="Encuentra carros nuevos y usados en República Dominicana, compara vehículos y contacta dealers verificados."
+    />
+    <meta property="og:locale" content="es_DO" />
+    <meta name="twitter:card" content="summary" />
+    <link rel="canonical" href="https://automarket-rd.com/" />
+    <meta property="og:url" content="https://automarket-rd.com/" />
+    <meta property="og:image" content="https://automarket-rd.com/favicon.svg" />
   </head>
   <body>
     <div id="root"></div>

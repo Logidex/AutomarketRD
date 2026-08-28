@@ -1,4 +1,5 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { useEffect } from "react";
 import {
   FaArrowLeft,
   FaCalendarAlt,
@@ -15,15 +16,18 @@ import type { AnuncioListado } from "../types/anuncio.types";
 import type { PerfilDealerPublico } from "../services/dealer.service";
 import { urlImagen } from "../utils/imagen";
 import { formatearPrecio } from "../utils/formato";
+import { idDesdeSlug, urlAnuncio } from "../utils/slug";
 import Spinner from "../components/Spinner";
 import BadgeVerificado from "../components/BadgeVerificado";
 import { usePerfilDealerPublico, useAnunciosVendedor } from "../hooks/usePerfilDealer";
 
 const fotoPrincipal = (anuncio: AnuncioListado): string =>
-  urlImagen(anuncio.fotos?.[0]) || "https://via.placeholder.com/600x400?text=Sin+Foto";
+  urlImagen(anuncio.fotos?.[0]) || "/sin-foto.svg";
 
-function useVendedorPublico(id: string | undefined) {
-  const vendedorId = Number(id);
+function useVendedorPublico(slug: string | undefined) {
+  // El slug es decorativo: el ID viaja al final ("autoventas-rd-5" -> 5).
+  // También acepta IDs puros ("/vendedor/5") para links antiguos.
+  const vendedorId = idDesdeSlug(slug);
   const esIdInvalido = !Number.isInteger(vendedorId) || vendedorId <= 0;
 
   const { data: perfil = null, isLoading: cargandoPerfil, isError, error } =
@@ -318,7 +322,7 @@ function PerfilDealer({ perfil, anuncios, numeroWhatsApp }: PropsPerfilDealer) {
 interface PropsInventario {
   anuncios: AnuncioListado[];
   esParticular: boolean;
-  onAbrir: (id: number) => void;
+  onAbrir: (anuncio: AnuncioListado) => void;
 }
 
 function InventarioVendedor({ anuncios, esParticular, onAbrir }: PropsInventario) {
@@ -356,7 +360,7 @@ function InventarioVendedor({ anuncios, esParticular, onAbrir }: PropsInventario
           <TarjetaAnuncioVendedor
             anuncio={anuncios[0]}
             destacada
-            onAbrir={() => onAbrir(anuncios[0].id)}
+            onAbrir={() => onAbrir(anuncios[0])}
           />
         </div>
       ) : (
@@ -365,7 +369,7 @@ function InventarioVendedor({ anuncios, esParticular, onAbrir }: PropsInventario
             <TarjetaAnuncioVendedor
               key={anuncio.id}
               anuncio={anuncio}
-              onAbrir={() => onAbrir(anuncio.id)}
+              onAbrir={() => onAbrir(anuncio)}
             />
           ))}
         </div>
@@ -393,7 +397,7 @@ function NoEncontradoVendedor() {
 }
 
 export default function VendedorPublico() {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
 
   const {
@@ -406,7 +410,17 @@ export default function VendedorPublico() {
     anuncios,
     inicial,
     numeroWhatsApp,
-  } = useVendedorPublico(id);
+  } = useVendedorPublico(slug);
+
+  // SEO: título de la pestaña con el nombre de la agencia/vendedor.
+  useEffect(() => {
+    if (perfil?.nombreAgencia) {
+      document.title = `${perfil.nombreAgencia} | AutoMarket RD`;
+    }
+    return () => {
+      document.title = "AutoMarket RD — Compra y venta de vehículos en República Dominicana";
+    };
+  }, [perfil?.nombreAgencia]);
 
   if (cargando && !esIdInvalido) {
     return <Spinner />;
@@ -458,7 +472,7 @@ export default function VendedorPublico() {
               <InventarioVendedor
                 anuncios={anuncios}
                 esParticular={esParticular}
-                onAbrir={(id) => navigate(`/anuncio/${id}`)}
+                onAbrir={(a) => navigate(urlAnuncio(a))}
               />
             </>
           )}

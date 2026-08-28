@@ -5,6 +5,7 @@ using AutoMarket.Application.DTOs.Planes;
 using AutoMarket.Application.DTOs.Ticket;
 using AutoMarket.Application.Interfaces;
 using AutoMarket.Application.Services;
+using AutoMarket.Core.Entities;
 using AutoMarket.Core.Entities.Enums;
 using AutoMarket.Core.Exceptions;
 using AutoMarket.Core.Interfaces;
@@ -29,6 +30,7 @@ public class AdminController : ControllerBase
     private readonly IPlanCatalogoService _planCatalogoService;
     private readonly IUsuarioCuentaService _usuarioCuentaService;
     private readonly ITicketService _ticketService;
+    private readonly IReporteAnuncioService _reporteAnuncioService;
 
 /// <summary>
 /// Inicializa una nueva instancia de la clase AdminController.
@@ -41,7 +43,8 @@ public class AdminController : ControllerBase
         ISuscripcionService suscripcionService,
         IPlanCatalogoService planCatalogoService,
         IUsuarioCuentaService usuarioCuentaService,
-        ITicketService ticketService)
+        ITicketService ticketService,
+        IReporteAnuncioService reporteAnuncioService)
     {
         _dashboardService = dashboardService;
         _usuarioRepository = usuarioRepository;
@@ -51,6 +54,7 @@ public class AdminController : ControllerBase
         _planCatalogoService = planCatalogoService;
         _usuarioCuentaService = usuarioCuentaService;
         _ticketService = ticketService;
+        _reporteAnuncioService = reporteAnuncioService;
     }
 
     [HttpGet("dashboard/resumen")]
@@ -107,6 +111,68 @@ public class AdminController : ControllerBase
         {
             exito = true,
             mensaje = $"El usuario {usuario.Email} ha sido reactivado exitosamente."
+        });
+    }
+
+    /// <summary>
+    /// Elimina definitivamente un usuario junto con sus anuncios (y fotos en
+    /// S3), perfil dealer, tickets, favoritos, historial y sesiones.
+    /// Protegido: no se puede eliminar a sí mismo ni a otro administrador.
+    /// Acción irreversible.
+    /// </summary>
+    [HttpDelete("usuarios/{id:int}")]
+    public async Task<IActionResult> EliminarUsuario(int id)
+    {
+        var adminId = User.ObtenerUsuarioId();
+
+        if (id == adminId)
+            return BadRequest(new { mensaje = "No puedes eliminar tu propia cuenta." });
+
+        var objetivo = await _usuarioRepository.ObtenerPorIdAsync(id);
+
+        if (objetivo == null)
+            return NotFound(new { mensaje = "Usuario no encontrado." });
+
+        if (string.Equals(objetivo.Rol, Roles.Admin, StringComparison.OrdinalIgnoreCase))
+            return BadRequest(new { mensaje = "No se puede eliminar una cuenta de administrador." });
+
+        // Limpieza de fotos en S3 de todos sus anuncios (incluidos borradores);
+        // las filas de BD desaparecen por cascade al eliminar el usuario.
+        var pagina = 1;
+        var fotosEliminadas = 0;
+
+        while (true)
+        {
+            var (anunciosPagina, _) = await _anuncioRepository.BuscarPaginadoAsync(
+                new AnuncioQueryFilter
+                {
+                    UsuarioId = id,
+                    PaginaActual = pagina,
+                    CantidadPorPagina = 50
+                });
+
+            if (!anunciosPagina.Any())
+                break;
+
+            foreach (var anuncio in anunciosPagina)
+            {
+                foreach (var foto in anuncio.Fotos)
+                {
+                    await _almacenadorArchivos.EliminarArchivoAsync(foto);
+                    fotosEliminadas++;
+                }
+            }
+
+            pagina++;
+        }
+
+        await _usuarioRepository.EliminarAsync(objetivo);
+        await _usuarioRepository.GuardarCambiosAsync();
+
+        return Ok(new
+        {
+            exito = true,
+            mensaje = $"El usuario {objetivo.Email} fue eliminado definitivamente ({fotosEliminadas} fotos limpiadas)."
         });
     }
 
@@ -360,6 +426,59 @@ public class AdminController : ControllerBase
         catch (BusinessRuleException ex)
         {
             return BadRequest(new { exito = false, mensaje = ex.Message });
+        }
+    }
+
+    // ==========================================
+    // REPORTES DE ANUNCIOS
+    // ==========================================
+
+    [HttpGet("reportes")]
+    public async Task<IActionResult> ListarReportes([FromQuery] string estado = "Pendiente")
+    {
+        if (!Enum.TryParse<ReporteEstado>(estado, ignoreCase: true, out var reporteEstado))
+            return BadRequest(new { mensaje = $"Estado inválido: {estado}. Usa Pendiente, Descartado o Resuelto." });
+
+        var reportes = await _reporteAnuncioService.ListarPorEstadoAsync(reporteEstado);
+        return Ok(reportes);
+    }
+
+    [HttpGet("reportes/pendientes/contador")]
+    public async Task<IActionResult> ContarReportesPendientes()
+    {
+        var total = await _reporteAnuncioService.ContarPendientesAsync();
+        return Ok(new { total });
+    }
+
+    [HttpPatch("reportes/{id:int}/descartar")]
+    public async Task<IActionResult> DescartarReporte(int id)
+    {
+        try
+        {
+            await _reporteAnuncioService.DescartarAsync(id, User.ObtenerUsuarioId());
+            return Ok(new { exito = true, mensaje = "Reporte descartado." });
+        }
+        catch (BusinessRuleException ex)
+        {
+            return BadRequest(new { mensaje = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Resuelve el reporte eliminando el anuncio reportado con sus fotos.
+    /// Acción irreversible.
+    /// </summary>
+    [HttpPatch("reportes/{id:int}/resolver")]
+    public async Task<IActionResult> ResolverReporte(int id)
+    {
+        try
+        {
+            await _reporteAnuncioService.ResolverEliminandoAnuncioAsync(id, User.ObtenerUsuarioId());
+            return Ok(new { exito = true, mensaje = "Reporte resuelto: el anuncio fue eliminado." });
+        }
+        catch (BusinessRuleException ex)
+        {
+            return BadRequest(new { mensaje = ex.Message });
         }
     }
 }

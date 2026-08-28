@@ -1,3 +1,5 @@
+using AutoMarket.Core.Entities.Constants;
+
 namespace AutoMarket.Core.Entities;
 
 public class Usuario
@@ -153,6 +155,17 @@ public class Usuario
     }
 
     public bool IsActivo { get; private set; } = true;
+
+    // ==========================================
+    // ACEPTACIÓN DE TÉRMINOS Y CONDICIONES
+    // (fecha del alta; null en cuentas creadas antes del requerimiento)
+    // ==========================================
+    public DateTime? TerminosAceptadosUtc { get; private set; }
+
+    public void AceptarTerminos(DateTime utc)
+    {
+        TerminosAceptadosUtc = utc;
+    }
 
     // ==========================================
     // CAMBIO DE CORREO EN DOS PASOS (confirmación)
@@ -320,6 +333,124 @@ public class Usuario
             throw new ArgumentException("La contraseña es obligatoria.", nameof(nuevoPasswordHash));
 
         PasswordHash = nuevoPasswordHash;
+    }
+
+    // ==========================================
+    // BLOQUEO DE CUENTA POR INTENTOS FALLIDOS
+    // Estrictamente por cuenta: los fallos de una cuenta
+    // nunca afectan a otra ni dependen de la red/IP.
+    // ==========================================
+    public int IntentosFallidos { get; private set; }
+    public DateTime? BloqueadoHastaUtc { get; private set; }
+
+    public bool EstaBloqueado(DateTime ahoraUtc)
+    {
+        return BloqueadoHastaUtc is DateTime hasta && ahoraUtc < hasta;
+    }
+
+    /// <summary>
+    /// Registra un intento fallido de contraseña para ESTA cuenta. Al alcanzar
+    /// el máximo permitido la cuenta queda bloqueada durante la ventana indicada.
+    /// Devuelve los minutos de bloqueo aplicados, o null si aún no se alcanza el máximo.
+    /// </summary>
+    public int? RegistrarIntentoFallido(int maxIntentos, TimeSpan ventanaBloqueo, DateTime ahoraUtc)
+    {
+        if (maxIntentos < 1)
+            throw new ArgumentOutOfRangeException(nameof(maxIntentos), "El máximo de intentos debe ser al menos 1.");
+
+        IntentosFallidos++;
+
+        if (IntentosFallidos < maxIntentos)
+            return null;
+
+        var minutos = Math.Max(1, (int)Math.Round(ventanaBloqueo.TotalMinutes));
+        BloqueadoHastaUtc = ahoraUtc.Add(TimeSpan.FromMinutes(minutos));
+        return minutos;
+    }
+
+    /// <summary>
+    /// Reinicia el contador y el bloqueo de esta cuenta. Se invoca cuando se
+    /// demuestra la identidad: inicio de sesión correcto, restablecimiento de
+    /// contraseña con código de correo o cambio de contraseña confirmado.
+    /// </summary>
+    public void ReiniciarIntentosFallidos()
+    {
+        IntentosFallidos = 0;
+        BloqueadoHastaUtc = null;
+    }
+
+    // ==========================================
+    // LÍMITE DE CORREOS ENVIADOS POR USUARIO
+    // Cooldown por tipo de correo + tope diario,
+    // para prevenir abuso del SMTP.
+    // ==========================================
+    public int EmailsEnviadosHoy { get; private set; }
+    public DateTime? VentanaEmailsInicioUtc { get; private set; }
+    public DateTime? UltimoEnvioRecuperacionUtc { get; private set; }
+    public DateTime? UltimoEnvioConfirmacionCuentaUtc { get; private set; }
+    public DateTime? UltimoEnvioCambioPasswordUtc { get; private set; }
+    public DateTime? UltimoEnvioCambioEmailUtc { get; private set; }
+
+    /// <summary>
+    /// Intenta registrar el envío de un correo a este usuario aplicando el
+    /// cooldown por tipo y el tope diario. Devuelve null si el envío queda
+    /// autorizado; si no, los minutos que deben esperar antes del próximo envío.
+    /// </summary>
+    public int? TryRegistrarEnvioEmail(string tipoEmail, DateTime ahoraUtc, TimeSpan cooldown, int topeDiario)
+    {
+        if (topeDiario < 1)
+            throw new ArgumentOutOfRangeException(nameof(topeDiario), "El tope diario debe ser al menos 1.");
+
+        // La ventana diaria cubre 24 h desde el primer envío; luego se reinicia.
+        if (VentanaEmailsInicioUtc is not DateTime inicio || ahoraUtc >= inicio.AddDays(1))
+        {
+            inicio = ahoraUtc;
+            VentanaEmailsInicioUtc = inicio;
+            EmailsEnviadosHoy = 0;
+        }
+
+        if (EmailsEnviadosHoy >= topeDiario)
+            return MinutosRestantes(inicio.AddDays(1), ahoraUtc);
+
+        if (ObtenerUltimoEnvio(tipoEmail) is DateTime cuando && ahoraUtc < cuando.Add(cooldown))
+            return MinutosRestantes(cuando.Add(cooldown), ahoraUtc);
+
+        EmailsEnviadosHoy++;
+        FijarUltimoEnvio(tipoEmail, ahoraUtc);
+        return null;
+    }
+
+    private static int MinutosRestantes(DateTime limite, DateTime ahoraUtc)
+    {
+        return Math.Max(1, (int)Math.Ceiling((limite - ahoraUtc).TotalMinutes));
+    }
+
+    private DateTime? ObtenerUltimoEnvio(string tipoEmail) => tipoEmail switch
+    {
+        TiposEmail.Recuperacion => UltimoEnvioRecuperacionUtc,
+        TiposEmail.ConfirmacionCuenta => UltimoEnvioConfirmacionCuentaUtc,
+        TiposEmail.CambioPassword => UltimoEnvioCambioPasswordUtc,
+        TiposEmail.CambioEmail => UltimoEnvioCambioEmailUtc,
+        _ => null
+    };
+
+    private void FijarUltimoEnvio(string tipoEmail, DateTime utc)
+    {
+        switch (tipoEmail)
+        {
+            case TiposEmail.Recuperacion:
+                UltimoEnvioRecuperacionUtc = utc;
+                break;
+            case TiposEmail.ConfirmacionCuenta:
+                UltimoEnvioConfirmacionCuentaUtc = utc;
+                break;
+            case TiposEmail.CambioPassword:
+                UltimoEnvioCambioPasswordUtc = utc;
+                break;
+            case TiposEmail.CambioEmail:
+                UltimoEnvioCambioEmailUtc = utc;
+                break;
+        }
     }
 
 }

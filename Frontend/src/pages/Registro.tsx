@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { AnimatePresence, motion } from "motion/react";
 import Swal from "sweetalert2";
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 import { authService } from "../services/auth.service";
+import SectionBackground from "../components/SectionBackground";
 import logo from "../assets/AutoMarketRD_Logo.svg";
 
 interface RegistroFormData {
@@ -16,6 +18,7 @@ interface RegistroFormData {
   agenciaRNC: string;
   ubicacionAgencia: string;
   telefonoAgencia: string;
+  aceptaTerminos: boolean;
 }
 
 interface CamposDealerProps {
@@ -125,12 +128,14 @@ export default function Registro() {
     agenciaRNC: "",
     ubicacionAgencia: "",
     telefonoAgencia: "",
+    aceptaTerminos: false,
   });
 
   const [loading, setLoading] = useState(false);
   const [mostrarPassword, setMostrarPassword] = useState(false);
   const [confirmarPassword, setConfirmarPassword] = useState("");
   const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
+  const [aceptoTerminos, setAceptoTerminos] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (
@@ -145,6 +150,16 @@ export default function Registro() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!aceptoTerminos) {
+      await Swal.fire({
+        icon: "warning",
+        title: "Falta aceptar los términos",
+        text: "Debes aceptar los Términos y Condiciones y la Política de Privacidad para crear tu cuenta.",
+        confirmButtonColor: "#3b82f6",
+      });
+      return;
+    }
+
     if (formData.password !== confirmarPassword) {
       await Swal.fire({
         icon: "error",
@@ -158,7 +173,10 @@ export default function Registro() {
     setLoading(true);
 
     try {
-      const response = await authService.register(formData);
+      const response = await authService.register({
+        ...formData,
+        aceptaTerminos: aceptoTerminos,
+      });
 
       if (response.exito) {
         const esDealerRegistrado = formData.rol === "Dealer";
@@ -176,7 +194,7 @@ export default function Registro() {
           await Swal.fire({
             icon: "success",
             title: "¡Registro exitoso!",
-            html: `Tu cuenta Dealer fue creada con el plan <strong>Gratis</strong> (1 anuncio).<br/><br/>Te enviamos un correo de confirmación a <strong>${formData.email}</strong>. Confírmalo para poder obtener la insignia de <strong>Dealer Verificado</strong>.<br/><br/>Ahora elige la suscripción que mejor se adapte a tu agencia.`,
+            html: `Tu cuenta Dealer fue creada con el plan <strong>Gratis</strong> (1 anuncio).<br/><br/>Te enviamos un correo de confirmación a <strong>${formData.email}</strong>. Confírmalo para poder obtener la insignia de <strong>Dealer Verificado</strong>.<br/><br/>⭐ <strong>No te pierdas este paso:</strong> entra a tu panel y completa <strong>Mi Perfil</strong> con el logo, horarios y descripción de tu agencia — los compradores confían más en perfiles completos.<br/><br/>Ahora elige la suscripción que mejor se adapte a tu agencia.`,
             confirmButtonColor: "#3b82f6",
           });
           navigate("/suscripcion");
@@ -212,7 +230,8 @@ export default function Registro() {
   const esDealer = formData.rol === "Dealer";
 
   return (
-    <div className="min-h-screen bg-page flex items-center justify-center p-4">
+    <div className="relative min-h-screen overflow-hidden bg-page flex items-center justify-center p-4">
+      <SectionBackground variant="cta" className="w-full max-w-[950px]">
       <div className="w-full max-w-[950px] bg-surface rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row">
 
         {/* Columna Izquierda - Visual */}
@@ -414,9 +433,53 @@ export default function Registro() {
             </div>
 
             {/* Campos exclusivos para Dealer */}
-            {esDealer && (
-              <CamposDealer formData={formData} handleChange={handleChange} />
-            )}
+            <AnimatePresence initial={false}>
+              {esDealer && (
+                <motion.div
+                  key="campos-dealer"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.25, ease: "easeInOut" }}
+                  className="overflow-hidden"
+                >
+                  <CamposDealer formData={formData} handleChange={handleChange} />
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Aceptación de términos */}
+            <div className="flex items-start gap-3">
+              <input
+                id="aceptaTerminos"
+                type="checkbox"
+                checked={aceptoTerminos}
+                onChange={(e) => setAceptoTerminos(e.target.checked)}
+                required
+                className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border-line accent-blue-600"
+              />
+              <label
+                htmlFor="aceptaTerminos"
+                className="cursor-pointer text-sm leading-6 text-ink-2"
+              >
+                Acepto los{" "}
+                <Link
+                  to="/terminos"
+                  target="_blank"
+                  className="font-semibold text-blue-500 hover:underline"
+                >
+                  Términos y Condiciones
+                </Link>{" "}
+                y la{" "}
+                <Link
+                  to="/privacidad"
+                  target="_blank"
+                  className="font-semibold text-blue-500 hover:underline"
+                >
+                  Política de Privacidad
+                </Link>
+              </label>
+            </div>
 
             <button
               type="submit"
@@ -435,6 +498,7 @@ export default function Registro() {
           </p>
         </div>
       </div>
+      </SectionBackground>
     </div>
   );
 }

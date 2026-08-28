@@ -20,32 +20,59 @@ export const API_BASE_URL = baseURL;
 // con la sesión expirada (p. ej. al cargar un dashboard con varias consultas).
 let yaRedirigidoAPorSesion = false;
 
+// Refresco single-flight: aunque 10 peticiones reciban 401 a la vez, solo
+// se lanza UNA llamada a /api/auth/refrescar y todas esperan su resultado.
+let refrescoEnCurso: Promise<boolean> | null = null;
+
+function intentarRefresco(): Promise<boolean> {
+  refrescoEnCurso ??= import("./auth.service")
+    .then(({ authService }) => authService.refrescarSesion())
+    .then(() => true)
+    .catch(() => false)
+    .finally(() => {
+      refrescoEnCurso = null;
+    });
+
+  return refrescoEnCurso;
+}
+
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     const status = error.response?.status;
 
-    // Sesión expirada o cookie inválida: se limpia el estado local y se
-    // redirige al login. Se omiten login/logout porque ahí la UI maneja el
-    // error (credenciales incorrectas) sin necesidad de limpiar la sesión.
+    // Sesión expirada: se intenta renovar en silencio una sola vez; si el
+    // refresh falla, se limpia el estado local y se redirige al login. Se
+    // omiten las rutas de auth porque ahí la UI maneja el error directamente.
     if (status === 401) {
       const url = error.config?.url ?? "";
-      const esCredencialesIncorrectas =
-        url.includes("/api/auth/login") || url.includes("/api/auth/logout");
+      const esRutaAuth =
+        url.includes("/api/auth/login") ||
+        url.includes("/api/auth/logout") ||
+        url.includes("/api/auth/refrescar");
 
-      if (!esCredencialesIncorrectas && !yaRedirigidoAPorSesion) {
-        yaRedirigidoAPorSesion = true;
+      if (!esRutaAuth && !error.config?._reintentadoTrasRefresco) {
+        const refrescado = await intentarRefresco();
 
-        // Limpia el usuario guardado y borra la cookie en el servidor.
-        void import("./auth.service").then(({ authService }) => {
-          authService.logout();
-        });
+        if (refrescado && error.config) {
+          error.config._reintentadoTrasRefresco = true;
+          return api.request(error.config);
+        }
 
-        // Recarga completa para descartar estado en memoria con la sesión vieja.
-        if (window.location.pathname !== "/login") {
-          window.location.assign("/login");
-        } else {
-          yaRedirigidoAPorSesion = false;
+        if (!yaRedirigidoAPorSesion) {
+          yaRedirigidoAPorSesion = true;
+
+          // Limpia el usuario guardado y borra las cookies en el servidor.
+          void import("./auth.service").then(({ authService }) => {
+            authService.logout();
+          });
+
+          // Recarga completa para descartar estado en memoria con la sesión vieja.
+          if (window.location.pathname !== "/login") {
+            window.location.assign("/login");
+          } else {
+            yaRedirigidoAPorSesion = false;
+          }
         }
       }
     }

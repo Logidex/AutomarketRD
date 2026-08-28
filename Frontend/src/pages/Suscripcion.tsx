@@ -1,22 +1,24 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import { FaPaypal } from "react-icons/fa";
+import { FaPaypal, FaTicketAlt } from "react-icons/fa";
 import { type PlanCatalogo } from "../services/planes.service";
 import { authService } from "../services/auth.service";
 import { ROLES } from "../constants/roles";
 import { formatearRD$, precioCicloDe, type Ciclo } from "../utils/formato";
-import logo from "../assets/AutoMarketRD_Logo.svg";
-import MenuPublico from "../components/layout/MenuPublico";
+import HeaderPublico from "../components/layout/HeaderPublico";
+import SectionBackground from "../components/SectionBackground";
 import PlanCard from "../components/PlanCard";
-import { usePlanesCatalogo } from "../hooks/useSuscripcion";
+import { usePlanesCatalogo, useAplicarCupon } from "../hooks/useSuscripcion";
 
 const CICLOS: Ciclo[] = ["Mensual", "Trimestral", "Anual"];
 
 export default function Suscripcion() {
   const { data: planes = [] } = usePlanesCatalogo();
   const [ciclo, setCiclo] = useState<Ciclo>("Mensual");
+  const [codigoCupon, setCodigoCupon] = useState("");
   const navigate = useNavigate();
+  const aplicarCupon = useAplicarCupon();
 
   const planesPago = planes.filter((p) => p.nivel !== "Gratis");
   const planGratis = planes.find((p) => p.nivel === "Gratis");
@@ -51,24 +53,34 @@ export default function Suscripcion() {
     );
   };
 
+  const handleAplicarCupon = async () => {
+    if (!codigoCupon.trim() || aplicarCupon.isPending) return;
+
+    try {
+      const resultado = await aplicarCupon.mutateAsync(codigoCupon.trim());
+      setCodigoCupon("");
+      await Swal.fire({
+        icon: "success",
+        title: "¡Cupón aplicado!",
+        text: resultado.mensaje,
+        confirmButtonColor: "#3b82f6",
+      });
+      navigate("/dashboard");
+    } catch (err) {
+      await Swal.fire({
+        icon: "error",
+        title: "No se pudo aplicar el cupón",
+        text: err instanceof Error ? err.message : "Inténtalo nuevamente.",
+        confirmButtonColor: "#3b82f6",
+      });
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-page text-ink">
-      {/* Header */}
-      <header className="flex items-center justify-between border-b border-line px-6 py-2 sm:px-8">
-        <div className="flex items-center gap-4">
-          <Link to="/" className="flex items-center">
-            <img
-              src={logo}
-              alt="AutoMarket RD"
-              className="h-20 w-auto object-contain"
-            />
-          </Link>
-          <span className="text-xl font-bold">Suscripción</span>
-        </div>
+    <div className="relative min-h-screen overflow-hidden bg-page text-ink">
+      <HeaderPublico titulo="Suscripción" />
 
-        <MenuPublico />
-      </header>
-
+      <SectionBackground variant="cta" className="mx-auto max-w-5xl px-8 py-16">
       <main className="mx-auto max-w-5xl px-8 py-16">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-3">
@@ -78,6 +90,37 @@ export default function Suscripcion() {
             Tu cuenta ya está activa con el plan Gratis. Elige el plan que mejor
             se adapte a tu agencia y empieza a vender más.
           </p>
+        </div>
+
+        {/* Cupón promocional: canje único por dealer */}
+        <div className="mx-auto mb-10 max-w-xl rounded-xl border border-line bg-surface-2 p-5">
+          <label
+            htmlFor="codigoCupon"
+            className="mb-3 flex items-center gap-2 text-sm font-semibold text-ink"
+          >
+            <FaTicketAlt className="text-green-500" />
+            ¿Tienes un cupón?
+          </label>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <input
+              id="codigoCupon"
+              type="text"
+              value={codigoCupon}
+              onChange={(e) => setCodigoCupon(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleAplicarCupon()}
+              placeholder="Escribe tu código aquí"
+              maxLength={50}
+              className="flex-1 rounded-lg border border-line bg-input px-4 py-2.5 text-sm uppercase text-ink placeholder:normal-case placeholder:text-ink-3 focus:border-blue-500 focus:outline-none"
+            />
+            <button
+              type="button"
+              onClick={handleAplicarCupon}
+              disabled={aplicarCupon.isPending || !codigoCupon.trim()}
+              className="rounded-lg bg-green-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {aplicarCupon.isPending ? "Aplicando..." : "Aplicar cupón"}
+            </button>
+          </div>
         </div>
 
         {/* Selector de ciclo */}
@@ -163,6 +206,7 @@ export default function Suscripcion() {
           </p>
         </div>
       </main>
+      </SectionBackground>
     </div>
   );
 }

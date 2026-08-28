@@ -1,13 +1,16 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import Swal from "sweetalert2";
-import { FaCreditCard } from "react-icons/fa";
+import { FaCreditCard, FaTicketAlt } from "react-icons/fa";
 import { type PlanCatalogo } from "../services/planes.service";
 import type { SuscripcionDealer, PagoSuscripcion } from "../services/suscripcion.service";
+import type { CuponAplicado } from "../services/cupones.service";
 import { dashboardService } from "../services/dashboard.service";
 import Spinner from "../components/Spinner";
 import { formatearRD$, precioCicloDe } from "../utils/formato";
 import { nombrePlan } from "../constants/planes";
+import { PAGOS_HABILITADOS } from "../constants/config";
 import { formatearFecha } from "../utils/fecha";
 import {
   useSuscripcion,
@@ -15,6 +18,7 @@ import {
   useHistorialPagos,
   useCancelarSuscripcion,
   useGenerarLinkPago,
+  useAplicarCupon,
 } from "../hooks/useSuscripcion";
 
 type Ciclo = "Mensual" | "Trimestral" | "Anual";
@@ -24,6 +28,7 @@ const CICLOS: Ciclo[] = ["Mensual", "Trimestral", "Anual"];
 function useSuscripcionPage() {
   const [ciclo, setCiclo] = useState<Ciclo>("Mensual");
   const [procesando, setProcesando] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const suscQuery = useSuscripcion();
   const planesQuery = usePlanesCatalogo();
@@ -37,6 +42,7 @@ function useSuscripcionPage() {
 
   const cancelar = useCancelarSuscripcion();
   const generarLinkPago = useGenerarLinkPago();
+  const aplicarCupon = useAplicarCupon();
 
   const suscripcion = suscQuery.data ?? null;
   const planes = planesQuery.data ?? [];
@@ -127,6 +133,18 @@ function useSuscripcionPage() {
       if (!confirmacion.isConfirmed) return;
     }
 
+    if (!PAGOS_HABILITADOS) {
+      await Swal.fire({
+        icon: "warning",
+        title: "Sistema de pagos en mantenimiento",
+        html: "El sistema de pagos se encuentra temporalmente no disponible.<br/><br/>Si deseas adquirir un plan, puedes solicitarlo contactando a nuestro equipo de soporte.",
+        confirmButtonColor: "#3b82f6",
+        confirmButtonText: "Ir a Contacto",
+      });
+      navigate("/contacto?asunto=Pagos+y+suscripciones");
+      return;
+    }
+
     setProcesando(plan.nivel);
 
     try {
@@ -185,6 +203,18 @@ function useSuscripcionPage() {
     suscripcion.estado === "Cancelada" &&
     suscripcion.activa;
 
+  // Canje de cupón promocional desde el dashboard (para quien no lo usó al iniciar)
+  const aplicarCuponDealer = async (codigo: string): Promise<CuponAplicado | null> => {
+    if (!codigo.trim() || procesando !== null) return null;
+
+    setProcesando("cupon");
+    try {
+      return await aplicarCupon.mutateAsync(codigo.trim());
+    } finally {
+      setProcesando(null);
+    }
+  };
+
   return {
     cargando,
     suscripcion,
@@ -199,6 +229,7 @@ function useSuscripcionPage() {
     setCiclo,
     handlePago,
     handleCancelar,
+    aplicarCuponDealer,
   };
 }
 
@@ -406,6 +437,82 @@ function HistorialPagos({ pagos }: { pagos: PagoSuscripcion[] }) {
   );
 }
 
+interface PropsCupon {
+  onAplicar: (codigo: string) => Promise<CuponAplicado | null>;
+  procesando: string | null;
+}
+
+function TarjetaCupon({ onAplicar, procesando }: PropsCupon) {
+  const [codigo, setCodigo] = useState("");
+
+  const aplicar = async () => {
+    if (!codigo.trim() || procesando !== null) return;
+
+    try {
+      const resultado = await onAplicar(codigo);
+
+      if (resultado) {
+        setCodigo("");
+        await Swal.fire({
+          icon: "success",
+          title: "¡Cupón aplicado!",
+          html: `${resultado.mensaje}<br/><strong>Plan ${nombrePlan(
+            resultado.nivel,
+          )}</strong> · ${resultado.dias} días · vence ${formatearFecha(
+            resultado.fechaVencimientoUtc,
+          )}`,
+          confirmButtonColor: "#3b82f6",
+        });
+      }
+    } catch (err) {
+      await Swal.fire({
+        icon: "error",
+        title: "No se pudo aplicar el cupón",
+        text: err instanceof Error ? err.message : "Inténtalo nuevamente.",
+        confirmButtonColor: "#3b82f6",
+      });
+    }
+  };
+
+  return (
+    <div className="rounded-xl border border-line bg-surface p-6 shadow-sm">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-600">
+            <FaTicketAlt />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-ink">¿Tienes un cupón?</p>
+            <p className="text-xs text-ink-3">
+              Canjea un código promocional para obtener días de plan.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex w-full gap-2 sm:w-auto">
+          <input
+            value={codigo}
+            onChange={(e) => setCodigo(e.target.value.toUpperCase())}
+            onKeyDown={(e) => e.key === "Enter" && aplicar()}
+            placeholder="CÓDIGO"
+            disabled={procesando !== null}
+            maxLength={30}
+            className="w-full rounded-lg border border-line bg-page px-4 py-2.5 text-sm font-semibold uppercase tracking-wide text-ink outline-none transition focus:border-brand focus:ring-4 focus:ring-brand/10 disabled:opacity-50 sm:w-44"
+          />
+          <button
+            type="button"
+            onClick={aplicar}
+            disabled={procesando !== null || !codigo.trim()}
+            className="shrink-0 rounded-lg bg-amber-400 px-5 py-2.5 text-sm font-bold text-amber-950 transition-colors hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {procesando === "cupon" ? "Aplicando..." : "Aplicar"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function DashboardSuscripcion() {
   const {
     cargando,
@@ -421,6 +528,7 @@ export default function DashboardSuscripcion() {
     setCiclo,
     handlePago,
     handleCancelar,
+    aplicarCuponDealer,
   } = useSuscripcionPage();
 
   if (cargando) {
@@ -436,6 +544,9 @@ export default function DashboardSuscripcion() {
         esCanceladaConVigencia={esCanceladaConVigencia}
         onCancelar={handleCancelar}
       />
+
+      {/* Cupón promocional */}
+      <TarjetaCupon onAplicar={aplicarCuponDealer} procesando={procesando} />
 
       {!esActiva && !(suscripcion && suscripcion.estado === "Cancelada") && (
         <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
@@ -490,10 +601,10 @@ function SoporteCard() {
         <p>
           Escríbenos a{" "}
           <a
-            href="mailto:noreply.automarketrd@gmail.com?subject=Cancelación por error - AutoMarket RD"
+            href="mailto:soporte@automarket-rd.com?subject=Cancelación por error - AutoMarket RD"
             className="font-semibold underline"
           >
-            noreply.automarketrd@gmail.com
+            soporte@automarket-rd.com
           </a>{" "}
           y te ayudaremos a recuperar tu suscripción.
         </p>

@@ -26,4 +26,9 @@ public interface IUsuarioRepository
     Task<IEnumerable<Usuario>> ObtenerTodosAsync();
     Task<bool> ActualizarContrasenaAsync(string email, string nuevoPasswordHash);
 
+    /// <summary>Marca el usuario para eliminación (cascade de dependientes al guardar).</summary>
+    Task EliminarAsync(Usuario usuario);
+
+    /// <summary>Indica si la clave corresponde al logo de algún dealer (exacta o URL legada que la contenga).</summary>
+    Task<bool> ExisteLogoDealerAsync(string clave);
 }

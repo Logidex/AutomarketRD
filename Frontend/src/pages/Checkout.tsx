@@ -5,9 +5,10 @@ import { FaPaypal, FaSpinner, FaStore } from "react-icons/fa";
 import { authService } from "../services/auth.service";
 import { usePlanesCatalogo, useGenerarLinkPago } from "../hooks/useSuscripcion";
 import { ROLES } from "../constants/roles";
+import { PAGOS_HABILITADOS } from "../constants/config";
 import { formatearRD$, precioCicloDe, type Ciclo } from "../utils/formato";
-import logo from "../assets/AutoMarketRD_Logo.svg";
-import MenuPublico from "../components/layout/MenuPublico";
+import HeaderPublico from "../components/layout/HeaderPublico";
+import SectionBackground from "../components/SectionBackground";
 
 export default function Checkout() {
   const [searchParams] = useSearchParams();
@@ -43,6 +44,18 @@ export default function Checkout() {
 
     if (!plan || precio <= 0) return;
 
+    if (!PAGOS_HABILITADOS) {
+      await Swal.fire({
+        icon: "warning",
+        title: "Sistema de pagos en mantenimiento",
+        html: "El sistema de pagos se encuentra temporalmente no disponible.<br/><br/>Si deseas adquirir un plan, puedes solicitarlo contactando a nuestro equipo de soporte.",
+        confirmButtonColor: "#3b82f6",
+        confirmButtonText: "Ir a Contacto",
+      });
+      navigate("/contacto?asunto=Pagos+y+suscripciones");
+      return;
+    }
+
     setProcesando(true);
 
     try {
@@ -61,23 +74,10 @@ export default function Checkout() {
   };
 
   return (
-    <div className="min-h-screen bg-page text-ink">
-      {/* Header */}
-      <header className="flex items-center justify-between border-b border-line px-6 py-2 sm:px-8">
-        <div className="flex items-center gap-4">
-          <Link to="/" className="flex items-center">
-            <img
-              src={logo}
-              alt="AutoMarket RD"
-              className="h-20 w-auto object-contain"
-            />
-          </Link>
-          <span className="text-xl font-bold">Finalizar compra</span>
-        </div>
+    <div className="relative min-h-screen overflow-hidden bg-page text-ink">
+      <HeaderPublico titulo="Finalizar compra" />
 
-        <MenuPublico />
-      </header>
-
+      <SectionBackground variant="cta" className="mx-auto max-w-xl px-8 py-16">
       <main className="mx-auto max-w-xl px-8 py-16">
         {!plan ? (
           <div className="rounded-2xl border border-line bg-surface-2 p-10 text-center">
@@ -161,6 +161,7 @@ export default function Checkout() {
           </div>
         )}
       </main>
+      </SectionBackground>
     </div>
   );
 }

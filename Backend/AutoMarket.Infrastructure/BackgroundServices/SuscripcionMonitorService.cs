@@ -170,7 +170,7 @@ public class SuscripcionMonitorService : BackgroundService
 
             try
             {
-                var diasRestantes = Math.Max(0, (int)Math.Ceiling((suscripcion.FechaVencimientoUtc - ahora).TotalDays));
+                var diasRestantes = Math.Max(0, (suscripcion.FechaVencimientoUtc.Date - ahora.Date).Days);
                 var nombrePlan = NombrePlan(suscripcion.Nivel);
                 var fechaVencimiento = suscripcion.FechaVencimientoUtc.ToString("dd/MM/yyyy");
 

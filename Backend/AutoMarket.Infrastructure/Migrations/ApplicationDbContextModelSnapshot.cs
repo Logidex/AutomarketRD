@@ -169,6 +169,176 @@ namespace AutoMarket.Infrastructure.Migrations
                     b.ToTable("Anuncios");
                 });
 
+            modelBuilder.Entity("AutoMarket.Core.Entities.Cupon", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Codigo")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int>("Dias")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("FechaCreacionUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("MaximoUsos")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Nivel")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UsosActuales")
+                        .IsConcurrencyToken()
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Codigo")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Cupones_Codigo");
+
+                    b.ToTable("Cupones");
+                });
+
+            modelBuilder.Entity("AutoMarket.Core.Entities.CuponRedencion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CuponId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("FechaUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("PerfilDealerId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PerfilDealerId");
+
+                    b.HasIndex("CuponId", "PerfilDealerId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_CuponesRedencion_Cupon_PerfilDealer");
+
+                    b.ToTable("RedencionesCupon");
+                });
+
+            modelBuilder.Entity("AutoMarket.Core.Entities.Encuesta", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activa")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Descripcion")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime>("FechaCreacionUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Titulo")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Activa");
+
+                    b.ToTable("Encuestas");
+                });
+
+            modelBuilder.Entity("AutoMarket.Core.Entities.EncuestaPregunta", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("EncuestaId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Orden")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Texto")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int>("Tipo")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EncuestaId", "Orden");
+
+                    b.ToTable("EncuestasPreguntas");
+                });
+
+            modelBuilder.Entity("AutoMarket.Core.Entities.EncuestaRespuesta", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("EncuestaId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("FechaUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("PreguntaId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UsuarioId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("ValorEscala")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ValorTexto")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PreguntaId");
+
+                    b.HasIndex("UsuarioId");
+
+                    b.HasIndex("EncuestaId", "UsuarioId");
+
+                    b.HasIndex("EncuestaId", "UsuarioId", "PreguntaId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_EncuestasRespuestas_Unicas");
+
+                    b.ToTable("EncuestasRespuestas");
+                });
+
             modelBuilder.Entity("AutoMarket.Core.Entities.HistorialVista", b =>
                 {
                     b.Property<int>("UsuarioId")
@@ -390,6 +560,89 @@ namespace AutoMarket.Infrastructure.Migrations
                     b.ToTable("PlanesCatalogo");
                 });
 
+            modelBuilder.Entity("AutoMarket.Core.Entities.RefreshToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("ExpiresAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ReplacedByTokenHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTime?>("RevokedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<int>("UsuarioId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
+
+                    b.HasIndex("UsuarioId");
+
+                    b.ToTable("RefreshTokens", (string)null);
+                });
+
+            modelBuilder.Entity("AutoMarket.Core.Entities.ReporteAnuncio", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AnuncioId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Detalle")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int>("Estado")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("FechaCreacionUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("FechaResolucionUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("IpReportante")
+                        .IsRequired()
+                        .HasMaxLength(45)
+                        .HasColumnType("character varying(45)");
+
+                    b.Property<int>("Motivo")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("ResueltoPorAdminId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AnuncioId");
+
+                    b.HasIndex("Estado", "FechaCreacionUtc");
+
+                    b.ToTable("ReportesAnuncios", (string)null);
+                });
+
             modelBuilder.Entity("AutoMarket.Core.Entities.SuscripcionDealer", b =>
                 {
                     b.Property<int>("Id")
@@ -525,6 +778,9 @@ namespace AutoMarket.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<DateTime?>("BloqueadoHastaUtc")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<DateTime?>("CodigoConfirmacionEmailExpiracionUtc")
                         .HasColumnType("timestamp with time zone");
 
@@ -564,6 +820,16 @@ namespace AutoMarket.Infrastructure.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("character varying(150)");
 
+                    b.Property<int>("EmailsEnviadosHoy")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("IntentosFallidos")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
                     b.Property<bool>("IsActivo")
                         .HasColumnType("boolean");
 
@@ -585,6 +851,24 @@ namespace AutoMarket.Infrastructure.Migrations
 
                     b.Property<string>("TelefonoPersonal")
                         .HasColumnType("text");
+
+                    b.Property<DateTime?>("TerminosAceptadosUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("UltimoEnvioCambioEmailUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("UltimoEnvioCambioPasswordUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("UltimoEnvioConfirmacionCuentaUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("UltimoEnvioRecuperacionUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("VentanaEmailsInicioUtc")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("UsuarioId");
 
@@ -619,6 +903,63 @@ namespace AutoMarket.Infrastructure.Migrations
                         .HasForeignKey("UsuarioId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("AutoMarket.Core.Entities.CuponRedencion", b =>
+                {
+                    b.HasOne("AutoMarket.Core.Entities.Cupon", "Cupon")
+                        .WithMany("Redenciones")
+                        .HasForeignKey("CuponId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AutoMarket.Core.Entities.PerfilDealer", "PerfilDealer")
+                        .WithMany()
+                        .HasForeignKey("PerfilDealerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Cupon");
+
+                    b.Navigation("PerfilDealer");
+                });
+
+            modelBuilder.Entity("AutoMarket.Core.Entities.EncuestaPregunta", b =>
+                {
+                    b.HasOne("AutoMarket.Core.Entities.Encuesta", "Encuesta")
+                        .WithMany("Preguntas")
+                        .HasForeignKey("EncuestaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Encuesta");
+                });
+
+            modelBuilder.Entity("AutoMarket.Core.Entities.EncuestaRespuesta", b =>
+                {
+                    b.HasOne("AutoMarket.Core.Entities.Encuesta", "Encuesta")
+                        .WithMany()
+                        .HasForeignKey("EncuestaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AutoMarket.Core.Entities.EncuestaPregunta", "Pregunta")
+                        .WithMany("Respuestas")
+                        .HasForeignKey("PreguntaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AutoMarket.Core.Entities.Usuario", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Encuesta");
+
+                    b.Navigation("Pregunta");
 
                     b.Navigation("Usuario");
                 });
@@ -675,6 +1016,28 @@ namespace AutoMarket.Infrastructure.Migrations
                     b.Navigation("Usuario");
                 });
 
+            modelBuilder.Entity("AutoMarket.Core.Entities.RefreshToken", b =>
+                {
+                    b.HasOne("AutoMarket.Core.Entities.Usuario", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("AutoMarket.Core.Entities.ReporteAnuncio", b =>
+                {
+                    b.HasOne("AutoMarket.Core.Entities.Anuncio", "Anuncio")
+                        .WithMany()
+                        .HasForeignKey("AnuncioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Anuncio");
+                });
+
             modelBuilder.Entity("AutoMarket.Core.Entities.SuscripcionDealer", b =>
                 {
                     b.HasOne("AutoMarket.Core.Entities.PerfilDealer", "PerfilDealer")
@@ -708,7 +1071,7 @@ namespace AutoMarket.Infrastructure.Migrations
                     b.HasOne("AutoMarket.Core.Entities.Usuario", "Autor")
                         .WithMany()
                         .HasForeignKey("AutorId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("AutoMarket.Core.Entities.Ticket", "Ticket")
@@ -744,6 +1107,21 @@ namespace AutoMarket.Infrastructure.Migrations
             modelBuilder.Entity("AutoMarket.Core.Entities.Anuncio", b =>
                 {
                     b.Navigation("Leads");
+                });
+
+            modelBuilder.Entity("AutoMarket.Core.Entities.Cupon", b =>
+                {
+                    b.Navigation("Redenciones");
+                });
+
+            modelBuilder.Entity("AutoMarket.Core.Entities.Encuesta", b =>
+                {
+                    b.Navigation("Preguntas");
+                });
+
+            modelBuilder.Entity("AutoMarket.Core.Entities.EncuestaPregunta", b =>
+                {
+                    b.Navigation("Respuestas");
                 });
 
             modelBuilder.Entity("AutoMarket.Core.Entities.PerfilDealer", b =>

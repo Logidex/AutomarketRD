@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { FaChevronLeft, FaChevronRight, FaSearch, FaStore } from "react-icons/fa";
-import logo from "../assets/AutoMarketRD_Logo.svg";
-import MenuPublico from "../components/layout/MenuPublico";
+import HeaderPublico from "../components/layout/HeaderPublico";
+import SectionBackground from "../components/SectionBackground";
 import Spinner from "../components/Spinner";
 import BadgeVerificado from "../components/BadgeVerificado";
+import AdUnit from "../components/ads/AdUnit";
 import { dealerService, type AgenciaListado } from "../services/dealer.service";
 import { urlImagen } from "../utils/imagen";
+import { urlVendedor } from "../utils/slug";
 import { nombrePlan } from "../constants/planes";
 
 const CANTIDAD_POR_PAGINA = 12;
@@ -56,7 +58,7 @@ function useListaAgencias(
 function TarjetaAgencia({ agencia }: { agencia: AgenciaListado }) {
   return (
     <Link
-      to={`/vendedor/${agencia.id}`}
+      to={urlVendedor(agencia.id, agencia.nombreAgencia)}
       className="group flex flex-col rounded-2xl border border-line bg-surface p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-lg"
     >
       <div className="flex items-center gap-4">
@@ -143,19 +145,10 @@ export default function Agencias() {
   const totalPaginas = data?.totalPaginas ?? 1;
 
   return (
-    <div className="min-h-screen bg-page text-ink">
-      {/* Header */}
-      <header className="flex items-center justify-between border-b border-line px-6 py-2 sm:px-8">
-        <div className="flex items-center gap-4">
-          <Link to="/" className="flex items-center">
-            <img src={logo} alt="AutoMarket RD" className="h-20 w-auto object-contain" />
-          </Link>
-          <span className="text-xl font-bold">Agencias</span>
-        </div>
+    <div className="relative min-h-screen overflow-hidden bg-page text-ink">
+      <HeaderPublico titulo="Agencias" />
 
-        <MenuPublico />
-      </header>
-
+      <SectionBackground variant="search" className="mx-auto max-w-6xl px-6 py-12 sm:px-8">
       <main className="mx-auto max-w-6xl px-6 py-12 sm:px-8">
         <div className="text-center mb-10">
           <h1 className="text-4xl font-bold mb-3">Agencias disponibles</h1>
@@ -206,6 +199,10 @@ export default function Agencias() {
             Solo verificadas
           </label>
         </div>
+
+        <AdUnit
+          className="mb-8 rounded-2xl border border-line bg-surface/60 px-4 pt-4 pb-6"
+        />
 
         {isLoading ? (
           <Spinner />
@@ -260,6 +257,7 @@ export default function Agencias() {
           </>
         )}
       </main>
+      </SectionBackground>
     </div>
   );
 }

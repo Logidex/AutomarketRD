@@ -37,6 +37,7 @@ public class AuthController : ControllerBase
      /// <returns>Resultado del registro.</returns>
      [HttpPost("registrar")]
      [AllowAnonymous]
+     [EnableRateLimiting("PoliticaRegistro")]
      public async Task<IActionResult> Registrar([FromBody] RegistroDto dto)
      {
          var resultado = await _authService.RegistrarUsuarioAsync(dto);
@@ -73,6 +74,11 @@ public class AuthController : ControllerBase
              resultado.Token!,
              Request);
 
+         AuthCookieHelper.EstablecerRefreshCookie(
+             Response,
+             resultado.RefreshToken!,
+             Request);
+
          return Ok(new
          {
              resultado.Exito,
@@ -82,14 +88,59 @@ public class AuthController : ControllerBase
      }
 
      /// <summary>
-     /// Cierra la sesión eliminando la cookie del token.
-     /// Acceso anónimo permitido (solo invalida la cookie del navegador).
+     /// Renueva la sesión usando el refresh token de la cookie (rotación).
+     /// Devuelve nuevo JWT en cookie automarket_token y rota automarket_rt.
+     /// Acceso anónimo: el refresh token ES la credencial.
+     /// </summary>
+     /// <returns>Datos del usuario con la sesión renovada.</returns>
+     [HttpPost("refrescar")]
+     [AllowAnonymous]
+     public async Task<IActionResult> Refrescar()
+     {
+         var refreshToken = Request.Cookies[AuthCookieHelper.RefreshCookieName];
+
+         if (string.IsNullOrWhiteSpace(refreshToken))
+             return Unauthorized(new { mensaje = "Sesión inválida." });
+
+         try
+         {
+             var resultado = await _authService.RefrescarSesionAsync(refreshToken);
+
+             AuthCookieHelper.EstablecerTokenCookie(
+                 Response,
+                 resultado.Token!,
+                 Request);
+
+             AuthCookieHelper.EstablecerRefreshCookie(
+                 Response,
+                 resultado.RefreshToken!,
+                 Request);
+
+             return Ok(new
+             {
+                 resultado.Exito,
+                 resultado.Usuario
+             });
+         }
+         catch (UnauthorizedAccessException)
+         {
+             AuthCookieHelper.LimpiarTokenCookie(Response, Request);
+             return Unauthorized(new { mensaje = "Sesión inválida." });
+         }
+     }
+
+     /// <summary>
+     /// Cierra la sesión: revoca el refresh token en el servidor y elimina
+     /// ambas cookies. Acceso anónimo permitido.
      /// </summary>
      /// <returns>Confirmación de cierre de sesión.</returns>
      [HttpPost("logout")]
      [AllowAnonymous]
-     public IActionResult Logout()
+     public async Task<IActionResult> Logout()
      {
+         await _authService.RevocarSesionAsync(
+             Request.Cookies[AuthCookieHelper.RefreshCookieName]);
+
          AuthCookieHelper.LimpiarTokenCookie(Response, Request);
          return Ok(new { exito = true, mensaje = "Sesión cerrada." });
      }

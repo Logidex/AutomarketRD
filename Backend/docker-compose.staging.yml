@@ -1,8 +1,10 @@
 # docker-compose.staging.yml
-# Uso:
-# docker compose -f docker-compose.staging.yml --env-file .env.staging up -d --build
-# docker compose -f docker-compose.staging.yml --env-file .env.staging logs -f api
-# docker compose -f docker-compose.staging.yml --env-file .env.staging down
+# Uso (desde Backend/):
+# docker compose -f docker-compose.staging.yml --env-file ../.env.staging up -d --build
+# docker compose -f docker-compose.staging.yml --env-file ../.env.staging logs -f api
+# docker compose -f docker-compose.staging.yml --env-file ../.env.staging down
+
+name: automarket-staging
 
 services:
   db:
@@ -12,6 +14,27 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB requerido}
       POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER requerido}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD requerido}
+    # Tuning dimensionado para el droplet objetivo de 2 GB (2 vCPU / 2 GB),
+    # igual que docker-compose.prod.yml para que las pruebas de carga de
+    # staging sean representativas. Sobrescribible desde .env.staging.
+    command:
+      - postgres
+      - -c
+      - shared_buffers=${PG_SHARED_BUFFERS:-256MB}
+      - -c
+      - effective_cache_size=${PG_EFFECTIVE_CACHE_SIZE:-768MB}
+      - -c
+      - max_connections=${PG_MAX_CONNECTIONS:-60}
+      - -c
+      - work_mem=${PG_WORK_MEM:-4MB}
+      - -c
+      - maintenance_work_mem=${PG_MAINTENANCE_WORK_MEM:-64MB}
+    # Sin esto, queries en paralelo pueden fallar por el shm default de Docker (64 MB).
+    shm_size: 256mb
+    # Tiempo para un apagado limpio (checkpoint final) antes del SIGKILL.
+    stop_grace_period: 30s
+    # Techo de memoria por contenedor (dimensionado para el droplet de 2 GB).
+    mem_limit: 768m
     volumes:
       - pgdata_staging:/var/lib/postgresql/data
     healthcheck:
@@ -70,8 +93,17 @@ services:
       Admin__RotatePassword: ${ADMIN_ROTATE_PASSWORD:?ADMIN_ROTATE_PASSWORD requerido}
 
       App__FrontendUrl: ${APP_FRONTEND_URL:?APP_FRONTEND_URL requerido}
+
+      # Límite global por IP (default 300/min). Elevable temporalmente para
+      # pruebas de carga vía RATE_LIMIT_GLOBAL en el entorno del comando.
+      RateLimiting__GlobalPermitLimit: ${RATE_LIMIT_GLOBAL:-300}
     ports:
       - "8081:8080"
+    volumes:
+      # Persiste los file logs de Serilog entre redeploys (logs/api-*.log)
+      - api_logs_staging:/app/logs
+    # Techo de memoria (droplet 2 GB), igual que en prod.
+    mem_limit: 512m
     depends_on:
       db:
         condition: service_healthy
@@ -86,13 +118,55 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_API_URL: /api
+        # Anuncios permanentes en staging (no son secretos). Toggle a "false"
+        # para apagarlos temporalmente (p. ej. durante pruebas de carga).
+        VITE_ADSENSE_ENABLED: "true"
+        VITE_ADSENSE_CLIENT: ca-pub-7789207730134520
     container_name: automarket-frontend-staging
     ports:
       - "5174:80"
+    # nginx sirviendo estáticos: 128m sobra.
+    mem_limit: 128m
     depends_on:
       api:
         condition: service_started
     restart: unless-stopped
 
+  db-backup:
+    image: postgres:16-alpine
+    container_name: automarket-db-backup-staging
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB requerido}
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER requerido}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD requerido}
+      BACKUP_DIR: /backups
+      BACKUP_RETENTION_DAYS: 14
+      CRON_SCHEDULE: "0 3 * * *"
+      BACKUP_S3_BUCKET: ${AWS_BUCKET_NAME:?AWS_BUCKET_NAME requerido}
+      BACKUP_S3_PREFIX: db-backups/staging
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY:?AWS_ACCESS_KEY requerido}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_KEY:?AWS_SECRET_KEY requerido}
+      AWS_S3_ENDPOINT: ${AWS_SERVICE_URL:?AWS_SERVICE_URL requerido}
+    volumes:
+      - ./scripts/backup-db.sh:/backup-db.sh:ro
+      - db_backups_staging:/backups
+    entrypoint:
+      - sh
+      - -c
+      - |
+        apk add --no-cache --no-progress aws-cli >/dev/null
+        echo "$${CRON_SCHEDULE} sh /backup-db.sh >> /backups/backup.log 2>&1" > /etc/crontabs/root
+        chmod 0600 /etc/crontabs/root
+        crond -f -l 2
+    depends_on:
+      db:
+        condition: service_healthy
+    # pg_dump en streaming: 256m cubre bases de cientos de MB.
+    mem_limit: 256m
+    restart: unless-stopped
+
 volumes:
   pgdata_staging:
+  db_backups_staging:
+  api_logs_staging:

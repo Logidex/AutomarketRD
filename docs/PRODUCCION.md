@@ -28,9 +28,10 @@ Para el *cómo* desplegar, ver `docs/DEPLOY.md`; para el pago PayPal, `docs/veri
       (`confirmar-pago` idempotente + webhook); confirmado en staging con
       credenciales sandbox reales (env `Staging`). Falta probar contra una cuenta
       **live** de PayPal antes de lanzar a producción.
-- [ ] **Correos operativos llegando a la bandeja** — depende del SMTP real (sección B).
-- [ ] **Automatización E2E (recomendado)** — Playwright que recorra registrar → publicar →
-      comprar plan; así el CI valida la UX, no solo el build y el lint.
+- [x] **Correos operativos llegando a la bandeja** — SMTP productivo activo en staging.
+- [x] **Automatización E2E (recomendado)** — Playwright recorre el flujo completo
+      registrar → publicar (wizard 5 pasos, 5 fotos) → comprar plan (PayPal simulado
+      en E2E vía `FakePayPalService`); 8 tests en CI (`ci.yml`, job `e2e`).
 
 ---
 
@@ -66,7 +67,9 @@ Para el *cómo* desplegar, ver `docs/DEPLOY.md`; para el pago PayPal, `docs/veri
       PaaS, registro de imágenes) y conectar el workflow de release a la tag `v*`.
 
 ### B.4 Operación día a día
-- [ ] **Backups automáticos** de la base de datos (diarios + retención).
+- [x] **Backups automáticos** de la base de datos: diarios 03:00, retención 14 días
+      en volumen local **+ copia offsite a S3/R2** (`db-backups/<entorno>/`),
+      tanto en staging como en producción.
 - [ ] **Monitoreo/logs**: logs con correlación (Serilog claro o OpenTelemetry) y alertas.
 - [ ] **Health checks conectados**: `/health` y `/health/ready` al balanceador/reverse proxy.
 - [ ] **Medición de `Frontend`**: build estático servido por CDN o reverse proxy con cache.
@@ -75,7 +78,8 @@ Para el *cómo* desplegar, ver `docs/DEPLOY.md`; para el pago PayPal, `docs/veri
 
 ## C. Endurecimiento (recomendable antes del lanzamiento)
 
-- [x] **Rate limiting** en login, registro y creación de leads (evitar abuso/spam).
+- [x] **Rate limiting** global por IP (300 req/min) + políticas específicas en
+      login, recuperación y creación de leads/contacto (evitar abuso/spam).
 - [x] **Cabeceras de seguridad** (HSTS, CSP, X-Content-Type-Options) en la respuesta HTTP.
 - [x] **Revisión de rutas públicas** para que ninguna fuga información de borradores o leads.
 - [ ] **Pruebas de carga** básica (leads y búsqueda) para conocer el techo del servidor.

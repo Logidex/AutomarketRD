@@ -19,10 +19,11 @@ import {
 import type { VehiculoComparador } from "../services/comparador.service";
 import type { AnuncioListado } from "../types/anuncio.types";
 import { useComparador } from "../context/ComparadorContext";
-import logo from "../assets/AutoMarketRD_Logo.svg";
-import MenuPublico from "../components/layout/MenuPublico";
+import HeaderPublico from "../components/layout/HeaderPublico";
+import SectionBackground from "../components/SectionBackground";
 import { useCompararVehiculos, useBuscarComparador } from "../hooks/useComparador";
 import { urlImagen } from "../utils/imagen";
+import { urlAnuncio } from "../utils/slug";
 import { formatearPrecio } from "../utils/formato";
 import {
   TIPOS_VEHICULO,
@@ -32,10 +33,10 @@ import {
 } from "../constants/vehiculo.opciones";
 
 const fotoPrincipal = (v: VehiculoComparador): string =>
-  urlImagen(v.fotoPrincipal) || "https://via.placeholder.com/600x400?text=Sin+Foto";
+  urlImagen(v.fotoPrincipal) || "/sin-foto.svg";
 
 const fotoAnuncio = (a: AnuncioListado): string =>
-  urlImagen(a.fotos?.[0]) || "https://via.placeholder.com/600x400?text=Sin+Foto";
+  urlImagen(a.fotos?.[0]) || "/sin-foto.svg";
 
 
 const MAX_VEHICULOS = 4;
@@ -286,7 +287,7 @@ function ContenidoComparador({
               </th>
               {vehiculos.map((v) => (
                 <th key={v.id} className="min-w-[220px] px-6 py-5 align-bottom">
-                  <Link to={`/anuncio/${v.id}`} className="group block">
+                  <Link to={urlAnuncio(v)} className="group block">
                     <div className="relative aspect-[16/10] overflow-hidden rounded-xl">
                       <img
                         src={fotoPrincipal(v)}
@@ -419,7 +420,7 @@ function ContenidoComparador({
             </div>
 
             <div className="p-5">
-              <Link to={`/anuncio/${v.id}`} className="block">
+              <Link to={urlAnuncio(v)} className="block">
                 <h3 className="text-lg font-bold text-ink hover:text-blue-400">
                   {v.marca} {v.modelo}
                   {v.version && (
@@ -591,20 +592,10 @@ export default function Comparador() {
   const necesitaSeleccion = seleccionados.length < 2;
 
   return (
-    <div className="min-h-screen bg-page text-ink">
-      {/* HEADER */}
-      <header className="flex items-center justify-between border-b border-line px-6 py-2 sm:px-8">
-        <Link to="/" className="flex items-center gap-4">
-          <img
-            src={logo}
-            alt="AutoMarket RD"
-            className="h-20 w-auto object-contain"
-          />
-        </Link>
+    <div className="relative min-h-screen overflow-hidden bg-page text-ink">
+      <HeaderPublico />
 
-        <MenuPublico />
-      </header>
-
+      <SectionBackground variant="search">
       {/* CABECERA */}
       <section className="border-b border-line bg-gradient-to-b from-surface-2 to-page">
         <div className="mx-auto max-w-6xl px-6 py-10 sm:px-8">
@@ -652,6 +643,7 @@ export default function Comparador() {
           onRemover={removerVehiculo}
         />
       </main>
+      </SectionBackground>
 
       {/* FOOTER */}
       <footer className="border-t border-line py-8">

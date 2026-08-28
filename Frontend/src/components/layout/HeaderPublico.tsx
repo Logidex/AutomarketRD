@@ -1,8 +1,7 @@
 // Ubicación sugerida: src/components/layout/HeaderPublico.tsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import MenuPublico from "./MenuPublico";
-import logo from "../../assets/AutoMarketRD_Logo.svg";
 
 interface HeaderPublicoProps {
   /** Texto opcional junto al logo (ej. título de página interna) */
@@ -11,9 +10,23 @@ interface HeaderPublicoProps {
 
 export default function HeaderPublico({ titulo }: HeaderPublicoProps) {
   const [logoFallido, setLogoFallido] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
-    <header className="sticky top-0 z-30 flex items-center justify-between border-b border-line bg-page/80 px-6 py-2 backdrop-blur sm:px-8">
+    <header
+      className={`sticky top-0 z-40 flex items-center justify-between border-b px-4 py-3 sm:px-8 transition-all duration-300 ${
+        scrolled
+          ? "border-line/60 bg-page/80 backdrop-blur-xl shadow-sm shadow-black/5"
+          : "border-line bg-page"
+      }`}
+    >
       <Link to="/" className="flex items-center gap-3">
         {logoFallido ? (
           <span className="text-lg font-bold text-ink">
@@ -21,9 +34,9 @@ export default function HeaderPublico({ titulo }: HeaderPublicoProps) {
           </span>
         ) : (
           <img
-            src={logo}
+            src="/automarket-rdlogo-opt.png"
             alt="AutoMarket RD"
-            className="h-16 w-auto object-contain"
+            className="h-14 w-auto object-contain sm:h-20"
             onError={() => setLogoFallido(true)}
           />
         )}

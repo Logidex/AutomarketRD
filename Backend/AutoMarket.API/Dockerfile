@@ -42,7 +42,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Usuario no-root (UID fijo 1654) para ejecutar la API sin privilegios
+# Usuario no-root (UID fijo 1001) para ejecutar la API sin privilegios
 RUN useradd --create-home --shell /usr/sbin/nologin --uid 1001 appuser
 
 COPY --from=publish /app/publish .

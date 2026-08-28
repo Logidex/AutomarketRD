@@ -35,6 +35,7 @@ services:
       SmtpSettings__User: ${SMTP_USER}
       SmtpSettings__Password: ${SMTP_PASSWORD}
       SmtpSettings__SenderName: ${SMTP_SENDER_NAME}
+      SmtpSettings__SenderEmail: ${SMTP_SENDER_EMAIL}
       AWS__AccessKey: ${AWS_ACCESS_KEY}
       AWS__SecretKey: ${AWS_SECRET_KEY}
       AWS__Region: ${AWS_REGION}

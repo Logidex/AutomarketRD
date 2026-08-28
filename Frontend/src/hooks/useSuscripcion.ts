@@ -6,6 +6,7 @@ import {
 } from '../services/suscripcion.service';
 import { planesService, type PlanCatalogo } from '../services/planes.service';
 import { pagosService } from '../services/pagos.service';
+import { cuponesService } from '../services/cupones.service';
 
 export const useSuscripcion = () => {
   return useQuery<SuscripcionDealer>({
@@ -85,6 +86,19 @@ export const useConfirmarPago = () => {
       queryClient.invalidateQueries({ queryKey: ['suscripcion'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-resumen'] });
       queryClient.invalidateQueries({ queryKey: ['historial-pagos'] });
+    },
+  });
+};
+
+export const useAplicarCupon = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (codigo: string) => cuponesService.aplicarCupon(codigo),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['suscripcion'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-resumen'] });
+      queryClient.invalidateQueries({ queryKey: ['planes'] });
     },
   });
 };

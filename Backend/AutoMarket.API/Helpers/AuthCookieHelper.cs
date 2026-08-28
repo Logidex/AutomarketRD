@@ -9,30 +9,48 @@ namespace AutoMarket.API.Helpers;
 public static class AuthCookieHelper
 {
     public const string CookieName = "automarket_token";
+    public const string RefreshCookieName = "automarket_rt";
 
-    /// <summary>
-    /// Expiración de la cookie. Debe coincidir con la expiración del token
-    /// (TokenService: 2 horas).
-    /// </summary>
+    /// <summary>Expiración del access token (coincide con TokenService: 2 horas).</summary>
     public static readonly TimeSpan Duracion = TimeSpan.FromHours(2);
+
+    /// <summary>Expiración de la sesión completa (refresh token: 14 días).</summary>
+    public static readonly TimeSpan DuracionRefresh = TimeSpan.FromDays(14);
 
     public static void EstablecerTokenCookie(
         HttpResponse response,
         string token,
         HttpRequest request)
     {
-        response.Cookies.Append(CookieName, token, CrearOpciones(request));
+        response.Cookies.Append(CookieName, token, CrearOpciones(request, Duracion));
+    }
+
+    /// <summary>
+    /// El refresh token solo viaja hacia /api/auth/*: limitar el Path minimiza
+    /// su exposición en cualquier petición fuera de la autenticación.
+    /// </summary>
+    public static void EstablecerRefreshCookie(
+        HttpResponse response,
+        string refreshToken,
+        HttpRequest request)
+    {
+        var opciones = CrearOpciones(request, DuracionRefresh);
+        opciones.Path = "/api/auth";
+        response.Cookies.Append(RefreshCookieName, refreshToken, opciones);
     }
 
     public static void LimpiarTokenCookie(
         HttpResponse response,
         HttpRequest request)
     {
-        response.Cookies.Delete(CookieName, CrearOpciones(request));
+        response.Cookies.Delete(CookieName, CrearOpciones(request, Duracion));
+        response.Cookies.Delete(RefreshCookieName, CrearOpciones(request, DuracionRefresh, "/api/auth"));
     }
 
     private static CookieOptions CrearOpciones(
-        HttpRequest request)
+        HttpRequest request,
+        TimeSpan duracion,
+        string? path = null)
     {
         // La cookie se marca Secure+SameSite=None solo cuando la petición llegó
         // realmente por HTTPS (UseForwardedHeaders ya procesó X-Forwarded-Proto
@@ -46,8 +64,8 @@ public static class AuthCookieHelper
             HttpOnly = true,
             Secure = esHttps,
             SameSite = esHttps ? SameSiteMode.None : SameSiteMode.Lax,
-            Path = "/",
-            Expires = DateTimeOffset.UtcNow.Add(Duracion)
+            Path = path ?? "/",
+            Expires = DateTimeOffset.UtcNow.Add(duracion)
         };
     }
 }

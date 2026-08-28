@@ -1,6 +1,9 @@
-import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
+  FaBars,
   FaChartPie,
+  FaTimes,
   FaUsers,
   FaCar,
   FaCoins,
@@ -8,12 +11,16 @@ import {
   FaSignOutAlt,
   FaMoneyCheckAlt,
   FaHeadset,
+  FaFlag,
+  FaClipboardList,
 } from "react-icons/fa";
 import { authService } from "../../services/auth.service";
 import { useResumenTicketsAdmin } from "../../hooks/useTickets";
+import { useContarReportesPendientes } from "../../hooks/useAdmin";
 import { confirmarCierreSesion } from "../../utils/confirmarCierreSesion";
 import logo from "../../assets/AutoMarketRD_Logo.svg";
 import BotonTema from "../BotonTema";
+import OutletAnimada from "../OutletAnimada";
 
 const menuItems = [
   {
@@ -32,6 +39,11 @@ const menuItems = [
     icon: <FaCar />,
   },
   {
+    path: "/admin/reportes",
+    label: "Reportes",
+    icon: <FaFlag />,
+  },
+  {
     path: "/admin/planes",
     label: "Planes",
     icon: <FaCoins />,
@@ -40,6 +52,11 @@ const menuItems = [
     path: "/admin/pagos",
     label: "Pagos",
     icon: <FaMoneyCheckAlt />,
+  },
+  {
+    path: "/admin/encuestas",
+    label: "Encuestas",
+    icon: <FaClipboardList />,
   },
   {
     path: "/admin/soporte",
@@ -51,12 +68,18 @@ const menuItems = [
 export default function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [menuAbierto, setMenuAbierto] = useState(false);
+
+  // El drawer se cierra al hacer clic en cualquier enlace del menú
+  const cerrarMenu = () => setMenuAbierto(false);
 
   const usuario = authService.getCurrentUser();
 
   const { data: resumenTickets } = useResumenTicketsAdmin();
+  const { data: contadorReportes } = useContarReportesPendientes();
 
   const cantidadAbiertos = resumenTickets?.cantidadAbiertos ?? 0;
+  const reportesPendientes = contadorReportes?.total ?? 0;
 
   const nombreUsuario = usuario
     ? `${usuario.nombre} ${usuario.apellido ?? ""}`.trim()
@@ -74,8 +97,31 @@ export default function AdminLayout() {
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-page font-sans">
-      {/* SIDEBAR */}
-      <aside className="z-10 flex h-full w-[260px] flex-col bg-[#1b1226] text-white shadow-lg">
+      {/* BACKDROP MÓVIL */}
+      {menuAbierto && (
+        <div
+          className="fixed inset-0 z-30 bg-black/50 lg:hidden"
+          onClick={() => setMenuAbierto(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* SIDEBAR (drawer en móvil, fija en escritorio) */}
+      <aside
+        className={`z-40 flex h-full w-[260px] max-lg:fixed max-lg:inset-y-0 max-lg:left-0 flex-col bg-[#1b1226] text-white shadow-lg transition-transform duration-200 ${
+          menuAbierto ? "max-lg:translate-x-0" : "max-lg:-translate-x-full"
+        }`}
+      >
+        {/* CERRAR (móvil) */}
+        <button
+          type="button"
+          onClick={() => setMenuAbierto(false)}
+          aria-label="Cerrar menú"
+          className="absolute right-3 top-3 rounded-lg p-2 text-white/70 hover:bg-white/10 lg:hidden"
+        >
+          <FaTimes />
+        </button>
+
         <div className="flex h-[120px] flex-col items-center justify-center gap-1 px-4 py-3">
           <img
             src={logo}
@@ -88,7 +134,7 @@ export default function AdminLayout() {
           </span>
         </div>
 
-        <nav className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-6">
+        <nav className="scroll-fino flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-6">
           {menuItems.map((item) => {
             const esDashboardPrincipal = item.path === "/admin";
 
@@ -101,6 +147,7 @@ export default function AdminLayout() {
               <Link
                 key={item.path}
                 to={item.path}
+                onClick={cerrarMenu}
                 className={`flex items-center rounded-lg px-4 py-3 font-medium transition-colors ${
                   isActive
                     ? "bg-violet-600 text-white"
@@ -109,6 +156,11 @@ export default function AdminLayout() {
               >
                 <span className="mr-3 text-lg">{item.icon}</span>
                 <span>{item.label}</span>
+                {item.path === "/admin/reportes" && reportesPendientes > 0 && (
+                  <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
+                    {reportesPendientes}
+                  </span>
+                )}
                 {item.path === "/admin/soporte" && cantidadAbiertos > 0 && (
                   <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
                     {cantidadAbiertos}
@@ -119,13 +171,14 @@ export default function AdminLayout() {
           })}
         </nav>
 
-        <div className="border-t border-white/5 p-4">
+        {/* CERRAR SESIÓN (compacto para pantallas bajas) */}
+        <div className="border-t border-white/5 p-3">
           <button
             type="button"
             onClick={handleLogout}
-            className="flex w-full items-center justify-center rounded-lg px-4 py-3 font-medium text-red-400 transition-colors hover:bg-red-500/10"
+            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-red-400 transition-colors hover:bg-red-500/10"
           >
-            <FaSignOutAlt className="mr-3" />
+            <FaSignOutAlt />
             Cerrar Sesión
           </button>
         </div>
@@ -133,10 +186,21 @@ export default function AdminLayout() {
 
       {/* ÁREA PRINCIPAL */}
       <main className="flex h-full flex-1 flex-col overflow-hidden">
-        <header className="flex h-[70px] shrink-0 items-center justify-between border-b border-line bg-surface px-8">
-          <h3 className="text-xl font-semibold text-ink">
-            Administración AutoMarket RD
-          </h3>
+        <header className="flex h-[70px] shrink-0 items-center justify-between border-b border-line bg-surface px-4 sm:px-6 lg:px-8">
+          <div className="flex min-w-0 items-center gap-2">
+            {/* HAMBURGUESA (móvil) */}
+            <button
+              type="button"
+              onClick={() => setMenuAbierto(true)}
+              aria-label="Abrir menú"
+              className="rounded-lg p-2 text-ink-2 transition-colors hover:bg-hover lg:hidden"
+            >
+              <FaBars className="text-lg" />
+            </button>
+            <h3 className="truncate text-base font-semibold text-ink sm:text-xl">
+              Administración AutoMarket RD
+            </h3>
+          </div>
 
           <div className="flex items-center gap-3">
             <BotonTema />
@@ -154,8 +218,8 @@ export default function AdminLayout() {
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-8">
-          <Outlet />
+        <div className="scroll-fino flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+          <OutletAnimada />
         </div>
       </main>
     </div>

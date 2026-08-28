@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { motion } from "motion/react";
 import Swal from "sweetalert2";
 import { FaArrowLeft } from "react-icons/fa";
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 import { authService } from "../services/auth.service";
+import SectionBackground from "../components/SectionBackground";
 import logo from "../assets/AutoMarketRD_Logo.svg";
 
 export default function Login() {
@@ -95,8 +97,6 @@ export default function Login() {
         replace: true,
       });
     } catch (err) {
-      console.log(err);
-
       const status = (err as { response?: { status?: number } })?.response?.status;
 
       let mensaje = "Correo electrónico o contraseña incorrectos.";
@@ -125,8 +125,14 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-page flex items-center justify-center p-4">
-      <div className="w-full max-w-[950px] bg-surface rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row">
+    <div className="relative min-h-screen overflow-hidden bg-page flex items-center justify-center p-4">
+      <SectionBackground variant="cta" className="w-full max-w-[950px]">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+        className="w-full max-w-[950px] bg-surface rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row"
+      >
         {/* Columna Izquierda - Visual */}
         <div className="md:flex-1 bg-[#11141a] p-12 text-white flex flex-col">
           <div className="mb-10">
@@ -240,7 +246,8 @@ export default function Login() {
             </Link>
           </p>
         </div>
-      </div>
+      </motion.div>
+      </SectionBackground>
     </div>
   );
 }

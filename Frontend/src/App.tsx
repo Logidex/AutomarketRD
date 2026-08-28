@@ -1,5 +1,8 @@
 import { lazy, Suspense } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'motion/react';
+import BarraProgresoNavegacion from './components/BarraProgresoNavegacion';
+import ScrollToTop from './components/ScrollToTop';
 
 // Páginas públicas
 const Home = lazy(() => import('./pages/Home'));
@@ -26,6 +29,8 @@ const Contacto = lazy(() => import('./pages/legales/Contacto'));
 
 // Componentes de estructura
 import ProtectedRoute from './components/ProtectedRoute';
+import ModalEncuesta from './components/ModalEncuesta';
+import ConsentBanner from './components/ads/ConsentBanner';
 const DashboardLayout = lazy(() => import('./components/layout/DashboardLayout'));
 const AdminLayout = lazy(() => import('./components/layout/AdminLayout'));
 const VendedorLayout = lazy(() => import('./components/layout/VendedorLayout'));
@@ -53,6 +58,8 @@ const AdminAnuncios = lazy(() => import('./pages/admin/AdminAnuncios'));
 const AdminPlanes = lazy(() => import('./pages/admin/AdminPlanes'));
   const AdminPagos = lazy(() => import('./pages/admin/AdminPagos'));
   const AdminTickets = lazy(() => import('./pages/admin/AdminTickets'));
+const AdminReportes = lazy(() => import('./pages/admin/AdminReportes'));
+const AdminEncuestas = lazy(() => import('./pages/admin/AdminEncuestas'));
 
 // Páginas del área de Vendedor
 const MiVehiculoVendedor = lazy(() => import('./pages/vendedor/MiVehiculoVendedor'));
@@ -63,14 +70,28 @@ const AscenderVendedor = lazy(() => import('./pages/vendedor/AscenderVendedor'))
 const CuentaVendedor = lazy(() => import('./pages/vendedor/CuentaVendedor'));
 
 function App() {
+  const location = useLocation();
+
+  // La key cambia solo con el SEGMENTO SUPERIOR de la ruta (/dashboard,
+  // /vehiculos, ...): navegar dentro de un panel no remonta su layout;
+  // pasar de una sección a otra sí remonta y reproduce el cross-fade.
+  const segmentoRaiz = "/" + (location.pathname.split("/")[1] ?? "");
+
   return (
-    <Suspense
-      fallback={
-        <div className="flex min-h-screen items-center justify-center bg-[#0c101b]">
-          <div className="h-10 w-10 animate-spin rounded-full border-2 border-white/10 border-t-blue-500" />
-        </div>
-      }
-    >
+    <Suspense fallback={<BarraProgresoNavegacion />}>
+      <ScrollToTop />
+      {/* key por segmento superior: navegar dentro de un panel no remonta
+          su layout; pasar de una seccion a otra si reproduce el cross-fade */}
+      <AnimatePresence mode="wait">
+      <motion.div
+        key={segmentoRaiz}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -8 }}
+        transition={{ duration: 0.2, ease: 'easeOut' }}
+      >
+      <ModalEncuesta />
+      <ConsentBanner />
       <Routes>
         {/* INICIO PÚBLICO */}
         <Route path="/" element={<Home />} />
@@ -85,10 +106,10 @@ function App() {
         <Route path="/agencias" element={<Agencias />} />
 
         {/* DETALLE PÚBLICO DE UN VEHÍCULO */}
-        <Route path="/anuncio/:id" element={<DetalleAnuncio />} />
+        <Route path="/anuncio/:slug" element={<DetalleAnuncio />} />
 
         {/* PERFIL PÚBLICO DE UN VENDEDOR */}
-        <Route path="/vendedor/:id" element={<VendedorPublico />} />
+        <Route path="/vendedor/:slug" element={<VendedorPublico />} />
 
         {/* PRECIOS PÚBLICOS */}
         <Route path="/precios" element={<Precios />} />
@@ -250,6 +271,12 @@ function App() {
 
             {/* /admin/soporte */}
             <Route path="soporte" element={<AdminTickets />} />
+
+            {/* /admin/reportes */}
+            <Route path="reportes" element={<AdminReportes />} />
+
+            {/* /admin/encuestas */}
+            <Route path="encuestas" element={<AdminEncuestas />} />
           </Route>
         </Route>
 
@@ -257,12 +284,25 @@ function App() {
         <Route
           path="*"
           element={
-            <h1 className="p-8 text-2xl font-bold">
-              Página no encontrada
-            </h1>
+            <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-[#0c101b] px-6 text-center">
+              <h1 className="text-2xl font-bold text-white">
+                Página no encontrada
+              </h1>
+              <p className="text-sm text-slate-400">
+                La dirección que buscas no existe o fue movida.
+              </p>
+              <a
+                href="/"
+                className="rounded-lg bg-blue-500 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-600"
+              >
+                Volver al inicio
+              </a>
+            </div>
           }
         />
       </Routes>
+      </motion.div>
+      </AnimatePresence>
     </Suspense>
   );
 }

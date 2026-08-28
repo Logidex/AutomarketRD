@@ -1,3 +1,4 @@
+using AutoMarket.API.Fakes;
 using AutoMarket.API.Middleware;
 using AutoMarket.Application.Interfaces;
 using AutoMarket.Application.Services;
@@ -106,10 +107,24 @@ try
     // SERVICIOS DE LA APLICACIÓN
     // =======================================================
 
-    builder.Services.AddScoped<IAlmacenadorArchivos, AlmacenadorS3>();
+    // Almacenamiento de archivos: S3/R2 en todos los entornos reales. En
+    // Development con credenciales "dummy" (E2E / local sin nube) se usa un
+    // almacenador local servido por UseStaticFiles (ver pipeline).
+    if (builder.Environment.IsDevelopment()
+        && string.Equals(builder.Configuration["AWS:AccessKey"], "dummy", StringComparison.OrdinalIgnoreCase))
+    {
+        builder.Services.AddScoped<IAlmacenadorArchivos, AlmacenadorArchivosLocal>();
+    }
+    else
+    {
+        builder.Services.AddScoped<IAlmacenadorArchivos, AlmacenadorS3>();
+    }
 
     builder.Services.AddScoped<IAnuncioService, AnuncioService>();
+    builder.Services.AddScoped<IReporteAnuncioService, ReporteAnuncioService>();
     builder.Services.AddScoped<IAnuncioRepository, AnuncioRepository>();
+    builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+    builder.Services.AddScoped<IReporteAnuncioRepository, ReporteAnuncioRepository>();
 
     builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
     builder.Services.AddScoped<IUsuarioCuentaService, UsuarioCuentaService>();
@@ -138,6 +153,12 @@ try
     builder.Services.AddScoped<IPlanCatalogoRepository, PlanCatalogoRepository>();
     builder.Services.AddScoped<IPlanCatalogoService, PlanCatalogoService>();
 
+    builder.Services.AddScoped<ICuponRepository, CuponRepository>();
+    builder.Services.AddScoped<ICuponService, CuponService>();
+
+    builder.Services.AddScoped<IEncuestaRepository, EncuestaRepository>();
+    builder.Services.AddScoped<IEncuestaService, EncuestaService>();
+
     builder.Services.AddScoped<IContactoService, ContactoService>();
 
     builder.Services.AddScoped<ITicketRepository, TicketRepository>();
@@ -147,7 +168,19 @@ try
 
     builder.Services.AddHostedService<SuscripcionMonitorService>();
 
-    builder.Services.AddHttpClient<IPayPalService, PayPalService>();
+    // PayPal real en todos los entornos reales. En Development con ClientId
+    // "dummy" (docker-compose.e2e.yml) se usa un simulador que evita llamar a
+    // PayPal: el flujo generar-link → pago-exitoso → confirmar-pago funciona
+    // de punta a punta sin red externa. Gate doble: entorno + credencial.
+    if (builder.Environment.IsDevelopment()
+        && string.Equals(builder.Configuration["PayPal:ClientId"], "dummy", StringComparison.OrdinalIgnoreCase))
+    {
+        builder.Services.AddSingleton<IPayPalService, FakePayPalService>();
+    }
+    else
+    {
+        builder.Services.AddHttpClient<IPayPalService, PayPalService>();
+    }
 
 
     // =======================================================
@@ -296,40 +329,41 @@ try
 
     const string frontendPolicy = "FrontendCorsPolicy";
 
-    var allowedOrigins =
-        builder.Configuration
-            .GetSection("Cors:AllowedOrigins")
-            .Get<string[]>() ?? [];
+    // Soporta ambas formas de config:
+    //   - arreglo (Cors__AllowedOrigins__0/__1/... o JSON "AllowedOrigins": [...])
+    //   - string único separado por comas (Cors__AllowedOrigins)
+    var originsDeSeccion = builder.Configuration
+        .GetSection("Cors:AllowedOrigins")
+        .GetChildren()
+        .ToList();
 
-    // En desarrollo el SPA corre en el dev server de Vite (puerto 5173).
-    // AllowCredentials exige orígenes explícitos (AllowAnyOrigin + AllowCredentials
-    // es una combinación inválida y el navegador rechaza la cookie con credenciales).
-    string[] devOrigins =
-    [
+    var allowedOrigins = originsDeSeccion.Count > 0
+        ? originsDeSeccion
+            .Where(child => !string.IsNullOrWhiteSpace(child.Value))
+            .Select(child => child.Value!)
+            .ToArray()
+        : builder.Configuration["Cors:AllowedOrigins"]?
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            ?? Array.Empty<string>();
+
+    if (builder.Environment.IsDevelopment())
+    {
+        allowedOrigins = new[]
+        {
         "http://localhost:5173",
         "http://127.0.0.1:5173"
-    ];
+    };
+    }
 
     builder.Services.AddCors(options =>
     {
         options.AddPolicy(frontendPolicy, policy =>
         {
-            if (builder.Environment.IsDevelopment())
-            {
-                policy
-                    .WithOrigins(devOrigins)
-                    .AllowAnyHeader()
-                    .AllowAnyMethod()
-                    .AllowCredentials();
-            }
-            else if (allowedOrigins.Length > 0)
-            {
-                policy
-                    .WithOrigins(allowedOrigins)
-                    .AllowAnyHeader()
-                    .AllowAnyMethod()
-                    .AllowCredentials();
-            }
+            policy
+                .WithOrigins(allowedOrigins)
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials();
         });
     });
 
@@ -354,6 +388,43 @@ try
                 limiterOptions.QueueLimit = 0;
             });
 
+        // Reportes de anuncios: anónimo, así que límite más estricto
+        // (3 reportes por hora por IP) para frenar abuso/spam.
+        options.AddFixedWindowLimiter(
+            "PoliticaReportes",
+            limiterOptions =>
+            {
+                limiterOptions.PermitLimit = 3;
+                limiterOptions.Window =
+                    TimeSpan.FromHours(1);
+
+                limiterOptions.QueueProcessingOrder =
+                    QueueProcessingOrder.OldestFirst;
+
+                limiterOptions.QueueLimit = 0;
+            });
+
+        // Registro de cuentas: limita creación de cuentas por IP para
+        // prevenir spam/bots (5 registros cada 15 min por IP).
+        // Ajustable vía RateLimiting__RegistroPermitLimit (el suite E2E
+        // lo eleva: registra varios usuarios por corrida desde una sola IP).
+        var limiteRegistro = builder.Configuration
+            .GetValue("RateLimiting:RegistroPermitLimit", 5);
+
+        options.AddFixedWindowLimiter(
+            "PoliticaRegistro",
+            limiterOptions =>
+            {
+                limiterOptions.PermitLimit = limiteRegistro;
+                limiterOptions.Window =
+                    TimeSpan.FromMinutes(15);
+
+                limiterOptions.QueueProcessingOrder =
+                    QueueProcessingOrder.OldestFirst;
+
+                limiterOptions.QueueLimit = 0;
+            });
+
         options.AddPolicy<string>(
             "PoliticaLogin",
             context =>
@@ -370,6 +441,16 @@ try
                 // binder) o los claims JWT, generando consumos múltiples e
                 // inconsistencia. Con ForwardedHeaders activo, RemoteIpAddress
                 // es la IP real del cliente detrás de nginx/proxy.
+                //
+                // Este límite es SOLO un respaldo anti fuerza bruta masiva: el
+                // bloqueo real de cuentas vive en la entidad Usuario (por cuenta,
+                // no por red). El default de 30/15min no interfiere con el uso
+                // normal (incluso fallando en varias cuentas distintas).
+                // Ajustable vía RateLimiting__LoginPermitLimit (el suite E2E
+                // lo eleva: registra y loguea varios usuarios por corrida).
+                var limiteLogin = builder.Configuration
+                    .GetValue("RateLimiting:LoginPermitLimit", 30);
+
                 return RateLimitPartition
                     .GetFixedWindowLimiter(
                         clave,
@@ -377,11 +458,44 @@ try
                             new FixedWindowRateLimiterOptions
                             {
                                 AutoReplenishment = true,
-                                PermitLimit = 5,
+                                PermitLimit = limiteLogin,
                                 Window =
                                     TimeSpan.FromMinutes(15),
                                 QueueLimit = 0
                             });
+            });
+
+        // Límite global por IP para toda la API (defensa contra abuso general).
+        // Los endpoints sensibles llevan además sus políticas específicas
+        // (login, leads, contacto). Los health checks quedan exentos porque
+        // los sondean Docker y el balanceador cada pocos segundos.
+        // Ajustable vía RateLimiting__GlobalPermitLimit (p. ej. para pruebas
+        // de carga); el default de 300/min queda como comportamiento normal.
+        var limiteGlobal = builder.Configuration
+            .GetValue("RateLimiting:GlobalPermitLimit", 300);
+
+        options.GlobalLimiter =
+            PartitionedRateLimiter.Create<HttpContext, string>(context =>
+            {
+                if (context.Request.Path.StartsWithSegments("/health"))
+                {
+                    return RateLimitPartition.GetNoLimiter("sin-limite-health");
+                }
+
+                var ipGlobal =
+                    context.Connection.RemoteIpAddress?.ToString()
+                    ?? "desconocido";
+
+                return RateLimitPartition.GetFixedWindowLimiter(
+                    $"global:{ipGlobal}",
+                    _ =>
+                        new FixedWindowRateLimiterOptions
+                        {
+                            AutoReplenishment = true,
+                            PermitLimit = limiteGlobal,
+                            Window = TimeSpan.FromMinutes(1),
+                            QueueLimit = 0
+                        });
             });
 
         options.RejectionStatusCode =
@@ -523,6 +637,10 @@ try
 
     if (app.Environment.IsDevelopment())
     {
+        // Sirve wwwroot/e2e-archivos: el AlmacenadorArchivosLocal de E2E
+        // expone las fotos subidas como rutas estáticas.
+        app.UseStaticFiles();
+
         app.MapOpenApi();
         app.MapScalarApiReference();
     }

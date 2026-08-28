@@ -21,6 +21,13 @@ public class ApplicationDbContext : DbContext
     public DbSet<PagoSuscripcion> PagosSuscripcion { get; set; }
     public DbSet<Ticket> Tickets { get; set; }
     public DbSet<TicketMensaje> TicketMensajes { get; set; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
+    public DbSet<ReporteAnuncio> ReportesAnuncios { get; set; }
+    public DbSet<Cupon> Cupones { get; set; }
+    public DbSet<CuponRedencion> RedencionesCupon { get; set; }
+    public DbSet<Encuesta> Encuestas { get; set; }
+    public DbSet<EncuestaPregunta> EncuestasPreguntas { get; set; }
+    public DbSet<EncuestaRespuesta> EncuestasRespuestas { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -186,6 +193,11 @@ public class ApplicationDbContext : DbContext
             b.Property(u => u.Email).HasMaxLength(150);
             b.Property(u => u.EmailPendiente).HasMaxLength(150);
 
+            // Bloqueo por intentos fallidos y límite de correos:
+            // contadores en 0 para las filas existentes.
+            b.Property(u => u.IntentosFallidos).HasDefaultValue(0);
+            b.Property(u => u.EmailsEnviadosHoy).HasDefaultValue(0);
+
             // Email Unico
             b.HasIndex(u => u.Email).IsUnique();
 
@@ -199,7 +211,8 @@ public class ApplicationDbContext : DbContext
 
             b.HasOne(u => u.PerfilDealer)
              .WithOne(u => u.Usuario)
-             .HasForeignKey<PerfilDealer>(p => p.UsuarioId);
+             .HasForeignKey<PerfilDealer>(p => p.UsuarioId)
+             .OnDelete(DeleteBehavior.Cascade);
         });
 
         // ==========================================
@@ -289,6 +302,56 @@ public class ApplicationDbContext : DbContext
                 .WithMany(a => a.Leads)
                 .HasForeignKey(l => l.AnuncioId)
                 .OnDelete(DeleteBehavior.Cascade); // Si se elimina un anuncio, se borran sus leads asociados
+        });
+
+        // ==========================================
+        // CONFIGURACIÓN: REFRESH TOKENS (sesiones)
+        // ==========================================
+        modelBuilder.Entity<RefreshToken>(entity =>
+        {
+            entity.ToTable("RefreshTokens");
+
+            entity.HasKey(t => t.Id);
+
+            entity.Property(t => t.TokenHash)
+                .IsRequired()
+                .HasMaxLength(64);
+
+            entity.HasIndex(t => t.TokenHash)
+                .IsUnique();
+
+            entity.Property(t => t.ReplacedByTokenHash)
+                .HasMaxLength(64);
+
+            entity.HasOne(t => t.Usuario)
+                .WithMany()
+                .HasForeignKey(t => t.UsuarioId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // ==========================================
+        // CONFIGURACIÓN: REPORTES DE ANUNCIOS
+        // ==========================================
+        modelBuilder.Entity<ReporteAnuncio>(entity =>
+        {
+            entity.ToTable("ReportesAnuncios");
+
+            entity.HasKey(r => r.Id);
+
+            entity.Property(r => r.IpReportante)
+                .IsRequired()
+                .HasMaxLength(45); // IPv6 máx
+
+            entity.Property(r => r.Detalle)
+                .HasMaxLength(500);
+
+            // Índice para el panel: pendientes primero, más recientes arriba
+            entity.HasIndex(r => new { r.Estado, r.FechaCreacionUtc });
+
+            entity.HasOne(r => r.Anuncio)
+                .WithMany()
+                .HasForeignKey(r => r.AnuncioId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         // ==========================================
@@ -481,10 +544,158 @@ public class ApplicationDbContext : DbContext
             b.HasOne(m => m.Autor)
                 .WithMany()
                 .HasForeignKey(m => m.AutorId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
             b.HasIndex(m => m.TicketId);
             b.HasIndex(m => m.AutorId);
+        });
+
+        // ==========================================
+        // CONFIGURACIÓN: CUPONES PROMOCIONALES
+        // ==========================================
+        modelBuilder.Entity<Cupon>(b =>
+        {
+            b.HasKey(c => c.Id);
+
+            b.Property(c => c.Codigo)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            b.HasIndex(c => c.Codigo)
+                .IsUnique()
+                .HasDatabaseName("IX_Cupones_Codigo");
+
+            b.Property(c => c.Nivel)
+                .IsRequired()
+                .HasColumnType("integer");
+
+            b.Property(c => c.Dias)
+                .IsRequired();
+
+            b.Property(c => c.MaximoUsos)
+                .IsRequired();
+
+            // Token de concurrencia optimista para el tope de canjes.
+            b.Property(c => c.UsosActuales)
+                .IsRequired()
+                .IsConcurrencyToken();
+
+            b.Property(c => c.Activo)
+                .IsRequired();
+
+            b.Property(c => c.FechaCreacionUtc)
+                .IsRequired()
+                .HasColumnType("timestamp with time zone");
+        });
+
+        modelBuilder.Entity<CuponRedencion>(b =>
+        {
+            b.HasKey(r => r.Id);
+
+            b.HasOne(r => r.Cupon)
+                .WithMany(c => c.Redenciones)
+                .HasForeignKey(r => r.CuponId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            b.HasOne(r => r.PerfilDealer)
+                .WithMany()
+                .HasForeignKey(r => r.PerfilDealerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Un solo canje por dealer a nivel de base de datos.
+            b.HasIndex(r => new { r.CuponId, r.PerfilDealerId })
+                .IsUnique()
+                .HasDatabaseName("IX_CuponesRedencion_Cupon_PerfilDealer");
+
+            b.Property(r => r.FechaUtc)
+                .IsRequired()
+                .HasColumnType("timestamp with time zone");
+
+            b.HasIndex(r => r.PerfilDealerId);
+        });
+
+        // ==========================================
+        // CONFIGURACIÓN: ENCUESTAS
+        // ==========================================
+        modelBuilder.Entity<Encuesta>(b =>
+        {
+            b.HasKey(e => e.Id);
+
+            b.Property(e => e.Titulo)
+                .IsRequired()
+                .HasMaxLength(200);
+
+            b.Property(e => e.Descripcion)
+                .HasMaxLength(500);
+
+            b.Property(e => e.Activa)
+                .IsRequired();
+
+            b.Property(e => e.FechaCreacionUtc)
+                .IsRequired()
+                .HasColumnType("timestamp with time zone");
+
+            b.HasIndex(e => e.Activa);
+        });
+
+        modelBuilder.Entity<EncuestaPregunta>(b =>
+        {
+            b.HasKey(p => p.Id);
+
+            b.Property(p => p.Texto)
+                .IsRequired()
+                .HasMaxLength(500);
+
+            b.Property(p => p.Orden)
+                .IsRequired();
+
+            b.Property(p => p.Tipo)
+                .IsRequired()
+                .HasColumnType("integer");
+
+            b.HasOne(p => p.Encuesta)
+                .WithMany(e => e.Preguntas)
+                .HasForeignKey(p => p.EncuestaId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            b.HasIndex(p => new { p.EncuestaId, p.Orden });
+        });
+
+        modelBuilder.Entity<EncuestaRespuesta>(b =>
+        {
+            b.HasKey(r => r.Id);
+
+            b.Property(r => r.ValorEscala);
+
+            b.Property(r => r.ValorTexto)
+                .HasMaxLength(1000);
+
+            b.Property(r => r.FechaUtc)
+                .IsRequired()
+                .HasColumnType("timestamp with time zone");
+
+            b.HasOne(r => r.Encuesta)
+                .WithMany()
+                .HasForeignKey(r => r.EncuestaId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            b.HasOne(r => r.Pregunta)
+                .WithMany(p => p.Respuestas)
+                .HasForeignKey(r => r.PreguntaId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            b.HasOne(r => r.Usuario)
+                .WithMany()
+                .HasForeignKey(r => r.UsuarioId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Una respuesta por usuario y pregunta; el servicio rechaza de
+            // antemano si el usuario ya respondió cualquier pregunta.
+            b.HasIndex(r => new { r.EncuestaId, r.UsuarioId, r.PreguntaId })
+                .IsUnique()
+                .HasDatabaseName("IX_EncuestasRespuestas_Unicas");
+
+            b.HasIndex(r => new { r.EncuestaId, r.UsuarioId });
         });
     }
 }

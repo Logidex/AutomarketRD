@@ -177,4 +177,22 @@ public class UsuarioRepository : IUsuarioRepository
         await _context.SaveChangesAsync();
         return true;
     }
+
+    public Task EliminarAsync(Usuario usuario)
+    {
+        // El cascade de EF (configurado en ApplicationDbContext) elimina sus
+        // anuncios, perfil dealer, tickets, favoritos, historial, refresh
+        // tokens y mensajes de ticket al guardar cambios.
+        _context.Usuarios.Remove(usuario);
+        return Task.CompletedTask;
+    }
+
+    public async Task<bool> ExisteLogoDealerAsync(string clave)
+    {
+        // LogoUrl guarda la clave ("uploads/x.jpg"); logos legados pueden ser
+        // URL pública completa que la contenga tras la última barra.
+        return await _context.PerfilesDealers
+            .AnyAsync(p => p.LogoUrl == clave ||
+                           p.LogoUrl!.EndsWith("/" + clave));
+    }
 }

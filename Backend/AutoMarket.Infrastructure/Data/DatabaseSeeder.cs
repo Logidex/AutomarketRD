@@ -1,9 +1,9 @@
+using AutoMarket.Application.Helpers;
 using AutoMarket.Core.Entities;
 using AutoMarket.Core.Entities.Enums;
 using AutoMarket.Core.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using BCrypt.Net;
 
 namespace AutoMarket.Infrastructure.Data;
 
@@ -18,6 +18,8 @@ public static class DatabaseSeeder
 
         await SeedAdminAsync(usuarioRepository, config);
         await SeedPlanesCatalogoAsync(scope.ServiceProvider);
+        await SeedCuponBienvenidaAsync(scope.ServiceProvider, config);
+        await SeedEncuestaAsync(scope.ServiceProvider);
     }
 
     private static async Task SeedAdminAsync(IUsuarioRepository usuarioRepository, IConfiguration config)
@@ -37,7 +39,7 @@ public static class DatabaseSeeder
 
         if (!adminExiste)
         {
-            var passwordHash = BCrypt.Net.BCrypt.HashPassword(adminPassword);
+            var passwordHash = HasherPassword.Hash(adminPassword);
 
             var adminUser = Usuario.CrearAdministradorInterno(
                 nombre: "Administrador",
@@ -59,7 +61,7 @@ public static class DatabaseSeeder
         var rotarPassword = string.Equals(config["Admin:RotatePassword"], "true", StringComparison.OrdinalIgnoreCase);
         if (rotarPassword && !string.IsNullOrWhiteSpace(adminPassword))
         {
-            var nuevoHash = BCrypt.Net.BCrypt.HashPassword(adminPassword);
+            var nuevoHash = HasherPassword.Hash(adminPassword);
             var actualizado = await usuarioRepository.ActualizarContrasenaAsync(adminEmail, nuevoHash);
 
             Console.WriteLine(actualizado
@@ -109,5 +111,66 @@ public static class DatabaseSeeder
                 Activo = true
             });
         }
+    }
+
+    /// <summary>
+    /// Crea el cupón de bienvenida para dealers (Pro por N días, tope M usos)
+    /// si aún no existe. Código/días/tope configurables vía
+    /// Cupon__Bienvenida__Codigo / __Dias / __MaximoUsos.
+    /// </summary>
+    private static async Task SeedCuponBienvenidaAsync(IServiceProvider serviceProvider, IConfiguration config)
+    {
+        var cuponRepository = serviceProvider.GetRequiredService<ICuponRepository>();
+
+        var codigo = config["Cupon:Bienvenida:Codigo"] ?? "PRO15BIENVENIDA";
+        var dias = config.GetValue("Cupon:Bienvenida:Dias", 15);
+        var maximoUsos = config.GetValue("Cupon:Bienvenida:MaximoUsos", 15);
+
+        var existente = await cuponRepository.ObtenerPorCodigoAsync(codigo);
+
+        if (existente != null)
+        {
+            return;
+        }
+
+        var creado = await cuponRepository.AgregarAsync(new Cupon(codigo, PlanNivel.Pro, dias, maximoUsos));
+
+        Console.WriteLine($"[Seeder] Cupón de bienvenida creado: {creado.Codigo} ({creado.Dias} días Pro, tope {creado.MaximoUsos} usos).");
+    }
+
+    /// <summary>
+    /// Crea la encuesta fija de satisfacción si no existe ninguna activa.
+    /// V1: preguntas fijas en código (2 de escala + 1 abierta).
+    /// </summary>
+    private static async Task SeedEncuestaAsync(IServiceProvider serviceProvider)
+    {
+        var encuestaRepository = serviceProvider.GetRequiredService<IEncuestaRepository>();
+
+        var activa = await encuestaRepository.ObtenerActivaAsync();
+
+        if (activa != null)
+        {
+            return;
+        }
+
+        var encuesta = new Encuesta(
+            "¿Cómo es tu experiencia en AutoMarket RD?",
+            "Tu opinión nos ayuda a mejorar el marketplace. Toma menos de 1 minuto.");
+
+        encuesta.AgregarPregunta(
+            "¿Qué tan satisfecho estás con la plataforma en general?",
+            TipoPreguntaEncuesta.Escala);
+
+        encuesta.AgregarPregunta(
+            "¿Qué tan fácil es encontrar o publicar vehículos?",
+            TipoPreguntaEncuesta.Escala);
+
+        encuesta.AgregarPregunta(
+            "¿Qué cambiarías o agregarías? (opcional)",
+            TipoPreguntaEncuesta.Abierta);
+
+        await encuestaRepository.AgregarAsync(encuesta);
+
+        Console.WriteLine("[Seeder] Encuesta de satisfacción creada (2 escala + 1 abierta).");
     }
 }
