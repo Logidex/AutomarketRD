@@ -5,6 +5,7 @@ import Swal from "sweetalert2";
 import { FaCreditCard, FaTicketAlt } from "react-icons/fa";
 import { type PlanCatalogo } from "../services/planes.service";
 import type { SuscripcionDealer, PagoSuscripcion } from "../services/suscripcion.service";
+import type { SuscripcionVendedor } from "../services/vendedor.service";
 import type { CuponAplicado } from "../services/cupones.service";
 import { dashboardService } from "../services/dashboard.service";
 import Spinner from "../components/Spinner";
@@ -234,7 +235,7 @@ function useSuscripcionPage() {
 }
 
 interface PropsEstado {
-  suscripcion: SuscripcionDealer | null;
+  suscripcion: SuscripcionDealer | SuscripcionVendedor | null;
   anunciosActivos: number | null;
   esCanceladaConVigencia: boolean;
   onCancelar: () => void;

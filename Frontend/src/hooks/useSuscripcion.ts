@@ -4,11 +4,24 @@ import {
   type SuscripcionDealer,
   type PagoSuscripcion,
 } from '../services/suscripcion.service';
+import { vendedorService, type SuscripcionVendedor } from '../services/vendedor.service';
 import { planesService, type PlanCatalogo } from '../services/planes.service';
 import { pagosService } from '../services/pagos.service';
 import { cuponesService } from '../services/cupones.service';
+import { authService } from '../services/auth.service';
 
 export const useSuscripcion = () => {
+  const rol = authService.getRole();
+
+  if (rol === 'Vendedor') {
+    return useQuery<SuscripcionVendedor>({
+      queryKey: ['suscripcion-vendedor'],
+      queryFn: () => vendedorService.obtenerSuscripcion(),
+      staleTime: 1000 * 60 * 2,
+      retry: false,
+    });
+  }
+
   return useQuery<SuscripcionDealer>({
     queryKey: ['suscripcion'],
     queryFn: () => suscripcionService.obtenerSuscripcion(),
@@ -31,7 +44,11 @@ export const useMaxFotosAnuncio = (defaultMaxFotos = 8) => {
 
   if (!suscripcion) return defaultMaxFotos;
 
-  const plan = planes.find((p) => p.nivel === suscripcion.nivel);
+  if ('maxFotos' in suscripcion && typeof suscripcion.maxFotos === 'number') {
+    return suscripcion.maxFotos;
+  }
+
+  const plan = planes.find((p) => p.nivel === (suscripcion as SuscripcionDealer).nivel);
   return plan?.maxFotos ?? defaultMaxFotos;
 };
 
@@ -41,7 +58,11 @@ export const useCuotaDestacadosPlan = (): number => {
 
   if (!suscripcion) return 0;
 
-  const plan = planes.find((p) => p.nivel === suscripcion.nivel);
+  if ('cuotaDestacados' in suscripcion && typeof suscripcion.cuotaDestacados === 'number') {
+    return suscripcion.cuotaDestacados;
+  }
+
+  const plan = planes.find((p) => p.nivel === (suscripcion as SuscripcionDealer).nivel);
   return plan?.cuotaDestacados ?? 0;
 };
 

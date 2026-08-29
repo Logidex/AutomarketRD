@@ -84,6 +84,7 @@ services:
       Cors__AllowedOrigins__0: ${CORS_ALLOWED_ORIGIN_0:?CORS_ALLOWED_ORIGIN_0 requerido}
       Cors__AllowedOrigins__1: ${CORS_ALLOWED_ORIGIN_1:-}
       Cors__AllowedOrigins__2: ${CORS_ALLOWED_ORIGIN_2:-}
+      Cors__AllowedOrigins__3: ${CORS_ALLOWED_ORIGIN_3:-}
 
       MigrateOnStartup: ${MIGRATE_ON_STARTUP:?MIGRATE_ON_STARTUP requerido}
       Seeder__Enabled: ${SEEDER_ENABLED:?SEEDER_ENABLED requerido}
