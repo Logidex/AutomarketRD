@@ -54,7 +54,6 @@ public class Anuncio
     public bool EstaVencido => Estado == "Publicado" && FechaVencimientoUtc.HasValue && FechaVencimientoUtc.Value <= DateTime.UtcNow;
 
     // Para plan gratis: vence a los 30 días, se debe renovar manualmente
-    public DateTime? FechaVencimientoGratisUtc { get; private set; }
     public bool EstaVencidoGratis => Estado == "Publicado" && FechaVencimientoGratisUtc.HasValue && FechaVencimientoGratisUtc.Value <= DateTime.UtcNow;
 
     public DateTime CreatedAt { get; private set; }
