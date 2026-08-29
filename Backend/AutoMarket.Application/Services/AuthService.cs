@@ -97,6 +97,22 @@ public class AuthService : IAuthService
 
         if (nuevoUsuario.Rol == "Dealer")
         {
+            if (string.IsNullOrWhiteSpace(dto.NombreAgencia) || string.IsNullOrWhiteSpace(dto.AgenciaRNC))
+            {
+                return (false, "Los datos de la agencia y el RNC son obligatorios para cuentas tipo Dealer.");
+            }
+
+            nuevoUsuario.CrearPerfilDealer(
+                nombreAgencia: dto.NombreAgencia,
+                agenciaRNC: dto.AgenciaRNC,
+                ubicacion: dto.UbicacionAgencia,
+                telefonoAgencia: dto.TelefonoAgencia
+            );
+        }
+
+        // Asignar plan gratuito tanto para Dealer como para Vendedor
+        if (nuevoUsuario.Rol == "Dealer" || nuevoUsuario.Rol == "Vendedor")
+        {
             var perfilDealerId = nuevoUsuario.PerfilDealer!.UsuarioId;
 
             await _suscripcionService.AsignarPlanInicialAsync(
@@ -104,13 +120,11 @@ public class AuthService : IAuthService
                 PlanNivel.Gratis,
                 CicloFacturacion.Mensual
             );
-
-            await GenerarYEnviarConfirmacionEmailAsync(nuevoUsuario);
-
-            return (true, "Usuario registrado exitosamente. Te enviamos un correo para confirmar tu dirección de email.");
         }
 
-        return (true, "Usuario registrado exitosamente");
+        await GenerarYEnviarConfirmacionEmailAsync(nuevoUsuario);
+
+        return (true, "Usuario registrado exitosamente. Te enviamos un correo para confirmar tu dirección de email.");
     }
 
     public async Task<LoginResultDto> LoginAsync(LoginDto dto)
