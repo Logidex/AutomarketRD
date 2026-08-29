@@ -48,7 +48,14 @@ public class Anuncio
     // Vigencia del anuncio publicado (según el plan del vendedor).
     public DateTime? FechaVencimientoUtc { get; private set; }
 
+    // Vigencia para plan gratis (30 días, renovable manualmente)
+    public DateTime? FechaVencimientoGratisUtc { get; private set; }
+
     public bool EstaVencido => Estado == "Publicado" && FechaVencimientoUtc.HasValue && FechaVencimientoUtc.Value <= DateTime.UtcNow;
+
+    // Para plan gratis: vence a los 30 días, se debe renovar manualmente
+    public DateTime? FechaVencimientoGratisUtc { get; private set; }
+    public bool EstaVencidoGratis => Estado == "Publicado" && FechaVencimientoGratisUtc.HasValue && FechaVencimientoGratisUtc.Value <= DateTime.UtcNow;
 
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
@@ -239,6 +246,33 @@ public class Anuncio
         FechaVencimientoUtc = DateTime.UtcNow.AddDays(diasVigencia);
         UpdatedAt = DateTime.UtcNow;
     }
+
+    // Para plan gratis: publicar con vencimiento a 30 días (renovable)
+    public void PublicarGratis()
+    {
+        if (Estado == "Publicado" && !EstaVencidoGratis)
+            throw new BusinessRuleException("El anuncio ya está publicado.");
+
+        if (_fotos.Count < 5)
+            throw new BusinessRuleException("Imposible publicar: Un anuncio requiere un mínimo de 5 fotos.");
+
+        Estado = "Publicado";
+        FechaVencimientoGratisUtc = DateTime.UtcNow.AddDays(30);
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    // Renovar anuncio gratis por 30 días más
+    public void RenovarVigenciaGratis()
+    {
+        if (Estado != "Publicado")
+            throw new BusinessRuleException("Solo se pueden renovar anuncios publicados.");
+
+        FechaVencimientoGratisUtc = DateTime.UtcNow.AddDays(30);
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    // Verifica si el anuncio gratis está vencido
+    public bool EstaVencidoGratis => Estado == "Publicado" && FechaVencimientoGratisUtc.HasValue && FechaVencimientoGratisUtc.Value <= DateTime.UtcNow;
 
     // ==========================================
     // 5. ACTUALIZAR INFO (Manteniendo consistencia)

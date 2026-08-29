@@ -42,6 +42,8 @@ namespace AutoMarket.Application.Interfaces
         // 11. Eliminar Anuncio completo
         Task<bool> EliminarAnuncioAsync(int id, int usuarioId);
 
+        Task<bool> RenovarAnuncioGratisAsync(int id, int usuarioId);
+
         // 12. Destacados
         Task<bool> MarcarComoDestacadoAsync(int id, int usuarioId);
         Task<bool> QuitarDestacadoAsync(int id, int usuarioId);

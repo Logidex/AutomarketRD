@@ -10,6 +10,7 @@ public interface IAnuncioRepository
     Task<IReadOnlyCollection<Anuncio>> ObtenerTodosLosAnuncios();
     Task<(IEnumerable<Anuncio> Anuncios, int TotalRegistros)> BuscarPaginadoAsync(AnuncioQueryFilter filtro);
     Task<int> ContarAnunciosPorUsuarioAsync(int usuarioId);
+    Task<int> ContarAnunciosActivosVendedorAsync(int usuarioId);
     Task<int> ContarDestacadosPorUsuarioAsync(int usuarioId);
     Task<IEnumerable<Anuncio>> ObtenerTodosParaAdminAsync();
     void Eliminar(Anuncio anuncio);

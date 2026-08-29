@@ -67,9 +67,11 @@ public class SuscripcionMonitorService : BackgroundService
 
         // 1. Encontrar a los usuarios con suscripción vencida (la cancelación
         //    no retira los beneficios ya pagados: solo la fecha de vencimiento)
+        // EXCLUIR plan Gratis (no vence, se renueva manualmente por anuncio)
         var usuariosMorososIds = await dbContext.Usuarios
             .Where(u => u.PerfilDealer != null && 
                         u.PerfilDealer.Suscripcion != null &&
+                        u.PerfilDealer.Suscripcion.Nivel != PlanNivel.Gratis &&
                         u.PerfilDealer.Suscripcion.FechaVencimientoUtc < fechaLimite)
             .Select(u => u.UsuarioId)
             .ToListAsync(stoppingToken);
@@ -138,6 +140,7 @@ public class SuscripcionMonitorService : BackgroundService
             .Include(s => s.PerfilDealer)
                 .ThenInclude(p => p.Usuario)
             .Where(s => s.Estado == EstadoSuscripcion.Activa &&
+                        s.Nivel != PlanNivel.Gratis &&
                         s.FechaVencimientoUtc > ahora &&
                         s.FechaVencimientoUtc <= fechaLimite &&
                         s.FechaRecordatorioEnviadoUtc == null)

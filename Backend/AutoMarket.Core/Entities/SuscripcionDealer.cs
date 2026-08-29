@@ -14,6 +14,9 @@ public class SuscripcionDealer
 
     public int LimiteAnuncios => Plan?.LimiteAnunciosEfectivo ?? PlanConfig.LimiteAnuncios(Nivel);
 
+    // Indica si el plan es Gratis (ilimitado en tiempo, 1 anuncio renovable mensualmente)
+    public bool EsGratis => Nivel == PlanNivel.Gratis;
+
     // Navigation to PlanCatalogo for CuotaDestacados
     public int? PlanCatalogoId { get; private set; }
     public virtual PlanCatalogo? Plan { get; private set; }
@@ -51,11 +54,17 @@ public class SuscripcionDealer
 
     public bool PermiteNuevosAnuncios(int cantidadAnunciosActuales, PlanCatalogo? plan = null)
     {
-        // La cancelación no revierte los días ya pagados: se permite mientras la
-        // vigencia siga vigente. El freno efectivo es la fecha de vencimiento.
+        // Plan Gratis: permite 1 anuncio renovable mensualmente
+        // No expira la suscripción, solo controla anuncios activos
+        if (EsGratis)
+        {
+            return cantidadAnunciosActuales < 1;
+        }
+
+        // Planes pagos: vencen según FechaVencimientoUtc
         if (DateTime.UtcNow > FechaVencimientoUtc) return false;
 
-        var limite = plan?.LimiteAnunciosEfectivo ?? PlanConfig.LimiteAnuncios(Nivel);
+        var limite = Plan?.LimiteAnunciosEfectivo ?? PlanConfig.LimiteAnuncios(Nivel);
         return cantidadAnunciosActuales < limite;
     }
 
@@ -65,12 +74,22 @@ public class SuscripcionDealer
     /// </summary>
     public bool PermiteDestacarMas(int destacadosActuales, PlanCatalogo plan)
     {
+        // Plan Gratis no permite destacados
+        if (EsGratis) return false;
+
         if (DateTime.UtcNow > FechaVencimientoUtc) return false;
         if (Estado != EstadoSuscripcion.Activa) return false;
         if (plan == null) return false;
 
         return destacadosActuales < plan.CuotaDestacados;
     }
+
+    /// <summary>
+    /// Indica si la suscripción está activa.
+    /// Para plan Gratis: siempre activa (no vence).
+    /// Para planes pagos: activa mientras no haya vencido.
+    /// </summary>
+    public bool Activa => EsGratis || (Estado == EstadoSuscripcion.Activa && DateTime.UtcNow <= FechaVencimientoUtc);
 
     public void CambiarPlan(PlanNivel nuevoNivel, CicloFacturacion nuevoCiclo)
     {

@@ -167,6 +167,7 @@ try
     builder.Services.AddScoped<IEmailSenderService, SmtpEmailSenderService>();
 
     builder.Services.AddHostedService<SuscripcionMonitorService>();
+    builder.Services.AddHostedService<AnuncioVencimientoService>();
 
     // PayPal real en todos los entornos reales. En Development con ClientId
     // "dummy" (docker-compose.e2e.yml) se usa un simulador que evita llamar a

@@ -344,6 +344,22 @@ public class AnuncioRepository : IAnuncioRepository
             );
     }
 
+    public async Task<int> ContarAnunciosActivosVendedorAsync(int usuarioId)
+    {
+        // Cuenta solo anuncios activos (publicados y no vencidos, ni para planes gratis ni pagos)
+        return await _context.Anuncios
+            .CountAsync(a =>
+                a.UsuarioId == usuarioId &&
+                a.Estado == "Publicado" &&
+                (
+                    // Para planes pagos: no vencido por FechaVencimientoUtc
+                    (a.FechaVencimientoUtc == null || a.FechaVencimientoUtc > DateTime.UtcNow) ||
+                    // Para planes gratis: no vencido por FechaVencimientoGratisUtc
+                    (a.FechaVencimientoGratisUtc.HasValue && a.FechaVencimientoGratisUtc > DateTime.UtcNow)
+                )
+            );
+    }
+
     public async Task<int> ContarDestacadosPorUsuarioAsync(int usuarioId)
     {
         return await _context.Anuncios

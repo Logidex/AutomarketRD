@@ -353,4 +353,23 @@ public class AnunciosController : ControllerBase
         var resultado = await _anuncioService.ObtenerDestacadosAsync(pagina, tamanoPagina);
         return Ok(resultado);
     }
+
+    // ==========================================
+    // 13. RENOVAR ANUNCIO GRATIS (plan gratis)
+    // ==========================================
+    [HttpPost("{id:int}/renovar-gratis")]
+    [Authorize(Roles = Roles.DealerVendedor)]
+    public async Task<IActionResult> RenovarGratis(int id)
+    {
+        int usuarioId = User.ObtenerUsuarioId();
+
+        try
+        {
+            await _anuncioService.RenovarAnuncioGratisAsync(id, usuarioId);
+            return Ok(new { mensaje = "Anuncio renovado por 30 días más." });
+        }
+        catch (KeyNotFoundException ex) { return NotFound(new { error = ex.Message }); }
+        catch (UnauthorizedAccessException ex) { return StatusCode(403, new { error = ex.Message }); }
+        catch (BusinessRuleException ex) { return BadRequest(new { error = ex.Message }); }
+    }
 }

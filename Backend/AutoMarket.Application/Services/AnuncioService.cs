@@ -43,70 +43,73 @@ public class AnuncioService : IAnuncioService
     private static string NormalizarBusqueda(string? valor) =>
         NormalizadorTexto.Normalizar(valor);
 
-    public async Task<int> CrearAnuncioAsync(
+public async Task<int> CrearAnuncioAsync(
     AnuncioCreateDto dto)
-    {
-        var usuario =
-            await _usuarioRepository
-                .ObtenerDealerConPerfilPorIdAsync(
-                    dto.UsuarioId
-                );
-
-        if (usuario == null)
-        {
-            throw new KeyNotFoundException(
-                "El usuario especificado no existe."
-            );
-        }
-
-        int cantidadAnuncios =
-            await _repository.ContarAnunciosPorUsuarioAsync(
+{
+    var usuario =
+        await _usuarioRepository
+            .ObtenerDealerConPerfilPorIdAsync(
                 dto.UsuarioId
             );
 
-        bool esVendedorParticular =
-            string.Equals(
-                usuario.Rol,
-                "Vendedor",
-                StringComparison.OrdinalIgnoreCase
+    if (usuario == null)
+    {
+        throw new KeyNotFoundException(
+            "El usuario especificado no existe."
+        );
+    }
+
+    int cantidadAnuncios =
+        await _repository.ContarAnunciosPorUsuarioAsync(
+            dto.UsuarioId
+        );
+
+    bool esVendedorParticular =
+        string.Equals(
+            usuario.Rol,
+            "Vendedor",
+            StringComparison.OrdinalIgnoreCase
+        );
+
+    bool esGratis = esVendedorParticular || 
+        (usuario.PerfilDealer?.Suscripcion?.EsGratis == true);
+
+    if (esVendedorParticular || esGratis)
+    {
+        if (cantidadAnuncios >= 1)
+        {
+            throw new BusinessRuleException(
+                "Has alcanzado el límite de 1 anuncio gratuito. " +
+                "Mejora tu cuenta a Dealer para publicar más inventario."
             );
-
-        if (esVendedorParticular)
-        {
-            if (cantidadAnuncios >= 1)
-            {
-                throw new BusinessRuleException(
-                    "Has alcanzado el límite de 1 anuncio gratuito. " +
-                    "Mejora tu cuenta a Dealer para publicar más inventario."
-                );
-            }
         }
-        else
+    }
+    else
+    {
+        var suscripcion =
+            usuario.PerfilDealer?.Suscripcion;
+
+        if (suscripcion == null)
         {
-            var suscripcion =
-                usuario.PerfilDealer?.Suscripcion;
+            throw new BusinessRuleException(
+                "Tu cuenta Dealer no tiene una suscripción activa configurada."
+            );
+        }
 
-            if (suscripcion == null)
-            {
-                throw new BusinessRuleException(
-                    "Tu cuenta Dealer no tiene una suscripción activa configurada."
-                );
-            }
+        if (
+            suscripcion.FechaVencimientoUtc <=
+            DateTime.UtcNow
+        )
+        {
+            throw new BusinessRuleException(
+                "Tu suscripción Dealer está vencida. Renuevala para seguir publicando."
+            );
+        }
 
-            if (
-                suscripcion.FechaVencimientoUtc <=
-                DateTime.UtcNow
-            )
-            {
-                throw new BusinessRuleException(
-                    "Tu suscripción Dealer está vencida. Renuevala para seguir publicando."
-                );
-            }
-
-            var plan =
-                await _planCatalogoRepository.ObtenerPorNivelAsync(
-                    suscripcion.Nivel
-                );
+        var plan =
+            await _planCatalogoRepository.ObtenerPorNivelAsync(
+                suscripcion.Nivel
+            );
 
             if (
                 !suscripcion.PermiteNuevosAnuncios(
@@ -147,6 +150,20 @@ public class AnuncioService : IAnuncioService
             nuevoAnuncio.FijarOferta(dto.PrecioAnterior);
         }
 
+        // Para planes gratis, usar PublicarGratis (30 días renovable)
+        bool esPlanGratis = esVendedorParticular || 
+            (usuario.PerfilDealer?.Suscripcion?.EsGratis == true);
+        
+        if (esGratis || esPlanGratis)
+        {
+            nuevoAnuncio.PublicarGratis(); // 30 días renovable
+        }
+
+        if (dto.PrecioAnterior.HasValue)
+        {
+            nuevoAnuncio.FijarOferta(dto.PrecioAnterior);
+        }
+
         await _repository.AgregarAsync(nuevoAnuncio);
         await _repository.GuardarCambiosAsync();
 
@@ -166,7 +183,8 @@ public class AnuncioService : IAnuncioService
 
         // Solo los anuncios publicados y vigentes son visibles públicamente.
         // El resto (borradores, pausados, vendidos, vencidos) solo lo ve su dueño.
-        if (anuncio.Estado != "Publicado" || anuncio.EstaVencido)
+        bool estaVencido = anuncio.EstaVencido || anuncio.EstaVencidoGratis;
+        if (anuncio.Estado != "Publicado" || estaVencido)
         {
             if (usuarioId != anuncio.UsuarioId)
                 return null;
@@ -365,7 +383,10 @@ public class AnuncioService : IAnuncioService
             usuario != null &&
             string.Equals(usuario.Rol, "Vendedor", StringComparison.OrdinalIgnoreCase);
 
-        if (esVendedorParticular)
+        bool esPlanGratis = esVendedorParticular || 
+            (usuario?.PerfilDealer?.Suscripcion?.EsGratis == true);
+
+        if (esVendedorParticular || esPlanGratis)
         {
             if (cantidadActiva >= 1)
             {
@@ -623,23 +644,72 @@ var anunciosDto = anuncios
         await _repository.GuardarCambiosAsync();
     }
 
-    public async Task<bool> EliminarAnuncioAsync(int id, int usuarioId)
+    public async Task<bool> RenovarAnuncioGratisAsync(int anuncioId, int usuarioId)
     {
-        var anuncio = await _repository.ObtenerPorIdAsync(id);
+        var anuncio = await _repository.ObtenerPorIdAsync(anuncioId);
 
-        if (anuncio == null) return false;
+        if (anuncio == null)
+            throw new KeyNotFoundException("Anuncio no encontrado.");
 
         if (anuncio.UsuarioId != usuarioId)
-            throw new UnauthorizedAccessException("Acceso denegado: No tienes permiso para eliminar un anuncio que no te pertenece.");
+            throw new UnauthorizedAccessException("No tienes permiso para renovar este anuncio.");
 
-        // Destrucción física de las fotos en AWS S3
-        foreach (var foto in anuncio.Fotos)
+        if (!anuncio.EstaVencidoGratis)
         {
-            try { await _almacenadorArchivos.EliminarArchivoAsync(foto); }
-            catch { /* No bloqueamos el borrado si S3 falla */ }
+            throw new BusinessRuleException("El anuncio no está vencido o no es un anuncio del plan gratis.");
         }
 
-        _repository.Eliminar(anuncio);
+        anuncio.RenovarVigenciaGratis();
+
+        await _repository.ActualizarAsync(anuncio);
+        await _repository.GuardarCambiosAsync();
+
+        return true;
+    }
+
+    public async Task<bool> EliminarAnuncioAsync(int id, int usuarioId)
+
+    public async Task<bool> RenovarAnuncioGratisAsync(int anuncioId, int usuarioId)
+    {
+        var anuncio = await _repository.ObtenerPorIdAsync(anuncioId);
+
+        if (anuncio == null)
+            throw new KeyNotFoundException("Anuncio no encontrado.");
+
+        if (anuncio.UsuarioId != usuarioId)
+            throw new UnauthorizedAccessException("No tienes permiso para renovar este anuncio.");
+
+        if (!anuncio.EstaVencidoGratis)
+        {
+            throw new BusinessRuleException("El anuncio no está vencido o no es un anuncio del plan gratis.");
+        }
+
+        anuncio.RenovarVigenciaGratis();
+
+        await _repository.ActualizarAsync(anuncio);
+        await _repository.GuardarCambiosAsync();
+
+        return true;
+    }
+
+    public async Task<bool> RenovarAnuncioGratisAsync(int anuncioId, int usuarioId)
+    {
+        var anuncio = await _repository.ObtenerPorIdAsync(anuncioId);
+
+        if (anuncio == null)
+            throw new KeyNotFoundException("Anuncio no encontrado.");
+
+        if (anuncio.UsuarioId != usuarioId)
+            throw new UnauthorizedAccessException("No tienes permiso para renovar este anuncio.");
+
+        if (!anuncio.EstaVencidoGratis)
+        {
+            throw new BusinessRuleException("El anuncio no está vencido o no es un anuncio del plan gratis.");
+        }
+
+        anuncio.RenovarVigenciaGratis();
+
+        await _repository.ActualizarAsync(anuncio);
         await _repository.GuardarCambiosAsync();
 
         return true;
