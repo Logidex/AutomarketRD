@@ -666,6 +666,32 @@ var anunciosDto = anuncios
         return true;
     }
 
+    // ==========================================
+    // 13. RENOVAR ANUNCIO GRATIS (plan gratis)
+    // ==========================================
+    public async Task<bool> RenovarAnuncioGratisAsync(int id, int usuarioId)
+    {
+        var anuncio = await _repository.ObtenerPorIdAsync(id);
+
+        if (anuncio == null)
+            throw new KeyNotFoundException("Anuncio no encontrado.");
+
+        if (anuncio.UsuarioId != usuarioId)
+            throw new UnauthorizedAccessException("No tienes permiso para renovar este anuncio.");
+
+        if (!anuncio.EstaVencidoGratis)
+        {
+            throw new BusinessRuleException("El anuncio no está vencido o no es un anuncio del plan gratis.");
+        }
+
+        anuncio.RenovarVigenciaGratis();
+
+        await _repository.ActualizarAsync(anuncio);
+        await _repository.GuardarCambiosAsync();
+
+        return true;
+    }
+
     public async Task<bool> MarcarComoDestacadoAsync(int id, int usuarioId)
     {
         var anuncio = await _repository.ObtenerPorIdAsync(id);
