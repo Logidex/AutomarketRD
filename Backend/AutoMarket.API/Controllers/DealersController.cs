@@ -123,7 +123,7 @@ public class DealersController : ControllerBase
     }
 
     [HttpGet("me/suscripcion")]
-    [Authorize(Roles = Roles.Dealer)]
+    [Authorize(Roles = Roles.DealerVendedor)]
     public async Task<IActionResult> ObtenerMiSuscripcion()
     {
         var dealerId = User.ObtenerUsuarioIdOpcional();
