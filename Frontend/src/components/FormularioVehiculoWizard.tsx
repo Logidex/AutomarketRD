@@ -101,8 +101,19 @@ export default function FormularioVehiculoWizard({
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const validarPasoActual = (pasoActual: number): boolean => {
+    switch (pasoActual) {
+      case 4: // Paso "Fotos" - requerido mínimo 5 fotos
+        return totalImagenes >= MINIMO_IMAGENES;
+      default:
+        return formRef.current?.reportValidity() ?? true;
+    }
+  };
+
   const irSiguiente = () => {
-    if (formRef.current && !formRef.current.reportValidity()) return;
+    if (!validarPasoActual(paso)) return;
+    // Solo validar formulario completo en el último paso
+    if (paso === PASOS.length && formRef.current && !formRef.current.reportValidity()) return;
     moverPaso(Math.min(paso + 1, PASOS.length));
   };
 
@@ -208,6 +219,9 @@ export default function FormularioVehiculoWizard({
           <h3 className="mb-4 text-sm font-semibold text-ink">
             Fotos
           </h3>
+          <p className={`mb-4 text-sm ${totalImagenes >= MINIMO_IMAGENES ? "text-green-600" : "text-orange-600"}`}>
+            Mínimo {MINIMO_IMAGENES} fotos requeridas. Actuales: {totalImagenes} de {maxImagenes}.
+          </p>
           <GestorImagenes
             archivos={archivos}
             fotosGuardadas={fotosGuardadas}
@@ -365,7 +379,7 @@ export default function FormularioVehiculoWizard({
             <button
               type="button"
               onClick={irSiguiente}
-              disabled={submitting}
+              disabled={submitting || (paso === 4 && totalImagenes < MINIMO_IMAGENES)}
               className="rounded-md bg-blue-600 px-6 py-2.5 font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-400"
             >
               Siguiente

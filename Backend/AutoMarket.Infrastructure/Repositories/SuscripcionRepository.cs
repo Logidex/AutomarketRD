@@ -21,6 +21,13 @@ public class SuscripcionRepository : ISuscripcionRepository
             .FirstOrDefaultAsync(s => s.PerfilDealerId == perfilDealerId);
     }
 
+    public async Task<SuscripcionDealer?> ObtenerPorUsuarioIdAsync(int usuarioId)
+    {
+        return await _context.SuscripcionDealers
+            .Include(s => s.Plan)
+            .FirstOrDefaultAsync(s => s.PerfilDealer.UsuarioId == usuarioId);
+    }
+
     public async Task AgregarAsync(SuscripcionDealer suscripcion)
     {
         await _context.SuscripcionDealers.AddAsync(suscripcion);

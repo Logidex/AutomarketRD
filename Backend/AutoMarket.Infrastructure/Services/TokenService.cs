@@ -34,6 +34,12 @@ public class TokenService : ITokenService
             new Claim("Surname", usuario.Apellido ?? "")
         };
 
+        // Agregar DealerId si tiene PerfilDealer
+        if (usuario.PerfilDealer != null)
+        {
+            claims.Add(new Claim("DealerId", usuario.PerfilDealer.UsuarioId.ToString()));
+        }
+
 
         // 3. Configurar la estructura y expiración del token
         var tokenOptions = new JwtSecurityToken(

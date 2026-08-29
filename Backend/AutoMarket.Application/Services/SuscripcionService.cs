@@ -279,7 +279,7 @@ public class SuscripcionService : ISuscripcionService
         await _repository.ActualizarPagoAsync(pago);
     }
 
-    public async Task<SuscripcionDealerDto?> ObtenerSuscripcionAsync(int perfilDealerId)
+public async Task<SuscripcionDealerDto?> ObtenerSuscripcionAsync(int perfilDealerId)
     {
         var suscripcion = await _repository.ObtenerPorDealerIdAsync(perfilDealerId);
 
@@ -300,9 +300,30 @@ public class SuscripcionService : ISuscripcionService
         };
     }
 
-/// <summary>
-/// CancelarSuscripcionAsync Cancelar suscripcion async. Parámetros: Parámetro perfilDealerId (int). Retorna: Task.
-/// </summary>
+    public async Task<SuscripcionDealerDto?> ObtenerSuscripcionPorUsuarioIdAsync(int usuarioId)
+    {
+        var suscripcion = await _repository.ObtenerPorUsuarioIdAsync(usuarioId);
+
+        if (suscripcion == null)
+            return null;
+
+        return new SuscripcionDealerDto
+        {
+            PerfilDealerId = suscripcion.PerfilDealerId,
+            Nivel = suscripcion.Nivel,
+            Ciclo = suscripcion.Ciclo,
+            Estado = suscripcion.Estado,
+            LimiteAnuncios = suscripcion.LimiteAnuncios,
+            FechaInicioUtc = suscripcion.FechaInicioUtc,
+            FechaVencimientoUtc = suscripcion.FechaVencimientoUtc,
+            DiasRestantes = Math.Max(0, (suscripcion.FechaVencimientoUtc.Date - DateTime.UtcNow.Date).Days),
+            Activa = suscripcion.FechaVencimientoUtc > DateTime.UtcNow
+        };
+    }
+
+    /// <summary>
+    /// CancelarSuscripcionAsync Cancelar suscripcion async. Parámetros: Parámetro perfilDealerId (int). Retorna: Task.
+    /// </summary>
     public async Task CancelarSuscripcionAsync(int perfilDealerId)
     {
         var suscripcion = await _repository.ObtenerPorDealerIdAsync(perfilDealerId);

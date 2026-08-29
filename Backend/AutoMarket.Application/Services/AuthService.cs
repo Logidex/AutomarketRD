@@ -78,37 +78,29 @@ public class AuthService : IAuthService
         // Respaldo legal: fecha de aceptación de términos del nuevo usuario
         nuevoUsuario.AceptarTerminos(DateTime.UtcNow);
 
-        if (nuevoUsuario.Rol == "Dealer")
+        if (nuevoUsuario.Rol == "Dealer" || nuevoUsuario.Rol == "Vendedor")
         {
-            if (string.IsNullOrWhiteSpace(dto.NombreAgencia) || string.IsNullOrWhiteSpace(dto.AgenciaRNC))
+            if (nuevoUsuario.Rol == "Dealer")
             {
-                return (false, "Los datos de la agencia y el RNC son obligatorios para cuentas tipo Dealer.");
-            }
+                if (string.IsNullOrWhiteSpace(dto.NombreAgencia) || string.IsNullOrWhiteSpace(dto.AgenciaRNC))
+                {
+                    return (false, "Los datos de la agencia y el RNC son obligatorios para cuentas tipo Dealer.");
+                }
 
-            nuevoUsuario.CrearPerfilDealer(
-                nombreAgencia: dto.NombreAgencia,
-                agenciaRNC: dto.AgenciaRNC,
-                ubicacion: dto.UbicacionAgencia,
-                telefonoAgencia: dto.TelefonoAgencia
-            );
+                nuevoUsuario.CrearPerfilDealer(
+                    nombreAgencia: dto.NombreAgencia,
+                    agenciaRNC: dto.AgenciaRNC,
+                    ubicacion: dto.UbicacionAgencia,
+                    telefonoAgencia: dto.TelefonoAgencia
+                );
+            }
+            else if (nuevoUsuario.Rol == "Vendedor")
+            {
+                nuevoUsuario.CrearPerfilDealerVendedor();
+            }
         }
 
         await _repository.CrearUsuarioAsync(nuevoUsuario);
-
-        if (nuevoUsuario.Rol == "Dealer")
-        {
-            if (string.IsNullOrWhiteSpace(dto.NombreAgencia) || string.IsNullOrWhiteSpace(dto.AgenciaRNC))
-            {
-                return (false, "Los datos de la agencia y el RNC son obligatorios para cuentas tipo Dealer.");
-            }
-
-            nuevoUsuario.CrearPerfilDealer(
-                nombreAgencia: dto.NombreAgencia,
-                agenciaRNC: dto.AgenciaRNC,
-                ubicacion: dto.UbicacionAgencia,
-                telefonoAgencia: dto.TelefonoAgencia
-            );
-        }
 
         // Asignar plan gratuito tanto para Dealer como para Vendedor
         if (nuevoUsuario.Rol == "Dealer" || nuevoUsuario.Rol == "Vendedor")
@@ -120,11 +112,11 @@ public class AuthService : IAuthService
                 PlanNivel.Gratis,
                 CicloFacturacion.Mensual
             );
+
+            await GenerarYEnviarConfirmacionEmailAsync(nuevoUsuario);
+
+            return (true, "Usuario registrado exitosamente. Te enviamos un correo para confirmar tu dirección de email.");
         }
-
-        await GenerarYEnviarConfirmacionEmailAsync(nuevoUsuario);
-
-        return (true, "Usuario registrado exitosamente. Te enviamos un correo para confirmar tu dirección de email.");
     }
 
     public async Task<LoginResultDto> LoginAsync(LoginDto dto)

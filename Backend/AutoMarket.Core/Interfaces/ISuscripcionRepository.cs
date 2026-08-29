@@ -5,6 +5,7 @@ namespace AutoMarket.Core.Interfaces;
 public interface ISuscripcionRepository
 {
     Task<SuscripcionDealer?> ObtenerPorDealerIdAsync(int perfilDealerId);
+    Task<SuscripcionDealer?> ObtenerPorUsuarioIdAsync(int usuarioId);
     Task AgregarAsync(SuscripcionDealer suscripcion);
     Task ActualizarAsync(SuscripcionDealer suscripcion);
     Task AgregarPagoAsync(PagoSuscripcion pago);

@@ -94,6 +94,23 @@ public class Usuario
         PerfilDealer = perfil;
     }
 
+    public void CrearPerfilDealerVendedor()
+    {
+        if (Rol != "Vendedor")
+            throw new InvalidOperationException("Solo los usuarios con rol 'Vendedor' pueden crear este perfil.");
+
+        if (PerfilDealer != null)
+            return; // Ya existe
+
+        PerfilDealer = new PerfilDealer(
+            usuario: this,
+            nombreAgencia: Nombre + " " + (Apellido ?? ""),
+            agenciaRNC: "VENDEDOR-" + UsuarioId,
+            ubicacion: null,
+            telefonoAgencia: TelefonoPersonal
+        );
+    }
+
     // ==========================================
     // ASCENSO DE ROL (Comprador → Vendedor/Dealer, Vendedor → Dealer)
     // El rol solo puede crecer, nunca degradarse.

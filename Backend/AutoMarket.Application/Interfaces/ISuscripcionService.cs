@@ -22,6 +22,7 @@ public interface ISuscripcionService
         string? referencia);
     Task<IReadOnlyList<PagoSuscripcionDto>> ObtenerHistorialPagosAsync(int perfilDealerId);
     Task<SuscripcionDealerDto?> ObtenerSuscripcionAsync(int perfilDealerId);
+    Task<SuscripcionDealerDto?> ObtenerSuscripcionPorUsuarioIdAsync(int usuarioId);
     Task CancelarSuscripcionAsync(int perfilDealerId);
     Task<IReadOnlyList<PagoAdminDto>> ObtenerPagosAdminAsync();
     Task ReembolsarPagoAsync(int pagoId);

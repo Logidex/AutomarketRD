@@ -24,4 +24,10 @@ public static class ClaimsPrincipalExtensions
             ? usuarioId
             : null;
     }
+
+    public static int? ObtenerDealerIdOpcional(this ClaimsPrincipal user)
+    {
+        var valor = user?.FindFirstValue("DealerId");
+        return int.TryParse(valor, out var dealerId) ? dealerId : null;
+    }
 }

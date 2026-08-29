@@ -126,15 +126,18 @@ public class DealersController : ControllerBase
     [Authorize(Roles = Roles.DealerVendedor)]
     public async Task<IActionResult> ObtenerMiSuscripcion()
     {
-        var dealerId = User.ObtenerUsuarioIdOpcional();
+        var usuarioId = User.ObtenerUsuarioIdOpcional();
+        var dealerId = User.ObtenerDealerIdOpcional();
 
-        if (dealerId is null)
+        if (usuarioId is null)
             return Unauthorized(new { mensaje = "Token inválido o usuario no identificado." });
 
-        var suscripcion = await _suscripcionService.ObtenerSuscripcionAsync(dealerId.Value);
+        var suscripcion = dealerId.HasValue
+            ? await _suscripcionService.ObtenerSuscripcionAsync(dealerId.Value)
+            : await _suscripcionService.ObtenerSuscripcionPorUsuarioIdAsync(usuarioId.Value);
 
         if (suscripcion is null)
-            return NotFound(new { mensaje = "El dealer aún no posee una suscripción." });
+            return NotFound(new { mensaje = "El usuario aún no posee una suscripción." });
 
         return Ok(suscripcion);
     }
