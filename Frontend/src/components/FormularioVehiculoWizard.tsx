@@ -14,7 +14,7 @@ const PASOS = [
   "Información básica",
   "Especificaciones",
   "Detalles y ubicación",
-  "Fotos y publicación",
+  "Fotos",
   "Revisar y publicar",
 ] as const;
 
@@ -202,24 +202,73 @@ export default function FormularioVehiculoWizard({
         </div>
       )}
 
-      {/* Paso 4: Fotos y publicación */}
+      {/* Paso 4: Fotos */}
       {paso === 4 && (
         <div className="rounded-lg border border-line bg-surface p-5 sm:p-6">
           <h3 className="mb-4 text-sm font-semibold text-ink">
-            Fotos y publicación
+            Fotos
           </h3>
-          <div className="space-y-6">
-            <GestorImagenes
-              archivos={archivos}
-              fotosGuardadas={fotosGuardadas}
-              fotoPrincipal={fotoPrincipal}
-              maxImagenes={maxImagenes}
-              onImageChange={onImageChange}
-              onEliminarArchivo={onEliminarArchivo}
-              onEliminarFotoGuardada={onEliminarFotoGuardada}
-              onEstablecerPrincipal={onEstablecerPrincipal}
-            />
+          <GestorImagenes
+            archivos={archivos}
+            fotosGuardadas={fotosGuardadas}
+            fotoPrincipal={fotoPrincipal}
+            maxImagenes={maxImagenes}
+            onImageChange={onImageChange}
+            onEliminarArchivo={onEliminarArchivo}
+            onEliminarFotoGuardada={onEliminarFotoGuardada}
+            onEstablecerPrincipal={onEstablecerPrincipal}
+          />
+        </div>
+      )}
 
+      {/* Paso 5: Revisar y publicar */}
+      {paso === 5 && (
+        <div className="rounded-lg border border-line bg-surface p-5 sm:p-6">
+          <h3 className="mb-4 text-sm font-semibold text-ink">
+            Revisar y publicar
+          </h3>
+
+          <dl className="rounded-lg border border-line bg-surface-2 px-4 py-2 mb-6">
+            <FilaResumen
+              etiqueta="Vehículo"
+              valor={`${formData.marca} ${formData.modelo} ${formData.version}`.trim()}
+            />
+            <FilaResumen etiqueta="Año" valor={formData.anio ? String(formData.anio) : ""} />
+            <FilaResumen
+              etiqueta="Precio"
+              valor={formatearPrecio(formData.precio, formData.moneda)}
+            />
+            {formData.precioAnterior > 0 && (
+              <FilaResumen
+                etiqueta="Precio anterior"
+                valor={formatearPrecio(formData.precioAnterior, formData.moneda)}
+              />
+            )}
+            <FilaResumen
+              etiqueta="Kilometraje"
+              valor={`${parsearNumeroInput(kilometraje).toLocaleString("es-DO")} km`}
+            />
+            <FilaResumen etiqueta="Tipo de vehículo" valor={formData.tipoVehiculo} />
+            <FilaResumen etiqueta="Motor" valor={formData.motor} />
+            <FilaResumen etiqueta="Tracción" valor={formData.traccion} />
+            <FilaResumen etiqueta="Transmisión" valor={transmisionMostrada} />
+            <FilaResumen etiqueta="Combustible" valor={formData.combustible} />
+            <FilaResumen
+              etiqueta="Colores"
+              valor={[formData.colorExterior, formData.colorInterior]
+                .filter(Boolean)
+                .join(" / ")}
+            />
+            <FilaResumen etiqueta="Ubicación" valor={formData.ubicacion} />
+            <FilaResumen etiqueta="Accesorios" valor={accesoriosTexto} />
+            <FilaResumen
+              etiqueta="Fotos"
+              valor={`${totalImagenes} de ${maxImagenes}`}
+            />
+          </dl>
+
+          {/* Opciones de publicación */}
+          <div className="space-y-4 mb-6">
             <div className="flex items-center gap-3 border-t border-line pt-4">
               <input
                 id="publicarAlGuardar"
@@ -264,53 +313,8 @@ export default function FormularioVehiculoWizard({
               </div>
             )}
           </div>
-        </div>
-      )}
 
-      {/* Paso 5: Revisar y publicar */}
-      {paso === 5 && (
-        <div className="rounded-lg border border-line bg-surface p-5 sm:p-6">
-          <h3 className="mb-4 text-sm font-semibold text-ink">
-            Revisar y publicar
-          </h3>
-
-          <dl className="rounded-lg border border-line bg-surface-2 px-4 py-2">
-            <FilaResumen
-              etiqueta="Vehículo"
-              valor={`${formData.marca} ${formData.modelo} ${formData.version}`.trim()}
-            />
-            <FilaResumen etiqueta="Año" valor={formData.anio ? String(formData.anio) : ""} />
-            <FilaResumen
-              etiqueta="Precio"
-              valor={formatearPrecio(formData.precio, formData.moneda)}
-            />
-            {formData.precioAnterior > 0 && (
-              <FilaResumen
-                etiqueta="Precio anterior"
-                valor={formatearPrecio(formData.precioAnterior, formData.moneda)}
-              />
-            )}
-            <FilaResumen
-              etiqueta="Kilometraje"
-              valor={`${parsearNumeroInput(kilometraje).toLocaleString("es-DO")} km`}
-            />
-            <FilaResumen etiqueta="Tipo de vehículo" valor={formData.tipoVehiculo} />
-            <FilaResumen etiqueta="Motor" valor={formData.motor} />
-            <FilaResumen etiqueta="Tracción" valor={formData.traccion} />
-            <FilaResumen etiqueta="Transmisión" valor={transmisionMostrada} />
-            <FilaResumen etiqueta="Combustible" valor={formData.combustible} />
-            <FilaResumen
-              etiqueta="Colores"
-              valor={[formData.colorExterior, formData.colorInterior]
-                .filter(Boolean)
-                .join(" / ")}
-            />
-            <FilaResumen etiqueta="Ubicación" valor={formData.ubicacion} />
-            <FilaResumen etiqueta="Accesorios" valor={accesoriosTexto} />
-            <FilaResumen
-              etiqueta="Fotos"
-              valor={`${totalImagenes} de ${maxImagenes}`}
-            />
+          <div className="rounded-lg border border-line bg-surface-2 px-4 py-2">
             <FilaResumen
               etiqueta="Publicar al guardar"
               valor={publicarAlGuardar ? "Sí" : "No"}
@@ -321,7 +325,7 @@ export default function FormularioVehiculoWizard({
                 valor={publicarAlGuardar && destacarAlPublicar ? "Sí" : "No"}
               />
             )}
-          </dl>
+          </div>
 
           {totalImagenes < MINIMO_IMAGENES && (
             <p className="mt-4 text-sm font-medium text-orange-600">
