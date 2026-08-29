@@ -642,72 +642,25 @@ var anunciosDto = anuncios
 
         anuncio.RegistrarVista();
         await _repository.GuardarCambiosAsync();
-    }
+}
 
-    public async Task<bool> RenovarAnuncioGratisAsync(int anuncioId, int usuarioId)
+    public async Task<bool> EliminarAnuncioAsync(int id, int usuarioId)
     {
-        var anuncio = await _repository.ObtenerPorIdAsync(anuncioId);
+        var anuncio = await _repository.ObtenerPorIdAsync(id);
 
-        if (anuncio == null)
-            throw new KeyNotFoundException("Anuncio no encontrado.");
+        if (anuncio == null) return false;
 
         if (anuncio.UsuarioId != usuarioId)
-            throw new UnauthorizedAccessException("No tienes permiso para renovar este anuncio.");
+            throw new UnauthorizedAccessException("Acceso denegado: No tienes permiso para eliminar un anuncio que no te pertenece.");
 
-        if (!anuncio.EstaVencidoGratis)
+        // Destrucción física de las fotos en AWS S3
+        foreach (var foto in anuncio.Fotos)
         {
-            throw new BusinessRuleException("El anuncio no está vencido o no es un anuncio del plan gratis.");
+            try { await _almacenadorArchivos.EliminarArchivoAsync(foto); }
+            catch { /* No bloqueamos el borrado si S3 falla */ }
         }
 
-        anuncio.RenovarVigenciaGratis();
-
-        await _repository.ActualizarAsync(anuncio);
-        await _repository.GuardarCambiosAsync();
-
-        return true;
-    }
-
-    public async Task<bool> RenovarAnuncioGratisAsync(int anuncioId, int usuarioId)
-    {
-        var anuncio = await _repository.ObtenerPorIdAsync(anuncioId);
-
-        if (anuncio == null)
-            throw new KeyNotFoundException("Anuncio no encontrado.");
-
-        if (anuncio.UsuarioId != usuarioId)
-            throw new UnauthorizedAccessException("No tienes permiso para renovar este anuncio.");
-
-        if (!anuncio.EstaVencidoGratis)
-        {
-            throw new BusinessRuleException("El anuncio no está vencido o no es un anuncio del plan gratis.");
-        }
-
-        anuncio.RenovarVigenciaGratis();
-
-        await _repository.ActualizarAsync(anuncio);
-        await _repository.GuardarCambiosAsync();
-
-        return true;
-    }
-
-    public async Task<bool> RenovarAnuncioGratisAsync(int anuncioId, int usuarioId)
-    {
-        var anuncio = await _repository.ObtenerPorIdAsync(anuncioId);
-
-        if (anuncio == null)
-            throw new KeyNotFoundException("Anuncio no encontrado.");
-
-        if (anuncio.UsuarioId != usuarioId)
-            throw new UnauthorizedAccessException("No tienes permiso para renovar este anuncio.");
-
-        if (!anuncio.EstaVencidoGratis)
-        {
-            throw new BusinessRuleException("El anuncio no está vencido o no es un anuncio del plan gratis.");
-        }
-
-        anuncio.RenovarVigenciaGratis();
-
-        await _repository.ActualizarAsync(anuncio);
+        _repository.Eliminar(anuncio);
         await _repository.GuardarCambiosAsync();
 
         return true;
