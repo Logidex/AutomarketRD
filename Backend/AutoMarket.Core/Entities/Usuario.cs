@@ -106,8 +106,8 @@ public class Usuario
             usuario: this,
             nombreAgencia: Nombre + " " + (Apellido ?? ""),
             agenciaRNC: "VENDEDOR-" + UsuarioId,
-            ubicacion: null,
-            telefonoAgencia: TelefonoPersonal
+            ubicacion: "No especificada",
+            telefonoAgencia: TelefonoPersonal ?? "No especificado"
         );
     }
 

@@ -117,6 +117,9 @@ public class AuthService : IAuthService
 
             return (true, "Usuario registrado exitosamente. Te enviamos un correo para confirmar tu dirección de email.");
         }
+
+        // Para Comprador (u otros roles futuros) - solo crear usuario sin plan
+        return (true, "Usuario registrado exitosamente");
     }
 
     public async Task<LoginResultDto> LoginAsync(LoginDto dto)
