@@ -16,8 +16,8 @@ COPY . .
 ARG VITE_API_URL=/api
 ENV VITE_API_URL=$VITE_API_URL
 
-# Mantenimiento de pagos: deshabilitado por defecto; el stack E2E lo activa.
-ARG VITE_PAGOS_HABILITADOS=false
+# Mantenimiento de pagos: habilitado para producción.
+ARG VITE_PAGOS_HABILITADOS=true
 ENV VITE_PAGOS_HABILITADOS=$VITE_PAGOS_HABILITADOS
 
 # Anuncios: desactivados por defecto (evita ads involuntarios en e2e/builds
