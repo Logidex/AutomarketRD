@@ -667,8 +667,6 @@ var anunciosDto = anuncios
         return true;
     }
 
-    public async Task<bool> EliminarAnuncioAsync(int id, int usuarioId)
-
     public async Task<bool> RenovarAnuncioGratisAsync(int anuncioId, int usuarioId)
     {
         var anuncio = await _repository.ObtenerPorIdAsync(anuncioId);
