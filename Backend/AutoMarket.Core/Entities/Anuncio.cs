@@ -270,9 +270,6 @@ public class Anuncio
         UpdatedAt = DateTime.UtcNow;
     }
 
-    // Verifica si el anuncio gratis está vencido
-    public bool EstaVencidoGratis => Estado == "Publicado" && FechaVencimientoGratisUtc.HasValue && FechaVencimientoGratisUtc.Value <= DateTime.UtcNow;
-
     // ==========================================
     // 5. ACTUALIZAR INFO (Manteniendo consistencia)
     // ==========================================
