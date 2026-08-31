@@ -12,19 +12,13 @@ import { authService } from '../services/auth.service';
 
 export const useSuscripcion = () => {
   const rol = authService.getRole();
+  const esVendedor = rol === 'Vendedor';
 
-  if (rol === 'Vendedor') {
-    return useQuery<SuscripcionVendedor>({
-      queryKey: ['suscripcion-vendedor'],
-      queryFn: () => vendedorService.obtenerSuscripcion(),
-      staleTime: 1000 * 60 * 2,
-      retry: false,
-    });
-  }
-
-  return useQuery<SuscripcionDealer>({
-    queryKey: ['suscripcion'],
-    queryFn: () => suscripcionService.obtenerSuscripcion(),
+  return useQuery<SuscripcionVendedor | SuscripcionDealer>({
+    queryKey: esVendedor ? ['suscripcion-vendedor'] : ['suscripcion'],
+    queryFn: esVendedor
+      ? () => vendedorService.obtenerSuscripcion()
+      : () => suscripcionService.obtenerSuscripcion(),
     staleTime: 1000 * 60 * 2,
     retry: false,
   });
