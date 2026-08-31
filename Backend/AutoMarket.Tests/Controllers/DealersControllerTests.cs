@@ -242,9 +242,11 @@ public class DealersControllerTests
     public async Task ObtenerMiSuscripcion_ConSuscripcion_DebeRetornarOk()
     {
         // Arrange
+        // El usuario simulado solo tiene claim NameIdentifier (sin DealerId),
+        // por lo que el controlador consulta la suscripción por usuario.
         SimularUsuarioAutenticado("15");
         _mockSuscripcion
-            .Setup(s => s.ObtenerSuscripcionAsync(15))
+            .Setup(s => s.ObtenerSuscripcionPorUsuarioIdAsync(15))
             .ReturnsAsync(CrearSuscripcionDto());
 
         // Act

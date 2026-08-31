@@ -150,20 +150,8 @@ public async Task<int> CrearAnuncioAsync(
             nuevoAnuncio.FijarOferta(dto.PrecioAnterior);
         }
 
-        // Para planes gratis, usar PublicarGratis (30 días renovable)
-        bool esPlanGratis = esVendedorParticular || 
-            (usuario.PerfilDealer?.Suscripcion?.EsGratis == true);
-        
-        if (esGratis || esPlanGratis)
-        {
-            nuevoAnuncio.PublicarGratis(); // 30 días renovable
-        }
-
-        if (dto.PrecioAnterior.HasValue)
-        {
-            nuevoAnuncio.FijarOferta(dto.PrecioAnterior);
-        }
-
+        // El anuncio se crea como borrador: el vendedor sube las fotos y luego
+        // lo publica (PublicarAnuncioAsync valida el mínimo de fotos y el cupo).
         await _repository.AgregarAsync(nuevoAnuncio);
         await _repository.GuardarCambiosAsync();
 
@@ -349,12 +337,17 @@ public async Task<int> CrearAnuncioAsync(
         }
 
         // Ya está publicado y vigente: no hay nada que hacer.
-        if (anuncio.Estado == "Publicado" && !anuncio.EstaVencido)
+        if (anuncio.Estado == "Publicado" && !anuncio.EstaVencido && !anuncio.EstaVencidoGratis)
             return true;
 
-        int diasVigencia = await ValidarCupoParaPublicarAsync(anuncio, usuarioId);
+        var (diasVigencia, esGratis) = await ValidarCupoParaPublicarAsync(anuncio, usuarioId);
 
-        anuncio.Publicar(diasVigencia);
+        // Los anuncios del plan gratis registran su vencimiento en
+        // FechaVencimientoGratisUtc para poder renovarse con el plan gratuito.
+        if (esGratis)
+            anuncio.PublicarGratis();
+        else
+            anuncio.Publicar(diasVigencia);
 
         await _repository.ActualizarAsync(anuncio);
         return true;
@@ -366,10 +359,10 @@ public async Task<int> CrearAnuncioAsync(
     /// Pausado); los borradores no ocupan cupo. Devuelve los días de vigencia del
     /// anuncio según el plan del vendedor.
     /// </summary>
-    private async Task<int> ValidarCupoParaPublicarAsync(Anuncio anuncio, int usuarioId)
+    private async Task<(int DiasVigencia, bool EsGratis)> ValidarCupoParaPublicarAsync(Anuncio anuncio, int usuarioId)
     {
         if (anuncio.Estado == "Publicado" && !anuncio.EstaVencido)
-            return PlanConfig.DiasVigencia(PlanNivel.Gratis);
+            return (PlanConfig.DiasVigencia(PlanNivel.Gratis), false);
 
         // Solo cuentan los activos en vitrina; si este anuncio ya está publicado o
         // pausado (ya ocupa cupo), se descuenta para no ocupar doble cupo.
@@ -396,7 +389,7 @@ public async Task<int> CrearAnuncioAsync(
                 );
             }
 
-            return PlanConfig.DiasVigencia(PlanNivel.Gratis);
+            return (PlanConfig.DiasVigencia(PlanNivel.Gratis), true);
         }
 
         var suscripcion = usuario?.PerfilDealer?.Suscripcion;
@@ -424,7 +417,7 @@ public async Task<int> CrearAnuncioAsync(
             );
         }
 
-        return plan?.DiasVigenciaEfectivo ?? PlanConfig.DiasVigencia(suscripcion.Nivel);
+        return (plan?.DiasVigenciaEfectivo ?? PlanConfig.DiasVigencia(suscripcion.Nivel), false);
     }
 
     public async Task<List<string>> SubirImagenesAsync(AnuncioImagenUploadDto dto)
@@ -611,8 +604,11 @@ var anunciosDto = anuncios
         // suscripción vigente y mínimo de 5 fotos.
         if (string.Equals(estado, "Publicado", StringComparison.OrdinalIgnoreCase))
         {
-            int diasVigencia = await ValidarCupoParaPublicarAsync(anuncio, usuarioId);
-            anuncio.Publicar(diasVigencia);
+            var (diasVigencia, esGratis) = await ValidarCupoParaPublicarAsync(anuncio, usuarioId);
+            if (esGratis)
+                anuncio.PublicarGratis();
+            else
+                anuncio.Publicar(diasVigencia);
         }
         else
         {
