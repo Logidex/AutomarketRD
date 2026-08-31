@@ -349,6 +349,48 @@ public class UsuarioCuentaServiceTests
         Assert.Equal("Comprador", usuario.Rol);
     }
 
+    [Fact]
+    public async Task AscenderRolAsync_HaciaDealer_VendedorConPerfilYSuscripcionPrevios_ReutilizaPerfilYNoAsignaPlan()
+    {
+        // Un Vendedor registrado ya posee perfil y suscripción Gratis (como lo
+        // crea AuthService). Ascender a Dealer debe REUTILIZAR el perfil (no
+        // reinsertarlo) y conservar la suscripción existente.
+        var usuario = CrearUsuario();
+        usuario.ConvertirAVendedor();
+        usuario.CrearPerfilDealerVendedor();
+        typeof(PerfilDealer).GetProperty("UsuarioId")?.SetValue(usuario.PerfilDealer, 7);
+        var suscripcion = new SuscripcionDealer(
+            usuario.PerfilDealer!.UsuarioId,
+            AutoMarket.Core.Entities.Enums.PlanNivel.Gratis,
+            AutoMarket.Core.Entities.Enums.CicloFacturacion.Mensual);
+        typeof(PerfilDealer).GetProperty("Suscripcion")?.SetValue(usuario.PerfilDealer, suscripcion);
+
+        _mockRepo.Setup(r => r.ObtenerPorIdAsync(7)).ReturnsAsync(usuario);
+        _mockToken.Setup(t => t.GenerarToken(It.IsAny<Usuario>())).Returns("token-dealer");
+
+        var dto = new AscenderRolDto
+        {
+            NuevoRol = "Dealer",
+            NombreAgencia = "Nueva Agencia",
+            AgenciaRNC = "1-30-99999-9",
+            UbicacionAgencia = "Santiago",
+            TelefonoAgencia = "8097778888"
+        };
+
+        var resultado = await _service.AscenderRolAsync(7, dto);
+
+        Assert.Equal("Dealer", usuario.Rol);
+        Assert.NotNull(usuario.PerfilDealer);
+        Assert.Equal("Nueva Agencia", usuario.PerfilDealer!.NombreAgencia);
+        Assert.Equal("1-30-99999-9", usuario.PerfilDealer.AgenciaRNC);
+        Assert.Equal("token-dealer", resultado.Token);
+        // No debe intentar asignar un plan porque el vendedor ya tiene uno.
+        _mockSuscripcion.Verify(s => s.AsignarPlanInicialAsync(
+            It.IsAny<int>(),
+            It.IsAny<AutoMarket.Core.Entities.Enums.PlanNivel>(),
+            It.IsAny<AutoMarket.Core.Entities.Enums.CicloFacturacion>()), Times.Never);
+    }
+
     // ==========================================
     // CAMBIO DE ROL POR ADMINISTRADOR
     // ==========================================

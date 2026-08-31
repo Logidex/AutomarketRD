@@ -80,6 +80,40 @@ public class PerfilDealer
         WhatsApp = whatsApp;
     }
 
+    /// <summary>
+    /// Actualiza los datos comerciales al ascender un perfil existente (p. ej.
+    /// un Vendedor que pasa a Dealer). A diferencia de <see cref="ActualizarPerfil"/>,
+    /// también actualiza el RNC, que el perfil del vendedor trae como placeholder
+    /// ("VENDEDOR-&lt;id&gt;") y debe sustituirse por el RNC real de la agencia.
+    /// </summary>
+    public void ActualizarDatosComerciales(
+        string nombreAgencia,
+        string agenciaRNC,
+        string ubicacion,
+        string telefonoAgencia,
+        string? descripcion,
+        string? whatsApp)
+    {
+        if (string.IsNullOrWhiteSpace(nombreAgencia))
+            throw new ArgumentException("El nombre de la agencia es obligatorio.", nameof(nombreAgencia));
+
+        if (string.IsNullOrWhiteSpace(agenciaRNC))
+            throw new ArgumentException("El RNC de la agencia es obligatorio.", nameof(agenciaRNC));
+
+        if (string.IsNullOrWhiteSpace(ubicacion))
+            throw new ArgumentException("La ubicación es obligatoria.", nameof(ubicacion));
+
+        if (string.IsNullOrWhiteSpace(telefonoAgencia))
+            throw new ArgumentException("El teléfono es obligatorio.", nameof(telefonoAgencia));
+
+        NombreAgencia = nombreAgencia;
+        AgenciaRNC = agenciaRNC;
+        Ubicacion = ubicacion;
+        TelefonoAgencia = telefonoAgencia;
+        Descripcion = descripcion;
+        WhatsApp = whatsApp;
+    }
+
     public void ActualizarLogo(string logoUrl)
     {
         if (string.IsNullOrWhiteSpace(logoUrl))

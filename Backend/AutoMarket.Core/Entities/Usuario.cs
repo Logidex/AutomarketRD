@@ -158,6 +158,22 @@ public class Usuario
         if (Rol != "Dealer")
             throw new InvalidOperationException("Solo los usuarios con rol 'Dealer' pueden tener un perfil comercial.");
 
+        // Si el usuario ya tiene un perfil comercial (p. ej. un Vendedor, que lo
+        // crea al registrarse, o un Dealer que fue degradado), se REUTILIZA y se
+        // actualizan sus datos en lugar de instanciar uno nuevo. De lo contrario
+        // EF intentaría un INSERT con la misma clave primaria y fallaría.
+        if (PerfilDealer != null)
+        {
+            PerfilDealer.ActualizarDatosComerciales(
+                nombreAgencia: nombreAgencia,
+                agenciaRNC: agenciaRNC,
+                ubicacion: ubicacion,
+                telefonoAgencia: telefonoAgencia,
+                descripcion: descripcion,
+                whatsApp: whatsApp);
+            return;
+        }
+
         // Instanciamos el perfil pasándole el objeto 'Usuario' completo (this) 
         // en lugar de un ID numérico que aún no existe
         PerfilDealer = new PerfilDealer(

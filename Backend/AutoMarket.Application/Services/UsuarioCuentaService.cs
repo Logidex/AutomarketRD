@@ -92,8 +92,13 @@ public class UsuarioCuentaService : IUsuarioCuentaService
 
             await _usuarioRepository.GuardarCambiosAsync();
 
-            var perfilDealerId = usuario.PerfilDealer!.UsuarioId;
-            await _suscripcionService.AsignarPlanInicialAsync(perfilDealerId, PlanNivel.Gratis, CicloFacturacion.Mensual);
+            // Un Vendedor ya posee perfil y suscripción Gratis de su registro;
+            // solo se asigna el plan inicial si el perfil aún no tiene uno.
+            if (usuario.PerfilDealer!.Suscripcion == null)
+            {
+                var perfilDealerId = usuario.PerfilDealer.UsuarioId;
+                await _suscripcionService.AsignarPlanInicialAsync(perfilDealerId, PlanNivel.Gratis, CicloFacturacion.Mensual);
+            }
 
             return GenerarSesion(usuario, "Tu cuenta ahora es de tipo Dealer. Se te asignó el plan Gratis.");
         }
@@ -132,8 +137,13 @@ public class UsuarioCuentaService : IUsuarioCuentaService
 
             await _usuarioRepository.GuardarCambiosAsync();
 
-            var perfilDealerId = usuario.PerfilDealer!.UsuarioId;
-            await _suscripcionService.AsignarPlanInicialAsync(perfilDealerId, PlanNivel.Gratis, CicloFacturacion.Mensual);
+            // Un Vendedor ya posee perfil y suscripción Gratis de su registro;
+            // solo se asigna el plan inicial si el perfil aún no tiene uno.
+            if (usuario.PerfilDealer!.Suscripcion == null)
+            {
+                var perfilDealerId = usuario.PerfilDealer.UsuarioId;
+                await _suscripcionService.AsignarPlanInicialAsync(perfilDealerId, PlanNivel.Gratis, CicloFacturacion.Mensual);
+            }
         }
         else
         {
