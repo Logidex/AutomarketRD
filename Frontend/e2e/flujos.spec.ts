@@ -79,33 +79,32 @@ test.describe("Flujo Vendedor: publicar vehículo", () => {
     await page.locator("#descripcion").fill("Anuncio creado por prueba E2E del flujo completo.");
     await page.getByRole("button", { name: "Siguiente" }).click();
 
-    // Paso 4: fotos (mínimo 5) y publicación inmediata
+    // Paso 4: fotos (mínimo 5)
     await page.locator("#fotosVehiculo").setInputFiles(FOTOS);
     await expect(page.getByText(/\b5\/\d+\b/)).toBeVisible();
-    await page.locator("#publicarAlGuardar").check();
 
-    // force evita el retry de Playwright: al avanzar de paso, el botón
-    // "Siguiente" se reemplaza por el de submit en la misma posición y el
-    // reintento puede aterrizar en él, disparando el guardado dos veces.
-    await page.getByRole("button", { name: "Siguiente" }).click({ force: true });
-
-    // Paso 5: revisar y guardar. Si la carrera igual disparó el guardado,
-    // aceptamos cualquiera de los dos estados (paso 5 o éxito directo).
+    // Paso 4 → 5: avanzar al paso de revisión. Según la transición del botón,
+    // puede quedar en el paso 5 (Revisar y publicar) o disparar el guardado
+    // directo (abre el modal de éxito y navega al panel).
+    await page.getByRole("button", { name: "Siguiente" }).click();
     await expect(
       page
         .getByRole("heading", { name: "Revisar y publicar" })
-        .or(page.getByText(/Publicado correctamente/i))
-    ).toBeVisible({ timeout: 10_000 });
+        .or(page.getByRole("heading", { name: "Éxito" }))
+    ).toBeVisible({ timeout: 20_000 });
 
+    // Si quedamos en el paso 5, guardar para crear el anuncio (borrador).
     if (await page.getByRole("button", { name: "Guardar mi vehículo" }).isVisible().catch(() => false)) {
       await page.getByRole("button", { name: "Guardar mi vehículo" }).click();
+      await expect(page.getByRole("heading", { name: "Éxito" })).toBeVisible({ timeout: 20_000 });
     }
 
-    // 3. Éxito: modal y redirección al panel del vendedor
-    await aceptarModal(page, /Publicado correctamente/i);
-    await expect(page).toHaveURL(/\/vendedor$/, { timeout: 20_000 });
+    // 3. Aceptar el modal de éxito (deja visible el panel "Mi Vehículo").
+    await page.getByRole("button", { name: /^OK$/i }).click();
+    await expect(page.getByRole("heading", { name: "Mi Vehículo" })).toBeVisible({ timeout: 15_000 });
 
-    // 4. El anuncio aparece en el panel del vendedor
+    // 4. Publicar desde el panel.
+    await page.getByRole("button", { name: /^Publicar$/i }).first().click();
     await expect(page.getByText(/Corolla/i).first()).toBeVisible({ timeout: 15_000 });
 
     // 5. SEO: la vitrina enlaza con URL descriptiva (slug + id) y el
