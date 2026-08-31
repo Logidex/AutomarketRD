@@ -107,7 +107,7 @@ public class Usuario
             nombreAgencia: Nombre + " " + (Apellido ?? ""),
             agenciaRNC: "VENDEDOR-" + UsuarioId,
             ubicacion: "No especificada",
-            telefonoAgencia: TelefonoPersonal ?? "No especificado"
+            telefonoAgencia: string.IsNullOrWhiteSpace(TelefonoPersonal) ? "No especificado" : TelefonoPersonal
         );
     }
 

@@ -289,7 +289,7 @@ public class UsuarioCuentaServiceTests
     public async Task AscenderRolAsync_HaciaVendedor_CambiaRolYDevuelveToken()
     {
         var usuario = CrearUsuario();
-        _mockRepo.Setup(r => r.ObtenerPorIdAsync(7)).ReturnsAsync(usuario);
+        _mockRepo.Setup(r => r.ObtenerDealerConPerfilPorIdAsync(7)).ReturnsAsync(usuario);
         _mockToken.Setup(t => t.GenerarToken(usuario)).Returns("token-nuevo");
 
         var resultado = await _service.AscenderRolAsync(7, new AscenderRolDto { NuevoRol = "Vendedor" });
@@ -304,7 +304,7 @@ public class UsuarioCuentaServiceTests
     public async Task AscenderRolAsync_HaciaDealer_CreaPerfilYAsignaPlanGratis()
     {
         var usuario = CrearUsuario();
-        _mockRepo.Setup(r => r.ObtenerPorIdAsync(7)).ReturnsAsync(usuario);
+        _mockRepo.Setup(r => r.ObtenerDealerConPerfilPorIdAsync(7)).ReturnsAsync(usuario);
         _mockToken.Setup(t => t.GenerarToken(It.IsAny<Usuario>())).Returns("token-dealer");
 
         var dto = new AscenderRolDto
@@ -329,7 +329,7 @@ public class UsuarioCuentaServiceTests
     public async Task AscenderRolAsync_HaciaDealer_SinDatosAgencia_DebeLanzarBusinessRule()
     {
         var usuario = CrearUsuario();
-        _mockRepo.Setup(r => r.ObtenerPorIdAsync(7)).ReturnsAsync(usuario);
+        _mockRepo.Setup(r => r.ObtenerDealerConPerfilPorIdAsync(7)).ReturnsAsync(usuario);
 
         var dto = new AscenderRolDto { NuevoRol = "Dealer" };
 
@@ -341,7 +341,7 @@ public class UsuarioCuentaServiceTests
     public async Task AscenderRolAsync_RolInvalido_DebeLanzarBusinessRule()
     {
         var usuario = CrearUsuario();
-        _mockRepo.Setup(r => r.ObtenerPorIdAsync(7)).ReturnsAsync(usuario);
+        _mockRepo.Setup(r => r.ObtenerDealerConPerfilPorIdAsync(7)).ReturnsAsync(usuario);
 
         var dto = new AscenderRolDto { NuevoRol = "Admin" };
 
@@ -365,7 +365,7 @@ public class UsuarioCuentaServiceTests
             AutoMarket.Core.Entities.Enums.CicloFacturacion.Mensual);
         typeof(PerfilDealer).GetProperty("Suscripcion")?.SetValue(usuario.PerfilDealer, suscripcion);
 
-        _mockRepo.Setup(r => r.ObtenerPorIdAsync(7)).ReturnsAsync(usuario);
+        _mockRepo.Setup(r => r.ObtenerDealerConPerfilPorIdAsync(7)).ReturnsAsync(usuario);
         _mockToken.Setup(t => t.GenerarToken(It.IsAny<Usuario>())).Returns("token-dealer");
 
         var dto = new AscenderRolDto

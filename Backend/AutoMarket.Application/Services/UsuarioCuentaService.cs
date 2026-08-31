@@ -66,7 +66,11 @@ public class UsuarioCuentaService : IUsuarioCuentaService
 
     public async Task<LoginResultDto> AscenderRolAsync(int usuarioId, AscenderRolDto dto)
     {
-        var usuario = await ObtenerUsuarioAsync(usuarioId);
+        // Cargamos el perfil comercial (y su suscripción) para poder reutilizarlo
+        // al ascender: un Vendedor ya posee un PerfilDealer que debe actualizarse
+        // en lugar de reinsertarse (evita la violación de clave primaria).
+        var usuario = await _usuarioRepository.ObtenerDealerConPerfilPorIdAsync(usuarioId)
+            ?? throw new KeyNotFoundException("No se encontró la cuenta del usuario.");
 
         var nuevoRol = dto.NuevoRol?.Trim();
 
