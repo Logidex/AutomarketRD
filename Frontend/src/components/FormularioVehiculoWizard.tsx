@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import {
   InformacionBasica,
   Especificaciones,
@@ -90,13 +91,15 @@ export default function FormularioVehiculoWizard({
 }: FormularioVehiculoWizardProps) {
   const formRef = useRef<HTMLFormElement>(null);
   const [paso, setPaso] = useState(1);
+  const [direccion, setDireccion] = useState<"adelante" | "atras">("adelante");
 
   const totalImagenes = archivos.length + fotosGuardadas.length;
   const transmisionMostrada = mostrarTransmisionPersonalizada
     ? transmisionPersonalizada
     : formData.transmision;
 
-  const moverPaso = (nuevo: number) => {
+  const moverPaso = (nuevo: number, dir: "adelante" | "atras") => {
+    setDireccion(dir);
     setPaso(nuevo);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -114,15 +117,23 @@ export default function FormularioVehiculoWizard({
     if (!validarPasoActual(paso)) return;
     // Solo validar formulario completo en el último paso
     if (paso === PASOS.length && formRef.current && !formRef.current.reportValidity()) return;
-    moverPaso(Math.min(paso + 1, PASOS.length));
+    moverPaso(Math.min(paso + 1, PASOS.length), "adelante");
   };
 
   const irAnterior = () => {
-    moverPaso(Math.max(paso - 1, 1));
+    moverPaso(Math.max(paso - 1, 1), "atras");
+  };
+
+  const manejarSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Solo se envía el formulario desde el último paso (Revisar y publicar).
+    // Evita que un submit nativo salte la revisión al avanzar del paso 4 al 5.
+    if (paso !== PASOS.length) return;
+    onSubmit(e);
   };
 
   return (
-    <form ref={formRef} onSubmit={onSubmit} className="space-y-6">
+    <form ref={formRef} onSubmit={manejarSubmit} className="space-y-6">
       {/* Stepper */}
       <ol className="flex items-center gap-1 overflow-x-auto pb-1 sm:gap-2">
         {PASOS.map((etiqueta, indice) => {
@@ -134,7 +145,7 @@ export default function FormularioVehiculoWizard({
             <li key={etiqueta} className="flex items-center gap-1 sm:gap-2">
               <button
                 type="button"
-                onClick={() => clickeable && moverPaso(numero)}
+                onClick={() => clickeable && moverPaso(numero, numero > paso ? "adelante" : "atras")}
                 disabled={!clickeable}
                 className={`flex items-center gap-2 rounded-full px-2 py-1 text-xs font-medium transition-colors sm:text-sm ${
                   activo
@@ -167,8 +178,16 @@ export default function FormularioVehiculoWizard({
         })}
       </ol>
 
-      {/* Paso 1: Información básica */}
-      {paso === 1 && (
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={paso}
+          initial={{ opacity: 0, x: direccion === "adelante" ? 24 : -24 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: direccion === "adelante" ? -24 : 24 }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
+        >
+          {/* Paso 1: Información básica */}
+          {paso === 1 && (
         <div className="rounded-lg border border-line bg-surface p-5 sm:p-6">
           <h3 className="mb-4 text-sm font-semibold text-ink">
             Información básica
@@ -348,7 +367,9 @@ export default function FormularioVehiculoWizard({
             </p>
           )}
         </div>
-      )}
+          )}
+        </motion.div>
+      </AnimatePresence>
 
       {/* Navegación */}
       <div className="flex items-center justify-between gap-4 border-t border-line pt-6">
@@ -386,7 +407,8 @@ export default function FormularioVehiculoWizard({
             </button>
           ) : (
             <button
-              type="submit"
+              type="button"
+              onClick={() => formRef.current?.requestSubmit()}
               disabled={submitting}
               className="rounded-md bg-blue-600 px-6 py-2.5 font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-400"
             >

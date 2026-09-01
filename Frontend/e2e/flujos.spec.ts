@@ -83,21 +83,17 @@ test.describe("Flujo Vendedor: publicar vehículo", () => {
     await page.locator("#fotosVehiculo").setInputFiles(FOTOS);
     await expect(page.getByText(/\b5\/\d+\b/)).toBeVisible();
 
-    // Paso 4 → 5: avanzar al paso de revisión. Según la transición del botón,
-    // puede quedar en el paso 5 (Revisar y publicar) o disparar el guardado
-    // directo (abre el modal de éxito y navega al panel).
+    // Paso 4 → 5: avanzar al paso de revisión. El clic en "Siguiente" debe
+    // aterrizar SIEMPRE en el paso 5 (Revisar y publicar), sin disparar el
+    // guardado directo.
     await page.getByRole("button", { name: "Siguiente" }).click();
     await expect(
-      page
-        .getByRole("heading", { name: "Revisar y publicar" })
-        .or(page.getByRole("heading", { name: "Éxito" }))
+      page.getByRole("heading", { name: "Revisar y publicar" })
     ).toBeVisible({ timeout: 20_000 });
 
-    // Si quedamos en el paso 5, guardar para crear el anuncio (borrador).
-    if (await page.getByRole("button", { name: "Guardar mi vehículo" }).isVisible().catch(() => false)) {
-      await page.getByRole("button", { name: "Guardar mi vehículo" }).click();
-      await expect(page.getByRole("heading", { name: "Éxito" })).toBeVisible({ timeout: 20_000 });
-    }
+    // Guardar para crear el anuncio (borrador).
+    await page.getByRole("button", { name: "Guardar mi vehículo" }).click();
+    await expect(page.getByRole("heading", { name: "Éxito" })).toBeVisible({ timeout: 20_000 });
 
     // 3. Aceptar el modal de éxito (deja visible el panel "Mi Vehículo").
     await page.getByRole("button", { name: /^OK$/i }).click();
