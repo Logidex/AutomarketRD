@@ -1,4 +1,5 @@
 using AutoMarket.Application.DTOs.Ticket;
+using AutoMarket.Application.Helpers;
 using AutoMarket.Application.Interfaces;
 using AutoMarket.Core.Entities;
 using AutoMarket.Core.Entities.Enums;
@@ -298,7 +299,11 @@ public class TicketService : ITicketService
         try
         {
             var replyTo = _configuration["Soporte:ReplyTo"];
-            await _emailSender.EnviarCorreoAsync(destinatario, asunto, cuerpoHtml, replyTo);
+            var cuerpoFinal = PlantillaCorreoHelper.Envolver(
+                _configuration["App:FrontendUrl"],
+                null,
+                cuerpoHtml);
+            await _emailSender.EnviarCorreoAsync(destinatario, asunto, cuerpoFinal, replyTo);
         }
         catch (Exception ex)
         {

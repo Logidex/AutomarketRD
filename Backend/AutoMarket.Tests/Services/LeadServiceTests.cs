@@ -1,5 +1,6 @@
 using Moq;
 using Xunit;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using AutoMarket.Application.Services;
 using AutoMarket.Application.DTOs;
@@ -18,6 +19,7 @@ public class LeadServiceTests
     private readonly Mock<IUsuarioRepository> _mockUsuarioRepo;
     private readonly Mock<IEmailSenderService> _mockEmailSender;
     private readonly Mock<ILogger<LeadService>> _mockLogger;
+    private readonly Mock<IConfiguration> _mockConfig;
     private readonly LeadService _servicio;
 
     public LeadServiceTests()
@@ -27,13 +29,15 @@ public class LeadServiceTests
         _mockUsuarioRepo = new Mock<IUsuarioRepository>();
         _mockEmailSender = new Mock<IEmailSenderService>();
         _mockLogger = new Mock<ILogger<LeadService>>();
+        _mockConfig = new Mock<IConfiguration>();
 
         _servicio = new LeadService(
             _mockLeadRepo.Object,
             _mockAnuncioRepo.Object,
             _mockUsuarioRepo.Object,
             _mockEmailSender.Object,
-            _mockLogger.Object
+            _mockLogger.Object,
+            _mockConfig.Object
         );
     }
 

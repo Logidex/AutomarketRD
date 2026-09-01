@@ -9,6 +9,7 @@ using AutoMarket.Core.Entities.Constants;
 using AutoMarket.Core.Entities.Enums;
 using AutoMarket.Core.Exceptions;
 using AutoMarket.Core.Interfaces;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace AutoMarket.Application.Services;
@@ -27,6 +28,7 @@ public class UsuarioCuentaService : IUsuarioCuentaService
     private readonly IEmailSenderService _emailSender;
     private readonly IRefreshTokenRepository _refreshTokens;
     private readonly ILogger<UsuarioCuentaService> _logger;
+    private readonly IConfiguration _configuration;
 
 /// <summary>
 /// Inicializa una nueva instancia de la clase UsuarioCuentaService.
@@ -37,7 +39,8 @@ public class UsuarioCuentaService : IUsuarioCuentaService
         ITokenService tokenService,
         IEmailSenderService emailSender,
         IRefreshTokenRepository refreshTokens,
-        ILogger<UsuarioCuentaService> logger)
+        ILogger<UsuarioCuentaService> logger,
+        IConfiguration configuration)
     {
         _usuarioRepository = usuarioRepository;
         _suscripcionService = suscripcionService;
@@ -45,6 +48,7 @@ public class UsuarioCuentaService : IUsuarioCuentaService
         _emailSender = emailSender;
         _refreshTokens = refreshTokens;
         _logger = logger;
+        _configuration = configuration;
     }
 
     public async Task<UsuarioCuentaDto> ObtenerCuentaAsync(int usuarioId)
@@ -357,7 +361,12 @@ public class UsuarioCuentaService : IUsuarioCuentaService
     {
         try
         {
-            _emailSender.EnviarCorreoAsync(destinatario, asunto, cuerpoHtml)
+            var cuerpoFinal = PlantillaCorreoHelper.Envolver(
+                _configuration["App:FrontendUrl"],
+                null,
+                cuerpoHtml);
+
+            _emailSender.EnviarCorreoAsync(destinatario, asunto, cuerpoFinal)
                 .GetAwaiter()
                 .GetResult();
         }

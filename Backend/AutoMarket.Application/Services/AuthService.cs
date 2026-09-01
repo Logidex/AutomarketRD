@@ -358,10 +358,13 @@ public class AuthService : IAuthService
             await _emailSender.EnviarCorreoAsync(
                 usuario.Email,
                 "Recupera tu contraseña en AutoMarket RD",
-                "<p>Hola <strong>" + usuario.Nombre + "</strong>,</p>" +
-                "<p>Usa este código para restablecer tu contraseña:</p>" +
-                "<h2 style='letter-spacing:6px'>" + codigo + "</h2>" +
-                "<p>El código expira en 15 minutos. Si no solicitaste esto, ignora este correo.</p>");
+                PlantillaCorreoHelper.Envolver(
+                    _configuration["App:FrontendUrl"],
+                    "Recupera tu contraseña",
+                    "<p>Hola <strong>" + usuario.Nombre + "</strong>,</p>" +
+                    "<p>Usa este código para restablecer tu contraseña:</p>" +
+                    "<h2 style='letter-spacing:6px'>" + codigo + "</h2>" +
+                    "<p>El código expira en 15 minutos. Si no solicitaste esto, ignora este correo.</p>"));
         }
         catch (Exception ex)
         {
@@ -401,9 +404,12 @@ public class AuthService : IAuthService
             await _emailSender.EnviarCorreoAsync(
                 usuario.Email,
                 "Tu contraseña ha sido restablecida",
-                "<p>Hola <strong>" + usuario.Nombre + "</strong>,</p>" +
-                "<p>Tu contraseña fue restablecida exitosamente.</p>" +
-                "<p>Si no realizaste este cambio, contacta a soporte de inmediato.</p>");
+                PlantillaCorreoHelper.Envolver(
+                    _configuration["App:FrontendUrl"],
+                    "Contraseña restablecida",
+                    "<p>Hola <strong>" + usuario.Nombre + "</strong>,</p>" +
+                    "<p>Tu contraseña fue restablecida exitosamente.</p>" +
+                    "<p>Si no realizaste este cambio, contacta a soporte de inmediato.</p>"));
         }
         catch (Exception ex)
         {
@@ -442,17 +448,27 @@ public class AuthService : IAuthService
         var frontendUrl = _configuration["App:FrontendUrl"] ?? "http://localhost:5173";
         var enlace = $"{frontendUrl.TrimEnd('/')}/confirmar-correo?token={token}";
 
+        // El texto de bienvenida depende del rol; el enlace de confirmación es el mismo.
+        var esDealer = string.Equals(usuario.Rol, "Dealer", StringComparison.OrdinalIgnoreCase);
+
+        var bienvenida = esDealer
+            ? "<p>Gracias por crear tu cuenta Dealer en AutoMarket RD.</p>" +
+              "<p>Para activar tu correo y poder obtener la insignia de <strong>Dealer Verificado</strong>, confirma tu dirección de correo:</p>"
+            : "<p>Gracias por crear tu cuenta de Vendedor en AutoMarket RD.</p>" +
+              "<p>Para activar tu cuenta y empezar a publicar tus vehículos, confirma tu dirección de correo:</p>";
+
+        var cuerpo = "<p>Hola <strong>" + usuario.Nombre + "</strong>,</p>" +
+            bienvenida +
+            "<p style='text-align:center'><a href='" + enlace + "' style='background-color:#2563eb;color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold'>Confirmar mi correo</a></p>" +
+            "<p>El enlace expira en 48 horas. Si no creaste esta cuenta, ignora este correo.</p>" +
+            "<p>Si el botón no funciona, copia este enlace en tu navegador: <br/>" + enlace + "</p>";
+
         try
         {
             await _emailSender.EnviarCorreoAsync(
                 usuario.Email,
                 "Confirma tu correo en AutoMarket RD",
-                "<p>Hola <strong>" + usuario.Nombre + "</strong>,</p>" +
-                "<p>Gracias por crear tu cuenta Dealer en AutoMarket RD.</p>" +
-                "<p>Para activar tu correo y poder obtener la insignia de <strong>Dealer Verificado</strong>, confirma tu dirección de correo:</p>" +
-                "<p style='text-align:center'><a href='" + enlace + "' style='background-color:#2563eb;color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold'>Confirmar mi correo</a></p>" +
-                "<p>El enlace expira en 48 horas. Si no creaste esta cuenta, ignora este correo.</p>" +
-                "<p>Si el botón no funciona, copia este enlace en tu navegador: <br/>" + enlace + "</p>");
+                PlantillaCorreoHelper.Envolver(frontendUrl, "Confirma tu correo", cuerpo));
         }
         catch (Exception ex)
         {
@@ -487,7 +503,7 @@ public class AuthService : IAuthService
     {
         var usuario = await _repository.ObtenerPorEmailParaEscrituraAsync(email.Trim().ToLowerInvariant());
 
-        if (usuario == null || usuario.EmailConfirmado || usuario.Rol != "Dealer" || !usuario.IsActivo)
+        if (usuario == null || usuario.EmailConfirmado || !usuario.IsActivo)
             return;
 
         await GenerarYEnviarConfirmacionEmailAsync(usuario);

@@ -1,8 +1,10 @@
 using AutoMarket.Application.DTOs;
 using AutoMarket.Application.DTOs.Lead;
+using AutoMarket.Application.Helpers;
 using AutoMarket.Core.Entities;
 using AutoMarket.Core.Exceptions;
 using AutoMarket.Core.Interfaces;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace AutoMarket.Application.Services;
@@ -17,6 +19,7 @@ public class LeadService : ILeadService
     private readonly IUsuarioRepository _usuarioRepository;
     private readonly IEmailSenderService _emailSender;
     private readonly ILogger<LeadService> _logger;
+    private readonly IConfiguration _configuration;
 
 /// <summary>
 /// Inicializa una nueva instancia de la clase LeadService.
@@ -26,13 +29,15 @@ public class LeadService : ILeadService
         IAnuncioRepository anuncioRepository,
         IUsuarioRepository usuarioRepository,
         IEmailSenderService emailSender,
-        ILogger<LeadService> logger)
+        ILogger<LeadService> logger,
+        IConfiguration configuration)
     {
         _leadRepository = leadRepository;
         _anuncioRepository = anuncioRepository;
         _usuarioRepository = usuarioRepository;
         _emailSender = emailSender;
         _logger = logger;
+        _configuration = configuration;
     }
 
 /// <summary>
@@ -85,7 +90,13 @@ public class LeadService : ILeadService
                 <p><i>{lead.Mensaje}</i></p>";
 
             // Asumiendo que tu entidad Usuario tiene la propiedad Email/Correo
-            await _emailSender.EnviarCorreoAsync(vendedor.Email, asunto, cuerpoHtml);
+            await _emailSender.EnviarCorreoAsync(
+                vendedor.Email,
+                asunto,
+                PlantillaCorreoHelper.Envolver(
+                    _configuration["App:FrontendUrl"],
+                    "¡Tienes un nuevo interesado!",
+                    cuerpoHtml));
         }
         catch (Exception ex)
         {

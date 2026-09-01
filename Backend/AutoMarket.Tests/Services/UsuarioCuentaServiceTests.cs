@@ -19,6 +19,7 @@ public class UsuarioCuentaServiceTests
     private readonly Mock<IEmailSenderService> _mockEmailSender;
     private readonly Mock<IRefreshTokenRepository> _mockRefreshTokens;
     private readonly Mock<ILogger<UsuarioCuentaService>> _mockLogger;
+    private readonly Mock<Microsoft.Extensions.Configuration.IConfiguration> _mockConfig;
     private readonly UsuarioCuentaService _service;
 
     public UsuarioCuentaServiceTests()
@@ -29,13 +30,15 @@ public class UsuarioCuentaServiceTests
         _mockEmailSender = new Mock<IEmailSenderService>();
         _mockRefreshTokens = new Mock<IRefreshTokenRepository>();
         _mockLogger = new Mock<ILogger<UsuarioCuentaService>>();
+        _mockConfig = new Mock<Microsoft.Extensions.Configuration.IConfiguration>();
         _service = new UsuarioCuentaService(
             _mockRepo.Object,
             _mockSuscripcion.Object,
             _mockToken.Object,
             _mockEmailSender.Object,
             _mockRefreshTokens.Object,
-            _mockLogger.Object);
+            _mockLogger.Object,
+            _mockConfig.Object);
     }
 
     private Usuario CrearUsuario(string passwordHash = "hashDePrueba")

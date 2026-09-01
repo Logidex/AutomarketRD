@@ -1,4 +1,5 @@
 using AutoMarket.Application.DTOs;
+using AutoMarket.Application.Helpers;
 using AutoMarket.Application.Interfaces;
 using AutoMarket.Core.Interfaces;
 using Microsoft.Extensions.Configuration;
@@ -42,10 +43,7 @@ public class ContactoService : IContactoService
 
         var asunto = $"[Contacto AutoMarket] {dto.Asunto}";
 
-        var cuerpo = $@"
-            <html>
-            <body style='font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto;'>
-                <h2 style='color: #0c101b;'>Nuevo mensaje de contacto</h2>
+        var contenido = $@"
                 <table style='width: 100%; border-collapse: collapse;'>
                     <tr>
                         <td style='padding: 8px; border-bottom: 1px solid #eee; font-weight: bold; width: 120px;'>Nombre:</td>
@@ -66,9 +64,12 @@ public class ContactoService : IContactoService
                 </table>
                 <p style='margin-top: 24px; font-size: 12px; color: #999;'>
                     Este mensaje fue enviado desde el formulario de contacto de AutoMarket RD.
-                </p>
-            </body>
-            </html>";
+                </p>";
+
+        var cuerpo = PlantillaCorreoHelper.Envolver(
+            _configuration["App:FrontendUrl"],
+            "Nuevo mensaje de contacto",
+            contenido);
 
         var replyTo = _configuration["Soporte:ReplyTo"];
         await _emailSender.EnviarCorreoAsync(soporteEmail, asunto, cuerpo, replyTo);

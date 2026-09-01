@@ -180,7 +180,6 @@ public class SuscripcionMonitorService : BackgroundService
                 var asunto = $"Tu suscripción {nombrePlan} de AutoMarket RD vence pronto";
 
                 var cuerpoHtml = $@"
-                    <h2 style='color:#1e3a8a;'>Tu suscripción está por vencer</h2>
                     <p>Hola <strong>{suscripcion.PerfilDealer?.Usuario?.Nombre}</strong>,</p>
                     <p>Tu suscripción <strong>{nombrePlan}</strong> vence el <strong>{fechaVencimiento}</strong>
                     (quedan {diasRestantes} día(s)).</p>
@@ -189,11 +188,14 @@ public class SuscripcionMonitorService : BackgroundService
                     <p>
                         <a href='{rutaRenovar}' style='background-color:#3b82f6;color:#ffffff;
                         padding:12px 24px;text-decoration:none;border-radius:8px;'>Renovar ahora</a>
-                    </p>
-                    <hr/>
-                    <p style='color:#6b7280;font-size:12px;'>AutoMarket RD · no responda a este correo.</p>";
+                    </p>";
 
-                await emailSender.EnviarCorreoAsync(email, asunto, cuerpoHtml);
+                var cuerpoFinal = AutoMarket.Application.Helpers.PlantillaCorreoHelper.Envolver(
+                    frontendUrl,
+                    "Tu suscripción está por vencer",
+                    cuerpoHtml);
+
+                await emailSender.EnviarCorreoAsync(email, asunto, cuerpoFinal);
 
                 suscripcion.MarcarRecordatorioEnviado();
                 await dbContext.SaveChangesAsync();
