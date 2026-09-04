@@ -15,5 +15,10 @@ public class PagoAdminDto
     public string Moneda { get; set; } = "USD";
     public string? OrdenIdPayPal { get; set; }
     public string? CaptureIdPayPal { get; set; }
+    public MetodoPago Metodo { get; set; }
+    public EstadoTransferencia? EstadoTransferencia { get; set; }
+    public string? UrlCapturaTransferencia { get; set; }
+    public string? NotasAdmin { get; set; }
+    public DateTime? FechaConfirmacionUtc { get; set; }
     public DateTime FechaUtc { get; set; }
 }

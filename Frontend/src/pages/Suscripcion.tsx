@@ -200,9 +200,9 @@ export default function Suscripcion() {
         <div className="mt-10 flex items-center justify-center gap-3 rounded-xl border border-line bg-surface-2 p-4 dark:border-[#3b2f2f] dark:bg-[#1a1515]">
           <FaPaypal className="text-3xl text-[#0070ba]" />
           <p className="text-sm text-ink-2 dark:text-gray-300">
-            El pago se procesa de forma segura con{" "}
-            <strong className="text-ink dark:text-white">PayPal</strong>. Por ahora es el único
-            método de pago disponible.
+            Aceptamos{" "}
+            <strong className="text-ink dark:text-white">PayPal</strong> y{" "}
+            <strong className="text-ink dark:text-white">transferencia bancaria</strong>.
           </p>
         </div>
       </main>

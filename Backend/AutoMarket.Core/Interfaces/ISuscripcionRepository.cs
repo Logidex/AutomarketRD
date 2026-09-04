@@ -15,4 +15,6 @@ public interface ISuscripcionRepository
     Task ActualizarPagoAsync(PagoSuscripcion pago);
     Task<bool> ExistePagoPorEventoAsync(string eventoId);
     Task<bool> ExistePagoPorOrdenAsync(string orderId);
+    Task<IReadOnlyList<PagoSuscripcion>> ObtenerTransferenciasPendientesAsync();
+    Task<bool> ExisteCapturaTransferenciaAsync(string clave);
 }

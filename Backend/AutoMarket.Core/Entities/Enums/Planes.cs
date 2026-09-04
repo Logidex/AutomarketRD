@@ -6,14 +6,14 @@ public enum PlanNivel
     Basico = 50,
     Pro = 200,
     Elite = 500
-}public enum CicloFacturacion
+}
+
+public enum CicloFacturacion
 {
     Mensual = 1,
     Trimestral = 3,
     Anual = 12
 }
-
-
 
 public enum EstadoSuscripcion
 {
@@ -27,4 +27,23 @@ public enum EstadoPago
     Completado = 1,
     Fallido = 2,
     Reembolsado = 3
+}
+
+public enum MetodoPago
+{
+    PayPal = 1,
+    Transferencia = 2
+}
+
+public enum EstadoTransferencia
+{
+    Pendiente = 1,
+    Aprobada = 2,
+    Rechazada = 3
+}
+
+public enum BancoDestino
+{
+    Popular = 1,
+    QIK = 2
 }

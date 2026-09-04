@@ -13,10 +13,11 @@ import {
   FaHeadset,
   FaFlag,
   FaClipboardList,
+  FaUniversity,
 } from "react-icons/fa";
 import { authService } from "../../services/auth.service";
 import { useResumenTicketsAdmin } from "../../hooks/useTickets";
-import { useContarReportesPendientes } from "../../hooks/useAdmin";
+import { useContarReportesPendientes, useAdminTransferencias } from "../../hooks/useAdmin";
 import { confirmarCierreSesion } from "../../utils/confirmarCierreSesion";
 import logo from "../../assets/AutoMarketRD_Logo.svg";
 import BotonTema from "../BotonTema";
@@ -54,6 +55,16 @@ const menuItems = [
     icon: <FaMoneyCheckAlt />,
   },
   {
+    path: "/admin/transferencias",
+    label: "Transferencias",
+    icon: <FaUniversity />,
+  },
+  {
+    path: "/admin/cuentas-bancarias",
+    label: "Cuentas Bancarias",
+    icon: <FaUniversity />,
+  },
+  {
     path: "/admin/encuestas",
     label: "Encuestas",
     icon: <FaClipboardList />,
@@ -77,9 +88,11 @@ export default function AdminLayout() {
 
   const { data: resumenTickets } = useResumenTicketsAdmin();
   const { data: contadorReportes } = useContarReportesPendientes();
+  const { data: transferenciasPendientes } = useAdminTransferencias();
 
   const cantidadAbiertos = resumenTickets?.cantidadAbiertos ?? 0;
   const reportesPendientes = contadorReportes?.total ?? 0;
+  const transferenciasPendientesCount = transferenciasPendientes?.length ?? 0;
 
   const nombreUsuario = usuario
     ? `${usuario.nombre} ${usuario.apellido ?? ""}`.trim()
@@ -159,6 +172,11 @@ export default function AdminLayout() {
                 {item.path === "/admin/reportes" && reportesPendientes > 0 && (
                   <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
                     {reportesPendientes}
+                  </span>
+                )}
+                {item.path === "/admin/transferencias" && transferenciasPendientesCount > 0 && (
+                  <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-yellow-500 px-1.5 text-[10px] font-bold text-white">
+                    {transferenciasPendientesCount}
                   </span>
                 )}
                 {item.path === "/admin/soporte" && cantidadAbiertos > 0 && (

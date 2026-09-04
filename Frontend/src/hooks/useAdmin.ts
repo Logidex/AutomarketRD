@@ -193,3 +193,38 @@ export const useEliminarUsuario = () => {
     },
   });
 };
+
+// ===== Transferencias bancarias =====
+export const useAdminTransferencias = () => {
+  return useQuery<PagoAdmin[]>({
+    queryKey: ['admin-transferencias'],
+    queryFn: () => adminService.listarTransferenciasPendientes(),
+    staleTime: 1000 * 60 * 2,
+  });
+};
+
+export const useAprobarTransferencia = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, notas }: { id: number; notas?: string }) =>
+      adminService.aprobarTransferencia(id, notas),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-transferencias'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-pagos'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-usuarios'] });
+    },
+  });
+};
+
+export const useRechazarTransferencia = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, notas }: { id: number; notas?: string }) =>
+      adminService.rechazarTransferencia(id, notas),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-transferencias'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-pagos'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-usuarios'] });
+    },
+  });
+};

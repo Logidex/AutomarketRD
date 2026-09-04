@@ -152,7 +152,7 @@ export default function AscenderRol() {
           <p className="rounded-lg border border-blue-500/30 bg-blue-500/10 px-3 py-2 text-xs text-blue-600">
             Al convertirte en Dealer tu cuenta quedará con el plan{" "}
             <strong>Gratis</strong> (1 anuncio). Después podrás elegir una
-            suscripción de pago y pagarla con PayPal.
+            suscripción de pago (PayPal o transferencia).
           </p>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

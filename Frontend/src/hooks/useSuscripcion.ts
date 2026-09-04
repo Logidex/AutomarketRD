@@ -117,3 +117,16 @@ export const useAplicarCupon = () => {
     },
   });
 };
+
+export const useRegistrarTransferencia = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ plan, ciclo, imagen }: { plan: string; ciclo: string; imagen: File }) =>
+      pagosService.registrarTransferencia(plan, ciclo, imagen),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['suscripcion'] });
+      queryClient.invalidateQueries({ queryKey: ['historial-pagos'] });
+    },
+  });
+};

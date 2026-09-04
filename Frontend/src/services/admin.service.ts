@@ -58,6 +58,11 @@ export interface PagoAdmin {
   moneda: string;
   ordenIdPayPal?: string | null;
   captureIdPayPal?: string | null;
+  metodo?: string;
+  estadoTransferencia?: string | null;
+  urlCapturaTransferencia?: string | null;
+  notasAdmin?: string | null;
+  fechaConfirmacionUtc?: string | null;
   fechaUtc: string;
 }
 
@@ -216,5 +221,18 @@ export const adminService = {
   // ===== Eliminación de usuarios =====
   async eliminarUsuario(id: number): Promise<{ exito: boolean; mensaje: string }> {
     return respuesta(api.delete(`/api/admin/usuarios/${id}`));
+  },
+
+  // ===== Transferencias bancarias =====
+  async listarTransferenciasPendientes(): Promise<PagoAdmin[]> {
+    return respuesta(api.get<PagoAdmin[]>("/api/admin/transferencias"));
+  },
+
+  async aprobarTransferencia(id: number, notas?: string): Promise<{ exito: boolean; mensaje: string }> {
+    return respuesta(api.post(`/api/admin/transferencias/${id}/aprobar`, { notas }));
+  },
+
+  async rechazarTransferencia(id: number, notas?: string): Promise<{ exito: boolean; mensaje: string }> {
+    return respuesta(api.post(`/api/admin/transferencias/${id}/rechazar`, { notas }));
   },
 };

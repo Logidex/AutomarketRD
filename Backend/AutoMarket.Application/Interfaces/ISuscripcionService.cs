@@ -25,7 +25,18 @@ public interface ISuscripcionService
     Task<SuscripcionDealerDto?> ObtenerSuscripcionPorUsuarioIdAsync(int usuarioId);
     Task CancelarSuscripcionAsync(int perfilDealerId);
     Task<IReadOnlyList<PagoAdminDto>> ObtenerPagosAdminAsync();
-    Task ReembolsarPagoAsync(int pagoId);
+    Task<MetodoPago> ReembolsarPagoAsync(int pagoId);
     Task<bool> ExistePagoPorEventoAsync(string eventoId);
     Task<bool> ExistePagoPorOrdenAsync(string orderId);
+
+    Task<int> RegistrarPagoTransferenciaAsync(
+        int perfilDealerId,
+        PlanNivel nivel,
+        CicloFacturacion ciclo,
+        decimal monto,
+        string moneda,
+        string urlCaptura);
+    Task AprobarTransferenciaAsync(int pagoId, string? notas = null);
+    Task RechazarTransferenciaAsync(int pagoId, string? notas = null);
+    Task<IReadOnlyList<PagoAdminDto>> ObtenerTransferenciasPendientesAsync();
 }

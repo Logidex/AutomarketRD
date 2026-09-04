@@ -20,7 +20,8 @@ public class AdminControllerTests
         Mock<IPlanCatalogoService>? mockPlanCatalogo = null,
         Mock<IUsuarioCuentaService>? mockUsuarioCuenta = null,
         Mock<ITicketService>? mockTicketService = null,
-        Mock<IReporteAnuncioService>? mockReporteService = null)
+        Mock<IReporteAnuncioService>? mockReporteService = null,
+        Mock<ICuentasBancariasService>? mockCuentasBancarias = null)
     {
         return new AdminController(
             (mockDashboard ?? new Mock<IDashboardService>()).Object,
@@ -31,7 +32,8 @@ public class AdminControllerTests
             (mockPlanCatalogo ?? new Mock<IPlanCatalogoService>()).Object,
             (mockUsuarioCuenta ?? new Mock<IUsuarioCuentaService>()).Object,
             (mockTicketService ?? new Mock<ITicketService>()).Object,
-            (mockReporteService ?? new Mock<IReporteAnuncioService>()).Object);
+            (mockReporteService ?? new Mock<IReporteAnuncioService>()).Object,
+            (mockCuentasBancarias ?? new Mock<ICuentasBancariasService>()).Object);
     }
 
     [Fact]
@@ -196,7 +198,7 @@ public class AdminControllerTests
     public async Task ReembolsarPago_Exitoso_DebeRetornarOk()
     {
         var mockSuscripcionService = new Mock<ISuscripcionService>();
-        mockSuscripcionService.Setup(s => s.ReembolsarPagoAsync(7)).Returns(Task.CompletedTask);
+        mockSuscripcionService.Setup(s => s.ReembolsarPagoAsync(7)).ReturnsAsync(AutoMarket.Core.Entities.Enums.MetodoPago.PayPal);
 
         var controller = CrearController(mockSuscripcionService: mockSuscripcionService);
 

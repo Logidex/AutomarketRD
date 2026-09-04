@@ -1,4 +1,4 @@
-using AutoMarket.API.Controllers;
+﻿using AutoMarket.API.Controllers;
 using AutoMarket.Application.Services;
 using AutoMarket.Core.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -9,25 +9,27 @@ namespace AutoMarket.Tests.Controllers;
 
 public class ArchivosControllerTests
 {
-    private static (ArchivosController Controller, Mock<IAlmacenadorArchivos> Almacenador, Mock<IAnuncioRepository> Anuncios, Mock<IUsuarioRepository> Usuarios) CrearController()
+    private static (ArchivosController Controller, Mock<IAlmacenadorArchivos> Almacenador, Mock<IAnuncioRepository> Anuncios, Mock<IUsuarioRepository> Usuarios, Mock<ISuscripcionRepository> Suscripciones) CrearController()
     {
         var mockAlmacenador = new Mock<IAlmacenadorArchivos>();
         var mockAnuncios = new Mock<IAnuncioRepository>();
         var mockUsuarios = new Mock<IUsuarioRepository>();
+        var mockSuscripciones = new Mock<ISuscripcionRepository>();
 
         var controller = new ArchivosController(
             mockAlmacenador.Object,
             mockAnuncios.Object,
-            mockUsuarios.Object);
+            mockUsuarios.Object,
+            mockSuscripciones.Object);
 
-        return (controller, mockAlmacenador, mockAnuncios, mockUsuarios);
+        return (controller, mockAlmacenador, mockAnuncios, mockUsuarios, mockSuscripciones);
     }
 
     [Fact]
     public async Task Obtener_ConClaveRegistrada_DevuelveRedirectALaUrlFirmada()
     {
         // ARRANGE
-        var (controller, mockAlmacenador, mockAnuncios, _) = CrearController();
+        var (controller, mockAlmacenador, mockAnuncios, _, _) = CrearController();
         const string clave = "uploads/foto.jpg";
         const string urlFirmada = "https://bucket.s3.region.amazonaws.com/uploads/foto.jpg?X-Amz-Expires=900";
 
@@ -54,7 +56,7 @@ public class ArchivosControllerTests
     public async Task Obtener_ConClaveVacia_DevuelveBadRequest()
     {
         // ARRANGE
-        var (controller, _, _, _) = CrearController();
+        var (controller, _, _, _, _) = CrearController();
 
         // ACT
         var resultado = await controller.Obtener("   ");
@@ -68,7 +70,7 @@ public class ArchivosControllerTests
     public async Task Obtener_SoportaUrlsPublicasLegadas()
     {
         // ARRANGE
-        var (controller, mockAlmacenador, mockAnuncios, _) = CrearController();
+        var (controller, mockAlmacenador, mockAnuncios, _, _) = CrearController();
         const string urlLegada = "https://automarketrd-s3.s3.us-east-2.amazonaws.com/uploads/logo.png";
         const string urlFirmada = "https://bucket.s3.region.amazonaws.com/uploads/logo.png?X-Amz-Signature=x";
 
@@ -92,7 +94,7 @@ public class ArchivosControllerTests
     public async Task Obtener_ConLogoDeDealerRegistrado_DevuelveRedirect()
     {
         // ARRANGE
-        var (controller, mockAlmacenador, mockAnuncios, mockUsuarios) = CrearController();
+        var (controller, mockAlmacenador, mockAnuncios, mockUsuarios, _) = CrearController();
         const string clave = "uploads/logo-agencia.png";
         const string urlFirmada = "https://bucket.s3.region.amazonaws.com/uploads/logo-agencia.png?X-Amz-Signature=x";
 
@@ -117,10 +119,42 @@ public class ArchivosControllerTests
     }
 
     [Fact]
+    public async Task Obtener_ConCapturaTransferenciaRegistrada_DevuelveRedirect()
+    {
+        // ARRANGE
+        var (controller, mockAlmacenador, mockAnuncios, mockUsuarios, mockSuscripciones) = CrearController();
+        const string clave = "uploads/transferencias/6-20260903214936.png";
+        const string urlFirmada = "https://bucket.s3.region.amazonaws.com/uploads/transferencias/6-20260903214936.png?X-Amz-Signature=x";
+
+        mockAnuncios
+            .Setup(r => r.ExisteFotoAsync(clave))
+            .ReturnsAsync(false);
+
+        mockUsuarios
+            .Setup(r => r.ExisteLogoDealerAsync(clave))
+            .ReturnsAsync(false);
+
+        mockSuscripciones
+            .Setup(r => r.ExisteCapturaTransferenciaAsync(clave))
+            .ReturnsAsync(true);
+
+        mockAlmacenador
+            .Setup(a => a.GenerarUrlFirmadaAsync(clave))
+            .ReturnsAsync(urlFirmada);
+
+        // ACT
+        var resultado = await controller.Obtener(clave);
+
+        // ASSERT
+        var redirect = Assert.IsType<RedirectResult>(resultado);
+        Assert.Equal(urlFirmada, redirect.Url);
+    }
+
+    [Fact]
     public async Task Obtener_ConClaveNoRegistrada_DevuelveNotFoundYNoFirmaUrl()
     {
         // ARRANGE
-        var (controller, mockAlmacenador, mockAnuncios, mockUsuarios) = CrearController();
+        var (controller, mockAlmacenador, mockAnuncios, mockUsuarios, mockSuscripciones) = CrearController();
         const string claveAjena = "uploads/backups/dump.sql";
 
         mockAnuncios
@@ -129,6 +163,10 @@ public class ArchivosControllerTests
 
         mockUsuarios
             .Setup(r => r.ExisteLogoDealerAsync(claveAjena))
+            .ReturnsAsync(false);
+
+        mockSuscripciones
+            .Setup(r => r.ExisteCapturaTransferenciaAsync(claveAjena))
             .ReturnsAsync(false);
 
         // ACT

@@ -21,6 +21,12 @@ public class PagoSuscripcion
     public string? CaptureIdPayPal { get; private set; }
     public string? Referencia { get; private set; }
 
+    public MetodoPago Metodo { get; private set; }
+    public EstadoTransferencia? EstadoTransferencia { get; private set; }
+    public string? UrlCapturaTransferencia { get; private set; }
+    public string? NotasAdmin { get; private set; }
+    public DateTime? FechaConfirmacionUtc { get; private set; }
+
     public DateTime FechaUtc { get; private set; }
 
     private PagoSuscripcion() { }
@@ -31,10 +37,12 @@ public class PagoSuscripcion
         CicloFacturacion ciclo,
         decimal monto,
         string moneda,
+        MetodoPago metodo = MetodoPago.PayPal,
         string? orderIdPayPal = null,
         string? eventoIdPayPal = null,
         string? captureIdPayPal = null,
-        string? referencia = null)
+        string? referencia = null,
+        string? urlCapturaTransferencia = null)
     {
         if (perfilDealerId <= 0)
             throw new ArgumentException("El perfilDealerId es inválido.", nameof(perfilDealerId));
@@ -48,14 +56,25 @@ public class PagoSuscripcion
         PerfilDealerId = perfilDealerId;
         Nivel = nivel;
         Ciclo = ciclo;
-        Estado = EstadoPago.Completado;
+        Metodo = metodo;
         Monto = monto;
         Moneda = moneda.Trim().ToUpperInvariant();
-        OrderIdPayPal = orderIdPayPal;
-        EventoIdPayPal = eventoIdPayPal;
-        CaptureIdPayPal = captureIdPayPal;
-        Referencia = referencia;
         FechaUtc = DateTime.UtcNow;
+
+        if (metodo == MetodoPago.Transferencia)
+        {
+            Estado = EstadoPago.Completado;
+            EstadoTransferencia = AutoMarket.Core.Entities.Enums.EstadoTransferencia.Pendiente;
+            UrlCapturaTransferencia = urlCapturaTransferencia;
+        }
+        else
+        {
+            Estado = EstadoPago.Completado;
+            OrderIdPayPal = orderIdPayPal;
+            EventoIdPayPal = eventoIdPayPal;
+            CaptureIdPayPal = captureIdPayPal;
+            Referencia = referencia;
+        }
     }
 
     public void MarcarComoFallido()
@@ -77,5 +96,31 @@ public class PagoSuscripcion
             throw new BusinessRuleException("El pago ya se encuentra reembolsado.");
 
         Estado = EstadoPago.Reembolsado;
+    }
+
+    public void AprobarTransferencia(string? notas = null)
+    {
+        if (Metodo != MetodoPago.Transferencia)
+            throw new BusinessRuleException("Este pago no es una transferencia bancaria.");
+
+        if (EstadoTransferencia != AutoMarket.Core.Entities.Enums.EstadoTransferencia.Pendiente)
+            throw new BusinessRuleException("La transferencia no está pendiente de aprobación.");
+
+        EstadoTransferencia = AutoMarket.Core.Entities.Enums.EstadoTransferencia.Aprobada;
+        NotasAdmin = notas;
+        FechaConfirmacionUtc = DateTime.UtcNow;
+    }
+
+    public void RechazarTransferencia(string? notas = null)
+    {
+        if (Metodo != MetodoPago.Transferencia)
+            throw new BusinessRuleException("Este pago no es una transferencia bancaria.");
+
+        if (EstadoTransferencia != AutoMarket.Core.Entities.Enums.EstadoTransferencia.Pendiente)
+            throw new BusinessRuleException("La transferencia no está pendiente de aprobación.");
+
+        EstadoTransferencia = AutoMarket.Core.Entities.Enums.EstadoTransferencia.Rechazada;
+        NotasAdmin = notas;
+        FechaConfirmacionUtc = DateTime.UtcNow;
     }
 }

@@ -13,7 +13,6 @@ import ShinyText from "../components/ShinyText";
 import PlanCard from "../components/PlanCard";
 import {
   usePlanesCatalogo,
-  useGenerarLinkPago,
 } from "../hooks/useSuscripcion";
 
 const CICLOS: Ciclo[] = ["Mensual", "Trimestral", "Anual"];
@@ -23,7 +22,6 @@ export default function Precios() {
   const [ciclo, setCiclo] = useState<Ciclo>("Mensual");
   const [comprandoPlan, setComprandoPlan] = useState<string | null>(null);
   const navigate = useNavigate();
-  const generarLinkPago = useGenerarLinkPago();
 
   const precioCiclo = (plan: PlanCatalogo) =>
     precioCicloDe(plan, ciclo);
@@ -74,27 +72,7 @@ export default function Precios() {
     }
 
     setComprandoPlan(plan.nivel);
-
-    try {
-      const { url } = await generarLinkPago.mutateAsync({
-        plan: plan.nivel,
-        ciclo,
-      });
-
-      window.location.assign(url);
-    } catch (err) {
-      await Swal.fire({
-        icon: "error",
-        title: "Error al iniciar el pago",
-        text:
-          err instanceof Error
-            ? err.message
-            : "Inténtalo nuevamente.",
-        confirmButtonColor: "#3b82f6",
-      });
-    } finally {
-      setComprandoPlan(null);
-    }
+    navigate(`/checkout?plan=${encodeURIComponent(plan.nivel)}&ciclo=${encodeURIComponent(ciclo)}`);
   };
 
   const planesPago = planes.filter(
@@ -263,9 +241,9 @@ export default function Precios() {
             <FaPaypal className="text-3xl text-[#0070ba]" />
 
             <p className="text-sm text-ink-2">
-              El pago se procesa de forma segura con{" "}
-              <strong className="text-white">PayPal</strong>. Por
-              ahora es el único método de pago disponible.
+              Aceptamos{" "}
+              <strong className="text-white">PayPal</strong> y{" "}
+              <strong className="text-white">transferencia bancaria</strong>.
             </p>
           </div>
         </main>

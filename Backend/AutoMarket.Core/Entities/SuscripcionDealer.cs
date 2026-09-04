@@ -147,6 +147,19 @@ public class SuscripcionDealer
         FechaRecordatorioEnviadoUtc = null;
     }
 
+    /// <summary>
+    /// Activa la suscripción por un tiempo temporal (ej: 1 día para transferencias pendientes).
+    /// </summary>
+    public void ActivarTemporalmente(PlanNivel nuevoNivel, CicloFacturacion nuevoCiclo, TimeSpan duracion)
+    {
+        Nivel = nuevoNivel;
+        Ciclo = nuevoCiclo;
+        Estado = EstadoSuscripcion.Activa;
+        FechaInicioUtc = DateTime.UtcNow;
+        FechaVencimientoUtc = DateTime.UtcNow.Add(duracion);
+        FechaRecordatorioEnviadoUtc = null;
+    }
+
     /// <summary>Registra que ya se envió el recordatorio del vencimiento actual.</summary>
     public void MarcarRecordatorioEnviado()
     {

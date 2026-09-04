@@ -4,6 +4,7 @@ using AutoMarket.API.Controllers;
 using AutoMarket.Application.DTOs.Paypal;
 using AutoMarket.Application.DTOs.Planes;
 using AutoMarket.Application.Interfaces;
+using AutoMarket.Application.Services;
 using AutoMarket.Core.Entities;
 using AutoMarket.Core.Entities.Enums;
 using AutoMarket.Core.Interfaces;
@@ -23,6 +24,7 @@ public class PagosControllerTests
     private readonly Mock<IUsuarioRepository> _mockUsuarioRepository;
     private readonly Mock<IPlanCatalogoService> _mockPlanCatalogoService;
     private readonly Mock<ILogger<PagosController>> _mockLogger;
+    private readonly Mock<IAlmacenadorArchivos> _mockAlmacenadorArchivos;
     private readonly IConfiguration _configuration;
     private readonly PagosController _controller;
 
@@ -33,6 +35,7 @@ public class PagosControllerTests
         _mockUsuarioRepository = new Mock<IUsuarioRepository>();
         _mockPlanCatalogoService = new Mock<IPlanCatalogoService>();
         _mockLogger = new Mock<ILogger<PagosController>>();
+        _mockAlmacenadorArchivos = new Mock<IAlmacenadorArchivos>();
 
         _configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
@@ -46,6 +49,7 @@ public class PagosControllerTests
             _mockSuscripcionService.Object,
             _mockUsuarioRepository.Object,
             _mockPlanCatalogoService.Object,
+            _mockAlmacenadorArchivos.Object,
             _configuration,
             _mockLogger.Object);
     }

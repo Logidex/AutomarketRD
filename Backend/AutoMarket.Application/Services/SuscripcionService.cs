@@ -188,6 +188,7 @@ public class SuscripcionService : ISuscripcionService
             ciclo,
             monto,
             moneda,
+            MetodoPago.PayPal,
             orderIdPayPal,
             eventoIdPayPal,
             captureIdPayPal,
@@ -213,6 +214,11 @@ public class SuscripcionService : ISuscripcionService
                 OrdenIdPayPal = p.OrderIdPayPal,
                 CaptureIdPayPal = p.CaptureIdPayPal,
                 Referencia = p.Referencia,
+                Metodo = p.Metodo,
+                EstadoTransferencia = p.EstadoTransferencia,
+                MotivoRechazo = p.EstadoTransferencia == Core.Entities.Enums.EstadoTransferencia.Rechazada
+                    ? p.NotasAdmin
+                    : null,
                 FechaUtc = p.FechaUtc
             })
             .ToList();
@@ -236,6 +242,11 @@ public class SuscripcionService : ISuscripcionService
                 Moneda = p.Moneda,
                 OrdenIdPayPal = p.OrderIdPayPal,
                 CaptureIdPayPal = p.CaptureIdPayPal,
+                Metodo = p.Metodo,
+                EstadoTransferencia = p.EstadoTransferencia,
+                UrlCapturaTransferencia = p.UrlCapturaTransferencia,
+                NotasAdmin = p.NotasAdmin,
+                FechaConfirmacionUtc = p.FechaConfirmacionUtc,
                 FechaUtc = p.FechaUtc
             })
             .ToList();
@@ -243,8 +254,11 @@ public class SuscripcionService : ISuscripcionService
 
 /// <summary>
 /// ReembolsarPagoAsync Reembolsar pago async. Parámetros: Parámetro pagoId (int). Retorna: Task.
+/// Para transferencias bancarias no se llama a PayPal: se marca en el sistema
+/// y la devolución del dinero se realiza manualmente por el administrador.
+/// En ambos métodos la suscripción del dealer queda cancelada.
 /// </summary>
-    public async Task ReembolsarPagoAsync(int pagoId)
+    public async Task<MetodoPago> ReembolsarPagoAsync(int pagoId)
     {
         var pago = await _repository.ObtenerPagoPorIdAsync(pagoId);
 
@@ -254,29 +268,44 @@ public class SuscripcionService : ISuscripcionService
         if (pago.Estado == EstadoPago.Reembolsado)
             throw new BusinessRuleException("El pago ya se encuentra reembolsado.");
 
-        var captureId = pago.CaptureIdPayPal;
-
-        // Pago registrado antes de guardar el CaptureId: se intenta recuperar de PayPal.
-        if (string.IsNullOrWhiteSpace(captureId) && !string.IsNullOrWhiteSpace(pago.OrderIdPayPal))
+        if (pago.Metodo == MetodoPago.PayPal)
         {
-            captureId = await _payPalService.ObtenerCaptureIdDeOrdenAsync(pago.OrderIdPayPal);
+            var captureId = pago.CaptureIdPayPal;
+
+            // Pago registrado antes de guardar el CaptureId: se intenta recuperar de PayPal.
+            if (string.IsNullOrWhiteSpace(captureId) && !string.IsNullOrWhiteSpace(pago.OrderIdPayPal))
+            {
+                captureId = await _payPalService.ObtenerCaptureIdDeOrdenAsync(pago.OrderIdPayPal);
+            }
+
+            if (string.IsNullOrWhiteSpace(captureId))
+            {
+                throw new BusinessRuleException(
+                    "Este pago no tiene una captura de PayPal vinculada y no es posible reembolsarlo.");
+            }
+
+            var reembolsado = await _payPalService.ReembolsarAsync(captureId, pago.Monto, pago.Moneda);
+
+            if (!reembolsado)
+                throw new BusinessRuleException("PayPal rechazó el reembolso. Verifica el estado de la captura.");
+
+            pago.RegistrarCaptureId(captureId);
         }
-
-        if (string.IsNullOrWhiteSpace(captureId))
-        {
-            throw new BusinessRuleException(
-                "Este pago no tiene una captura de PayPal vinculada y no es posible reembolsarlo.");
-        }
-
-        var reembolsado = await _payPalService.ReembolsarAsync(captureId, pago.Monto, pago.Moneda);
-
-        if (!reembolsado)
-            throw new BusinessRuleException("PayPal rechazó el reembolso. Verifica el estado de la captura.");
 
         pago.MarcarComoReembolsado();
-        pago.RegistrarCaptureId(captureId);
-
         await _repository.ActualizarPagoAsync(pago);
+
+        // El dinero se devolvió (PayPal automático o transferencia manual):
+        // la suscripción asociada queda cancelada.
+        var suscripcion = await _repository.ObtenerPorDealerIdAsync(pago.PerfilDealerId);
+
+        if (suscripcion != null && suscripcion.Estado != EstadoSuscripcion.Cancelada)
+        {
+            suscripcion.Cancelar();
+            await _repository.ActualizarAsync(suscripcion);
+        }
+
+        return pago.Metodo;
     }
 
 public async Task<SuscripcionDealerDto?> ObtenerSuscripcionAsync(int perfilDealerId)
@@ -364,5 +393,134 @@ public async Task<SuscripcionDealerDto?> ObtenerSuscripcionAsync(int perfilDeale
             CicloFacturacion.Anual => baseFecha.AddYears(1),
             _ => throw new ArgumentOutOfRangeException(nameof(ciclo), "Ciclo de facturación no válido.")
         };
+    }
+
+    public async Task<int> RegistrarPagoTransferenciaAsync(
+        int perfilDealerId,
+        PlanNivel nivel,
+        CicloFacturacion ciclo,
+        decimal monto,
+        string moneda,
+        string urlCaptura)
+    {
+        var pago = new PagoSuscripcion(
+            perfilDealerId,
+            nivel,
+            ciclo,
+            monto,
+            moneda,
+            MetodoPago.Transferencia,
+            urlCapturaTransferencia: urlCaptura);
+
+        await _repository.AgregarPagoAsync(pago);
+
+        var suscripcionExistente = await _repository.ObtenerPorDealerIdAsync(perfilDealerId);
+
+        if (suscripcionExistente == null)
+        {
+            await ValidarInventarioContraNuevoPlanAsync(perfilDealerId, nivel);
+
+            var nuevaSuscripcion = new SuscripcionDealer(perfilDealerId, nivel, ciclo);
+            nuevaSuscripcion.ActivarTemporalmente(nivel, ciclo, TimeSpan.FromDays(1));
+            nuevaSuscripcion.VincularPlanCatalogo(
+                await _planCatalogoRepository.ObtenerPorNivelAsync(nivel));
+            await _repository.AgregarAsync(nuevaSuscripcion);
+        }
+        else if (suscripcionExistente.Estado == Core.Entities.Enums.EstadoSuscripcion.Cancelada)
+        {
+            await ValidarInventarioContraNuevoPlanAsync(perfilDealerId, nivel);
+            suscripcionExistente.ActivarTemporalmente(nivel, ciclo, TimeSpan.FromDays(1));
+            suscripcionExistente.VincularPlanCatalogo(
+                await _planCatalogoRepository.ObtenerPorNivelAsync(nivel));
+            await _repository.ActualizarAsync(suscripcionExistente);
+        }
+        else
+        {
+            suscripcionExistente.ActivarTemporalmente(nivel, ciclo, TimeSpan.FromDays(1));
+            suscripcionExistente.VincularPlanCatalogo(
+                await _planCatalogoRepository.ObtenerPorNivelAsync(nivel));
+            await _repository.ActualizarAsync(suscripcionExistente);
+        }
+
+        return pago.Id;
+    }
+
+    public async Task AprobarTransferenciaAsync(int pagoId, string? notas = null)
+    {
+        var pago = await _repository.ObtenerPagoPorIdAsync(pagoId);
+
+        if (pago == null)
+            throw new KeyNotFoundException("No se encontró el pago solicitado.");
+
+        if (pago.Metodo != Core.Entities.Enums.MetodoPago.Transferencia)
+            throw new BusinessRuleException("Este pago no es una transferencia bancaria.");
+
+        if (pago.EstadoTransferencia != Core.Entities.Enums.EstadoTransferencia.Pendiente)
+            throw new BusinessRuleException("La transferencia no está pendiente de aprobación.");
+
+        pago.AprobarTransferencia(notas);
+        await _repository.ActualizarPagoAsync(pago);
+
+        var suscripcion = await _repository.ObtenerPorDealerIdAsync(pago.PerfilDealerId);
+
+        if (suscripcion != null)
+        {
+            var nuevaFechaVencimiento = CalcularNuevaVigenciaDesdePago(suscripcion, pago.Ciclo);
+            suscripcion.RenovarManualmente(nuevaFechaVencimiento);
+            suscripcion.VincularPlanCatalogo(
+                await _planCatalogoRepository.ObtenerPorNivelAsync(pago.Nivel));
+            await _repository.ActualizarAsync(suscripcion);
+        }
+    }
+
+    public async Task RechazarTransferenciaAsync(int pagoId, string? notas = null)
+    {
+        var pago = await _repository.ObtenerPagoPorIdAsync(pagoId);
+
+        if (pago == null)
+            throw new KeyNotFoundException("No se encontró el pago solicitado.");
+
+        if (pago.Metodo != Core.Entities.Enums.MetodoPago.Transferencia)
+            throw new BusinessRuleException("Este pago no es una transferencia bancaria.");
+
+        if (pago.EstadoTransferencia != Core.Entities.Enums.EstadoTransferencia.Pendiente)
+            throw new BusinessRuleException("La transferencia no está pendiente de aprobación.");
+
+        pago.RechazarTransferencia(notas);
+        await _repository.ActualizarPagoAsync(pago);
+
+        var suscripcion = await _repository.ObtenerPorDealerIdAsync(pago.PerfilDealerId);
+
+        if (suscripcion != null && suscripcion.Estado != Core.Entities.Enums.EstadoSuscripcion.Cancelada)
+        {
+            suscripcion.Cancelar();
+            await _repository.ActualizarAsync(suscripcion);
+        }
+    }
+
+    public async Task<IReadOnlyList<PagoAdminDto>> ObtenerTransferenciasPendientesAsync()
+    {
+        var pagos = await _repository.ObtenerTransferenciasPendientesAsync();
+
+        return pagos
+            .Select(p => new PagoAdminDto
+            {
+                Id = p.Id,
+                PerfilDealerId = p.PerfilDealerId,
+                DealerNombreAgencia = p.PerfilDealer?.NombreAgencia ?? $"Dealer {p.PerfilDealerId}",
+                DealerEmail = p.PerfilDealer?.Usuario.Email ?? string.Empty,
+                Nivel = p.Nivel,
+                Ciclo = p.Ciclo,
+                Estado = p.Estado,
+                Monto = p.Monto,
+                Moneda = p.Moneda,
+                Metodo = p.Metodo,
+                EstadoTransferencia = p.EstadoTransferencia,
+                UrlCapturaTransferencia = p.UrlCapturaTransferencia,
+                NotasAdmin = p.NotasAdmin,
+                FechaConfirmacionUtc = p.FechaConfirmacionUtc,
+                FechaUtc = p.FechaUtc
+            })
+            .ToList();
     }
 }

@@ -65,7 +65,7 @@ export default function Privacidad() {
           <ul className="list-disc pl-6">
             <li>Permitir el registro y acceso a la plataforma.</li>
             <li>Publicar y gestionar anuncios de vehículos.</li>
-            <li>Procesar pagos de suscripciones a través de PayPal.</li>
+            <li>Procesar pagos de suscripciones a través de PayPal y transferencia bancaria.</li>
             <li>Conectar compradores con vendedores mediante leads.</li>
             <li>Enviar notificaciones operativas (recuperación de
               contraseña, confirmación de pago).</li>
@@ -95,7 +95,7 @@ export default function Privacidad() {
           </p>
           <ul className="list-disc pl-6">
             <li>
-              <strong>PayPal</strong>, para procesar pagos de suscripciones.
+              <strong>PayPal</strong> y transferencia bancaria, para procesar pagos de suscripciones.
             </li>
             <li>
               <strong>AWS S3</strong>, para almacenar las imágenes de los

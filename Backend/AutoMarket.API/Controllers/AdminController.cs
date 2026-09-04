@@ -31,6 +31,7 @@ public class AdminController : ControllerBase
     private readonly IUsuarioCuentaService _usuarioCuentaService;
     private readonly ITicketService _ticketService;
     private readonly IReporteAnuncioService _reporteAnuncioService;
+    private readonly ICuentasBancariasService _cuentasBancariasService;
 
 /// <summary>
 /// Inicializa una nueva instancia de la clase AdminController.
@@ -44,7 +45,8 @@ public class AdminController : ControllerBase
         IPlanCatalogoService planCatalogoService,
         IUsuarioCuentaService usuarioCuentaService,
         ITicketService ticketService,
-        IReporteAnuncioService reporteAnuncioService)
+        IReporteAnuncioService reporteAnuncioService,
+        ICuentasBancariasService cuentasBancariasService)
     {
         _dashboardService = dashboardService;
         _usuarioRepository = usuarioRepository;
@@ -55,6 +57,7 @@ public class AdminController : ControllerBase
         _usuarioCuentaService = usuarioCuentaService;
         _ticketService = ticketService;
         _reporteAnuncioService = reporteAnuncioService;
+        _cuentasBancariasService = cuentasBancariasService;
     }
 
     [HttpGet("dashboard/resumen")]
@@ -297,8 +300,60 @@ public class AdminController : ControllerBase
     {
         try
         {
-            await _suscripcionService.ReembolsarPagoAsync(id);
-            return Ok(new { exito = true, mensaje = $"El pago {id} fue reembolsado correctamente." });
+            var metodo = await _suscripcionService.ReembolsarPagoAsync(id);
+
+            var mensaje = metodo == MetodoPago.Transferencia
+                ? "Reembolso registrado. Recuerda devolver el dinero manualmente al dealer. Su suscripción fue cancelada."
+                : "Reembolso procesado en PayPal. La suscripción del dealer fue cancelada.";
+
+            return Ok(new { exito = true, mensaje });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { exito = false, mensaje = ex.Message });
+        }
+        catch (BusinessRuleException ex)
+        {
+            return BadRequest(new { exito = false, mensaje = ex.Message });
+        }
+    }
+
+    // ==========================================
+    // 4c. TRANSFERENCIAS BANCARIAS
+    // ==========================================
+
+    [HttpGet("transferencias")]
+    public async Task<IActionResult> ListarTransferenciasPendientes()
+    {
+        var transferencias = await _suscripcionService.ObtenerTransferenciasPendientesAsync();
+        return Ok(transferencias);
+    }
+
+    [HttpPost("transferencias/{id:int}/aprobar")]
+    public async Task<IActionResult> AprobarTransferencia(int id, [FromBody] NotasTransferenciaDto? dto = null)
+    {
+        try
+        {
+            await _suscripcionService.AprobarTransferenciaAsync(id, dto?.Notas);
+            return Ok(new { exito = true, mensaje = $"La transferencia {id} fue aprobada. La suscripción del dealer fue extendida." });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { exito = false, mensaje = ex.Message });
+        }
+        catch (BusinessRuleException ex)
+        {
+            return BadRequest(new { exito = false, mensaje = ex.Message });
+        }
+    }
+
+    [HttpPost("transferencias/{id:int}/rechazar")]
+    public async Task<IActionResult> RechazarTransferencia(int id, [FromBody] NotasTransferenciaDto? dto = null)
+    {
+        try
+        {
+            await _suscripcionService.RechazarTransferenciaAsync(id, dto?.Notas);
+            return Ok(new { exito = true, mensaje = $"La transferencia {id} fue rechazada. La suscripción del dealer fue revocada." });
         }
         catch (KeyNotFoundException ex)
         {
@@ -479,6 +534,66 @@ public class AdminController : ControllerBase
         catch (BusinessRuleException ex)
         {
             return BadRequest(new { mensaje = ex.Message });
+        }
+    }
+
+    // ==========================================
+    // CUENTAS BANCARIAS
+    // ==========================================
+
+    [HttpGet("cuentas-bancarias")]
+    public async Task<IActionResult> ListarCuentasBancarias()
+    {
+        var cuentas = await _cuentasBancariasService.ObtenerTodasAsync();
+        return Ok(cuentas);
+    }
+
+    [HttpPost("cuentas-bancarias")]
+    public async Task<IActionResult> CrearCuentaBancaria([FromBody] CrearCuentaBancariaDto dto)
+    {
+        var cuenta = await _cuentasBancariasService.CrearCuentaAsync(
+            dto.Banco,
+            dto.NombreTitular,
+            dto.NumeroCuenta,
+            dto.TipoCuenta,
+            dto.Documento,
+            dto.ConceptoReferencia);
+
+        return CreatedAtAction(nameof(ListarCuentasBancarias), new { }, cuenta);
+    }
+
+    [HttpPut("cuentas-bancarias/{id:int}")]
+    public async Task<IActionResult> ActualizarCuentaBancaria(int id, [FromBody] CrearCuentaBancariaDto dto)
+    {
+        try
+        {
+            var cuenta = await _cuentasBancariasService.ActualizarCuentaAsync(
+                id,
+                dto.NombreTitular,
+                dto.NumeroCuenta,
+                dto.TipoCuenta,
+                dto.Documento,
+                dto.ConceptoReferencia);
+
+            return Ok(cuenta);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { exito = false, mensaje = ex.Message });
+        }
+    }
+
+    [HttpPatch("cuentas-bancarias/{id:int}/toggle")]
+    public async Task<IActionResult> ToggleCuentaBancaria(int id)
+    {
+        try
+        {
+            var cuenta = await _cuentasBancariasService.ToggleCuentaAsync(id);
+            return Ok(cuenta);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { exito = false, mensaje = ex.Message });
         }
     }
 }

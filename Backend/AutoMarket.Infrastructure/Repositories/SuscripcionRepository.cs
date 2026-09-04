@@ -88,4 +88,21 @@ public class SuscripcionRepository : ISuscripcionRepository
         return await _context.PagosSuscripcion
             .AnyAsync(p => p.OrderIdPayPal == orderId);
     }
+
+    public async Task<IReadOnlyList<PagoSuscripcion>> ObtenerTransferenciasPendientesAsync()
+    {
+        return await _context.PagosSuscripcion
+            .Include(p => p.PerfilDealer)
+            .ThenInclude(pd => pd.Usuario)
+            .Where(p => p.Metodo == Core.Entities.Enums.MetodoPago.Transferencia
+                     && p.EstadoTransferencia == Core.Entities.Enums.EstadoTransferencia.Pendiente)
+            .OrderByDescending(p => p.FechaUtc)
+            .ToListAsync();
+    }
+
+    public async Task<bool> ExisteCapturaTransferenciaAsync(string clave)
+    {
+        return await _context.PagosSuscripcion
+            .AnyAsync(p => p.UrlCapturaTransferencia == clave);
+    }
 }

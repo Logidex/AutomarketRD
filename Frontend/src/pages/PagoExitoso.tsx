@@ -51,7 +51,7 @@ export default function PagoExitoso() {
             <FaSpinner className="mx-auto mb-4 animate-spin text-5xl text-blue-400" />
             <h1 className="text-2xl font-bold mb-2">Confirmando tu pago...</h1>
             <p className="text-ink-2">
-              Estamos verificando tu pago con PayPal y activando tu suscripción.
+              Estamos verificando tu pago y activando tu suscripción.
             </p>
           </>
         )}

@@ -78,7 +78,7 @@ export default function Terminos() {
             >
               Planes y precios
             </Link>
-            . El pago se procesa a través de PayPal.
+            . El pago se procesa a través de PayPal o transferencia bancaria.
           </p>
         </section>
 

@@ -33,10 +33,14 @@ export default function AdminPagos() {
     const resultado = await Swal.fire({
       icon: "warning",
       title: "Reembolsar pago",
-      text: `¿Reembolsar ${pago.dealerNombreAgencia} por ${formatearPrecio(
+      html: `¿Reembolsar ${pago.dealerNombreAgencia} por ${formatearPrecio(
         pago.monto,
         pago.moneda,
-      )}? La operación se hará contra PayPal.`,
+      )}?${
+        pago.metodo === "PayPal"
+          ? " La operación se hará contra PayPal y la suscripción del dealer será cancelada."
+          : " Este pago fue por transferencia bancaria: el reembolso solo queda registrado en el sistema, la suscripción del dealer será cancelada, y deberás devolver el dinero manualmente."
+      }`,
       showCancelButton: true,
       confirmButtonColor: "#dc2626",
       confirmButtonText: "Sí, reembolsar",
@@ -73,8 +77,7 @@ export default function AdminPagos() {
       <div>
         <h2 className="text-2xl font-bold text-ink">Pagos y reembolsos</h2>
         <p className="mt-1 text-sm text-ink-3">
-          Historial de pagos de suscripción de los dealers. Puedes reembolsar un
-          pago completado contra PayPal.
+          Historial de pagos de suscripción de los dealers. Puedes reembolsar pagos completados.
         </p>
       </div>
 
@@ -87,7 +90,7 @@ export default function AdminPagos() {
               <th className="px-4 py-3">Monto</th>
               <th className="px-4 py-3">Estado</th>
               <th className="px-4 py-3">Fecha</th>
-              <th className="px-4 py-3">Orden PayPal</th>
+              <th className="px-4 py-3">Orden / Referencia</th>
               <th className="px-4 py-3 text-right">Acciones</th>
             </tr>
           </thead>

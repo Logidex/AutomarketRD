@@ -14,6 +14,7 @@ public class ArchivosController : ControllerBase
     private readonly IAlmacenadorArchivos _almacenadorArchivos;
     private readonly IAnuncioRepository _anuncioRepository;
     private readonly IUsuarioRepository _usuarioRepository;
+    private readonly ISuscripcionRepository _suscripcionRepository;
 
 /// <summary>
 /// Inicializa una nueva instancia de la clase ArchivosController. Parámetros almacenadorArchivos (IAlmacenadorArchivos), anuncioRepository (IAnuncioRepository), usuarioRepository (IUsuarioRepository)
@@ -21,18 +22,20 @@ public class ArchivosController : ControllerBase
     public ArchivosController(
         IAlmacenadorArchivos almacenadorArchivos,
         IAnuncioRepository anuncioRepository,
-        IUsuarioRepository usuarioRepository)
+        IUsuarioRepository usuarioRepository,
+        ISuscripcionRepository suscripcionRepository)
     {
         _almacenadorArchivos = almacenadorArchivos;
         _anuncioRepository = anuncioRepository;
         _usuarioRepository = usuarioRepository;
+        _suscripcionRepository = suscripcionRepository;
     }
 
     /// <summary>
     /// Sirve un archivo privado de S3 redirigiendo (302 Found) a una URL firmada de corta duración.
     /// Acepta tanto claves ("uploads/x.jpg") como URLs públicas legadas del formato anterior.
-    /// Solo emite URLs para claves registradas: fotos de anuncios o logos de
-    /// dealers; cualquier otra clave del bucket se rechaza con 404.
+    /// Solo emite URLs para claves registradas: fotos de anuncios, logos de
+    /// dealers o capturas de transferencia; cualquier otra clave se rechaza con 404.
     /// </summary>
     [HttpGet("{**clave}")]
     public async Task<IActionResult> Obtener(string clave)
@@ -43,8 +46,10 @@ public class ArchivosController : ControllerBase
         var esFotoDeAnuncio = await _anuncioRepository.ExisteFotoAsync(clave);
         var esLogoDeDealer = !esFotoDeAnuncio &&
                              await _usuarioRepository.ExisteLogoDealerAsync(clave);
+        var esCapturaTransferencia = !esFotoDeAnuncio && !esLogoDeDealer &&
+                                     await _suscripcionRepository.ExisteCapturaTransferenciaAsync(clave);
 
-        if (!esFotoDeAnuncio && !esLogoDeDealer)
+        if (!esFotoDeAnuncio && !esLogoDeDealer && !esCapturaTransferencia)
             return NotFound(new { mensaje = "Archivo no encontrado." });
 
         var urlFirmada = await _almacenadorArchivos.GenerarUrlFirmadaAsync(clave);

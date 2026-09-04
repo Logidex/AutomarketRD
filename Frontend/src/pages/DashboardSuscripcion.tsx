@@ -18,7 +18,6 @@ import {
   usePlanesCatalogo,
   useHistorialPagos,
   useCancelarSuscripcion,
-  useGenerarLinkPago,
   useAplicarCupon,
 } from "../hooks/useSuscripcion";
 
@@ -42,7 +41,6 @@ function useSuscripcionPage() {
   });
 
   const cancelar = useCancelarSuscripcion();
-  const generarLinkPago = useGenerarLinkPago();
   const aplicarCupon = useAplicarCupon();
 
   const suscripcion = suscQuery.data ?? null;
@@ -147,20 +145,7 @@ function useSuscripcionPage() {
     }
 
     setProcesando(plan.nivel);
-
-    try {
-      const { url } = await generarLinkPago.mutateAsync({ plan: plan.nivel, ciclo });
-      window.location.assign(url);
-    } catch (err) {
-      await Swal.fire({
-        icon: "error",
-        title: "Error al iniciar el pago",
-        text: err instanceof Error ? err.message : "Inténtalo nuevamente.",
-        confirmButtonColor: "#3b82f6",
-      });
-    } finally {
-      setProcesando(null);
-    }
+    navigate(`/checkout?plan=${encodeURIComponent(plan.nivel)}&ciclo=${encodeURIComponent(ciclo)}`);
   };
 
   const handleCancelar = async () => {
@@ -238,15 +223,43 @@ interface PropsEstado {
   suscripcion: SuscripcionDealer | SuscripcionVendedor | null;
   anunciosActivos: number | null;
   esCanceladaConVigencia: boolean;
+  pagos: PagoSuscripcion[];
   onCancelar: () => void;
+}
+
+function esTransferencia(p: PagoSuscripcion): boolean {
+  return p.metodo === "Transferencia";
 }
 
 function TarjetaEstadoSuscripcion({
   suscripcion,
   anunciosActivos,
   esCanceladaConVigencia,
+  pagos,
   onCancelar,
 }: PropsEstado) {
+  const esDealer = suscripcion !== null && "perfilDealerId" in suscripcion;
+
+  const ultimaTransferencia = esDealer
+    ? [...pagos]
+        .filter(esTransferencia)
+        .sort(
+          (a, b) =>
+            new Date(b.fechaUtc).getTime() - new Date(a.fechaUtc).getTime(),
+        )[0] ?? null
+    : null;
+
+  const transferenciaRechazada =
+    suscripcion?.estado === "Cancelada" &&
+    ultimaTransferencia?.estadoTransferencia === "Rechazada"
+      ? ultimaTransferencia
+      : null;
+
+  const transferenciaPendiente =
+    suscripcion?.estado === "Activa" &&
+    ultimaTransferencia?.estadoTransferencia === "Pendiente"
+      ? ultimaTransferencia
+      : null;
   return (
     <div className="rounded-xl border border-line bg-surface p-6 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -265,19 +278,21 @@ function TarjetaEstadoSuscripcion({
                   ? `${anunciosActivos} de ${suscripcion.limiteAnuncios} anuncios en uso`
                   : `${suscripcion.limiteAnuncios} anuncios en tu plan`}{" "}
                 ·{" "}
-                {suscripcion.estado === "Activa"
-                  ? `${suscripcion.diasRestantes} días restantes`
-                  : suscripcion.estado === "Cancelada"
-                    ? esCanceladaConVigencia
-                      ? `cancelada · beneficios vigentes hasta la fecha (${suscripcion.diasRestantes} días restantes)`
-                      : "suscripción cancelada"
-                    : "vencida"}
+                {suscripcion.nivel === "Gratis"
+                  ? "sin vencimiento"
+                  : suscripcion.estado === "Activa"
+                    ? `${suscripcion.diasRestantes} días restantes`
+                    : suscripcion.estado === "Cancelada"
+                      ? esCanceladaConVigencia
+                        ? `cancelada · beneficios vigentes hasta la fecha (${suscripcion.diasRestantes} días restantes)`
+                        : "suscripción cancelada"
+                      : "vencida"}
               </p>
             )}
           </div>
         </div>
 
-        {suscripcion && suscripcion.estado !== "Cancelada" && (
+        {suscripcion && suscripcion.estado !== "Cancelada" && suscripcion.nivel !== "Gratis" && (
           <button
             type="button"
             onClick={onCancelar}
@@ -290,23 +305,57 @@ function TarjetaEstadoSuscripcion({
 
       {suscripcion && suscripcion.estado === "Cancelada" && (
         <div className="mt-4 space-y-3">
-          <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-            {esCanceladaConVigencia ? (
-              <>
-                Cancelaste tu suscripción, pero <strong>conservas el plan hasta su
-                vencimiento</strong> ({suscripcion.diasRestantes} días restantes,{" "}
-                {formatearFecha(suscripcion.fechaVencimientoUtc)}).
-                Podrás seguir publicando hasta entonces.
-              </>
-            ) : (
-              <>
-                Tu suscripción está cancelada. Elige un plan para{" "}
-                <strong>reactivarla</strong> y seguir publicando anuncios.
-              </>
-            )}
-          </div>
+          {transferenciaRechazada ? (
+            <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+              <p className="font-semibold">Tu comprobante de transferencia fue rechazado</p>
+              {transferenciaRechazada.motivoRechazo && (
+                <p className="mt-1">
+                  <span className="text-red-600/80">Motivo:</span>{" "}
+                  {transferenciaRechazada.motivoRechazo}
+                </p>
+              )}
+              <p className="mt-1">
+                Nosotros cancelamos la suscripción asociada. Si crees que se trata de
+                un error, abre un ticket en soporte y lo revisamos contigo.
+              </p>
+              <a
+                href="/dashboard/soporte"
+                className="mt-2 inline-block rounded-lg border border-red-300 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 transition-colors hover:bg-red-100"
+              >
+                Abrir ticket en soporte
+              </a>
+            </div>
+          ) : (
+            <>
+              <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                {esCanceladaConVigencia ? (
+                  <>
+                    Cancelaste tu suscripción, pero <strong>conservas el plan hasta su
+                    vencimiento</strong> ({suscripcion.diasRestantes} días restantes,{" "}
+                    {formatearFecha(suscripcion.fechaVencimientoUtc)}).
+                    Podrás seguir publicando hasta entonces.
+                  </>
+                ) : (
+                  <>
+                    Tu suscripción está cancelada. Elige un plan para{" "}
+                    <strong>reactivarla</strong> y seguir publicando anuncios.
+                  </>
+                )}
+              </div>
 
-          <SoporteCard />
+              <SoporteCard />
+            </>
+          )}
+        </div>
+      )}
+
+      {transferenciaPendiente && (
+        <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+          <p className="font-semibold">Tu comprobante está en revisión</p>
+          <p className="mt-1">
+            Recibimos tu captura de transferencia. Tu suscripción está activa
+            temporalmente mientras el administrador la valida.
+          </p>
         </div>
       )}
     </div>
@@ -407,7 +456,7 @@ function HistorialPagos({ pagos }: { pagos: PagoSuscripcion[] }) {
                 <th className="py-2 pr-4">Ciclo</th>
                 <th className="py-2 pr-4">Total</th>
                 <th className="py-2 pr-4">Estado</th>
-                <th className="py-2">Orden PayPal</th>
+                <th className="py-2">Orden / Referencia</th>
               </tr>
             </thead>
             <tbody>
@@ -543,6 +592,7 @@ export default function DashboardSuscripcion() {
         suscripcion={suscripcion}
         anunciosActivos={anunciosActivos}
         esCanceladaConVigencia={esCanceladaConVigencia}
+        pagos={pagos}
         onCancelar={handleCancelar}
       />
 

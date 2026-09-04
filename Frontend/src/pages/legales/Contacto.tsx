@@ -261,7 +261,7 @@ export default function Contacto() {
                 Dudas sobre tu plan, facturación, cancelación o reembolsos.
                 Abre un ticket con la categoría{' '}
                 <em>Facturación</em> desde tu panel de soporte e incluye tu
-                correo de cuenta y el ID de orden de PayPal si aplica. Consulta
+                correo de cuenta y el ID de orden de PayPal o comprobante de transferencia si aplica. Consulta
                 también nuestra{' '}
                 <Link
                   to='/reembolso'

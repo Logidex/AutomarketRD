@@ -556,6 +556,7 @@ public class SuscripcionServiceTests
             CicloFacturacion.Trimestral,
             50m,
             "USD",
+            MetodoPago.PayPal,
             "ORDER-77",
             null,
             null,
@@ -591,6 +592,7 @@ public class SuscripcionServiceTests
             CicloFacturacion.Mensual,
             30m,
             "USD",
+            MetodoPago.PayPal,
             "ord-999",
             "evt-1",
             "cap-999",
@@ -621,6 +623,7 @@ public class SuscripcionServiceTests
             CicloFacturacion.Mensual,
             30m,
             "USD",
+            MetodoPago.PayPal,
             null,
             null,
             null,
@@ -647,6 +650,7 @@ public class SuscripcionServiceTests
             CicloFacturacion.Mensual,
             30m,
             "USD",
+            MetodoPago.PayPal,
             "ord-999",
             null,
             null,
@@ -678,6 +682,7 @@ public class SuscripcionServiceTests
             CicloFacturacion.Mensual,
             30m,
             "USD",
+            MetodoPago.PayPal,
             "ord-999",
             null,
             "cap-999",
@@ -705,6 +710,7 @@ public class SuscripcionServiceTests
             CicloFacturacion.Mensual,
             30m,
             "USD",
+            MetodoPago.PayPal,
             "ord-999",
             null,
             "cap-999",
@@ -728,6 +734,119 @@ public class SuscripcionServiceTests
         _mockRepo.Setup(r => r.ObtenerPagoPorIdAsync(99)).ReturnsAsync((PagoSuscripcion?)null);
 
         await Assert.ThrowsAsync<KeyNotFoundException>(() => _servicio.ReembolsarPagoAsync(99));
+    }
+
+    // =========================================================================
+    // PRUEBA 30: Reembolsar transferencia - Sin PayPal, marca y cancela suscripción
+    // =========================================================================
+    [Fact]
+    public async Task ReembolsarPagoAsync_Transferencia_NoLlamaPayPalYCancelaSuscripcion()
+    {
+        // Arrange
+        var pago = new PagoSuscripcion(
+            15,
+            PlanNivel.Pro,
+            CicloFacturacion.Mensual,
+            30m,
+            "USD",
+            MetodoPago.Transferencia,
+            null,
+            null,
+            null,
+            null,
+            "uploads/transferencias/15-20260903120000.png");
+
+        var suscripcion = new SuscripcionDealer(15, PlanNivel.Pro, CicloFacturacion.Mensual);
+
+        _mockRepo.Setup(r => r.ObtenerPagoPorIdAsync(15)).ReturnsAsync(pago);
+        _mockRepo.Setup(r => r.ObtenerPorDealerIdAsync(15)).ReturnsAsync(suscripcion);
+
+        // Act
+        var metodo = await _servicio.ReembolsarPagoAsync(15);
+
+        // Assert
+        Assert.Equal(MetodoPago.Transferencia, metodo);
+        Assert.Equal(EstadoPago.Reembolsado, pago.Estado);
+        Assert.Equal(EstadoSuscripcion.Cancelada, suscripcion.Estado);
+        _mockPayPalService.Verify(
+            s => s.ReembolsarAsync(It.IsAny<string>(), It.IsAny<decimal>(), It.IsAny<string>()),
+            Times.Never);
+        _mockPayPalService.Verify(
+            s => s.ObtenerCaptureIdDeOrdenAsync(It.IsAny<string>()),
+            Times.Never);
+        _mockRepo.Verify(r => r.ActualizarPagoAsync(pago), Times.Once);
+        _mockRepo.Verify(r => r.ActualizarAsync(suscripcion), Times.Once);
+    }
+
+    // =========================================================================
+    // PRUEBA 31: Reembolsar PayPal - también cancela la suscripción
+    // =========================================================================
+    [Fact]
+    public async Task ReembolsarPagoAsync_PayPal_CancelaSuscripcion()
+    {
+        // Arrange
+        var pago = new PagoSuscripcion(
+            15,
+            PlanNivel.Pro,
+            CicloFacturacion.Mensual,
+            30m,
+            "USD",
+            MetodoPago.PayPal,
+            "ord-999",
+            null,
+            "cap-999",
+            null);
+
+        var suscripcion = new SuscripcionDealer(15, PlanNivel.Pro, CicloFacturacion.Mensual);
+
+        _mockRepo.Setup(r => r.ObtenerPagoPorIdAsync(15)).ReturnsAsync(pago);
+        _mockRepo.Setup(r => r.ObtenerPorDealerIdAsync(15)).ReturnsAsync(suscripcion);
+        _mockPayPalService.Setup(s => s.ReembolsarAsync("cap-999", 30m, "USD")).ReturnsAsync(true);
+
+        // Act
+        var metodo = await _servicio.ReembolsarPagoAsync(15);
+
+        // Assert
+        Assert.Equal(MetodoPago.PayPal, metodo);
+        Assert.Equal(EstadoPago.Reembolsado, pago.Estado);
+        Assert.Equal(EstadoSuscripcion.Cancelada, suscripcion.Estado);
+        _mockRepo.Verify(r => r.ActualizarAsync(suscripcion), Times.Once);
+    }
+
+    // =========================================================================
+    // PRUEBA 32: Reembolsar - Suscripción ya cancelada, no falla ni re-cancela
+    // =========================================================================
+    [Fact]
+    public async Task ReembolsarPagoAsync_SuscripcionYaCancelada_NoFallaNiReCancela()
+    {
+        // Arrange
+        var pago = new PagoSuscripcion(
+            15,
+            PlanNivel.Pro,
+            CicloFacturacion.Mensual,
+            30m,
+            "USD",
+            MetodoPago.Transferencia,
+            null,
+            null,
+            null,
+            null,
+            "uploads/transferencias/15-20260903120000.png");
+
+        var suscripcion = new SuscripcionDealer(15, PlanNivel.Pro, CicloFacturacion.Mensual);
+        suscripcion.Cancelar();
+
+        _mockRepo.Setup(r => r.ObtenerPagoPorIdAsync(15)).ReturnsAsync(pago);
+        _mockRepo.Setup(r => r.ObtenerPorDealerIdAsync(15)).ReturnsAsync(suscripcion);
+
+        // Act
+        await _servicio.ReembolsarPagoAsync(15);
+
+        // Assert
+        Assert.Equal(EstadoPago.Reembolsado, pago.Estado);
+        Assert.Equal(EstadoSuscripcion.Cancelada, suscripcion.Estado);
+        _mockRepo.Verify(r => r.ActualizarPagoAsync(pago), Times.Once);
+        _mockRepo.Verify(r => r.ActualizarAsync(It.IsAny<SuscripcionDealer>()), Times.Never);
     }
 
     // =========================================================================
@@ -758,6 +877,7 @@ public class SuscripcionServiceTests
             CicloFacturacion.Mensual,
             30m,
             "USD",
+            MetodoPago.PayPal,
             "ord-999",
             "evt-1",
             "cap-999",

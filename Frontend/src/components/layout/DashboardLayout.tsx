@@ -281,8 +281,9 @@ function PlanBadge({ suscripcion }: { suscripcion: SuscripcionDealer | null }) {
   }
 
   const nombrePlan = nombrePlanUtil(suscripcion.nivel);
+  const esGratis = suscripcion.nivel === "Gratis";
   const esCancelada = suscripcion.estado === "Cancelada";
-  const vencida = !esCancelada && suscripcion.diasRestantes <= 0;
+  const vencida = !esGratis && !esCancelada && suscripcion.diasRestantes <= 0;
 
   const colorClase = esCancelada || vencida ? "border-red-300 text-red-600" : "border-green-300 text-green-700";
 
@@ -293,7 +294,7 @@ function PlanBadge({ suscripcion }: { suscripcion: SuscripcionDealer | null }) {
       title={`Plan ${nombrePlan}`}
     >
       Plan {nombrePlan}
-      {!esCancelada && !vencida && (
+      {!esGratis && !esCancelada && !vencida && (
         <span className="ml-1 opacity-70">· {suscripcion.diasRestantes}d</span>
       )}
       {esCancelada && <span className="ml-1 opacity-70">cancelada</span>}

@@ -15,7 +15,7 @@ export default function Reembolso() {
           <p>
             Esta Política de Reembolso aplica a las suscripciones pagadas de
             AutoMarket RD (planes Básicos y posteriores) procesadas a través de
-            PayPal. No aplica a la publicación de anuncios individuales ni a
+            PayPal o transferencia bancaria. No aplica a la publicación de anuncios individuales ni a
             transacciones entre Compradores y Dealers, las cuales son
             responsabilidad exclusiva de las partes.
           </p>
@@ -50,7 +50,7 @@ export default function Reembolso() {
             </li>
             <li>
               Solo aplica a pagos realizados directamente a través de
-              PayPal. Cargos por servicios de terceros (si los hubiera) no
+              PayPal o transferencia bancaria. Cargos por servicios de terceros (si los hubiera) no
               son reembolsables.
             </li>
           </ul>
@@ -86,7 +86,7 @@ export default function Reembolso() {
             </li>
             <li>
               Incluye: nombre del titular, correo de la cuenta, ID de orden
-              de PayPal (visible en tu historial de pagos) y motivo de la
+              de PayPal o comprobante de transferencia (visible en tu historial de pagos) y motivo de la
               solicitud.
             </li>
             <li>
@@ -109,10 +109,10 @@ export default function Reembolso() {
         <section>
           <h2 className="text-2xl font-bold text-ink">6. Procesamiento del reembolso</h2>
           <p>
-            Una vez aprobado, el reembolso se procesará a través de PayPal
-            hacia el mismo método de pago original. El tiempo de reflejo en
+            Una vez aprobado, el reembolso se procesará a través del mismo
+            método de pago original (PayPal o transferencia bancaria). El tiempo de reflejo en
             la cuenta del usuario puede tomar de 3 a 10 días hábiles,
-            dependiendo de PayPal y del banco emisor.
+            dependiendo del procesador de pagos y del banco emisor.
           </p>
         </section>
 

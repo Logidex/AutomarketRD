@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using AutoMarket.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AutoMarket.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260903185549_AgregarTransferenciaBancaria")]
+    partial class AgregarTransferenciaBancaria
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -170,48 +173,6 @@ namespace AutoMarket.Infrastructure.Migrations
                     b.HasIndex("Vistas");
 
                     b.ToTable("Anuncios");
-                });
-
-            modelBuilder.Entity("AutoMarket.Core.Entities.CuentaBancaria", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("Activa")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("Banco")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("ConceptoReferencia")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Documento")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("FechaCreacionUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("NombreTitular")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("NumeroCuenta")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("TipoCuenta")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CuentasBancarias");
                 });
 
             modelBuilder.Entity("AutoMarket.Core.Entities.Cupon", b =>

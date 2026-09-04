@@ -14,5 +14,8 @@ public class PagoSuscripcionDto
     public string? OrdenIdPayPal { get; set; }
     public string? CaptureIdPayPal { get; set; }
     public string? Referencia { get; set; }
+    public MetodoPago Metodo { get; set; }
+    public EstadoTransferencia? EstadoTransferencia { get; set; }
+    public string? MotivoRechazo { get; set; }
     public DateTime FechaUtc { get; set; }
 }

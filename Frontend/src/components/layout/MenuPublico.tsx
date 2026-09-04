@@ -241,7 +241,7 @@ export default function MenuPublico() {
       {/* NAVEGACIÓN MÓVIL */}
       <div className="flex items-center gap-2 xl:hidden">
         <BotonTema />
-        <NavbarUsuario />
+        <NavbarUsuario movil />
         <button
           type="button"
           onClick={() => setMenuMovilAbierto((abierto) => !abierto)}

@@ -14,7 +14,11 @@ import { confirmarCierreSesion } from "../../utils/confirmarCierreSesion";
 import { ROLES } from "../../constants/roles";
 import CampanaNotificaciones from "./CampanaNotificaciones";
 
-export default function NavbarUsuario() {
+interface NavbarUsuarioProps {
+  movil?: boolean;
+}
+
+export default function NavbarUsuario({ movil }: NavbarUsuarioProps) {
   const navigate = useNavigate();
 
   const autenticado = authService.isAuthenticated();
@@ -65,7 +69,7 @@ export default function NavbarUsuario() {
           to="/login"
           className="rounded-lg bg-blue-500 px-5 py-2 font-semibold text-white transition-colors hover:bg-blue-600"
         >
-          Iniciar Sesión
+          {movil ? "Acceder" : "Iniciar Sesión"}
         </Link>
       </div>
     );

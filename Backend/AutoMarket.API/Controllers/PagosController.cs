@@ -1,6 +1,7 @@
 using AutoMarket.API.Extensions;
 using AutoMarket.Application.DTOs.Paypal;
 using AutoMarket.Application.Interfaces;
+using AutoMarket.Application.Services;
 using AutoMarket.Core.Entities.Enums;
 using AutoMarket.Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -22,6 +23,7 @@ public class PagosController : ControllerBase
     private readonly ISuscripcionService _suscripcionService;
     private readonly IUsuarioRepository _usuarioRepository;
     private readonly IPlanCatalogoService _planCatalogoService;
+    private readonly IAlmacenadorArchivos _almacenadorArchivos;
     private readonly IConfiguration _configuration;
     private readonly ILogger<PagosController> _logger;
 
@@ -33,6 +35,7 @@ public class PagosController : ControllerBase
         ISuscripcionService suscripcionService,
         IUsuarioRepository usuarioRepository,
         IPlanCatalogoService planCatalogoService,
+        IAlmacenadorArchivos almacenadorArchivos,
         IConfiguration configuration,
         ILogger<PagosController> logger)
     {
@@ -40,6 +43,7 @@ public class PagosController : ControllerBase
         _suscripcionService = suscripcionService;
         _usuarioRepository = usuarioRepository;
         _planCatalogoService = planCatalogoService;
+        _almacenadorArchivos = almacenadorArchivos;
         _configuration = configuration;
         _logger = logger;
     }
@@ -575,6 +579,101 @@ public class PagosController : ControllerBase
         {
             _logger.LogError(ex, "Error procesando webhook de PayPal.");
             return Ok();
+        }
+    }
+
+    [Authorize]
+    [HttpPost("transferencia")]
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> RegistrarTransferencia(
+        [FromForm] string nombrePlan,
+        [FromForm] string ciclo,
+        [FromForm] IFormFile imagen)
+    {
+        var usuarioId = User.ObtenerUsuarioId();
+
+        try
+        {
+            if (imagen == null || imagen.Length == 0)
+            {
+                return BadRequest(new { mensaje = "Debes adjuntar la captura de la transferencia." });
+            }
+
+            var extensionesPermitidas = new[] { ".jpg", ".jpeg", ".png" };
+            var extension = Path.GetExtension(imagen.FileName).ToLowerInvariant();
+
+            if (!extensionesPermitidas.Contains(extension))
+            {
+                return BadRequest(new { mensaje = "Solo se permiten archivos JPG o PNG." });
+            }
+
+            if (imagen.Length > 5 * 1024 * 1024)
+            {
+                return BadRequest(new { mensaje = "La imagen no debe exceder 5MB." });
+            }
+
+            var dealer = await _usuarioRepository.ObtenerDealerConPerfilPorIdAsync(usuarioId);
+
+            if (dealer is null || dealer.PerfilDealer is null)
+            {
+                return BadRequest(new { mensaje = "El usuario autenticado no tiene perfil de dealer." });
+            }
+
+            var perfilDealerId = dealer.PerfilDealer.UsuarioId;
+
+            if (!Enum.TryParse<PlanNivel>(nombrePlan, false, out var planNivel) ||
+                !Enum.TryParse<CicloFacturacion>(ciclo, false, out var cicloFacturacion))
+            {
+                return BadRequest(new { mensaje = "El plan o el ciclo seleccionado no es válido." });
+            }
+
+            var plan = await _planCatalogoService.ObtenerPlanPorNivelAsync(planNivel);
+
+            if (plan is null)
+            {
+                return BadRequest(new { mensaje = "El plan seleccionado no está disponible en este momento." });
+            }
+
+            var precioRd = cicloFacturacion switch
+            {
+                CicloFacturacion.Mensual => plan.PrecioMensual,
+                CicloFacturacion.Trimestral => plan.PrecioTrimestral,
+                CicloFacturacion.Anual => plan.PrecioAnual,
+                _ => 0m
+            };
+
+            if (precioRd <= 0m)
+            {
+                return BadRequest(new { mensaje = "El plan Gratis no requiere pago." });
+            }
+
+            using var stream = imagen.OpenReadStream();
+            var nombreArchivo = $"transferencias/{perfilDealerId}-{DateTime.UtcNow:yyyyMMddHHmmss}{extension}";
+            var urlCaptura = await _almacenadorArchivos.GuardarArchivoAsync(stream, nombreArchivo, imagen.ContentType);
+
+            var pagoId = await _suscripcionService.RegistrarPagoTransferenciaAsync(
+                perfilDealerId,
+                planNivel,
+                cicloFacturacion,
+                precioRd,
+                "RD$",
+                urlCaptura);
+
+            _logger.LogInformation(
+                "Transferencia registrada. PagoId {PagoId}, DealerId {DealerId}, Plan {Plan}, Ciclo {Ciclo}",
+                pagoId, perfilDealerId, nombrePlan, ciclo);
+
+            return Ok(new
+            {
+                exito = true,
+                pagoId,
+                mensaje = "Tu comprobante fue recibido. Tu suscripción se activará por 1 día mientras el admin confirma el pago."
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error registrando transferencia para el usuario autenticado.");
+            return StatusCode(500, new { mensaje = "Ocurrió un error al registrar la transferencia." });
         }
     }
 }

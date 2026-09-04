@@ -28,6 +28,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Encuesta> Encuestas { get; set; }
     public DbSet<EncuestaPregunta> EncuestasPreguntas { get; set; }
     public DbSet<EncuestaRespuesta> EncuestasRespuestas { get; set; }
+    public DbSet<CuentaBancaria> CuentasBancarias { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

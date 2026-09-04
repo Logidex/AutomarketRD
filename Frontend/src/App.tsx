@@ -60,6 +60,8 @@ const AdminPlanes = lazy(() => import('./pages/admin/AdminPlanes'));
   const AdminTickets = lazy(() => import('./pages/admin/AdminTickets'));
 const AdminReportes = lazy(() => import('./pages/admin/AdminReportes'));
 const AdminEncuestas = lazy(() => import('./pages/admin/AdminEncuestas'));
+const AdminTransferencias = lazy(() => import('./pages/admin/AdminTransferencias'));
+const AdminCuentasBancarias = lazy(() => import('./pages/admin/AdminCuentasBancarias'));
 
 // Páginas del área de Vendedor
 const MiVehiculoVendedor = lazy(() => import('./pages/vendedor/MiVehiculoVendedor'));
@@ -268,6 +270,12 @@ function App() {
 
             {/* /admin/pagos */}
             <Route path="pagos" element={<AdminPagos />} />
+
+            {/* /admin/transferencias */}
+            <Route path="transferencias" element={<AdminTransferencias />} />
+
+            {/* /admin/cuentas-bancarias */}
+            <Route path="cuentas-bancarias" element={<AdminCuentasBancarias />} />
 
             {/* /admin/soporte */}
             <Route path="soporte" element={<AdminTickets />} />

@@ -22,6 +22,9 @@ export interface PagoSuscripcion {
   moneda: string;
   ordenIdPayPal?: string | null;
   referencia?: string | null;
+  metodo?: string;
+  estadoTransferencia?: string | null;
+  motivoRechazo?: string | null;
   fechaUtc: string;
 }
 

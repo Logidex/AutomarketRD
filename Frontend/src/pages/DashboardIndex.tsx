@@ -92,9 +92,13 @@ export default function DashboardIndex() {
             </div>
             <div className="flex justify-between">
               <span className="text-ink-2">Días restantes:</span>
-              <span className={`font-bold ${(resumen.diasRestantesSuscripcion ?? 0) <= 7 ? 'text-red-600' : 'text-green-600'}`}>
-                {resumen.diasRestantesSuscripcion ?? 0}
-              </span>
+              {resumen.planActual === "Gratis" ? (
+                <span className="font-bold text-green-600">Sin vencimiento</span>
+              ) : (
+                <span className={`font-bold ${(resumen.diasRestantesSuscripcion ?? 0) <= 7 ? 'text-red-600' : 'text-green-600'}`}>
+                  {resumen.diasRestantesSuscripcion ?? 0}
+                </span>
+              )}
             </div>
             <div className="flex justify-between">
               <span className="text-ink-2">Destacados en uso:</span>
@@ -188,10 +192,11 @@ function PlanBanner({
 
   const disponibles = Math.max(0, (limiteAnuncios ?? 0) - anunciosActivos);
   const usarRojo = disponibles === 0;
+  const esGratis = planActual === "Gratis";
 
   const mensaje = usarRojo
     ? `Alcanzaste el límite de tu plan (${limiteAnuncios} anuncios). Cambia de plan para seguir publicando.`
-    : `Usando ${anunciosActivos} de ${limiteAnuncios} anuncios del plan (${disponibles} disponibles) · vence en ${diasRestantes ?? 0} días.`;
+    : `Usando ${anunciosActivos} de ${limiteAnuncios} anuncios del plan (${disponibles} disponibles)${esGratis ? " · sin vencimiento." : ` · vence en ${diasRestantes ?? 0} días.`}`;
 
   return (
     <div

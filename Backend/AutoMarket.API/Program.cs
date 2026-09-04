@@ -166,6 +166,9 @@ try
 
     builder.Services.AddScoped<IEmailSenderService, SmtpEmailSenderService>();
 
+    builder.Services.AddScoped<ICuentasBancariasRepository, CuentasBancariasRepository>();
+    builder.Services.AddScoped<ICuentasBancariasService, CuentasBancariasService>();
+
     builder.Services.AddHostedService<SuscripcionMonitorService>();
     builder.Services.AddHostedService<AnuncioVencimientoService>();
 
