@@ -3,7 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { FaCheckCircle, FaExclamationTriangle, FaEnvelope } from "react-icons/fa";
 import { authService } from "../services/auth.service";
 import logo from "../assets/AutoMarketRD_Logo.svg";
-import Spinner from "../components/Spinner";
+import Spinner from "../components/ui/Spinner";
 
 export default function ConfirmarCorreo() {
   const [searchParams] = useSearchParams();

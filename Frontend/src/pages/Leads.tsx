@@ -7,7 +7,7 @@ import {
   FaReply,
 } from "react-icons/fa";
 import type { LeadDealer } from "../types/lead.types";
-import Spinner from "../components/Spinner";
+import Spinner from "../components/ui/Spinner";
 import { formatearFecha } from "../utils/fecha";
 import { useMisLeads, useMarcarTodosLeidos } from "../hooks/useLeads";
 

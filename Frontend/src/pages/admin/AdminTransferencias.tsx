@@ -3,7 +3,7 @@ import Swal from "sweetalert2";
 import { FaCheck, FaTimes, FaImage, FaSpinner } from "react-icons/fa";
 import type { PagoAdmin } from "../../services/admin.service";
 import { useAdminTransferencias, useAprobarTransferencia, useRechazarTransferencia } from "../../hooks/useAdmin";
-import SpinnerComponent from "../../components/Spinner";
+import SpinnerComponent from "../../components/ui/Spinner";
 import { formatearPrecio } from "../../utils/formato";
 import { formatearFecha } from "../../utils/fecha";
 import { nombrePlan } from "../../constants/planes";

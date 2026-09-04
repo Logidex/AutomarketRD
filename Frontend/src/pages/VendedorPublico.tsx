@@ -17,7 +17,7 @@ import type { PerfilDealerPublico } from "../services/dealer.service";
 import { urlImagen } from "../utils/imagen";
 import { formatearPrecio } from "../utils/formato";
 import { idDesdeSlug, urlAnuncio } from "../utils/slug";
-import Spinner from "../components/Spinner";
+import Spinner from "../components/ui/Spinner";
 import BadgeVerificado from "../components/BadgeVerificado";
 import { usePerfilDealerPublico, useAnunciosVendedor } from "../hooks/usePerfilDealer";
 

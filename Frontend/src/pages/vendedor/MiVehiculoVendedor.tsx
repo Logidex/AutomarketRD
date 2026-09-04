@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import Swal from "sweetalert2";
-import Spinner from "../../components/Spinner";
+import Spinner from "../../components/ui/Spinner";
 import type { AnuncioListado } from "../../types/anuncio.types";
 import { getUserIdFromToken } from "../../utils/jwt.util";
 import { urlImagen } from "../../utils/imagen";

@@ -8,7 +8,7 @@ import {
   useToggleCuentaBancaria,
 } from "../../hooks/useCuentasBancarias";
 import type { CuentaBancaria } from "../../services/cuentasBancarias.service";
-import SpinnerComponent from "../../components/Spinner";
+import SpinnerComponent from "../../components/ui/Spinner";
 
 const BANCOS: Record<number, string> = { 1: "Popular", 2: "QIK" };
 

@@ -12,7 +12,7 @@ import type { PerfilDealer } from "../services/perfilDealer.service";
 import { getUserIdFromToken } from "../utils/jwt.util";
 import { urlImagen } from "../utils/imagen";
 import { useLoading } from "../context/LoadingContext";
-import Spinner from "../components/Spinner";
+import Spinner from "../components/ui/Spinner";
 import SeccionCambiarCorreo from "../components/SeccionCambiarCorreo";
 import SeccionCambiarPassword from "../components/SeccionCambiarPassword";
 import { usePerfilDealer, useActualizarPerfilDealer } from "../hooks/usePerfilDealer";

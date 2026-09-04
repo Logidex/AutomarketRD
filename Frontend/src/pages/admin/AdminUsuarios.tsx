@@ -2,7 +2,7 @@ import { useState } from "react";
 import Swal from "sweetalert2";
 import { FaBan, FaCheckCircle, FaCoins, FaRedoAlt, FaTrashAlt, FaUserTag } from "react-icons/fa";
 import type { UsuarioAdmin } from "../../services/admin.service";
-import Spinner from "../../components/Spinner";
+import Spinner from "../../components/ui/Spinner";
 import { formatearFecha } from "../../utils/fecha";
 import {
   useAdminUsuarios,

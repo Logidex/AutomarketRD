@@ -11,7 +11,7 @@ import type {
   TicketEstado,
   TicketPrioridad,
 } from "../../types/ticket.types";
-import Spinner from "../../components/Spinner";
+import Spinner from "../../components/ui/Spinner";
 import { formatearFecha } from "../../utils/fecha";
 import {
   useCambiarEstadoTicket,

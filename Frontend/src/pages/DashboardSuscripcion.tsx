@@ -8,7 +8,7 @@ import type { SuscripcionDealer, PagoSuscripcion } from "../services/suscripcion
 import type { SuscripcionVendedor } from "../services/vendedor.service";
 import type { CuponAplicado } from "../services/cupones.service";
 import { dashboardService } from "../services/dashboard.service";
-import Spinner from "../components/Spinner";
+import Spinner from "../components/ui/Spinner";
 import { formatearRD$, precioCicloDe } from "../utils/formato";
 import { nombrePlan } from "../constants/planes";
 import { PAGOS_HABILITADOS } from "../constants/config";

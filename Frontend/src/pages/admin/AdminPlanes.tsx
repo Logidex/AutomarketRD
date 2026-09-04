@@ -2,7 +2,7 @@ import { useState } from "react";
 import Swal from "sweetalert2";
 import { FaPlus, FaTrash, FaSave, FaTimes } from "react-icons/fa";
 import type { PlanAdmin, PlanAdminForm } from "../../services/admin.service";
-import Spinner from "../../components/Spinner";
+import Spinner from "../../components/ui/Spinner";
 import { formatearRD$ } from "../../utils/formato";
 import {
   useAdminPlanes,

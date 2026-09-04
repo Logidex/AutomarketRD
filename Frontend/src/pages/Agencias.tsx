@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { FaChevronLeft, FaChevronRight, FaSearch, FaStore } from "react-icons/fa";
 import HeaderPublico from "../components/layout/HeaderPublico";
 import SectionBackground from "../components/SectionBackground";
-import Spinner from "../components/Spinner";
+import Spinner from "../components/ui/Spinner";
 import BadgeVerificado from "../components/BadgeVerificado";
 import AdUnit from "../components/ads/AdUnit";
 import { dealerService, type AgenciaListado } from "../services/dealer.service";

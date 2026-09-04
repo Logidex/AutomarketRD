@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useMemo, useState } from 'react';
-import Spinner from '../components/Spinner';
+import Spinner from '../components/ui/Spinner';
 
 interface LoadingContextType {
   setLoading: (val: boolean) => void;

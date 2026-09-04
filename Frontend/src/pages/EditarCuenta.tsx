@@ -12,7 +12,7 @@ import {
   FaUserEdit,
 } from 'react-icons/fa';
 import { authService } from '../services/auth.service';
-import Spinner from '../components/Spinner';
+import Spinner from '../components/ui/Spinner';
 import {
   useUsuarioCuenta,
   useActualizarDatos,

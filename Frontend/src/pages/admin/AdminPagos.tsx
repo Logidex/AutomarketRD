@@ -2,7 +2,7 @@ import Swal from "sweetalert2";
 import { FaUndo } from "react-icons/fa";
 import type { PagoAdmin } from "../../services/admin.service";
 import { useAdminPagos, useReembolsarPago } from "../../hooks/useAdmin";
-import Spinner from "../../components/Spinner";
+import Spinner from "../../components/ui/Spinner";
 import { formatearPrecio } from "../../utils/formato";
 import { formatearFecha } from "../../utils/fecha";
 

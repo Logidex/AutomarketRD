@@ -2,7 +2,7 @@ import { useState } from "react";
 import Swal from "sweetalert2";
 import { FaTrash } from "react-icons/fa";
 import type { AnuncioAdmin } from "../../services/admin.service";
-import Spinner from "../../components/Spinner";
+import Spinner from "../../components/ui/Spinner";
 import { formatearPrecio } from "../../utils/formato";
 import { useAdminAnuncios, useEliminarAnuncioAdmin } from "../../hooks/useAdmin";
 

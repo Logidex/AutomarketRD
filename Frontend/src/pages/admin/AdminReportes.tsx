@@ -8,7 +8,7 @@ import {
   FaFlag,
 } from "react-icons/fa";
 import type { ReporteAdmin, MotivoReporte } from "../../services/admin.service";
-import Spinner from "../../components/Spinner";
+import Spinner from "../../components/ui/Spinner";
 import { formatearFecha } from "../../utils/fecha";
 import { urlImagen } from "../../utils/imagen";
 import {

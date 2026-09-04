@@ -1,5 +1,5 @@
 import Swal from "sweetalert2";
-import Spinner from "../../components/Spinner";
+import Spinner from "../../components/ui/Spinner";
 import { useAdminResumen } from "../../hooks/useAdmin";
 
 export default function AdminIndex() {

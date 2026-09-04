@@ -3,7 +3,7 @@ import Swal from "sweetalert2";
 import { FaEnvelopeOpenText, FaLock, FaCopyright } from "react-icons/fa";
 import { authService } from "../services/auth.service";
 import { usuarioService } from "../services/usuario.service";
-import Spinner from "./Spinner";
+import Spinner from "./ui/Spinner";
 
 const emailValido = (email: string) =>
   /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);

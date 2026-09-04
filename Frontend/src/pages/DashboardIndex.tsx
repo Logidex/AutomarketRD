@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { dashboardService } from '../services/dashboard.service';
 import { nombrePlan } from '../constants/planes';
 import Swal from 'sweetalert2';
-import Spinner from '../components/Spinner';
+import Spinner from '../components/ui/Spinner';
 
 export default function DashboardIndex() {
   const { data: resumen, isLoading, isError, error } = useQuery({

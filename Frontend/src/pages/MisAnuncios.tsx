@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import Swal from "sweetalert2";
 import AnuncioCard from "../components/AnuncioCard";
-import Spinner from "../components/Spinner";
+import Spinner from "../components/ui/Spinner";
 import { dashboardService, type DashboardResumen } from "../services/dashboard.service";
 import type { AnuncioListado } from "../types/anuncio.types";
 import { getUserIdFromToken } from "../utils/jwt.util";
