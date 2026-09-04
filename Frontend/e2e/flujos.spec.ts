@@ -144,6 +144,10 @@ test.describe("Flujo Dealer: comprar plan", () => {
     const tarjetaPro = page.locator("div.grid > div", { hasText: "Más popular" });
     await tarjetaPro.getByRole("button", { name: "Comprar Plan" }).click();
 
+    // 2b. Checkout: seleccionar PayPal y pagar
+    await expect(page).toHaveURL(/\/checkout/, { timeout: 15_000 });
+    await page.getByRole("button", { name: "Pagar con PayPal" }).click();
+
     // 3. PayPal simulado: regresa directo a la página de éxito con el token
     await expect(page).toHaveURL(/pago-exitoso\?token=FAKE-/, { timeout: 20_000 });
     await expect(page.getByText("¡Pago exitoso!")).toBeVisible({ timeout: 20_000 });
