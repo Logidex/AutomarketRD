@@ -9,7 +9,7 @@ export function useSesionExpiracion() {
   const [segundosRestantes, setSegundosRestantes] = useState(0);
   const timerAvisoRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const timerConteoRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const fechaExpiracionRef = useRef<number>(Date.now() + DURACION_TOKEN_MS);
+  const fechaExpiracionRef = useRef<number>(0);
 
   const limpiarTimers = useCallback(() => {
     if (timerAvisoRef.current) {
