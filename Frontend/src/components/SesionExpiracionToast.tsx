@@ -1,4 +1,4 @@
-import { useSesionExpiracion } from '../../hooks/useSesionExpiracion';
+import { useSesionExpiracion } from '../hooks/useSesionExpiracion';
 
 function formatearTiempo(segundos: number): string {
   const m = Math.floor(segundos / 60);
