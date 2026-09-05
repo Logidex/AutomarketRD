@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.RateLimiting;
 
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +25,7 @@ using Scalar.AspNetCore;
 using Serilog;
 using Serilog.Events;
 
+using System.IO.Compression;
 using System.Security.Claims;
 using System.Net;
 using System.Text;
@@ -197,7 +199,52 @@ try
             "Falta ConnectionStrings:DefaultConnection");
 
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
-        options.UseNpgsql(connectionString));
+        options.UseNpgsql(connectionString, npgsql =>
+        {
+            npgsql.CommandTimeout(30);
+            npgsql.EnableRetryOnFailure(
+                maxRetryCount: 3,
+                maxRetryDelay: TimeSpan.FromSeconds(5),
+                errorCodesToAdd: null);
+        }));
+
+
+    // =======================================================
+    // REDIS CACHE
+    // =======================================================
+
+    var redisHost = builder.Configuration["Redis:Host"] ?? "redis";
+    var redisPort = builder.Configuration["Redis:Port"] ?? "6379";
+    var redisPassword = builder.Configuration["Redis:Password"] ?? "";
+    var redisInstanceName = builder.Configuration["Redis:InstanceName"] ?? "automarket_";
+
+    builder.Services.AddStackExchangeRedisCache(options =>
+    {
+        options.Configuration = $"{redisHost}:{redisPort},password={redisPassword},abortConnect=false";
+        options.InstanceName = redisInstanceName;
+    });
+
+
+    // =======================================================
+    // RESPONSE COMPRESSION
+    // =======================================================
+
+    builder.Services.AddResponseCompression(options =>
+    {
+        options.EnableForHttps = true;
+        options.Providers.Add<BrotliCompressionProvider>();
+        options.Providers.Add<GzipCompressionProvider>();
+    });
+
+    builder.Services.Configure<BrotliCompressionProviderOptions>(options =>
+    {
+        options.Level = CompressionLevel.Fastest;
+    });
+
+    builder.Services.Configure<GzipCompressionProviderOptions>(options =>
+    {
+        options.Level = CompressionLevel.Fastest;
+    });
 
 
     // =======================================================
@@ -521,7 +568,12 @@ try
         .AddNpgSql(
             connectionString,
             name: "postgres",
-            tags: ["database", "ready"]);
+            tags: ["database", "ready"])
+        .AddRedis(
+            $"{redisHost}:{redisPort},password={redisPassword},abortConnect=false",
+            name: "redis",
+            failureStatus: HealthStatus.Degraded,
+            tags: ["cache", "ready"]);
 
 
     // =======================================================
@@ -653,6 +705,8 @@ try
     // =======================================================
     // PIPELINE HTTP
     // =======================================================
+
+    app.UseResponseCompression();
 
     app.UseMiddleware<SecurityHeadersMiddleware>();
 

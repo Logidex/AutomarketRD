@@ -3,6 +3,7 @@ import {
   FaEnvelope,
   FaHeart,
   FaHistory,
+  FaShieldAlt,
   FaSignOutAlt,
   FaUserCircle,
   FaUserEdit,
@@ -89,6 +90,31 @@ export default function MiCuenta() {
 
         <div className="mt-8 flex flex-col gap-3 rounded-2xl border border-line bg-surface p-6 text-sm text-ink-2">
           <AscenderRol />
+        </div>
+
+        <div className="mt-8 flex flex-col gap-3 rounded-2xl border border-line bg-surface p-6 text-sm text-ink-2">
+          <div className="flex items-center gap-2 font-semibold text-ink">
+            <FaShieldAlt className="text-blue-400" />
+            Seguridad de la cuenta
+          </div>
+          <ul className="mt-2 space-y-2 text-xs text-ink-3">
+            <li className="flex items-start gap-2">
+              <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-green-400" />
+              Tu sesión expira automáticamente después de <strong className="text-ink-2">2 horas</strong> sin actividad.
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-green-400" />
+              Se te notificará <strong className="text-ink-2">5 minutos antes</strong> de expirar con la opción de extender.
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400" />
+              Puedes tener un máximo de <strong className="text-ink-2">3 sesiones activas</strong> simultáneamente.
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400" />
+              Al iniciar sesión en un cuarto dispositivo, se cerrará la sesión más antigua.
+            </li>
+          </ul>
         </div>
 
         <button

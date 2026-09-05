@@ -144,6 +144,7 @@ export const useMisAnuncios = (usuarioId: number, enabled = true) => {
     queryFn: () => anuncioService.obtenerMisAnuncios(usuarioId),
     enabled: enabled && usuarioId > 0,
     staleTime: 1000 * 60 * 2,
+    refetchInterval: 1000 * 45,
   });
 
   const invalidate = () => {

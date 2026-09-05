@@ -26,7 +26,8 @@ export const useVehiculos = ({
       }),
     placeholderData: (prev) => prev,
     enabled,
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 2,
+    refetchInterval: 1000 * 30,
   });
 };
 

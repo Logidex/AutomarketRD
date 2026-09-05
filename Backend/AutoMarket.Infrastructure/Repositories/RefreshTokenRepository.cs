@@ -41,6 +41,33 @@ public class RefreshTokenRepository : IRefreshTokenRepository
         }
     }
 
+    public async Task<int> ContarSesionesActivasAsync(int usuarioId)
+    {
+        var ahora = DateTime.UtcNow;
+
+        return await _context.RefreshTokens
+            .CountAsync(t => t.UsuarioId == usuarioId &&
+                             t.RevokedAtUtc == null &&
+                             t.ExpiresAtUtc > ahora);
+    }
+
+    public async Task RevocarSesionMasAntiguaAsync(int usuarioId)
+    {
+        var ahora = DateTime.UtcNow;
+
+        var tokenMasAntiguo = await _context.RefreshTokens
+            .Where(t => t.UsuarioId == usuarioId &&
+                         t.RevokedAtUtc == null &&
+                         t.ExpiresAtUtc > ahora)
+            .OrderBy(t => t.CreatedAtUtc)
+            .FirstOrDefaultAsync();
+
+        if (tokenMasAntiguo != null)
+        {
+            tokenMasAntiguo.Revocar();
+        }
+    }
+
     public Task GuardarCambiosAsync()
     {
         return _context.SaveChangesAsync();

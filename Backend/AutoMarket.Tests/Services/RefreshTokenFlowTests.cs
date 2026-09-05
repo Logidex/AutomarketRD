@@ -55,6 +55,7 @@ public class RefreshTokenFlowTests
         _tokenService.Setup(t => t.GenerarToken(usuario)).Returns("jwt");
         _tokenService.Setup(t => t.GenerarRefreshToken()).Returns(crudo);
         _tokenService.Setup(t => t.HashRefreshToken(crudo)).Returns("HASH-CRUDO");
+        _refreshTokens.Setup(r => r.ContarSesionesActivasAsync(It.IsAny<int>())).ReturnsAsync(0);
 
         var servicio = CrearServicio();
 

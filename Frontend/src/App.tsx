@@ -31,6 +31,7 @@ const Contacto = lazy(() => import('./pages/legales/Contacto'));
 import ProtectedRoute from './components/ProtectedRoute';
 import ModalEncuesta from './components/ModalEncuesta';
 import ConsentBanner from './components/ads/ConsentBanner';
+import SesionExpiracionToast from './components/SesionExpiracionToast';
 const DashboardLayout = lazy(() => import('./components/layout/DashboardLayout'));
 const AdminLayout = lazy(() => import('./components/layout/AdminLayout'));
 const VendedorLayout = lazy(() => import('./components/layout/VendedorLayout'));
@@ -94,6 +95,7 @@ function App() {
       >
       <ModalEncuesta />
       <ConsentBanner />
+      <SesionExpiracionToast />
       <Routes>
         {/* INICIO PÚBLICO */}
         <Route path="/" element={<Home />} />

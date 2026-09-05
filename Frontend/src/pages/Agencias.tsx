@@ -51,7 +51,8 @@ function useListaAgencias(
         cantidadPorPagina: CANTIDAD_POR_PAGINA,
       }),
     placeholderData: (prev) => prev,
-    staleTime: 1000 * 60,
+    staleTime: 1000 * 60 * 2,
+    refetchInterval: 1000 * 60,
   });
 }
 
@@ -146,7 +147,7 @@ export default function Agencias() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-page text-ink">
-      <HeaderPublico titulo="Agencias" />
+      <HeaderPublico titulo="" />
 
       <SectionBackground variant="search" className="mx-auto max-w-6xl px-6 py-12 sm:px-8">
       <main className="mx-auto max-w-6xl px-6 py-12 sm:px-8">

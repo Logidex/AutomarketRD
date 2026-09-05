@@ -29,6 +29,8 @@ export const authService = {
 
     this.guardarSesion(response.data);
 
+    window.dispatchEvent(new Event('sesion:refrescada'));
+
     return response.data;
   },
 

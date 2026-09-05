@@ -23,6 +23,7 @@ public class AuthService : IAuthService
     private static readonly TimeSpan VIGENCIA_CODIGO = TimeSpan.FromMinutes(15);
     private static readonly TimeSpan VIGENCIA_CONFIRMACION_EMAIL = TimeSpan.FromDays(2);
     private static readonly TimeSpan VIGENCIA_REFRESH_TOKEN = TimeSpan.FromDays(14);
+    private const int MAX_SESIONES_ACTIVAS = 3;
     private const int MAX_INTENTOS_DEFECTO = 5;
     private const int VENTANA_BLOQUEO_MINUTOS_DEFECTO = 15;
 
@@ -292,6 +293,13 @@ public class AuthService : IAuthService
     /// <summary>Crea y persiste un refresh token nuevo para el usuario.</summary>
     private async Task<string> EmitirRefreshTokenAsync(int usuarioId)
     {
+        var sesionesActivas = await _refreshTokens.ContarSesionesActivasAsync(usuarioId);
+
+        if (sesionesActivas >= MAX_SESIONES_ACTIVAS)
+        {
+            await _refreshTokens.RevocarSesionMasAntiguaAsync(usuarioId);
+        }
+
         var crudo = _tokenService.GenerarRefreshToken();
 
         await _refreshTokens.AgregarAsync(new RefreshToken(
