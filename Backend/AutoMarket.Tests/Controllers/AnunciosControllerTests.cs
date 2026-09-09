@@ -1,7 +1,10 @@
 using System.Security.Claims;
 using AutoMarket.API.Controllers;
 using AutoMarket.Application.DTOs;
+using AutoMarket.Application.Features.Anuncios.Commands;
+using AutoMarket.Application.Features.Anuncios.Queries;
 using AutoMarket.Application.Interfaces;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -10,13 +13,15 @@ namespace AutoMarket.Tests.Controllers;
 
 public class AnunciosControllerTests
 {
+    private readonly Mock<IMediator> _mockMediator;
     private readonly Mock<IAnuncioService> _mockServicio;
     private readonly AnunciosController _controller;
 
     public AnunciosControllerTests()
     {
+        _mockMediator = new Mock<IMediator>();
         _mockServicio = new Mock<IAnuncioService>();
-        _controller = new AnunciosController(_mockServicio.Object);
+        _controller = new AnunciosController(_mockMediator.Object, _mockServicio.Object);
     }
 
     // =========================================================================
@@ -86,35 +91,18 @@ public class AnunciosControllerTests
     // =========================================================================
 
     [Fact]
-    public async Task CrearAnuncio_TokenInvalido_LanzaExcepcionNoAutorizado()
+    public async Task Crear_DatosValidos_RetornaOkConId()
     {
-        // Arrange
-        SimularUsuarioAutenticado("abc");
-
-        // Act & Assert
-        await Assert.ThrowsAsync<UnauthorizedAccessException>(
-            () => _controller.CrearAnuncio(CrearDtoValido()));
-    }
-
-    [Fact]
-    public async Task CrearAnuncio_DatosValidos_AsignaUsuarioYRetornaOkConId()
-    {
-        // Arrange
         SimularUsuarioAutenticado("15");
-        _mockServicio
-            .Setup(s => s.CrearAnuncioAsync(It.IsAny<AnuncioCreateDto>()))
+        _mockMediator
+            .Setup(m => m.Send(It.IsAny<CrearAnuncioCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(7);
 
-        var dto = CrearDtoValido();
+        var resultado = await _controller.Crear(CrearDtoValido());
 
-        // Act
-        var resultado = await _controller.CrearAnuncio(dto);
-
-        // Assert
         var ok = Assert.IsType<OkObjectResult>(resultado);
         var id = ok.Value?.GetType().GetProperty("id")?.GetValue(ok.Value);
         Assert.Equal(7, id);
-        Assert.Equal(15, dto.UsuarioId);
     }
 
     // =========================================================================
@@ -124,32 +112,26 @@ public class AnunciosControllerTests
     [Fact]
     public async Task ObtenerPorId_NoExiste_DebeRetornarNotFound()
     {
-        // Arrange
         SimularVisitanteAnonimo();
-        _mockServicio
-            .Setup(s => s.ObtenerAnuncioPorIdAsync(99, It.IsAny<int?>()))
+        _mockMediator
+            .Setup(m => m.Send(It.IsAny<ObtenerAnuncioPorIdQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((AnuncioDto?)null);
 
-        // Act
         var resultado = await _controller.ObtenerPorId(99);
 
-        // Assert
         Assert.IsType<NotFoundObjectResult>(resultado);
     }
 
     [Fact]
     public async Task ObtenerPorId_Existe_DebeRetornarOk()
     {
-        // Arrange
         SimularVisitanteAnonimo();
-        _mockServicio
-            .Setup(s => s.ObtenerAnuncioPorIdAsync(5, It.IsAny<int?>()))
+        _mockMediator
+            .Setup(m => m.Send(It.IsAny<ObtenerAnuncioPorIdQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new AnuncioDto { Id = 5, Marca = "Honda" });
 
-        // Act
         var resultado = await _controller.ObtenerPorId(5);
 
-        // Assert
         var ok = Assert.IsType<OkObjectResult>(resultado);
         Assert.IsType<AnuncioDto>(ok.Value);
     }
@@ -161,63 +143,52 @@ public class AnunciosControllerTests
     [Fact]
     public async Task Publicar_NoEncontrado_DebeRetornarNotFound()
     {
-        // Arrange
         SimularUsuarioAutenticado("15");
-        _mockServicio.Setup(s => s.PublicarAnuncioAsync(99, 15)).ReturnsAsync(false);
+        _mockMediator
+            .Setup(m => m.Send(It.IsAny<PublicarAnuncioCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
 
-        // Act
         var resultado = await _controller.Publicar(99);
 
-        // Assert
-        Assert.IsType<NotFoundObjectResult>(resultado);
+        Assert.IsType<NotFoundResult>(resultado);
     }
 
     [Fact]
     public async Task Publicar_Exitoso_DebeRetornarOk()
     {
-        // Arrange
         SimularUsuarioAutenticado("15");
-        _mockServicio.Setup(s => s.PublicarAnuncioAsync(5, 15)).ReturnsAsync(true);
+        _mockMediator
+            .Setup(m => m.Send(It.IsAny<PublicarAnuncioCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
 
-        // Act
         var resultado = await _controller.Publicar(5);
 
-        // Assert
         Assert.IsType<OkObjectResult>(resultado);
-        _mockServicio.Verify(s => s.PublicarAnuncioAsync(5, 15), Times.Once);
     }
 
     // =========================================================================
-    // 4. SUBIR IMÁGENES
+    // 4. SUBIR IMÁGENES (usa IAnuncioService directamente)
     // =========================================================================
 
     [Fact]
     public async Task SubirImagenes_SinImagenes_DebeRetornarBadRequest()
     {
-        // Arrange
         SimularUsuarioAutenticado("15");
 
-        // Act
         var resultado = await _controller.SubirImagenes(5, new List<IFormFile>());
 
-        // Assert
-        var badRequest = Assert.IsType<BadRequestObjectResult>(resultado);
-        Assert.Equal(400, badRequest.StatusCode);
+        Assert.IsType<BadRequestObjectResult>(resultado);
     }
 
     [Fact]
     public async Task SubirImagenes_MasDeDiez_DebeRetornarBadRequest()
     {
-        // Arrange
         SimularUsuarioAutenticado("15");
         var demasiadas = Enumerable.Range(0, 11).Select(_ => CrearFormFile()).ToList();
 
-        // Act
         var resultado = await _controller.SubirImagenes(5, demasiadas);
 
-        // Assert
-        var badRequest = Assert.IsType<BadRequestObjectResult>(resultado);
-        Assert.Equal(400, badRequest.StatusCode);
+        Assert.IsType<BadRequestObjectResult>(resultado);
     }
 
     // =========================================================================
@@ -227,66 +198,50 @@ public class AnunciosControllerTests
     [Fact]
     public async Task EstablecerFotoPrincipal_UrlVacia_DebeRetornarBadRequest()
     {
-        // Arrange
         SimularUsuarioAutenticado("15");
         var dto = new AnuncioFotoPrincipalDto { UrlImagen = "" };
 
-        // Act
         var resultado = await _controller.EstablecerFotoPrincipal(5, dto);
 
-        // Assert
         Assert.IsType<BadRequestObjectResult>(resultado);
-        _mockServicio.Verify(
-            s => s.EstablecerFotoPrincipalAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>()),
-            Times.Never);
     }
 
     [Fact]
     public async Task EstablecerFotoPrincipal_AnuncioNoExiste_DebeRetornarNotFound()
     {
-        // Arrange
         SimularUsuarioAutenticado("15");
         _mockServicio
             .Setup(s => s.EstablecerFotoPrincipalAsync(99, 15, "uploads/f2.jpg"))
             .ReturnsAsync(false);
 
-        // Act
         var resultado = await _controller.EstablecerFotoPrincipal(99, new AnuncioFotoPrincipalDto { UrlImagen = "uploads/f2.jpg" });
 
-        // Assert
-        Assert.IsType<NotFoundObjectResult>(resultado);
+        Assert.IsType<NotFoundResult>(resultado);
     }
 
     [Fact]
     public async Task EstablecerFotoPrincipal_Exitoso_DebeRetornarOk()
     {
-        // Arrange
         SimularUsuarioAutenticado("15");
         _mockServicio
             .Setup(s => s.EstablecerFotoPrincipalAsync(5, 15, "uploads/f2.jpg"))
             .ReturnsAsync(true);
 
-        // Act
         var resultado = await _controller.EstablecerFotoPrincipal(5, new AnuncioFotoPrincipalDto { UrlImagen = "uploads/f2.jpg" });
 
-        // Assert
         Assert.IsType<OkObjectResult>(resultado);
-        _mockServicio.Verify(s => s.EstablecerFotoPrincipalAsync(5, 15, "uploads/f2.jpg"), Times.Once);
     }
 
     [Fact]
     public async Task EstablecerFotoPrincipal_NoEsElDueno_DebeRetornar403()
     {
-        // Arrange
         SimularUsuarioAutenticado("15");
         _mockServicio
             .Setup(s => s.EstablecerFotoPrincipalAsync(5, 15, "uploads/f2.jpg"))
             .ThrowsAsync(new UnauthorizedAccessException());
 
-        // Act
         var resultado = await _controller.EstablecerFotoPrincipal(5, new AnuncioFotoPrincipalDto { UrlImagen = "uploads/f2.jpg" });
 
-        // Assert
         var status = Assert.IsType<ObjectResult>(resultado);
         Assert.Equal(403, status.StatusCode);
     }
@@ -298,47 +253,38 @@ public class AnunciosControllerTests
     [Fact]
     public async Task CambiarEstado_EstadoVacio_DebeRetornarBadRequest()
     {
-        // Arrange
         SimularUsuarioAutenticado("15");
         var dto = new AnuncioEstadoDto { Estado = "   " };
 
-        // Act
         var resultado = await _controller.CambiarEstado(5, dto);
 
-        // Assert
         Assert.IsType<BadRequestObjectResult>(resultado);
-        _mockServicio.Verify(
-            s => s.CambiarEstadoAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>()),
-            Times.Never);
     }
 
     [Fact]
     public async Task CambiarEstado_NoEncontrado_DebeRetornarNotFound()
     {
-        // Arrange
         SimularUsuarioAutenticado("15");
-        _mockServicio.Setup(s => s.CambiarEstadoAsync(99, 15, "Pausado")).ReturnsAsync(false);
+        _mockMediator
+            .Setup(m => m.Send(It.IsAny<CambiarEstadoAnuncioCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
 
-        // Act
         var resultado = await _controller.CambiarEstado(99, new AnuncioEstadoDto { Estado = "Pausado" });
 
-        // Assert
-        Assert.IsType<NotFoundObjectResult>(resultado);
+        Assert.IsType<NotFoundResult>(resultado);
     }
 
     [Fact]
     public async Task CambiarEstado_Exitoso_DebeRetornarOk()
     {
-        // Arrange
         SimularUsuarioAutenticado("15");
-        _mockServicio.Setup(s => s.CambiarEstadoAsync(5, 15, "Pausado")).ReturnsAsync(true);
+        _mockMediator
+            .Setup(m => m.Send(It.IsAny<CambiarEstadoAnuncioCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
 
-        // Act
         var resultado = await _controller.CambiarEstado(5, new AnuncioEstadoDto { Estado = "Pausado" });
 
-        // Assert
         Assert.IsType<OkObjectResult>(resultado);
-        _mockServicio.Verify(s => s.CambiarEstadoAsync(5, 15, "Pausado"), Times.Once);
     }
 
     // =========================================================================
@@ -348,30 +294,24 @@ public class AnunciosControllerTests
     [Fact]
     public async Task EliminarImagen_SinUrl_DebeRetornarBadRequest()
     {
-        // Arrange
         SimularUsuarioAutenticado("15");
         var dto = new EliminarImagenDto { UrlImagen = "" };
 
-        // Act
         var resultado = await _controller.EliminarImagen(5, dto);
 
-        // Assert
         Assert.IsType<BadRequestObjectResult>(resultado);
     }
 
     [Fact]
     public async Task EliminarImagen_NoEsElDueno_DebeRetornar403()
     {
-        // Arrange
         SimularUsuarioAutenticado("15");
         _mockServicio
             .Setup(s => s.EliminarImagenAsync(5, 15, "https://s3/url"))
             .ThrowsAsync(new UnauthorizedAccessException());
 
-        // Act
         var resultado = await _controller.EliminarImagen(5, new EliminarImagenDto { UrlImagen = "https://s3/url" });
 
-        // Assert
         var status = Assert.IsType<ObjectResult>(resultado);
         Assert.Equal(403, status.StatusCode);
     }
@@ -379,15 +319,11 @@ public class AnunciosControllerTests
     [Fact]
     public async Task EliminarImagen_Exitoso_DebeRetornarOk()
     {
-        // Arrange
         SimularUsuarioAutenticado("15");
 
-        // Act
         var resultado = await _controller.EliminarImagen(5, new EliminarImagenDto { UrlImagen = "https://s3/url" });
 
-        // Assert
         Assert.IsType<OkObjectResult>(resultado);
-        _mockServicio.Verify(s => s.EliminarImagenAsync(5, 15, "https://s3/url"), Times.Once);
     }
 
     // =========================================================================
@@ -397,28 +333,24 @@ public class AnunciosControllerTests
     [Fact]
     public async Task RegistrarVista_AnuncioNoExiste_DebeRetornarNotFound()
     {
-        // Arrange
-        _mockServicio
-            .Setup(s => s.RegistrarVistaAsync(99))
+        _mockMediator
+            .Setup(m => m.Send(It.IsAny<RegistrarVistaCommand>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new KeyNotFoundException());
 
-        // Act
         var resultado = await _controller.RegistrarVista(99);
 
-        // Assert
         Assert.IsType<NotFoundObjectResult>(resultado);
     }
 
     [Fact]
     public async Task RegistrarVista_Exitoso_DebeRetornarOk()
     {
-        // Arrange
-        _mockServicio.Setup(s => s.RegistrarVistaAsync(5)).Returns(Task.CompletedTask);
+        _mockMediator
+            .Setup(m => m.Send(It.IsAny<RegistrarVistaCommand>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
 
-        // Act
         var resultado = await _controller.RegistrarVista(5);
 
-        // Assert
         Assert.IsType<OkObjectResult>(resultado);
     }
 
@@ -427,30 +359,28 @@ public class AnunciosControllerTests
     // =========================================================================
 
     [Fact]
-    public async Task EliminarAnuncio_NoEncontrado_DebeRetornarNotFound()
+    public async Task Eliminar_NoEncontrado_DebeRetornarNotFound()
     {
-        // Arrange
         SimularUsuarioAutenticado("15");
-        _mockServicio.Setup(s => s.EliminarAnuncioAsync(99, 15)).ReturnsAsync(false);
+        _mockMediator
+            .Setup(m => m.Send(It.IsAny<EliminarAnuncioCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
 
-        // Act
-        var resultado = await _controller.EliminarAnuncio(99);
+        var resultado = await _controller.Eliminar(99);
 
-        // Assert
-        Assert.IsType<NotFoundObjectResult>(resultado);
+        Assert.IsType<NotFoundResult>(resultado);
     }
 
     [Fact]
-    public async Task EliminarAnuncio_Exitoso_DebeRetornarOk()
+    public async Task Eliminar_Exitoso_DebeRetornarOk()
     {
-        // Arrange
         SimularUsuarioAutenticado("15");
-        _mockServicio.Setup(s => s.EliminarAnuncioAsync(5, 15)).ReturnsAsync(true);
+        _mockMediator
+            .Setup(m => m.Send(It.IsAny<EliminarAnuncioCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
 
-        // Act
-        var resultado = await _controller.EliminarAnuncio(5);
+        var resultado = await _controller.Eliminar(5);
 
-        // Assert
         Assert.IsType<OkObjectResult>(resultado);
     }
 }

@@ -1,6 +1,7 @@
 using AutoMarket.API.Controllers;
 using AutoMarket.Application.DTOs.Anuncio;
-using AutoMarket.Application.Interfaces;
+using AutoMarket.Application.Features.Comparador.Queries;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Xunit;
@@ -9,13 +10,13 @@ namespace AutoMarket.Tests.Controllers;
 
 public class ComparadorControllerTests
 {
-    private readonly Mock<IComparadorService> _mockComparadorService;
+    private readonly Mock<IMediator> _mockMediator;
     private readonly ComparadorController _controller;
 
     public ComparadorControllerTests()
     {
-        _mockComparadorService = new Mock<IComparadorService>();
-        _controller = new ComparadorController(_mockComparadorService.Object);
+        _mockMediator = new Mock<IMediator>();
+        _controller = new ComparadorController(_mockMediator.Object);
     }
 
     [Fact]
@@ -54,8 +55,8 @@ public class ComparadorControllerTests
             }
         };
 
-        _mockComparadorService
-            .Setup(s => s.CompararVehiculosAsync(ids))
+        _mockMediator
+            .Setup(s => s.Send(It.IsAny<CompararVehiculosQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(resultadoEsperado);
 
         // Act
@@ -66,7 +67,7 @@ public class ComparadorControllerTests
         var value = Assert.IsAssignableFrom<IEnumerable<AnuncioComparadorDto>>(ok.Value);
         Assert.Equal(2, value.Count());
 
-        _mockComparadorService.Verify(s => s.CompararVehiculosAsync(ids), Times.Once);
+        _mockMediator.Verify(s => s.Send(It.IsAny<CompararVehiculosQuery>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -75,8 +76,8 @@ public class ComparadorControllerTests
         // Arrange
         var ids = new[] { 1 };
 
-        _mockComparadorService
-            .Setup(s => s.CompararVehiculosAsync(ids))
+        _mockMediator
+            .Setup(s => s.Send(It.IsAny<CompararVehiculosQuery>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new ArgumentException("Debes seleccionar entre 2 y 4 vehículos para comparar."));
 
         // Act
@@ -87,7 +88,7 @@ public class ComparadorControllerTests
         var mensaje = badRequest.Value?.GetType().GetProperty("mensaje")?.GetValue(badRequest.Value)?.ToString();
 
         Assert.Equal("Debes seleccionar entre 2 y 4 vehículos para comparar.", mensaje);
-        _mockComparadorService.Verify(s => s.CompararVehiculosAsync(ids), Times.Once);
+        _mockMediator.Verify(s => s.Send(It.IsAny<CompararVehiculosQuery>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -96,8 +97,8 @@ public class ComparadorControllerTests
         // Arrange
         var ids = new[] { 10, 20 };
 
-        _mockComparadorService
-            .Setup(s => s.CompararVehiculosAsync(ids))
+        _mockMediator
+            .Setup(s => s.Send(It.IsAny<CompararVehiculosQuery>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new KeyNotFoundException("No se encontraron los vehículos solicitados."));
 
         // Act
@@ -108,6 +109,6 @@ public class ComparadorControllerTests
         var mensaje = notFound.Value?.GetType().GetProperty("mensaje")?.GetValue(notFound.Value)?.ToString();
 
         Assert.Equal("No se encontraron los vehículos solicitados.", mensaje);
-        _mockComparadorService.Verify(s => s.CompararVehiculosAsync(ids), Times.Once);
+        _mockMediator.Verify(s => s.Send(It.IsAny<CompararVehiculosQuery>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 }

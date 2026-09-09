@@ -9,18 +9,21 @@ using AutoMarket.Core.Interfaces;
 namespace AutoMarket.Application.Services;
 
 /// <summary>
-/// Servicio para manejar Anuncio.
+/// Servicio para manejar Anuncio. Delega validación de planes a
+/// <see cref="AnuncioPlanValidator"/> y mapeo a <see cref="AnuncioMapper"/>.
 /// </summary>
 public class AnuncioService : IAnuncioService
 {
     private readonly IAnuncioRepository _repository;
     private readonly IAlmacenadorArchivos _almacenadorArchivos;
     private readonly IUsuarioRepository _usuarioRepository;
-    private readonly IPlanCatalogoRepository _planCatalogoRepository;
+    private readonly AnuncioPlanValidator _planValidator;
 
-/// <summary>
-/// Inicializa una nueva instancia de la clase AnuncioService.
-/// </summary>
+    private static readonly HashSet<string> EstadosValidos = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Publicado", "Borrador", "Pausado", "Vendido"
+    };
+
     public AnuncioService(
         IAnuncioRepository repository,
         IAlmacenadorArchivos almacenadorArchivos,
@@ -30,147 +33,20 @@ public class AnuncioService : IAnuncioService
         _repository = repository;
         _almacenadorArchivos = almacenadorArchivos;
         _usuarioRepository = usuarioRepository;
-        _planCatalogoRepository = planCatalogoRepository;
+        _planValidator = new AnuncioPlanValidator(usuarioRepository, planCatalogoRepository);
     }
 
-    private static readonly HashSet<string> EstadosValidos = new(StringComparer.OrdinalIgnoreCase)
+    // ==========================================
+    // QUERIES (Lectura)
+    // ==========================================
+
+    public async Task<AnuncioDto?> ObtenerAnuncioPorIdAsync(int id, int? usuarioId = null)
     {
-        "Publicado", "Borrador", "Pausado", "Vendido"
-    };
-
-    // Los campos que participan en la búsqueda pública se guardan sin acentos
-    // (NormalizadorTexto) para que el ILike del repositorio compare en igualdad.
-    private static string NormalizarBusqueda(string? valor) =>
-        NormalizadorTexto.Normalizar(valor);
-
-public async Task<int> CrearAnuncioAsync(
-    AnuncioCreateDto dto)
-{
-    var usuario =
-        await _usuarioRepository
-            .ObtenerDealerConPerfilPorIdAsync(
-                dto.UsuarioId
-            );
-
-    if (usuario == null)
-    {
-        throw new KeyNotFoundException(
-            "El usuario especificado no existe."
-        );
-    }
-
-    int cantidadAnuncios =
-        await _repository.ContarAnunciosPorUsuarioAsync(
-            dto.UsuarioId
-        );
-
-    bool esVendedorParticular =
-        string.Equals(
-            usuario.Rol,
-            "Vendedor",
-            StringComparison.OrdinalIgnoreCase
-        );
-
-    bool esGratis = esVendedorParticular || 
-        (usuario.PerfilDealer?.Suscripcion?.EsGratis == true);
-
-    if (esVendedorParticular || esGratis)
-    {
-        if (cantidadAnuncios >= 1)
-        {
-            throw new BusinessRuleException(
-                "Has alcanzado el límite de 1 anuncio gratuito. " +
-                "Mejora tu cuenta a Dealer para publicar más inventario."
-            );
-        }
-    }
-    else
-    {
-        var suscripcion =
-            usuario.PerfilDealer?.Suscripcion;
-
-        if (suscripcion == null)
-        {
-            throw new BusinessRuleException(
-                "Tu cuenta Dealer no tiene una suscripción activa configurada."
-            );
-        }
-
-        if (
-            suscripcion.FechaVencimientoUtc <=
-            DateTime.UtcNow
-        )
-        {
-            throw new BusinessRuleException(
-                "Tu suscripción Dealer está vencida. Renuevala para seguir publicando."
-            );
-        }
-
-        var plan =
-            await _planCatalogoRepository.ObtenerPorNivelAsync(
-                suscripcion.Nivel
-            );
-
-            if (
-                !suscripcion.PermiteNuevosAnuncios(
-                    cantidadAnuncios,
-                    plan
-                )
-            )
-            {
-                throw new BusinessRuleException(
-                    "Has alcanzado el límite de anuncios permitidos por tu plan."
-                );
-            }
-        }
-
-        var nuevoAnuncio = new Anuncio(
-            usuarioId: dto.UsuarioId,
-            marca: NormalizarBusqueda(dto.Marca),
-            modelo: NormalizarBusqueda(dto.Modelo),
-            version: NormalizarBusqueda(dto.Version),
-            tipoVehiculo: NormalizarBusqueda(dto.TipoVehiculo),
-            motor: NormalizarBusqueda(dto.Motor),
-            traccion: NormalizarBusqueda(dto.Traccion),
-            colorExterior: NormalizarBusqueda(dto.ColorExterior),
-            colorInterior: NormalizarBusqueda(dto.ColorInterior),
-            anio: dto.Anio,
-            precio: dto.Precio,
-            moneda: dto.Moneda,
-            kilometraje: dto.Kilometraje,
-            transmision: NormalizarBusqueda(dto.Transmision),
-            combustible: NormalizarBusqueda(dto.Combustible),
-            accesorios: dto.Accesorios,
-            ubicacion: NormalizarBusqueda(dto.Ubicacion),
-            descripcion: dto.Descripcion
-        );
-
-        if (dto.PrecioAnterior.HasValue)
-        {
-            nuevoAnuncio.FijarOferta(dto.PrecioAnterior);
-        }
-
-        // El anuncio se crea como borrador: el vendedor sube las fotos y luego
-        // lo publica (PublicarAnuncioAsync valida el mínimo de fotos y el cupo).
-        await _repository.AgregarAsync(nuevoAnuncio);
-        await _repository.GuardarCambiosAsync();
-
-        return nuevoAnuncio.Id;
-    }
-
-    public async Task<AnuncioDto?> ObtenerAnuncioPorIdAsync(
-    int id, int? usuarioId = null)
-    {
-        var anuncio =
-            await _repository.ObtenerPorIdAsync(id);
+        var anuncio = await _repository.ObtenerPorIdAsync(id);
 
         if (anuncio == null)
-        {
             return null;
-        }
 
-        // Solo los anuncios publicados y vigentes son visibles públicamente.
-        // El resto (borradores, pausados, vendidos, vencidos) solo lo ve su dueño.
         bool estaVencido = anuncio.EstaVencido || anuncio.EstaVencidoGratis;
         if (anuncio.Estado != "Publicado" || estaVencido)
         {
@@ -178,11 +54,8 @@ public async Task<int> CrearAnuncioAsync(
                 return null;
         }
 
-        var vendedor =
-            await _usuarioRepository
-                .ObtenerDealerConPerfilPorIdAsync(
-                    anuncio.UsuarioId
-                );
+        var vendedor = await _usuarioRepository
+            .ObtenerDealerConPerfilPorIdAsync(anuncio.UsuarioId);
 
         string? nombreVendedor = null;
         string? whatsAppContacto = null;
@@ -190,134 +63,128 @@ public async Task<int> CrearAnuncioAsync(
 
         if (vendedor != null)
         {
-            nombreVendedor =
-                vendedor.PerfilDealer?.NombreAgencia ??
+            nombreVendedor = vendedor.PerfilDealer?.NombreAgencia ??
                 $"{vendedor.Nombre} {vendedor.Apellido}".Trim();
-
-            whatsAppContacto =
-                vendedor.PerfilDealer?.WhatsApp ??
+            whatsAppContacto = vendedor.PerfilDealer?.WhatsApp ??
                 vendedor.PerfilDealer?.TelefonoAgencia ??
                 vendedor.TelefonoPersonal;
-
-            esDealerVerificado = EsDealerVerificado(vendedor);
+            esDealerVerificado = AnuncioPlanValidator.EsDealerVerificado(vendedor);
         }
 
-        return new AnuncioDto
-        {
-            Id = anuncio.Id,
-            UsuarioId = anuncio.UsuarioId,
-            NombreAnuncio = anuncio.NombreAnuncio,
-
-            Marca = anuncio.Marca,
-            Modelo = anuncio.Modelo,
-            Version = anuncio.Version,
-
-            TipoVehiculo = anuncio.TipoVehiculo,
-            Motor = anuncio.Motor,
-            Traccion = anuncio.Traccion,
-
-            ColorExterior = anuncio.ColorExterior,
-            ColorInterior = anuncio.ColorInterior,
-
-            Anio = anuncio.Anio,
-            Precio = anuncio.Precio,
-            Moneda = anuncio.Moneda,
-            PrecioAnterior = anuncio.PrecioAnterior,
-            Kilometraje = anuncio.Kilometraje,
-
-            Condicion = anuncio.Condicion,
-            EnOferta = anuncio.EnOferta,
-
-            Transmision = anuncio.Transmision,
-            Combustible = anuncio.Combustible,
-
-            Accesorios = anuncio.Accesorios.ToList(),
-            Ubicacion = anuncio.Ubicacion,
-            Descripcion = anuncio.Descripcion,
-
-            Estado = anuncio.Estado,
-            Fotos = anuncio.Fotos.ToList(),
-
-            EsDestacado = anuncio.EstaDestacadoVigente,
-            FechaDestacadoHasta = anuncio.FechaDestacadoHasta,
-
-            FechaVencimiento = anuncio.FechaVencimientoUtc,
-
-            EsDealerVerificado = esDealerVerificado,
-
-            NombreVendedor = nombreVendedor,
-            WhatsAppContacto = whatsAppContacto,
-
-            EsVendedorParticular =
-                vendedor != null &&
-                string.Equals(vendedor.Rol, "Vendedor", StringComparison.OrdinalIgnoreCase)
-        };
+        return AnuncioMapper.ToDto(anuncio, nombreVendedor, whatsAppContacto, esDealerVerificado, vendedor);
     }
 
-    /// <summary>
-    /// Dealer verificado = suscripción pagada (no Gratis) + correo confirmado.
-    /// </summary>
-    private static bool EsDealerVerificado(Usuario vendedor)
+    public async Task<IReadOnlyCollection<AnuncioListadoDto>> ObtenerTodosLosAnuncios()
     {
-        if (!vendedor.EmailConfirmado)
-            return false;
-
-        var nivel = vendedor.PerfilDealer?.Suscripcion?.Nivel;
-        return nivel.HasValue && nivel.Value != PlanNivel.Gratis;
-    }
-
-    public async Task<
-    IReadOnlyCollection<AnuncioListadoDto>
-> ObtenerTodosLosAnuncios()
-    {
-        IEnumerable<Anuncio> entidades =
-            await _repository.ObtenerTodosLosAnuncios();
-
+        var entidades = await _repository.ObtenerTodosLosAnuncios();
         return entidades
-            .Select(e => MapearListado(e, soloPrimeraFoto: true))
+            .Select(e => AnuncioMapper.ToListadoDto(e, soloPrimeraFoto: true))
             .ToList();
     }
 
-    public async Task<AnuncioUpdateDto?> ActualizarAsync(
-    int id,
-    int usuarioId,
-    AnuncioUpdateDto updateAnuncio)
+    public async Task<PagedResult<AnuncioListadoDto>> BuscarAnunciosAsync(AnuncioSearchDto dto)
     {
-        var anuncio =
-            await _repository.ObtenerPorIdAsync(id);
+        var filtro = new AnuncioQueryFilter
+        {
+            UsuarioId = dto.UsuarioId,
+            VendedorId = dto.VendedorId,
+            Marca = dto.Marca,
+            Modelo = dto.Modelo,
+            Version = dto.Version,
+            Busqueda = dto.Busqueda,
+            TipoVehiculo = dto.TipoVehiculo,
+            Motor = dto.Motor,
+            Traccion = dto.Traccion,
+            ColorExterior = dto.ColorExterior,
+            ColorInterior = dto.ColorInterior,
+            Transmision = dto.Transmision,
+            Combustible = dto.Combustible,
+            Ubicacion = dto.Ubicacion,
+            Condicion = dto.Condicion,
+            EnOferta = dto.EnOferta,
+            AnioDesde = dto.AnioDesde,
+            AnioHasta = dto.AnioHasta,
+            PrecioMinimo = dto.PrecioMinimo,
+            PrecioMaximo = dto.PrecioMaximo,
+            Moneda = dto.Moneda,
+            KilometrajeMaximo = dto.KilometrajeMaximo,
+            ExcluirDestacadosVigentes = dto.ExcluirDestacadosVigentes,
+            PaginaActual = dto.PaginaActual,
+            CantidadPorPagina = dto.CantidadAnuncios
+        };
+
+        var (anuncios, totalRegistros) = await _repository.BuscarPaginadoAsync(filtro);
+
+        var anunciosDto = anuncios
+            .Select(a => AnuncioMapper.ToListadoDto(a, soloPrimeraFoto: false))
+            .ToList();
+
+        return new PagedResult<AnuncioListadoDto>(
+            anunciosDto, totalRegistros, dto.PaginaActual, dto.CantidadAnuncios);
+    }
+
+    public async Task<PagedResult<AnuncioListadoDto>> ObtenerDestacadosAsync(int pagina, int tamanoPagina)
+    {
+        if (pagina < 1) pagina = 1;
+        if (tamanoPagina < 1 || tamanoPagina > 50) tamanoPagina = 20;
+
+        var (anuncios, total) = await _repository.ObtenerDestacadosPaginadosAsync(pagina, tamanoPagina);
+        var items = anuncios.Select(a => AnuncioMapper.ToListadoDto(a, soloPrimeraFoto: true)).ToList();
+
+        return new PagedResult<AnuncioListadoDto>(items, total, pagina, tamanoPagina);
+    }
+
+    // ==========================================
+    // COMMANDS (Escritura)
+    // ==========================================
+
+    public async Task<int> CrearAnuncioAsync(AnuncioCreateDto dto)
+    {
+        int cantidadAnuncios = await _repository.ContarAnunciosPorUsuarioAsync(dto.UsuarioId);
+        await _planValidator.ValidarCupoAsync(dto.UsuarioId, cantidadAnuncios, "Borrador");
+
+        var nuevoAnuncio = AnuncioMapper.ToEntity(dto);
+
+        if (dto.PrecioAnterior.HasValue)
+            nuevoAnuncio.FijarOferta(dto.PrecioAnterior);
+
+        await _repository.AgregarAsync(nuevoAnuncio);
+        await _repository.GuardarCambiosAsync();
+
+        return nuevoAnuncio.Id;
+    }
+
+    public async Task<AnuncioUpdateDto?> ActualizarAsync(int id, int usuarioId, AnuncioUpdateDto updateAnuncio)
+    {
+        var anuncio = await _repository.ObtenerPorIdAsync(id);
 
         if (anuncio == null)
-        {
             return null;
-        }
 
         if (anuncio.UsuarioId != usuarioId)
-        {
             throw new UnauthorizedAccessException(
-                "Acceso denegado: No tienes permiso para modificar un anuncio que no te pertenece."
-            );
-        }
+                "Acceso denegado: No tienes permiso para modificar un anuncio que no te pertenece.");
 
         anuncio.ActualizarInfo(
-            marca: NormalizarBusqueda(updateAnuncio.Marca),
-            modelo: NormalizarBusqueda(updateAnuncio.Modelo),
-            version: NormalizarBusqueda(updateAnuncio.Version),
-            tipoVehiculo: NormalizarBusqueda(updateAnuncio.TipoVehiculo),
-            motor: NormalizarBusqueda(updateAnuncio.Motor),
-            traccion: NormalizarBusqueda(updateAnuncio.Traccion),
-            colorExterior: NormalizarBusqueda(updateAnuncio.ColorExterior),
-            colorInterior: NormalizarBusqueda(updateAnuncio.ColorInterior),
+            marca: NormalizadorTexto.Normalizar(updateAnuncio.Marca),
+            modelo: NormalizadorTexto.Normalizar(updateAnuncio.Modelo),
+            version: NormalizadorTexto.Normalizar(updateAnuncio.Version),
+            tipoVehiculo: NormalizadorTexto.Normalizar(updateAnuncio.TipoVehiculo),
+            motor: NormalizadorTexto.Normalizar(updateAnuncio.Motor),
+            traccion: NormalizadorTexto.Normalizar(updateAnuncio.Traccion),
+            colorExterior: NormalizadorTexto.Normalizar(updateAnuncio.ColorExterior),
+            colorInterior: NormalizadorTexto.Normalizar(updateAnuncio.ColorInterior),
             anio: updateAnuncio.Anio,
             precio: updateAnuncio.Precio,
             moneda: updateAnuncio.Moneda,
             kilometraje: updateAnuncio.Kilometraje,
-            transmision: NormalizarBusqueda(updateAnuncio.Transmision),
-            combustible: NormalizarBusqueda(updateAnuncio.Combustible),
+            transmision: NormalizadorTexto.Normalizar(updateAnuncio.Transmision),
+            combustible: NormalizadorTexto.Normalizar(updateAnuncio.Combustible),
             accesorios: updateAnuncio.Accesorios,
-            ubicacion: NormalizarBusqueda(updateAnuncio.Ubicacion),
+            ubicacion: NormalizadorTexto.Normalizar(updateAnuncio.Ubicacion),
             descripcion: updateAnuncio.Descripcion,
             precioAnterior: updateAnuncio.PrecioAnterior
-);
+        );
 
         await _repository.ActualizarAsync(anuncio);
         await _repository.GuardarCambiosAsync();
@@ -332,18 +199,18 @@ public async Task<int> CrearAnuncioAsync(
         if (anuncio == null) return false;
 
         if (anuncio.UsuarioId != usuarioId)
-        {
-            throw new UnauthorizedAccessException("Acceso denegado: No tienes permiso para publicar un anuncio que no te pertenece.");
-        }
+            throw new UnauthorizedAccessException(
+                "Acceso denegado: No tienes permiso para publicar un anuncio que no te pertenece.");
 
-        // Ya está publicado y vigente: no hay nada que hacer.
         if (anuncio.Estado == "Publicado" && !anuncio.EstaVencido && !anuncio.EstaVencidoGratis)
             return true;
 
-        var (diasVigencia, esGratis) = await ValidarCupoParaPublicarAsync(anuncio, usuarioId);
+        int cantidadActiva = await _repository.ContarAnunciosPorUsuarioAsync(usuarioId);
+        if (anuncio.Estado == "Publicado" || anuncio.Estado == "Pausado")
+            cantidadActiva--;
 
-        // Los anuncios del plan gratis registran su vencimiento en
-        // FechaVencimientoGratisUtc para poder renovarse con el plan gratuito.
+        var (diasVigencia, esGratis) = await _planValidator.ValidarCupoAsync(usuarioId, cantidadActiva, anuncio.Estado);
+
         if (esGratis)
             anuncio.PublicarGratis();
         else
@@ -353,258 +220,30 @@ public async Task<int> CrearAnuncioAsync(
         return true;
     }
 
-    /// <summary>
-    /// Valida cupo del plan, suscripción vigente y que el anuncio tenga el mínimo de
-    /// fotos antes de publicarlo. El límite aplica a la vitrina activa (Publicado +
-    /// Pausado); los borradores no ocupan cupo. Devuelve los días de vigencia del
-    /// anuncio según el plan del vendedor.
-    /// </summary>
-    private async Task<(int DiasVigencia, bool EsGratis)> ValidarCupoParaPublicarAsync(Anuncio anuncio, int usuarioId)
-    {
-        if (anuncio.Estado == "Publicado" && !anuncio.EstaVencido)
-            return (PlanConfig.DiasVigencia(PlanNivel.Gratis), false);
-
-        // Solo cuentan los activos en vitrina; si este anuncio ya está publicado o
-        // pausado (ya ocupa cupo), se descuenta para no ocupar doble cupo.
-        int cantidadActiva = await _repository.ContarAnunciosPorUsuarioAsync(usuarioId);
-        if (anuncio.Estado == "Publicado" || anuncio.Estado == "Pausado")
-            cantidadActiva--;
-
-        var usuario = await _usuarioRepository.ObtenerDealerConPerfilPorIdAsync(usuarioId);
-
-        bool esVendedorParticular =
-            usuario != null &&
-            string.Equals(usuario.Rol, "Vendedor", StringComparison.OrdinalIgnoreCase);
-
-        bool esPlanGratis = esVendedorParticular || 
-            (usuario?.PerfilDealer?.Suscripcion?.EsGratis == true);
-
-        if (esVendedorParticular || esPlanGratis)
-        {
-            if (cantidadActiva >= 1)
-            {
-                throw new BusinessRuleException(
-                    "Has alcanzado el límite de 1 anuncio gratuito. " +
-                    "Mejora tu cuenta a Dealer para publicar más inventario."
-                );
-            }
-
-            return (PlanConfig.DiasVigencia(PlanNivel.Gratis), true);
-        }
-
-        var suscripcion = usuario?.PerfilDealer?.Suscripcion;
-
-        if (suscripcion == null)
-        {
-            throw new BusinessRuleException(
-                "Tu cuenta Dealer no tiene una suscripción activa configurada."
-            );
-        }
-
-        if (suscripcion.FechaVencimientoUtc <= DateTime.UtcNow)
-        {
-            throw new BusinessRuleException(
-                "Tu suscripción Dealer está vencida. Renuevala para seguir publicando."
-            );
-        }
-
-        var plan = await _planCatalogoRepository.ObtenerPorNivelAsync(suscripcion.Nivel);
-
-        if (!suscripcion.PermiteNuevosAnuncios(cantidadActiva, plan))
-        {
-            throw new BusinessRuleException(
-                "Has alcanzado el límite de anuncios permitidos por tu plan."
-            );
-        }
-
-        return (plan?.DiasVigenciaEfectivo ?? PlanConfig.DiasVigencia(suscripcion.Nivel), false);
-    }
-
-    public async Task<List<string>> SubirImagenesAsync(AnuncioImagenUploadDto dto)
-    {
-        var _anuncio = await _repository.ObtenerPorIdAsync(dto.AnuncioId);
-        if (_anuncio == null) throw new KeyNotFoundException("El anuncio no existe");
-
-        if (_anuncio.UsuarioId != dto.UsuarioId)
-        {
-            throw new UnauthorizedAccessException("Acceso denegado: No tienes permiso para subir fotos a este anuncio.");
-        }
-
-        var rutasGuardadas = new List<string>();
-
-         foreach (var imagen in dto.Imagenes)
-         {
-             // Valida que el archivo no exceda los 5 MB y que sea un tipo de imagen permitido (PNG o JPEG).
-             // Lanza excepcion si la validacion falla para ser tratada en el controlador como BadRequest.
-             if (imagen.Length > 5 * 1024 * 1024)
-                 throw new ArgumentException("Imagen excede el tamaño máximo");
-
-             if (imagen.ContentType != "image/png" && imagen.ContentType != "image/jpeg")
-                 throw new ArgumentException("Formato no permitido");
-
-            var extension = Path.GetExtension(imagen.FileName);
-            var nombreUnico = $"{Guid.NewGuid()}{extension}";
-
-            using (var stream = imagen.OpenReadStream())
-            {
-                var claveS3 = await _almacenadorArchivos.GuardarArchivoAsync(stream, nombreUnico, imagen.ContentType);
-                rutasGuardadas.Add(claveS3);
-            }
-        }
-
-        _anuncio.AgregarFotos(rutasGuardadas, await ObtenerMaxFotosUsuarioAsync(dto.UsuarioId));
-
-        await _repository.ActualizarAsync(_anuncio);
-
-        return rutasGuardadas;
-    }
-
-    /// <summary>
-    /// Máximo de fotos permitidas para el anuncio según el plan del usuario.
-    /// Para vendedores particulares aplica el límite base (Gratis).
-    /// </summary>
-    private async Task<int> ObtenerMaxFotosUsuarioAsync(int usuarioId)
-    {
-        var usuario = await _usuarioRepository.ObtenerDealerConPerfilPorIdAsync(usuarioId);
-
-        bool esVendedorParticular =
-            usuario != null &&
-            string.Equals(usuario.Rol, "Vendedor", StringComparison.OrdinalIgnoreCase);
-
-        if (esVendedorParticular || usuario?.PerfilDealer?.Suscripcion == null)
-            return PlanConfig.MaxFotos(PlanNivel.Gratis);
-
-        var plan = await _planCatalogoRepository.ObtenerPorNivelAsync(usuario.PerfilDealer.Suscripcion.Nivel);
-        return plan?.MaxFotosEfectivo ?? PlanConfig.MaxFotos(usuario.PerfilDealer.Suscripcion.Nivel);
-    }
-
-    public async Task<bool> EstablecerFotoPrincipalAsync(int id, int usuarioId, string urlImagen)
-    {
-        var anuncio = await _repository.ObtenerPorIdAsync(id);
-
-        if (anuncio == null) return false;
-
-        if (anuncio.UsuarioId != usuarioId)
-        {
-            throw new UnauthorizedAccessException("Acceso denegado: No tienes permiso para modificar este anuncio.");
-        }
-
-        anuncio.MoverFotoAlInicio(urlImagen);
-
-        await _repository.ActualizarAsync(anuncio);
-
-        return true;
-    }
-
-/// <summary>
-/// EliminarImagenAsync Eliminar imagen async. Parámetros: Parámetro anuncioId (int), Parámetro usuarioId (int), Parámetro urlImagen (string). Retorna: Task.
-/// </summary>
-    public async Task EliminarImagenAsync(int anuncioId, int usuarioId, string urlImagen)
-    {
-        var anuncio = await _repository.ObtenerPorIdAsync(anuncioId);
-
-        if (anuncio == null)
-            throw new KeyNotFoundException("El anuncio no existe.");
-
-        if (anuncio.UsuarioId != usuarioId)
-            throw new UnauthorizedAccessException("Acceso denegado: No tienes permiso para modificar las fotos de este anuncio.");
-
-        // 1. Eliminar la referencia en la base de datos
-        // Asegúrate de tener este método RemoverFoto creado en tu entidad Anuncio (Core/Entities)
-        anuncio.EliminarFoto(urlImagen);
-
-        await _repository.ActualizarAsync(anuncio);
-        await _repository.GuardarCambiosAsync();
-
-        // 2. Destrucción física en AWS S3 usando el método que ya tenías
-        await _almacenadorArchivos.EliminarArchivoAsync(urlImagen);
-    }
-
-    public async Task<
-    PagedResult<AnuncioListadoDto>
-> BuscarAnunciosAsync(
-    AnuncioSearchDto dto)
-    {
-        var filtro = new AnuncioQueryFilter
-        {
-            UsuarioId = dto.UsuarioId,
-            VendedorId = dto.VendedorId,
-
-            Marca = dto.Marca,
-            Modelo = dto.Modelo,
-            Version = dto.Version,
-            Busqueda = dto.Busqueda,
-
-            TipoVehiculo = dto.TipoVehiculo,
-            Motor = dto.Motor,
-            Traccion = dto.Traccion,
-
-            ColorExterior = dto.ColorExterior,
-            ColorInterior = dto.ColorInterior,
-
-            Transmision = dto.Transmision,
-            Combustible = dto.Combustible,
-            Ubicacion = dto.Ubicacion,
-
-            Condicion = dto.Condicion,
-            EnOferta = dto.EnOferta,
-
-            AnioDesde = dto.AnioDesde,
-            AnioHasta = dto.AnioHasta,
-
-            PrecioMinimo = dto.PrecioMinimo,
-            PrecioMaximo = dto.PrecioMaximo,
-
-            Moneda = dto.Moneda,
-
-            KilometrajeMaximo = dto.KilometrajeMaximo,
-            ExcluirDestacadosVigentes = dto.ExcluirDestacadosVigentes,
-
-            PaginaActual = dto.PaginaActual,
-            CantidadPorPagina = dto.CantidadAnuncios
-        };
-
-        var (
-            anuncios,
-            totalRegistros
-        ) = await _repository.BuscarPaginadoAsync(filtro);
-
-var anunciosDto = anuncios
-            .Select(a => MapearListado(a, soloPrimeraFoto: false))
-            .ToList();
-
-        return new PagedResult<AnuncioListadoDto>(
-            items: anunciosDto,
-            totalRegistros: totalRegistros,
-            paginaActual: dto.PaginaActual,
-            cantidadPorPagina: dto.CantidadAnuncios
-        );
-    }
-
     public async Task<bool> CambiarEstadoAsync(int id, int usuarioId, string estado)
     {
         if (string.IsNullOrWhiteSpace(estado) || !EstadosValidos.Contains(estado))
-        {
             throw new BusinessRuleException(
-                $"El estado '{estado}' no es válido. Estados permitidos: Publicado, Borrador, Pausado, Vendido."
-            );
-        }
+                $"El estado '{estado}' no es válido. Estados permitidos: Publicado, Borrador, Pausado, Vendido.");
 
         var anuncio = await _repository.ObtenerPorIdAsync(id);
 
         if (anuncio == null) return false;
 
         if (anuncio.UsuarioId != usuarioId)
-            throw new UnauthorizedAccessException("Acceso denegado: No tienes permiso para cambiar el estado de este anuncio.");
+            throw new UnauthorizedAccessException(
+                "Acceso denegado: No tienes permiso para cambiar el estado de este anuncio.");
 
         if (anuncio.Estado == estado)
             return true;
 
-        // Pasar a Publicado aplica las mismas reglas que publicar: cupo del plan,
-        // suscripción vigente y mínimo de 5 fotos.
         if (string.Equals(estado, "Publicado", StringComparison.OrdinalIgnoreCase))
         {
-            var (diasVigencia, esGratis) = await ValidarCupoParaPublicarAsync(anuncio, usuarioId);
+            int cantidadActiva = await _repository.ContarAnunciosPorUsuarioAsync(usuarioId);
+            if (anuncio.Estado == "Publicado" || anuncio.Estado == "Pausado")
+                cantidadActiva--;
+
+            var (diasVigencia, esGratis) = await _planValidator.ValidarCupoAsync(usuarioId, cantidadActiva, anuncio.Estado);
             if (esGratis)
                 anuncio.PublicarGratis();
             else
@@ -619,27 +258,6 @@ var anunciosDto = anuncios
         return true;
     }
 
-/// <summary>
-/// RegistrarVistaAsync Registrar vista async. Parámetros: Parámetro anuncioId (int). Retorna: Task.
-/// </summary>
-    public async Task RegistrarVistaAsync(int anuncioId)
-    {
-        var anuncio = await _repository.ObtenerPorIdAsync(anuncioId);
-
-        if (anuncio is null)
-        {
-            throw new KeyNotFoundException("El anuncio no está disponible.");
-        }
-
-        // Solo los anuncios publicados cuentan vistas; los borradores, pausados o
-        // vendidos no deben inflar estadísticas.
-        if (anuncio.Estado != "Publicado")
-            return;
-
-        anuncio.RegistrarVista();
-        await _repository.GuardarCambiosAsync();
-}
-
     public async Task<bool> EliminarAnuncioAsync(int id, int usuarioId)
     {
         var anuncio = await _repository.ObtenerPorIdAsync(id);
@@ -647,9 +265,9 @@ var anunciosDto = anuncios
         if (anuncio == null) return false;
 
         if (anuncio.UsuarioId != usuarioId)
-            throw new UnauthorizedAccessException("Acceso denegado: No tienes permiso para eliminar un anuncio que no te pertenece.");
+            throw new UnauthorizedAccessException(
+                "Acceso denegado: No tienes permiso para eliminar un anuncio que no te pertenece.");
 
-        // Destrucción física de las fotos en AWS S3
         foreach (var foto in anuncio.Fotos)
         {
             try { await _almacenadorArchivos.EliminarArchivoAsync(foto); }
@@ -662,9 +280,6 @@ var anunciosDto = anuncios
         return true;
     }
 
-    // ==========================================
-    // 13. RENOVAR ANUNCIO GRATIS (plan gratis)
-    // ==========================================
     public async Task<bool> RenovarAnuncioGratisAsync(int id, int usuarioId)
     {
         var anuncio = await _repository.ObtenerPorIdAsync(id);
@@ -676,12 +291,9 @@ var anunciosDto = anuncios
             throw new UnauthorizedAccessException("No tienes permiso para renovar este anuncio.");
 
         if (!anuncio.EstaVencidoGratis)
-        {
             throw new BusinessRuleException("El anuncio no está vencido o no es un anuncio del plan gratis.");
-        }
 
         anuncio.RenovarVigenciaGratis();
-
         await _repository.ActualizarAsync(anuncio);
         await _repository.GuardarCambiosAsync();
 
@@ -701,34 +313,13 @@ var anunciosDto = anuncios
         if (anuncio.Estado != "Publicado")
             throw new BusinessRuleException("Solo se pueden destacar anuncios publicados.");
 
-        var usuario = await _usuarioRepository.ObtenerDealerConPerfilPorIdAsync(usuarioId);
-        var suscripcion = usuario?.PerfilDealer?.Suscripcion;
-        var plan = usuario?.PerfilDealer?.Suscripcion?.Plan
-                   ?? await _planCatalogoRepository.ObtenerPorNivelAsync(suscripcion?.Nivel ?? PlanNivel.Gratis);
-
-        if (suscripcion == null || plan == null)
-            throw new BusinessRuleException("Tu cuenta no tiene un plan de suscripción activo.");
-
-        if (suscripcion.Estado != Core.Entities.Enums.EstadoSuscripcion.Activa)
-            throw new BusinessRuleException("Tu suscripción no está activa.");
-
-        if (suscripcion.FechaVencimientoUtc <= DateTime.UtcNow)
-            throw new BusinessRuleException("Tu suscripción ha vencido.");
-
-        // Contar anuncios destacados actuales del usuario
         int destacadosActuales = await _repository.ContarDestacadosPorUsuarioAsync(usuarioId);
+        await _planValidator.ValidarDestacadosAsync(usuarioId, destacadosActuales, anuncio.EstaDestacadoVigente);
 
-        // Si este anuncio ya está destacado, no debe consumir cupo adicional al renovarlo
-        if (anuncio.EstaDestacadoVigente)
-            destacadosActuales--;
-
-        if (!suscripcion.PermiteDestacarMas(destacadosActuales, plan))
-            throw new BusinessRuleException($"Has alcanzado el límite de anuncios destacados de tu plan ({plan.CuotaDestacados}).");
-
-        // Destacar por 30 días (o hasta fin de suscripción)
+        var usuario = await _usuarioRepository.ObtenerDealerConPerfilPorIdAsync(usuarioId);
         var hasta = DateTime.UtcNow.AddDays(30);
-        if (hasta > suscripcion.FechaVencimientoUtc)
-            hasta = suscripcion.FechaVencimientoUtc;
+        if (hasta > usuario!.PerfilDealer!.Suscripcion!.FechaVencimientoUtc)
+            hasta = usuario.PerfilDealer.Suscripcion.FechaVencimientoUtc;
 
         anuncio.MarcarComoDestacado(hasta);
         await _repository.ActualizarAsync(anuncio);
@@ -757,61 +348,92 @@ var anunciosDto = anuncios
         return true;
     }
 
-    public async Task<PagedResult<AnuncioListadoDto>> ObtenerDestacadosAsync(int pagina, int tamanoPagina)
+    // ==========================================
+    // FOTOS (Commands)
+    // ==========================================
+
+    public async Task<List<string>> SubirImagenesAsync(AnuncioImagenUploadDto dto)
     {
-        if (pagina < 1) pagina = 1;
-        if (tamanoPagina < 1 || tamanoPagina > 50) tamanoPagina = 20;
+        var anuncio = await _repository.ObtenerPorIdAsync(dto.AnuncioId);
+        if (anuncio == null) throw new KeyNotFoundException("El anuncio no existe");
 
-        var (anuncios, total) = await _repository.ObtenerDestacadosPaginadosAsync(pagina, tamanoPagina);
+        if (anuncio.UsuarioId != dto.UsuarioId)
+            throw new UnauthorizedAccessException(
+                "Acceso denegado: No tienes permiso para subir fotos a este anuncio.");
 
-        var items = anuncios.Select(a => MapearListado(a, soloPrimeraFoto: true)).ToList();
+        var rutasGuardadas = new List<string>();
 
-        return new PagedResult<AnuncioListadoDto>(items, total, pagina, tamanoPagina);
+        foreach (var imagen in dto.Imagenes)
+        {
+            if (imagen.Length > 5 * 1024 * 1024)
+                throw new ArgumentException("Imagen excede el tamaño máximo");
+
+            if (imagen.ContentType != "image/png" && imagen.ContentType != "image/jpeg")
+                throw new ArgumentException("Formato no permitido");
+
+            var extension = Path.GetExtension(imagen.FileName);
+            var nombreUnico = $"{Guid.NewGuid()}{extension}";
+
+            using (var stream = imagen.OpenReadStream())
+            {
+                var claveS3 = await _almacenadorArchivos.GuardarArchivoAsync(stream, nombreUnico, imagen.ContentType);
+                rutasGuardadas.Add(claveS3);
+            }
+        }
+
+        int maxFotos = await _planValidator.ObtenerMaxFotosAsync(dto.UsuarioId);
+        anuncio.AgregarFotos(rutasGuardadas, maxFotos);
+
+        await _repository.ActualizarAsync(anuncio);
+
+        return rutasGuardadas;
     }
 
-    private static AnuncioListadoDto MapearListado(Anuncio anuncio, bool soloPrimeraFoto)
+    public async Task<bool> EstablecerFotoPrincipalAsync(int id, int usuarioId, string urlImagen)
     {
-        var fotos = soloPrimeraFoto
-            ? anuncio.Fotos.Take(1).ToList()
-            : anuncio.Fotos != null && anuncio.Fotos.Any()
-                ? anuncio.Fotos.ToList()
-                : new List<string> { "url_imagen_por_defecto.jpg" };
+        var anuncio = await _repository.ObtenerPorIdAsync(id);
 
-        return new AnuncioListadoDto
-        {
-            Id = anuncio.Id,
-            UsuarioId = anuncio.UsuarioId,
-            NombreAnuncio = anuncio.NombreAnuncio,
-            Marca = anuncio.Marca,
-            Modelo = anuncio.Modelo,
-            Version = anuncio.Version,
-            TipoVehiculo = anuncio.TipoVehiculo,
-            Motor = anuncio.Motor,
-            Traccion = anuncio.Traccion,
-            ColorExterior = anuncio.ColorExterior,
-            ColorInterior = anuncio.ColorInterior,
-            Anio = anuncio.Anio,
-            Precio = anuncio.Precio,
-            Moneda = anuncio.Moneda,
-            PrecioAnterior = anuncio.PrecioAnterior,
-            Kilometraje = anuncio.Kilometraje,
+        if (anuncio == null) return false;
 
-            Condicion = anuncio.Condicion,
-            EnOferta = anuncio.EnOferta,
+        if (anuncio.UsuarioId != usuarioId)
+            throw new UnauthorizedAccessException(
+                "Acceso denegado: No tienes permiso para modificar este anuncio.");
 
-            Transmision = anuncio.Transmision,
-            Combustible = anuncio.Combustible,
-            Ubicacion = anuncio.Ubicacion,
-            Estado = anuncio.Estado,
-            Vistas = anuncio.Vistas,
-            Fotos = fotos,
-            BadgeSuscripcion = anuncio.Usuario?.PerfilDealer?.Suscripcion?.Nivel.ToString() ?? "Gratis",
-            EsDestacado = anuncio.EstaDestacadoVigente,
-            FechaDestacadoHasta = anuncio.FechaDestacadoHasta,
-            FechaVencimiento = anuncio.FechaVencimientoUtc,
-            EsDealerVerificado =
-                anuncio.Usuario != null && EsDealerVerificado(anuncio.Usuario),
-            CreatedAt = anuncio.CreatedAt
-        };
+        anuncio.MoverFotoAlInicio(urlImagen);
+        await _repository.ActualizarAsync(anuncio);
+
+        return true;
+    }
+
+    public async Task EliminarImagenAsync(int anuncioId, int usuarioId, string urlImagen)
+    {
+        var anuncio = await _repository.ObtenerPorIdAsync(anuncioId);
+
+        if (anuncio == null)
+            throw new KeyNotFoundException("El anuncio no existe.");
+
+        if (anuncio.UsuarioId != usuarioId)
+            throw new UnauthorizedAccessException(
+                "Acceso denegado: No tienes permiso para modificar las fotos de este anuncio.");
+
+        anuncio.EliminarFoto(urlImagen);
+        await _repository.ActualizarAsync(anuncio);
+        await _repository.GuardarCambiosAsync();
+
+        await _almacenadorArchivos.EliminarArchivoAsync(urlImagen);
+    }
+
+    public async Task RegistrarVistaAsync(int anuncioId)
+    {
+        var anuncio = await _repository.ObtenerPorIdAsync(anuncioId);
+
+        if (anuncio is null)
+            throw new KeyNotFoundException("El anuncio no está disponible.");
+
+        if (anuncio.Estado != "Publicado")
+            return;
+
+        anuncio.RegistrarVista();
+        await _repository.GuardarCambiosAsync();
     }
 }

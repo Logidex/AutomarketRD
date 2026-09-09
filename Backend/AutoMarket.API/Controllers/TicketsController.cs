@@ -1,8 +1,10 @@
 using AutoMarket.API.Constants;
 using AutoMarket.API.Extensions;
 using AutoMarket.Application.DTOs.Ticket;
-using AutoMarket.Application.Interfaces;
+using AutoMarket.Application.Features.Tickets.Commands;
+using AutoMarket.Application.Features.Tickets.Queries;
 using AutoMarket.Core.Exceptions;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,14 +13,9 @@ namespace AutoMarket.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize(Roles = Roles.DealerVendedor)]
-public class TicketsController : ControllerBase
+public class TicketsController : BaseApiController
 {
-    private readonly ITicketService _ticketService;
-
-    public TicketsController(ITicketService ticketService)
-    {
-        _ticketService = ticketService;
-    }
+    public TicketsController(IMediator mediator) : base(mediator) { }
 
     [HttpPost]
     public async Task<IActionResult> CrearTicket([FromBody] TicketCreateDto dto)
@@ -26,8 +23,7 @@ public class TicketsController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var usuarioId = User.ObtenerUsuarioId();
-        var ticketId = await _ticketService.CrearTicketAsync(dto, usuarioId);
+        var ticketId = await Mediator.Send(new CrearTicketCommand(dto, ObtenerUsuarioIdRequerido()));
 
         return CreatedAtAction(nameof(ObtenerTicket), new { id = ticketId }, new
         {
@@ -39,19 +35,16 @@ public class TicketsController : ControllerBase
     [HttpGet("mis-tickets")]
     public async Task<IActionResult> ObtenerMisTickets()
     {
-        var usuarioId = User.ObtenerUsuarioId();
-        var tickets = await _ticketService.ObtenerMisTicketsAsync(usuarioId);
+        var tickets = await Mediator.Send(new ObtenerMisTicketsQuery(ObtenerUsuarioIdRequerido()));
         return Ok(tickets);
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> ObtenerTicket(int id)
     {
-        var usuarioId = User.ObtenerUsuarioId();
-
         try
         {
-            var ticket = await _ticketService.ObtenerTicketAsync(id, usuarioId);
+            var ticket = await Mediator.Send(new ObtenerTicketQuery(id, ObtenerUsuarioIdRequerido()));
             return Ok(ticket);
         }
         catch (KeyNotFoundException ex)
@@ -70,11 +63,9 @@ public class TicketsController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var usuarioId = User.ObtenerUsuarioId();
-
         try
         {
-            await _ticketService.ResponderTicketAsync(id, dto, usuarioId);
+            await Mediator.Send(new AgregarMensajeTicketCommand(id, dto, ObtenerUsuarioIdRequerido()));
             return Ok(new { mensaje = "Tu respuesta fue enviada al equipo de soporte." });
         }
         catch (KeyNotFoundException ex)
@@ -94,11 +85,9 @@ public class TicketsController : ControllerBase
     [HttpPost("{id:int}/cerrar")]
     public async Task<IActionResult> Cerrar(int id)
     {
-        var usuarioId = User.ObtenerUsuarioId();
-
         try
         {
-            await _ticketService.CerrarTicketAsync(id, usuarioId);
+            await Mediator.Send(new CerrarTicketCommand(id, ObtenerUsuarioIdRequerido()));
             return Ok(new { mensaje = "El ticket fue cerrado." });
         }
         catch (KeyNotFoundException ex)

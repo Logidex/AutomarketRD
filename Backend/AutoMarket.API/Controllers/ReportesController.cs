@@ -1,5 +1,6 @@
 using AutoMarket.Application.DTOs.Reportes;
-using AutoMarket.Application.Interfaces;
+using AutoMarket.Application.Features.ReportesAnuncio.Commands;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -8,25 +9,10 @@ namespace AutoMarket.API.Controllers;
 
 [ApiController]
 [Route("api/reportes")]
-/// <summary>
-/// Recepción pública de reportes de anuncios. Anónimo permitido;
-/// protegido con rate limiting por IP contra abuso.
-/// </summary>
-public class ReportesController : ControllerBase
+public class ReportesController : BaseApiController
 {
-    private readonly IReporteAnuncioService _reporteService;
+    public ReportesController(IMediator mediator) : base(mediator) { }
 
-    public ReportesController(IReporteAnuncioService reporteService)
-    {
-        _reporteService = reporteService;
-    }
-
-    /// <summary>
-    /// Reporta un anuncio por contenido inapropiado, fraude u otro motivo.
-    /// Acceso anónimo permitido. Aplica rate limiting por IP.
-    /// </summary>
-    /// <param name="dto">Anuncio, motivo y detalle opcional.</param>
-    /// <returns>Confirmación del reporte.</returns>
     [HttpPost]
     [AllowAnonymous]
     [EnableRateLimiting("PoliticaReportes")]
@@ -36,8 +22,7 @@ public class ReportesController : ControllerBase
             return BadRequest(ModelState);
 
         var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "desconocida";
-
-        var id = await _reporteService.CrearAsync(dto, ip);
+        var id = await Mediator.Send(new CrearReporteCommand(dto, ip));
 
         return Ok(new
         {

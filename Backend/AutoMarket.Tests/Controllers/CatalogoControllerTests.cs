@@ -1,7 +1,8 @@
 using AutoMarket.API.Controllers;
 using AutoMarket.Application.DTOs.Anuncio;
 using AutoMarket.Application.DTOs;
-using AutoMarket.Application.Interfaces;
+using AutoMarket.Application.Features.Catalogo.Queries;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Xunit;
@@ -10,13 +11,13 @@ namespace AutoMarket.Tests.Controllers;
 
 public class CatalogoControllerTests
 {
-    private readonly Mock<ICatalogoService> _mockCatalogoService;
+    private readonly Mock<IMediator> _mockMediator;
     private readonly CatalogoController _controller;
 
     public CatalogoControllerTests()
     {
-        _mockCatalogoService = new Mock<ICatalogoService>();
-        _controller = new CatalogoController(_mockCatalogoService.Object);
+        _mockMediator = new Mock<IMediator>();
+        _controller = new CatalogoController(_mockMediator.Object);
     }
 
     [Fact]
@@ -49,8 +50,8 @@ public class CatalogoControllerTests
 
         var resultadoServicio = new PagedResult<AnuncioCatalogoDto>(items, 2, 1, 20);
 
-        _mockCatalogoService
-            .Setup(s => s.ObtenerCatalogoPaginadoAsync(1, 20))
+        _mockMediator
+            .Setup(s => s.Send(It.IsAny<ObtenerCatalogoPaginadoQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(resultadoServicio);
 
         // Act
@@ -60,7 +61,7 @@ public class CatalogoControllerTests
         var ok = Assert.IsType<OkObjectResult>(resultado);
         Assert.Same(resultadoServicio, ok.Value);
 
-        _mockCatalogoService.Verify(s => s.ObtenerCatalogoPaginadoAsync(1, 20), Times.Once);
+        _mockMediator.Verify(s => s.Send(It.IsAny<ObtenerCatalogoPaginadoQuery>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -73,8 +74,8 @@ public class CatalogoControllerTests
             3,
             12);
 
-        _mockCatalogoService
-            .Setup(s => s.ObtenerCatalogoPaginadoAsync(3, 12))
+        _mockMediator
+            .Setup(s => s.Send(It.IsAny<ObtenerCatalogoPaginadoQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(resultadoServicio);
 
         // Act
@@ -84,7 +85,7 @@ public class CatalogoControllerTests
         var ok = Assert.IsType<OkObjectResult>(resultado);
         Assert.Same(resultadoServicio, ok.Value);
 
-        _mockCatalogoService.Verify(s => s.ObtenerCatalogoPaginadoAsync(3, 12), Times.Once);
+        _mockMediator.Verify(s => s.Send(It.IsAny<ObtenerCatalogoPaginadoQuery>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -97,8 +98,8 @@ public class CatalogoControllerTests
             1,
             20);
 
-        _mockCatalogoService
-            .Setup(s => s.ObtenerCatalogoPaginadoAsync(1, 20))
+        _mockMediator
+            .Setup(s => s.Send(It.IsAny<ObtenerCatalogoPaginadoQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(resultadoServicio);
 
         // Act

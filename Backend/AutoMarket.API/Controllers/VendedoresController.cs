@@ -1,8 +1,8 @@
 using AutoMarket.API.Constants;
 using AutoMarket.API.Extensions;
+using AutoMarket.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace AutoMarket.API.Controllers;
 
@@ -11,48 +11,48 @@ namespace AutoMarket.API.Controllers;
 [Authorize]
 public class VendedoresController : ControllerBase
 {
-    private bool EsVendedor()
+    private readonly IVendedorService _vendedorService;
+
+    public VendedoresController(IVendedorService vendedorService)
     {
-        var rolClaim = User.FindFirst(ClaimTypes.Role) 
-            ?? User.FindFirst("role")
-            ?? User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role");
-        return rolClaim?.Value == Roles.Vendedor;
+        _vendedorService = vendedorService;
     }
 
     [HttpGet("me/suscripcion")]
-    public IActionResult ObtenerMiSuscripcion()
+    public async Task<IActionResult> ObtenerMiSuscripcion()
     {
-        if (!EsVendedor())
-        {
+        if (!User.IsInRole(Roles.Vendedor))
             return Forbid();
-        }
 
         var usuarioId = User.ObtenerUsuarioId();
+        var suscripcion = await _vendedorService.ObtenerMiSuscripcionAsync(usuarioId);
 
-        return Ok(new
-        {
-            nivel = "Gratis",
-            ciclo = "Mensual",
-            estado = "Activa",
-            limiteAnuncios = 1,
-            cuotaDestacados = 0,
-            maxFotos = 8,
-            fechaInicioUtc = DateTime.UtcNow,
-            fechaVencimientoUtc = DateTime.UtcNow.AddYears(10),
-            diasRestantes = 3650,
-            activa = true
-        });
+        if (suscripcion is null)
+            return NotFound(new { mensaje = "No se encontró información de suscripción." });
+
+        return Ok(suscripcion);
     }
 
     [HttpGet("me/anuncios")]
-    public IActionResult ObtenerMisAnuncios()
+    public async Task<IActionResult> ObtenerMisAnuncios()
     {
-        if (!EsVendedor())
-        {
+        if (!User.IsInRole(Roles.Vendedor))
             return Forbid();
-        }
 
         var usuarioId = User.ObtenerUsuarioId();
-        return Ok(new { mensaje = "Endpoint para listar anuncios del vendedor", usuarioId });
+        var anuncios = await _vendedorService.ObtenerAnunciosDelVendedorAsync(usuarioId);
+        return Ok(anuncios);
+    }
+
+    [HttpGet("{id:int}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ObtenerPerfilPublico(int id)
+    {
+        var perfil = await _vendedorService.ObtenerPerfilPublicoAsync(id);
+
+        if (perfil is null)
+            return NotFound(new { mensaje = "Vendedor no encontrado." });
+
+        return Ok(perfil);
     }
 }

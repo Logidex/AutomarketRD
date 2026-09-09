@@ -1,6 +1,8 @@
-using AutoMarket.Application.DTOs;
 using AutoMarket.API.Extensions;
-using AutoMarket.Core.Interfaces;
+using AutoMarket.Application.DTOs;
+using AutoMarket.Application.Features.Leads.Commands;
+using AutoMarket.Application.Features.Leads.Queries;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -9,20 +11,9 @@ namespace AutoMarket.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-/// <summary>
-/// Controlador para gestionar Leads.
-/// </summary>
-public class LeadsController : ControllerBase
+public class LeadsController : BaseApiController
 {
-    private readonly ILeadService _leadService;
-
-/// <summary>
-/// Inicializa una nueva instancia de la clase LeadsController. Parámetro leadService (ILeadService)
-/// </summary>
-    public LeadsController(ILeadService leadService)
-    {
-        _leadService = leadService;
-    }
+    public LeadsController(IMediator mediator) : base(mediator) { }
 
     [HttpPost]
     [AllowAnonymous]
@@ -30,12 +21,9 @@ public class LeadsController : ControllerBase
     public async Task<IActionResult> CrearLead([FromBody] LeadCreateDto dto)
     {
         if (!ModelState.IsValid)
-        {
             return BadRequest(ModelState);
-        }
 
-        await _leadService.CrearLeadAsync(dto, User.ObtenerUsuarioIdOpcional());
-        
+        await Mediator.Send(new CrearLeadCommand(dto, User.ObtenerUsuarioIdOpcional()));
         return Ok(new { mensaje = "Tu mensaje ha sido enviado exitosamente al vendedor." });
     }
 
@@ -43,11 +31,9 @@ public class LeadsController : ControllerBase
     [Authorize]
     public async Task<IActionResult> ObtenerPorAnuncio(int anuncioId)
     {
-        var usuarioId = User.ObtenerUsuarioId();
-
         try
         {
-            var leads = await _leadService.ObtenerLeadsPorAnuncioAsync(anuncioId, usuarioId);
+            var leads = await Mediator.Send(new ObtenerLeadsPorAnuncioQuery(anuncioId, ObtenerUsuarioIdRequerido()));
             return Ok(leads);
         }
         catch (KeyNotFoundException ex)
@@ -64,31 +50,23 @@ public class LeadsController : ControllerBase
     [Authorize]
     public async Task<IActionResult> ObtenerMisLeads()
     {
-        var dealerId = User.ObtenerUsuarioId();
-
-        var leads = await _leadService.ObtenerLeadsPorDealerAsync(dealerId);
+        var leads = await Mediator.Send(new ObtenerLeadsPorDealerQuery(ObtenerUsuarioIdRequerido()));
         return Ok(leads);
     }
 
-    // Historial del comprador: vehículos que contactó
     [HttpGet("mis-contactos")]
     [Authorize]
     public async Task<IActionResult> ObtenerMisContactos()
     {
-        var usuarioId = User.ObtenerUsuarioId();
-
-        var contactos = await _leadService.ObtenerMisContactosAsync(usuarioId);
+        var contactos = await Mediator.Send(new ObtenerMisContactosQuery(ObtenerUsuarioIdRequerido()));
         return Ok(contactos);
     }
 
-    // Resumen para el campanario del dealer/vendedor: no leídos + últimos
     [HttpGet("resumen-no-leidos")]
     [Authorize]
     public async Task<IActionResult> ObtenerResumenNoLeidos()
     {
-        var usuarioId = User.ObtenerUsuarioId();
-
-        var resumen = await _leadService.ObtenerResumenNoLeidosAsync(usuarioId);
+        var resumen = await Mediator.Send(new ObtenerResumenNoLeidosQuery(ObtenerUsuarioIdRequerido()));
         return Ok(resumen);
     }
 
@@ -96,9 +74,7 @@ public class LeadsController : ControllerBase
     [Authorize]
     public async Task<IActionResult> MarcarTodosLeido()
     {
-        var dealerId = User.ObtenerUsuarioId();
-
-        var cantidad = await _leadService.MarcarTodosLeidosAsync(dealerId);
+        var cantidad = await Mediator.Send(new MarcarTodosLeidosCommand(ObtenerUsuarioIdRequerido()));
         return Ok(new { mensaje = "Leads marcados como leídos.", cantidad });
     }
 
@@ -106,12 +82,9 @@ public class LeadsController : ControllerBase
     [Authorize]
     public async Task<IActionResult> MarcarLeido(int id)
     {
-        var dealerId = User.ObtenerUsuarioId();
-
         try
         {
-            var marcado = await _leadService.MarcarLeidoAsync(id, dealerId);
-
+            var marcado = await Mediator.Send(new MarcarLeidoCommand(id, ObtenerUsuarioIdRequerido()));
             if (!marcado)
                 return NotFound(new { mensaje = "El lead no fue encontrado." });
 

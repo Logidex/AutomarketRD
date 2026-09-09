@@ -1,7 +1,9 @@
 using System.Security.Claims;
 using AutoMarket.API.Controllers;
 using AutoMarket.Application.DTOs.Favorito;
-using AutoMarket.Application.Interfaces;
+using AutoMarket.Application.Features.Favoritos.Commands;
+using AutoMarket.Application.Features.Favoritos.Queries;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -11,13 +13,13 @@ namespace AutoMarket.Tests.Controllers;
 
 public class FavoritosControllerTests
 {
-    private readonly Mock<IFavoritoService> _mockFavoritoService;
+    private readonly Mock<IMediator> _mockMediator;
     private readonly FavoritosController _controller;
 
     public FavoritosControllerTests()
     {
-        _mockFavoritoService = new Mock<IFavoritoService>();
-        _controller = new FavoritosController(_mockFavoritoService.Object);
+        _mockMediator = new Mock<IMediator>();
+        _controller = new FavoritosController(_mockMediator.Object);
         ConfigurarUsuario(123);
     }
 
@@ -40,8 +42,8 @@ public class FavoritosControllerTests
     [Fact]
     public async Task AgregarFavorito_CuandoEsExitoso_DebeRetornarOk()
     {
-        _mockFavoritoService
-            .Setup(s => s.AgregarFavoritoAsync(123, 10))
+        _mockMediator
+            .Setup(s => s.Send(It.IsAny<AgregarFavoritoCommand>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
         var resultado = await _controller.AgregarFavorito(10);
@@ -54,16 +56,16 @@ public class FavoritosControllerTests
         var mensaje = tipo.GetProperty("mensaje")?.GetValue(ok.Value)?.ToString();
 
         Assert.True(exito);
-        Assert.Equal("Vehículo agregado a favoritos ❤️", mensaje);
+        Assert.Equal("Vehículo agregado a favoritos.", mensaje);
 
-        _mockFavoritoService.Verify(s => s.AgregarFavoritoAsync(123, 10), Times.Once);
+        _mockMediator.Verify(s => s.Send(It.IsAny<AgregarFavoritoCommand>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
     public async Task AgregarFavorito_CuandoAnuncioNoExiste_DebeRetornarNotFound()
     {
-        _mockFavoritoService
-            .Setup(s => s.AgregarFavoritoAsync(123, 10))
+        _mockMediator
+            .Setup(s => s.Send(It.IsAny<AgregarFavoritoCommand>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new KeyNotFoundException("El anuncio no existe."));
 
         var resultado = await _controller.AgregarFavorito(10);
@@ -78,8 +80,8 @@ public class FavoritosControllerTests
     [Fact]
     public async Task AgregarFavorito_CuandoYaExiste_DebeRetornarBadRequest()
     {
-        _mockFavoritoService
-            .Setup(s => s.AgregarFavoritoAsync(123, 10))
+        _mockMediator
+            .Setup(s => s.Send(It.IsAny<AgregarFavoritoCommand>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("El vehículo ya está en tus favoritos."));
 
         var resultado = await _controller.AgregarFavorito(10);
@@ -94,8 +96,8 @@ public class FavoritosControllerTests
     [Fact]
     public async Task QuitarFavorito_CuandoEsExitoso_DebeRetornarOk()
     {
-        _mockFavoritoService
-            .Setup(s => s.QuitarFavoritoAsync(123, 10))
+        _mockMediator
+            .Setup(s => s.Send(It.IsAny<QuitarFavoritoCommand>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
         var resultado = await _controller.QuitarFavorito(10);
@@ -108,16 +110,16 @@ public class FavoritosControllerTests
         var mensaje = tipo.GetProperty("mensaje")?.GetValue(ok.Value)?.ToString();
 
         Assert.True(exito);
-        Assert.Equal("Vehículo removido de favoritos 💔", mensaje);
+        Assert.Equal("Vehículo removido de favoritos.", mensaje);
 
-        _mockFavoritoService.Verify(s => s.QuitarFavoritoAsync(123, 10), Times.Once);
+        _mockMediator.Verify(s => s.Send(It.IsAny<QuitarFavoritoCommand>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
     public async Task QuitarFavorito_CuandoNoExiste_DebeRetornarNotFound()
     {
-        _mockFavoritoService
-            .Setup(s => s.QuitarFavoritoAsync(123, 10))
+        _mockMediator
+            .Setup(s => s.Send(It.IsAny<QuitarFavoritoCommand>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new KeyNotFoundException("El vehículo no estaba en tus favoritos."));
 
         var resultado = await _controller.QuitarFavorito(10);
@@ -154,8 +156,8 @@ public class FavoritosControllerTests
             }
         };
 
-        _mockFavoritoService
-            .Setup(s => s.ObtenerFavoritosAsync(123))
+        _mockMediator
+            .Setup(s => s.Send(It.IsAny<ObtenerFavoritosQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(favoritos);
 
         var resultado = await _controller.ObtenerMisFavoritos();
@@ -164,6 +166,6 @@ public class FavoritosControllerTests
         var valor = Assert.IsAssignableFrom<IEnumerable<AnuncioFavoritoDto>>(ok.Value);
         Assert.Equal(2, valor.Count());
 
-        _mockFavoritoService.Verify(s => s.ObtenerFavoritosAsync(123), Times.Once);
+        _mockMediator.Verify(s => s.Send(It.IsAny<ObtenerFavoritosQuery>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 }
