@@ -1,6 +1,7 @@
 using AutoMarket.API.Constants;
 using AutoMarket.API.Extensions;
-using AutoMarket.Application.Interfaces;
+using AutoMarket.Application.Features.Vendedores.Queries;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,14 +10,9 @@ namespace AutoMarket.API.Controllers;
 [ApiController]
 [Route("api/vendedores")]
 [Authorize]
-public class VendedoresController : ControllerBase
+public class VendedoresController : BaseApiController
 {
-    private readonly IVendedorService _vendedorService;
-
-    public VendedoresController(IVendedorService vendedorService)
-    {
-        _vendedorService = vendedorService;
-    }
+    public VendedoresController(IMediator mediator) : base(mediator) { }
 
     [HttpGet("me/suscripcion")]
     public async Task<IActionResult> ObtenerMiSuscripcion()
@@ -24,8 +20,8 @@ public class VendedoresController : ControllerBase
         if (!User.IsInRole(Roles.Vendedor))
             return Forbid();
 
-        var usuarioId = User.ObtenerUsuarioId();
-        var suscripcion = await _vendedorService.ObtenerMiSuscripcionAsync(usuarioId);
+        var usuarioId = ObtenerUsuarioIdRequerido();
+        var suscripcion = await Mediator.Send(new ObtenerMiSuscripcionQuery(usuarioId));
 
         if (suscripcion is null)
             return NotFound(new { mensaje = "No se encontró información de suscripción." });
@@ -39,8 +35,8 @@ public class VendedoresController : ControllerBase
         if (!User.IsInRole(Roles.Vendedor))
             return Forbid();
 
-        var usuarioId = User.ObtenerUsuarioId();
-        var anuncios = await _vendedorService.ObtenerAnunciosDelVendedorAsync(usuarioId);
+        var usuarioId = ObtenerUsuarioIdRequerido();
+        var anuncios = await Mediator.Send(new ObtenerAnunciosVendedorQuery(usuarioId));
         return Ok(anuncios);
     }
 
@@ -48,7 +44,7 @@ public class VendedoresController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> ObtenerPerfilPublico(int id)
     {
-        var perfil = await _vendedorService.ObtenerPerfilPublicoAsync(id);
+        var perfil = await Mediator.Send(new ObtenerPerfilPublicoVendedorQuery(id));
 
         if (perfil is null)
             return NotFound(new { mensaje = "Vendedor no encontrado." });

@@ -1,7 +1,8 @@
 using System.Security.Claims;
 using AutoMarket.API.Controllers;
 using AutoMarket.Application.DTOs;
-using AutoMarket.Application.Interfaces;
+using AutoMarket.Application.Features.Vendedores.Queries;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -10,13 +11,13 @@ namespace AutoMarket.Tests.Controllers;
 
 public class VendedoresControllerTests
 {
-    private readonly Mock<IVendedorService> _mockService;
+    private readonly Mock<IMediator> _mockMediator;
     private readonly VendedoresController _controller;
 
     public VendedoresControllerTests()
     {
-        _mockService = new Mock<IVendedorService>();
-        _controller = new VendedoresController(_mockService.Object);
+        _mockMediator = new Mock<IMediator>();
+        _controller = new VendedoresController(_mockMediator.Object);
     }
 
     private void SimularVendedorAutenticado(string usuarioId)
@@ -54,7 +55,8 @@ public class VendedoresControllerTests
     {
         SimularVendedorAutenticado("15");
         var suscripcion = new VendedorSuscripcionDto { Nivel = "Pro", Activa = true };
-        _mockService.Setup(s => s.ObtenerMiSuscripcionAsync(15)).ReturnsAsync(suscripcion);
+        _mockMediator.Setup(s => s.Send(It.IsAny<ObtenerMiSuscripcionQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(suscripcion);
 
         var resultado = await _controller.ObtenerMiSuscripcion();
 
@@ -76,7 +78,8 @@ public class VendedoresControllerTests
     public async Task ObtenerPerfilPublico_Existe_DebeRetornarOk()
     {
         var perfil = new VendedorPerfilPublicoDto { UsuarioId = 10, Nombre = "Juan" };
-        _mockService.Setup(s => s.ObtenerPerfilPublicoAsync(10)).ReturnsAsync(perfil);
+        _mockMediator.Setup(s => s.Send(It.IsAny<ObtenerPerfilPublicoVendedorQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(perfil);
 
         var resultado = await _controller.ObtenerPerfilPublico(10);
 
@@ -87,7 +90,8 @@ public class VendedoresControllerTests
     [Fact]
     public async Task ObtenerPerfilPublico_NoExiste_DebeRetornarNotFound()
     {
-        _mockService.Setup(s => s.ObtenerPerfilPublicoAsync(99)).ReturnsAsync((VendedorPerfilPublicoDto?)null);
+        _mockMediator.Setup(s => s.Send(It.IsAny<ObtenerPerfilPublicoVendedorQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((VendedorPerfilPublicoDto?)null);
 
         var resultado = await _controller.ObtenerPerfilPublico(99);
 

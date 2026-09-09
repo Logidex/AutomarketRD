@@ -48,8 +48,8 @@ public class CuponHandlerTests
     {
         var command = new AplicarCuponCommand(PerfilDealerId: 1, Codigo: "INVALIDO");
         _mockService
-            .Setup<Task<CuponAplicadoDto>>(s => s.AplicarCuponAsync(1, "INVALIDO"))
-            .ReturnsAsync((CuponAplicadoDto?)null);
+            .Setup(s => s.AplicarCuponAsync(1, "INVALIDO"))
+            .ReturnsAsync((CuponAplicadoDto)null!);
 
         var resultado = await _commandHandler.Handle(command, CancellationToken.None);
 
