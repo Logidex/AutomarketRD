@@ -77,12 +77,17 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICuentasBancariasRepository, CuentasBancariasRepository>();
         services.AddScoped<ICuentasBancariasService, CuentasBancariasService>();
 
+        services.AddScoped<IAdSlotRepository, AdSlotRepository>();
+        services.AddScoped<IAdSlotService, AdSlotService>();
+        services.AddScoped<AdSlotImageService>();
+
         services.AddScoped<IArchivoService, ArchivoService>();
         services.AddScoped<IAdminUsuarioService, AdminUsuarioService>();
         services.AddScoped<IPagoOrquestacionService, PagoOrquestacionService>();
 
         services.AddHostedService<SuscripcionMonitorService>();
         services.AddHostedService<AnuncioVencimientoService>();
+        services.AddHostedService<AdSlotMonitorService>();
 
         if (builder.Environment.IsDevelopment()
             && string.Equals(builder.Configuration["PayPal:ClientId"], "dummy", StringComparison.OrdinalIgnoreCase))

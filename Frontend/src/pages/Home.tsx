@@ -23,6 +23,7 @@ import HeaderPublico from "../components/layout/HeaderPublico";
 import SectionBackground from "../components/SectionBackground";
 import MeshGradientCanvas from "../components/MeshGradientCanvas";
 import ShinyText from "../components/ShinyText";
+import AdSlotRenderer from "../components/ads/AdSlotRenderer";
 
 const CANTIDAD_DESTACADOS = 5;
 const CANTIDAD_RECIENTES = 6;
@@ -242,6 +243,10 @@ function GaleriaDestacada({ anuncios }: { anuncios: AnuncioListado[] }) {
                 ),
               )}
           </div>
+        </div>
+
+        <div className="mt-6 flex justify-center">
+          <AdSlotRenderer ubicacion="HomepageBuscador" orientacion="horizontal" />
         </div>
 
         <Link
@@ -612,7 +617,9 @@ function CtaVendedor() {
 function PiePaginaHome() {
   return (
     <footer className="border-t border-line bg-surface py-9">
-      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 text-sm text-ink-2 sm:flex-row sm:px-8">
+      <div className="mx-auto max-w-6xl px-6 sm:px-8">
+        <AdSlotRenderer ubicacion="HomepageFooter" orientacion="horizontal" className="mb-6" />
+        <div className="flex flex-col items-center justify-between gap-4 text-sm text-ink-2 sm:flex-row">
         <span>© 2026 AutoMarket RD. Todos los derechos reservados.</span>
         <nav className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
           <Link to="/terminos" className="transition-colors hover:text-ink">
@@ -631,6 +638,7 @@ function PiePaginaHome() {
             Planes y precios
           </Link>
         </nav>
+        </div>
       </div>
     </footer>
   );
