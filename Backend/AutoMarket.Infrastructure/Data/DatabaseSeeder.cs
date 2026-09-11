@@ -2,6 +2,7 @@ using AutoMarket.Application.Helpers;
 using AutoMarket.Core.Entities;
 using AutoMarket.Core.Entities.Enums;
 using AutoMarket.Core.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,6 +21,7 @@ public static class DatabaseSeeder
         await SeedPlanesCatalogoAsync(scope.ServiceProvider);
         await SeedCuponBienvenidaAsync(scope.ServiceProvider, config);
         await SeedEncuestaAsync(scope.ServiceProvider);
+        await SeedAdSlotsAsync(scope.ServiceProvider);
     }
 
     private static async Task SeedAdminAsync(IUsuarioRepository usuarioRepository, IConfiguration config)
@@ -172,5 +174,73 @@ public static class DatabaseSeeder
         await encuestaRepository.AgregarAsync(encuesta);
 
         Console.WriteLine("[Seeder] Encuesta de satisfacción creada (2 escala + 1 abierta).");
+    }
+
+    private static async Task SeedAdSlotsAsync(IServiceProvider serviceProvider)
+    {
+        var repository = serviceProvider.GetRequiredService<IAdSlotRepository>();
+        var existentes = await repository.ObtenerTodosLosSlotsAsync();
+
+        if (existentes.Count > 0)
+        {
+            return;
+        }
+
+        Console.WriteLine("[Seeder] Creando AdSlots por defecto...");
+
+        var slots = new (UbicacionAdSlot Ubicacion, string Titulo, int Ancho, int Alto, int Orden, (int Dias, decimal Precio, decimal Descuento)[] Precios)[]
+        {
+            (UbicacionAdSlot.HomepageLateral, "Homepage - Lateral", 300, 250, 1,
+                [(7, 1500m, 10), (15, 2500m, 15), (30, 4000m, 20)]),
+            (UbicacionAdSlot.HomepageBuscador, "Homepage - Buscador", 728, 90, 2,
+                [(7, 2000m, 10), (15, 3500m, 15), (30, 5500m, 20)]),
+            (UbicacionAdSlot.HomepageFooter, "Homepage - Footer", 728, 90, 3,
+                [(7, 1800m, 10), (15, 3000m, 15), (30, 5000m, 20)]),
+            (UbicacionAdSlot.VehiculosLateral, "Vehículos - Lateral", 300, 600, 4,
+                [(7, 2000m, 10), (15, 3500m, 15), (30, 5500m, 20)]),
+            (UbicacionAdSlot.VehiculosGrid, "Vehículos - Grid", 300, 250, 5,
+                [(7, 1500m, 10), (15, 2500m, 15), (30, 4000m, 20)]),
+            (UbicacionAdSlot.VehiculosFooter, "Vehículos - Footer", 728, 90, 6,
+                [(7, 1800m, 10), (15, 3000m, 15), (30, 5000m, 20)]),
+            (UbicacionAdSlot.DetalleLateral, "Detalle - Lateral", 300, 600, 7,
+                [(7, 2500m, 10), (15, 4000m, 15), (30, 6500m, 20)]),
+            (UbicacionAdSlot.DetalleFooter, "Detalle - Footer", 728, 90, 8,
+                [(7, 2000m, 10), (15, 3500m, 15), (30, 5500m, 20)]),
+            (UbicacionAdSlot.AgenciasLateral, "Agencias - Lateral", 300, 250, 9,
+                [(7, 1500m, 10), (15, 2500m, 15), (30, 4000m, 20)]),
+            (UbicacionAdSlot.AgenciasFooter, "Agencias - Footer", 728, 90, 10,
+                [(7, 1800m, 10), (15, 3000m, 15), (30, 5000m, 20)]),
+        };
+
+        foreach (var s in slots)
+        {
+            var slot = new AdSlot
+            {
+                Titulo = s.Titulo,
+                Ubicacion = s.Ubicacion,
+                AnchoPx = s.Ancho,
+                AltoPx = s.Alto,
+                IntervaloRotacionSeg = 5,
+                MaxAnunciosSimultaneos = 3,
+                Activo = true,
+                Orden = s.Orden,
+            };
+
+            await repository.AgregarSlotAsync(slot);
+
+            foreach (var (dias, precio, descuento) in s.Precios)
+            {
+                await repository.AgregarPrecioAsync(new AdSlotPrecio
+                {
+                    AdSlotId = slot.Id,
+                    DuracionDias = dias,
+                    Precio = precio,
+                    DescuentoProElitePorcentaje = descuento,
+                    Activo = true
+                });
+            }
+        }
+
+        Console.WriteLine($"[Seeder] {slots.Length} AdSlots creados con precios por defecto.");
     }
 }
