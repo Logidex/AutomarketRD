@@ -7,7 +7,7 @@ import {
   useCancelarAnuncioPublicitario,
 } from '../../hooks/useAdSlots';
 import { urlImagen } from '../../utils/imagen';
-import Spinner from '../ui/Spinner';
+import Spinner from '../../components/ui/Spinner';
 
 const UBICACIONES_LABELS: Record<string, string> = {
   HomepageLateral: 'Homepage - Lateral',

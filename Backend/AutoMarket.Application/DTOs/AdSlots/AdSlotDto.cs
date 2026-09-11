@@ -46,6 +46,12 @@ public class AdSlotAnuncioPublicoDto
     public string? Titulo { get; set; }
     public string NombreDealer { get; set; } = string.Empty;
     public int Prioridad { get; set; }
+    public UbicacionAdSlot Ubicacion { get; set; }
+    public DateTime FechaInicioUtc { get; set; }
+    public DateTime FechaFinUtc { get; set; }
+    public EstadoAdSlot Estado { get; set; }
+    public int Impresiones { get; set; }
+    public int Clicks { get; set; }
 }
 
 public class CrearAdSlotAnuncioDto

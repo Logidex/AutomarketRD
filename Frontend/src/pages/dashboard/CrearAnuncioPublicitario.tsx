@@ -8,7 +8,7 @@ import {
   useCrearAnuncioPublicitario,
 } from '../../hooks/useAdSlots';
 import type { AdSlotPublico, CrearAdSlotAnuncioDto } from '../../types/adslot.types';
-import Spinner from '../ui/Spinner';
+import Spinner from '../../components/ui/Spinner';
 
 const UBICACIONES_LABELS: Record<string, string> = {
   HomepageLateral: 'Homepage - Lateral',

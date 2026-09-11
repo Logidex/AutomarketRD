@@ -15,7 +15,7 @@ import type {
   ActualizarAdSlotAdminDto,
   UbicacionAdSlot,
 } from '../../types/adslot.types';
-import Spinner from '../ui/Spinner';
+import Spinner from '../../components/ui/Spinner';
 
 const UBICACIONES: { valor: UbicacionAdSlot; etiqueta: string }[] = [
   { valor: 'HomepageLateral', etiqueta: 'Homepage - Lateral' },

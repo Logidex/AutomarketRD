@@ -41,6 +41,12 @@ export interface AdSlotAnuncioPublico {
   titulo: string | null;
   nombreDealer: string;
   prioridad: number;
+  ubicacion: UbicacionAdSlot;
+  fechaInicioUtc: string;
+  fechaFinUtc: string;
+  estado: EstadoAdSlot;
+  impresiones: number;
+  clicks: number;
 }
 
 export interface AdSlotPublico {
@@ -96,6 +102,7 @@ export interface AdSlotStats {
   totalImpresiones: number;
   totalClicks: number;
   ctrPromedio: number;
+  anunciosActivos: number;
   topAnuncios: AdSlotAnuncioStats[];
 }
 

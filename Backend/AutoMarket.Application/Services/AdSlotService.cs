@@ -125,7 +125,13 @@ public class AdSlotService : IAdSlotService
             Enlace = a.Enlace,
             Titulo = a.Titulo,
             NombreDealer = a.PerfilDealer?.NombreAgencia ?? "Dealer",
-            Prioridad = a.Prioridad
+            Prioridad = a.Prioridad,
+            Ubicacion = a.AdSlot.Ubicacion,
+            FechaInicioUtc = a.FechaInicioUtc,
+            FechaFinUtc = a.FechaFinUtc,
+            Estado = a.Estado,
+            Impresiones = a.Impresiones,
+            Clicks = a.Clicks
         }).ToList();
     }
 
