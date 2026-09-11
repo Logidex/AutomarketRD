@@ -14,6 +14,7 @@ import {
   FaFlag,
   FaClipboardList,
   FaUniversity,
+  FaAd,
 } from "react-icons/fa";
 import { authService } from "../../services/auth.service";
 import { useResumenTicketsAdmin } from "../../hooks/useTickets";
@@ -38,6 +39,11 @@ const menuItems = [
     path: "/admin/anuncios",
     label: "Anuncios",
     icon: <FaCar />,
+  },
+  {
+    path: "/admin/adslots",
+    label: "Ad Slots",
+    icon: <FaAd />,
   },
   {
     path: "/admin/reportes",

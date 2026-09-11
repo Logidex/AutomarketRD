@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 
-import { FaBars, FaCar, FaHome, FaPlusCircle, FaChartPie, FaSignOutAlt, FaEnvelope, FaStore, FaCreditCard, FaPaperPlane, FaHeadset, FaTimes } from "react-icons/fa";
+import { FaBars, FaCar, FaHome, FaPlusCircle, FaChartPie, FaSignOutAlt, FaEnvelope, FaStore, FaCreditCard, FaPaperPlane, FaHeadset, FaTimes, FaAd } from "react-icons/fa";
 
 import { authService } from "../../services/auth.service";
 import { suscripcionService, type SuscripcionDealer } from "../../services/suscripcion.service";
@@ -43,6 +43,11 @@ const menuItems = [
     path: "/dashboard/contactados",
     label: "Contactados",
     icon: <FaPaperPlane />,
+  },
+  {
+    path: "/dashboard/ads",
+    label: "Mis Ads",
+    icon: <FaAd />,
   },
   {
     path: "/dashboard/soporte",

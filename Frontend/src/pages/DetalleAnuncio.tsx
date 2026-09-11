@@ -38,6 +38,7 @@ import { formatearPrecio } from "../utils/formato";
 import HeaderPublico from "../components/layout/HeaderPublico";
 import SectionBackground from "../components/SectionBackground";
 import BadgeVerificado from "../components/BadgeVerificado";
+import AdSlotRenderer from "../components/ads/AdSlotRenderer";
 import {
   TIPOS_VEHICULO,
   TRANSMISIONES,
@@ -1271,6 +1272,10 @@ export default function DetalleAnuncio() {
                   </button>
                 </motion.div>
               )}
+
+              <motion.div variants={{ hidden: { opacity: 0, y: 14 }, visible: { opacity: 1, y: 0 } }}>
+                <AdSlotRenderer ubicacion="DetalleLateral" />
+              </motion.div>
             </motion.div>
           </div>
         ) : null}
@@ -1279,11 +1284,14 @@ export default function DetalleAnuncio() {
 
       {/* FOOTER */}
       <footer className="border-t border-line py-8">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 text-sm text-ink-2 sm:flex-row sm:px-8">
-          <span>© 2026 AutoMarket RD. Todos los derechos reservados.</span>
-          <Link to="/precios" className="transition-colors hover:text-ink">
-            Planes y precios
-          </Link>
+        <div className="mx-auto max-w-6xl px-6 sm:px-8">
+          <AdSlotRenderer ubicacion="DetalleFooter" orientacion="horizontal" className="mb-6" />
+          <div className="flex flex-col items-center justify-between gap-4 text-sm text-ink-2 sm:flex-row">
+            <span>© 2026 AutoMarket RD. Todos los derechos reservados.</span>
+            <Link to="/precios" className="transition-colors hover:text-ink">
+              Planes y precios
+            </Link>
+          </div>
         </div>
       </footer>
     </div>
