@@ -1,31 +1,23 @@
-using AutoMarket.Application.Interfaces;
+using AutoMarket.Application.Features.Comparador.Queries;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AutoMarket.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-/// <summary>
-/// Controlador para gestionar Comparador.
-/// </summary>
-public class ComparadorController : ControllerBase
+[AllowAnonymous]
+public class ComparadorController : BaseApiController
 {
-    private readonly IComparadorService _comparadorService;
-
-/// <summary>
-/// Inicializa una nueva instancia de la clase ComparadorController. Parámetro comparadorService (IComparadorService)
-/// </summary>
-    public ComparadorController(IComparadorService comparadorService)
-    {
-        _comparadorService = comparadorService;
-    }
+    public ComparadorController(IMediator mediator) : base(mediator) { }
 
     [HttpGet]
     public async Task<IActionResult> CompararVehiculos([FromQuery] int[] ids)
     {
         try
         {
-            var resultado = await _comparadorService.CompararVehiculosAsync(ids);
+            var resultado = await Mediator.Send(new CompararVehiculosQuery(ids));
             return Ok(resultado);
         }
         catch (ArgumentException ex)

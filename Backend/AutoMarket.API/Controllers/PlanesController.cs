@@ -1,30 +1,19 @@
-using AutoMarket.Application.Interfaces;
+using AutoMarket.Application.Features.PlanCatalogo.Queries;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AutoMarket.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-/// <summary>
-/// Controlador para gestionar Planes.
-/// </summary>
-public class PlanesController : ControllerBase
+public class PlanesController : BaseApiController
 {
-    private readonly IPlanCatalogoService _planCatalogoService;
+    public PlanesController(IMediator mediator) : base(mediator) { }
 
-/// <summary>
-/// Inicializa una nueva instancia de la clase PlanesController. Parámetro planCatalogoService (IPlanCatalogoService)
-/// </summary>
-    public PlanesController(IPlanCatalogoService planCatalogoService)
-    {
-        _planCatalogoService = planCatalogoService;
-    }
-
-    /// <summary>Catálogo público de planes con sus precios por ciclo (RD$).</summary>
     [HttpGet]
     public async Task<IActionResult> ObtenerCatalogo()
     {
-        var planes = await _planCatalogoService.ObtenerCatalogoPublicoAsync();
+        var planes = await Mediator.Send(new ObtenerCatalogoPublicoQuery());
         return Ok(planes);
     }
 }

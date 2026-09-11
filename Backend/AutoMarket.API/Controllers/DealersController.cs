@@ -1,8 +1,13 @@
 using AutoMarket.API.Constants;
 using AutoMarket.API.Extensions;
 using AutoMarket.Application.DTOs.Usuario;
-using AutoMarket.Application.Interfaces;
+using AutoMarket.Application.Features.Dashboard.Queries;
+using AutoMarket.Application.Features.PerfilDealer.Commands;
+using AutoMarket.Application.Features.PerfilDealer.Queries;
+using AutoMarket.Application.Features.Suscripciones.Commands;
+using AutoMarket.Application.Features.Suscripciones.Queries;
 using AutoMarket.Core.Exceptions;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,43 +15,17 @@ namespace AutoMarket.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-/// <summary>
-/// Controlador para gestionar Dealers.
-/// </summary>
-public class DealersController : ControllerBase
+public class DealersController : BaseApiController
 {
-    private readonly IPerfilDealerService _perfilDealerService;
-    private readonly IDashboardService _dashboardService;
-    private readonly ISuscripcionService _suscripcionService;
-
-/// <summary>
-/// Inicializa una nueva instancia de la clase DealersController.
-/// </summary>
-    public DealersController(
-        IPerfilDealerService perfilDealerService,
-        IDashboardService dashboardService,
-        ISuscripcionService suscripcionService)
-    {
-        _perfilDealerService = perfilDealerService;
-        _dashboardService = dashboardService;
-        _suscripcionService = suscripcionService;
-    }
+    public DealersController(IMediator mediator) : base(mediator) { }
 
     [HttpGet("{dealerId:int}")]
     [AllowAnonymous]
     public async Task<IActionResult> ObtenerPerfilPublico(int dealerId)
     {
-        var perfil = await _perfilDealerService
-            .ObtenerPerfilPublicoAsync(dealerId);
-
+        var perfil = await Mediator.Send(new ObtenerPerfilPublicoQuery(dealerId));
         if (perfil is null)
-        {
-            return NotFound(new
-            {
-                mensaje = "Dealer no encontrado."
-            });
-        }
-
+            return NotFound(new { mensaje = "Dealer no encontrado." });
         return Ok(perfil);
     }
 
@@ -59,53 +38,29 @@ public class DealersController : ControllerBase
         [FromQuery] int pagina = 1,
         [FromQuery] int cantidadPorPagina = 12)
     {
-        var resultado = await _perfilDealerService.ListarAgenciasAsync(
-            busqueda,
-            soloVerificadas,
-            planNivel,
-            pagina,
-            cantidadPorPagina);
-
+        var resultado = await Mediator.Send(new ListarAgenciasQuery(busqueda, soloVerificadas, planNivel, pagina, cantidadPorPagina));
         return Ok(resultado);
     }
 
     [HttpPut("me")]
     [Authorize(Roles = Roles.Dealer)]
     [Consumes("multipart/form-data")]
-    public async Task<IActionResult> ActualizarMiPerfil(
-        [FromForm] PerfilDealerUpdateDto dto)
+    public async Task<IActionResult> ActualizarMiPerfil([FromForm] PerfilDealerUpdateDto dto)
     {
         var dealerId = User.ObtenerUsuarioIdOpcional();
-
         if (dealerId is null)
-        {
-            return Unauthorized(new
-            {
-                mensaje = "Token inválido o usuario no identificado."
-            });
-        }
+            return Unauthorized(new { mensaje = "Token inválido o usuario no identificado." });
 
         try
         {
-            var perfilActualizado = await _perfilDealerService
-                .ActualizarMiPerfilAsync(dealerId.Value, dto);
-
+            var perfilActualizado = await Mediator.Send(new ActualizarMiPerfilCommand(dealerId.Value, dto));
             if (perfilActualizado is null)
-            {
-                return NotFound(new
-                {
-                    mensaje = "No existe un perfil de dealer asociado a este usuario."
-                });
-            }
-
+                return NotFound(new { mensaje = "No existe un perfil de dealer asociado a este usuario." });
             return Ok(perfilActualizado);
         }
         catch (ArgumentException ex)
         {
-            return BadRequest(new
-            {
-                mensaje = ex.Message
-            });
+            return BadRequest(new { mensaje = ex.Message });
         }
     }
 
@@ -114,11 +69,10 @@ public class DealersController : ControllerBase
     public async Task<IActionResult> ObtenerDashboardResumen()
     {
         var dealerId = User.ObtenerUsuarioIdOpcional();
-
         if (dealerId is null)
             return Unauthorized(new { mensaje = "Token inválido o usuario no identificado." });
 
-        var resumen = await _dashboardService.ObtenerResumenAsync(dealerId.Value);
+        var resumen = await Mediator.Send(new ObtenerResumenDashboardQuery(dealerId.Value));
         return Ok(resumen);
     }
 
@@ -133,8 +87,8 @@ public class DealersController : ControllerBase
             return Unauthorized(new { mensaje = "Token inválido o usuario no identificado." });
 
         var suscripcion = dealerId.HasValue
-            ? await _suscripcionService.ObtenerSuscripcionAsync(dealerId.Value)
-            : await _suscripcionService.ObtenerSuscripcionPorUsuarioIdAsync(usuarioId.Value);
+            ? await Mediator.Send(new ObtenerSuscripcionQuery(dealerId.Value))
+            : await Mediator.Send(new ObtenerSuscripcionPorUsuarioIdQuery(usuarioId.Value));
 
         if (suscripcion is null)
             return NotFound(new { mensaje = "El usuario aún no posee una suscripción." });
@@ -147,12 +101,10 @@ public class DealersController : ControllerBase
     public async Task<IActionResult> ObtenerHistorialPagos()
     {
         var dealerId = User.ObtenerUsuarioIdOpcional();
-
         if (dealerId is null)
             return Unauthorized(new { mensaje = "Token inválido o usuario no identificado." });
 
-        var pagos = await _suscripcionService.ObtenerHistorialPagosAsync(dealerId.Value);
-
+        var pagos = await Mediator.Send(new ObtenerHistorialPagosQuery(dealerId.Value));
         return Ok(pagos);
     }
 
@@ -161,13 +113,12 @@ public class DealersController : ControllerBase
     public async Task<IActionResult> CancelarMiSuscripcion()
     {
         var dealerId = User.ObtenerUsuarioIdOpcional();
-
         if (dealerId is null)
             return Unauthorized(new { mensaje = "Token inválido o usuario no identificado." });
 
         try
         {
-            await _suscripcionService.CancelarSuscripcionAsync(dealerId.Value);
+            await Mediator.Send(new CancelarSuscripcionCommand(dealerId.Value));
             return Ok(new { mensaje = "Suscripción cancelada correctamente." });
         }
         catch (KeyNotFoundException ex)
