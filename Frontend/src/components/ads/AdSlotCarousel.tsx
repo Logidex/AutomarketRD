@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { adslotsService } from '../../services/adslots.service';
@@ -12,6 +12,32 @@ interface Props {
   alto?: number;
   orientacion?: 'vertical' | 'horizontal';
   className?: string;
+}
+
+/**
+ * Construye una cola de rotación ponderada por prioridad.
+ * Los anuncios con mayor prioridad se muestran más veces en el ciclo.
+ */
+function construirColaRotacion(anuncios: AdSlotAnuncioPublico[]): number[] {
+  if (anuncios.length === 0) return [];
+
+  const prioridades = anuncios.map((a) => a.prioridad || 1);
+  const minPrioridad = Math.min(...prioridades);
+
+  const cola: number[] = [];
+  anuncios.forEach((anuncio, index) => {
+    const repeticiones = Math.max(1, Math.round((anuncio.prioridad || 1) / minPrioridad));
+    for (let i = 0; i < repeticiones; i++) {
+      cola.push(index);
+    }
+  });
+
+  for (let i = cola.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [cola[i], cola[j]] = [cola[j], cola[i]];
+  }
+
+  return cola;
 }
 
 /**
@@ -30,36 +56,7 @@ export default function AdSlotCarousel({
   const [enPausa, setEnPausa] = useState(false);
   const intervaloRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Construir cola de rotación ponderada por prioridad
-  const colaRotacion = useCallback(() => {
-    if (anuncios.length === 0) return [];
-
-    const prioridades = anuncios.map((a) => a.prioridad || 1);
-    const minPrioridad = Math.min(...prioridades);
-
-    const cola: number[] = [];
-    anuncios.forEach((anuncio, index) => {
-      const repeticiones = Math.max(1, Math.round((anuncio.prioridad || 1) / minPrioridad));
-      for (let i = 0; i < repeticiones; i++) {
-        cola.push(index);
-      }
-    });
-
-    // Mezclar para evitar que el mismo anuncio aparezca consecutivamente
-    for (let i = cola.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [cola[i], cola[j]] = [cola[j], cola[i]];
-    }
-
-    return cola;
-  }, [anuncios]);
-
-  const [cola, setCola] = useState<number[]>([]);
-
-  useEffect(() => {
-    setCola(colaRotacion());
-    setIndiceActual(0);
-  }, [colaRotacion]);
+  const cola = useMemo(() => construirColaRotacion(anuncios), [anuncios]);
 
   const siguiente = useCallback(() => {
     if (cola.length === 0) return;
@@ -80,15 +77,15 @@ export default function AdSlotCarousel({
     };
   }, [enPausa, siguiente, intervaloMs, cola.length]);
 
-  if (anuncios.length === 0 || cola.length === 0) return null;
-
-  const anuncioActual = anuncios[cola[indiceActual]];
-  if (!anuncioActual) return null;
-
-  // Registrar impresión
+  // Registrar impresión (se ejecuta antes del early return para cumplir rules-of-hooks)
+  const anuncioActual = cola.length > 0 ? anuncios[cola[indiceActual]] : null;
   useEffect(() => {
-    adslotsService.registrarImpresion(anuncioActual.id).catch(() => {});
-  }, [anuncioActual.id]);
+    if (anuncioActual) {
+      adslotsService.registrarImpresion(anuncioActual.id).catch(() => {});
+    }
+  }, [anuncioActual]);
+
+  if (anuncios.length === 0 || cola.length === 0 || !anuncioActual) return null;
 
   return (
     <div
@@ -119,7 +116,6 @@ export default function AdSlotCarousel({
         </motion.div>
       </AnimatePresence>
 
-      {/* Flechas de navegación */}
       {cola.length > 1 && (
         <>
           <button
@@ -139,7 +135,6 @@ export default function AdSlotCarousel({
         </>
       )}
 
-      {/* Indicadores de posición */}
       {cola.length > 1 && (
         <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1">
           {Array.from(new Set(cola)).map((_, i) => (
@@ -155,7 +150,6 @@ export default function AdSlotCarousel({
         </div>
       )}
 
-      {/* Badge "Patrocinado" */}
       <div className="absolute left-2 top-2 z-10 flex items-center gap-1 rounded-full bg-amber-500/90 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur-sm">
         ★ Patrocinado
       </div>

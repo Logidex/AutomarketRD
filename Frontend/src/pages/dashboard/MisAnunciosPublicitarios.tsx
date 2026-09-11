@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FaAd, FaPlus, FaEye, FaMousePointer, FaCalendarAlt, FaTrash } from 'react-icons/fa';
 import Swal from 'sweetalert2';

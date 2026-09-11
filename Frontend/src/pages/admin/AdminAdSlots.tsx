@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FaPlus, FaEdit, FaTrash, FaAd, FaEye, FaMousePointer } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
 import Swal from 'sweetalert2';
 import {
   useAdminAdSlots,
@@ -11,7 +11,6 @@ import {
 } from '../../hooks/useAdSlots';
 import type {
   AdSlot,
-  AdSlotAnuncioAdmin,
   CrearAdSlotAdminDto,
   ActualizarAdSlotAdminDto,
   UbicacionAdSlot,
@@ -115,8 +114,9 @@ export default function AdminAdSlots() {
         Swal.fire('Creado', 'Slot creado correctamente.', 'success');
       }
       setModalAbierto(false);
-    } catch (error: any) {
-      Swal.fire('Error', error.message || 'No se pudo guardar.', 'error');
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'No se pudo guardar.';
+      Swal.fire('Error', msg, 'error');
     } finally {
       setGuardando(false);
     }

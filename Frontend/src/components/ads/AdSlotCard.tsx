@@ -11,9 +11,7 @@ interface Props {
  * Card individual de un anuncio publicitario.
  * Muestra imagen con object-fit cover y overlay con nombre del dealer.
  */
-export default function AdSlotCard({ anuncio, orientacion = 'vertical', onClick }: Props) {
-  const esVertical = orientacion === 'vertical';
-
+export default function AdSlotCard({ anuncio, onClick }: Props) {
   return (
     <button
       type="button"

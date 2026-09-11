@@ -638,6 +638,7 @@ function PiePaginaHome() {
             Planes y precios
           </Link>
         </nav>
+        </div>
       </div>
     </footer>
   );

@@ -7,7 +7,7 @@ import {
   useSubirImagenAdSlot,
   useCrearAnuncioPublicitario,
 } from '../../hooks/useAdSlots';
-import type { AdSlot, AdSlotPublico, CrearAdSlotAnuncioDto } from '../../types/adslot.types';
+import type { AdSlotPublico, CrearAdSlotAnuncioDto } from '../../types/adslot.types';
 import Spinner from '../ui/Spinner';
 
 const UBICACIONES_LABELS: Record<string, string> = {
@@ -32,7 +32,6 @@ export default function CrearAnuncioPublicitario() {
   const [paso, setPaso] = useState<1 | 2 | 3 | 4>(1);
   const [slotSeleccionado, setSlotSeleccionado] = useState<AdSlotPublico | null>(null);
   const [duracionSeleccionada, setDuracionSeleccionada] = useState<number | null>(null);
-  const [imagenSubida, setImagenSubida] = useState<{ original: string; redimensionada: string } | null>(null);
   const [imagenFile, setImagenFile] = useState<File | null>(null);
   const [imagenPreview, setImagenPreview] = useState<string | null>(null);
   const [enlace, setEnlace] = useState('');
@@ -96,8 +95,9 @@ export default function CrearAnuncioPublicitario() {
       }).then(() => {
         navigate('/dashboard/ads');
       });
-    } catch (error: any) {
-      Swal.fire('Error', error.message || 'No se pudo crear el anuncio.', 'error');
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'No se pudo crear el anuncio.';
+      Swal.fire('Error', msg, 'error');
     }
   };
 
