@@ -50,6 +50,8 @@ const Historial = lazy(() => import('./pages/Historial'));
 const Contactados = lazy(() => import('./pages/Contactados'));
 const EditarCuenta = lazy(() => import('./pages/EditarCuenta'));
 const DashboardSuscripcion = lazy(() => import('./pages/DashboardSuscripcion'));
+const MisAnunciosPublicitarios = lazy(() => import('./pages/dashboard/MisAnunciosPublicitarios'));
+const CrearAnuncioPublicitario = lazy(() => import('./pages/dashboard/CrearAnuncioPublicitario'));
 
 // Páginas del panel de administración
 const AdminIndex = lazy(() => import('./pages/admin/AdminIndex'));
@@ -62,6 +64,7 @@ const AdminReportes = lazy(() => import('./pages/admin/AdminReportes'));
 const AdminEncuestas = lazy(() => import('./pages/admin/AdminEncuestas'));
 const AdminTransferencias = lazy(() => import('./pages/admin/AdminTransferencias'));
 const AdminCuentasBancarias = lazy(() => import('./pages/admin/AdminCuentasBancarias'));
+const AdminAdSlots = lazy(() => import('./pages/admin/AdminAdSlots'));
 
 // Páginas del área de Vendedor
 const MiVehiculoVendedor = lazy(() => import('./pages/vendedor/MiVehiculoVendedor'));
@@ -246,6 +249,18 @@ function App() {
               path="soporte"
               element={<Soporte />}
             />
+
+            {/* /dashboard/ads */}
+            <Route
+              path="ads"
+              element={<MisAnunciosPublicitarios />}
+            />
+
+            {/* /dashboard/ads/crear */}
+            <Route
+              path="ads/crear"
+              element={<CrearAnuncioPublicitario />}
+            />
           </Route>
         </Route>
 
@@ -285,6 +300,9 @@ function App() {
 
             {/* /admin/encuestas */}
             <Route path="encuestas" element={<AdminEncuestas />} />
+
+            {/* /admin/adslots */}
+            <Route path="adslots" element={<AdminAdSlots />} />
           </Route>
         </Route>
 

@@ -18,6 +18,7 @@ import { useComparador } from "../context/ComparadorContext";
 import HeaderPublico from "../components/layout/HeaderPublico";
 import SectionBackground from "../components/SectionBackground";
 import BadgeVerificado from "../components/BadgeVerificado";
+import AdSlotRenderer from "../components/ads/AdSlotRenderer";
 import {
   TIPOS_VEHICULO,
   TRANSMISIONES,
@@ -764,30 +765,40 @@ export default function Vehiculos() {
             </p>
           </div>
         ) : (
-          <motion.div
-            className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-40px" }}
-            variants={{
-              hidden: {},
-              visible: { transition: { staggerChildren: 0.06 } },
-            }}
-          >
-            {anuncios.map((anuncio) => (
-              <motion.div
-                key={anuncio.id}
-                variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0 } }}
-              >
-                <TarjetaAnuncio
-                  anuncio={anuncio}
-                  esSeleccionado={esSeleccionado}
-                  onNavegar={(a) => navigate(urlAnuncio(a))}
-                  onToggleComparar={toggleComparar}
-                />
-              </motion.div>
-            ))}
-          </motion.div>
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_320px]">
+            <motion.div
+              className="grid grid-cols-1 gap-6 sm:grid-cols-2"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-40px" }}
+              variants={{
+                hidden: {},
+                visible: { transition: { staggerChildren: 0.06 } },
+              }}
+            >
+              {anuncios.map((anuncio) => (
+                <motion.div
+                  key={anuncio.id}
+                  variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0 } }}
+                >
+                  <TarjetaAnuncio
+                    anuncio={anuncio}
+                    esSeleccionado={esSeleccionado}
+                    onNavegar={(a) => navigate(urlAnuncio(a))}
+                    onToggleComparar={toggleComparar}
+                  />
+                </motion.div>
+              ))}
+            </motion.div>
+
+            {/* Sidebar: Anuncios */}
+            <aside className="hidden lg:block">
+              <div className="sticky top-6 space-y-4">
+                <AdSlotRenderer ubicacion="VehiculosLateral" />
+                <AdSlotRenderer ubicacion="VehiculosFooter" orientacion="horizontal" />
+              </div>
+            </aside>
+          </div>
         )}
 
         {/* PAGINACIÓN */}

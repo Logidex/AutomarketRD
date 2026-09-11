@@ -1,7 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { dashboardService } from '../services/dashboard.service';
+import { adslotsService } from '../services/adslots.service';
 import { nombrePlan } from '../constants/planes';
 import Swal from 'sweetalert2';
+import { FaAd, FaEye, FaMousePointer } from 'react-icons/fa';
 import Spinner from '../components/ui/Spinner';
 
 export default function DashboardIndex() {
@@ -9,6 +11,12 @@ export default function DashboardIndex() {
     queryKey: ['dashboard-resumen'],
     queryFn: () => dashboardService.obtenerResumen(),
     staleTime: 1000 * 60 * 2,
+  });
+
+  const { data: adStats } = useQuery({
+    queryKey: ['adslot-stats-mis'],
+    queryFn: () => adslotsService.obtenerEstadisticas(),
+    staleTime: 1000 * 60 * 5,
   });
 
   if (isError) {
@@ -131,6 +139,45 @@ export default function DashboardIndex() {
           </ul>
         )}
       </div>
+
+      {/* Fila 4: Anuncios publicitarios */}
+      {adStats && (adStats.totalImpresiones > 0 || adStats.anunciosActivos > 0) && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-6 shadow-sm">
+          <div className="mb-4 flex items-center gap-2">
+            <FaAd className="text-amber-600" />
+            <h3 className="text-lg font-semibold text-ink">Anuncios Publicitarios</h3>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div className="rounded-lg bg-white p-4">
+              <div className="flex items-center gap-3">
+                <FaAd className="h-5 w-5 text-amber-500" />
+                <div>
+                  <p className="text-xs text-ink-3">Anuncios activos</p>
+                  <p className="text-lg font-bold text-ink">{adStats.anunciosActivos}</p>
+                </div>
+              </div>
+            </div>
+            <div className="rounded-lg bg-white p-4">
+              <div className="flex items-center gap-3">
+                <FaEye className="h-5 w-5 text-blue-500" />
+                <div>
+                  <p className="text-xs text-ink-3">Impresiones totales</p>
+                  <p className="text-lg font-bold text-ink">{adStats.totalImpresiones.toLocaleString()}</p>
+                </div>
+              </div>
+            </div>
+            <div className="rounded-lg bg-white p-4">
+              <div className="flex items-center gap-3">
+                <FaMousePointer className="h-5 w-5 text-green-500" />
+                <div>
+                  <p className="text-xs text-ink-3">Clicks totales</p>
+                  <p className="text-lg font-bold text-ink">{adStats.totalClicks.toLocaleString()}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

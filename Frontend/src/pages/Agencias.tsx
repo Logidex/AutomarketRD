@@ -6,6 +6,7 @@ import HeaderPublico from "../components/layout/HeaderPublico";
 import SectionBackground from "../components/SectionBackground";
 import Spinner from "../components/ui/Spinner";
 import BadgeVerificado from "../components/BadgeVerificado";
+import AdSlotRenderer from "../components/ads/AdSlotRenderer";
 import { dealerService, type AgenciaListado } from "../services/dealer.service";
 import { urlImagen } from "../utils/imagen";
 import { urlVendedor } from "../utils/slug";
@@ -222,6 +223,10 @@ export default function Agencias() {
               {agencias.map((agencia) => (
                 <TarjetaAgencia key={agencia.id} agencia={agencia} />
               ))}
+            </div>
+
+            <div className="mt-8 flex justify-center">
+              <AdSlotRenderer ubicacion="AgenciasLateral" orientacion="horizontal" />
             </div>
 
             {/* Paginación */}

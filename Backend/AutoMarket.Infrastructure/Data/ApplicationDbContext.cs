@@ -29,6 +29,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<EncuestaPregunta> EncuestasPreguntas { get; set; }
     public DbSet<EncuestaRespuesta> EncuestasRespuestas { get; set; }
     public DbSet<CuentaBancaria> CuentasBancarias { get; set; }
+    public DbSet<AdSlot> AdSlots { get; set; }
+    public DbSet<AdSlotPrecio> AdSlotsPrecios { get; set; }
+    public DbSet<AdSlotAnuncio> AdSlotsAnuncios { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -697,6 +700,173 @@ public class ApplicationDbContext : DbContext
                 .HasDatabaseName("IX_EncuestasRespuestas_Unicas");
 
             b.HasIndex(r => new { r.EncuestaId, r.UsuarioId });
+        });
+
+        // ==========================================
+        // CONFIGURACIÓN: AD SLOT
+        // ==========================================
+        modelBuilder.Entity<AdSlot>(b =>
+        {
+            b.HasKey(s => s.Id);
+
+            b.Property(s => s.Titulo)
+                .IsRequired()
+                .HasMaxLength(150);
+
+            b.Property(s => s.Ubicacion)
+                .IsRequired()
+                .HasColumnType("integer");
+
+            b.Property(s => s.AnchoPx)
+                .IsRequired();
+
+            b.Property(s => s.AltoPx)
+                .IsRequired();
+
+            b.Property(s => s.IntervaloRotacionSeg)
+                .IsRequired();
+
+            b.Property(s => s.MaxAnunciosSimultaneos)
+                .IsRequired();
+
+            b.Property(s => s.Activo)
+                .IsRequired();
+
+            b.Property(s => s.Orden)
+                .IsRequired();
+
+            b.Property(s => s.FechaCreacionUtc)
+                .IsRequired()
+                .HasColumnType("timestamp with time zone");
+
+            b.HasIndex(s => s.Ubicacion)
+                .HasDatabaseName("IX_AdSlots_Ubicacion");
+
+            b.HasIndex(s => new { s.Activo, s.Orden })
+                .HasDatabaseName("IX_AdSlots_Activo_Orden");
+        });
+
+        // ==========================================
+        // CONFIGURACIÓN: AD SLOT PRECIO
+        // ==========================================
+        modelBuilder.Entity<AdSlotPrecio>(b =>
+        {
+            b.HasKey(p => p.Id);
+
+            b.Property(p => p.DuracionDias)
+                .IsRequired();
+
+            b.Property(p => p.Precio)
+                .IsRequired()
+                .HasPrecision(18, 2);
+
+            b.Property(p => p.DescuentoProElitePorcentaje)
+                .HasPrecision(5, 2);
+
+            b.Property(p => p.Activo)
+                .IsRequired();
+
+            b.HasOne(p => p.AdSlot)
+                .WithMany(s => s.Precios)
+                .HasForeignKey(p => p.AdSlotId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            b.HasIndex(p => new { p.AdSlotId, p.DuracionDias })
+                .IsUnique()
+                .HasDatabaseName("IX_AdSlotsPrecios_Slot_Duracion");
+        });
+
+        // ==========================================
+        // CONFIGURACIÓN: AD SLOT ANUNCIO
+        // ==========================================
+        modelBuilder.Entity<AdSlotAnuncio>(b =>
+        {
+            b.HasKey(a => a.Id);
+
+            b.Property(a => a.ImagenOriginalUrl)
+                .IsRequired()
+                .HasMaxLength(500);
+
+            b.Property(a => a.ImagenRedimensionadaUrl)
+                .IsRequired()
+                .HasMaxLength(500);
+
+            b.Property(a => a.Enlace)
+                .HasMaxLength(500);
+
+            b.Property(a => a.Titulo)
+                .HasMaxLength(150);
+
+            b.Property(a => a.FechaInicioUtc)
+                .IsRequired()
+                .HasColumnType("timestamp with time zone");
+
+            b.Property(a => a.FechaFinUtc)
+                .IsRequired()
+                .HasColumnType("timestamp with time zone");
+
+            b.Property(a => a.Estado)
+                .IsRequired()
+                .HasColumnType("integer");
+
+            b.Property(a => a.MetodoPago)
+                .IsRequired()
+                .HasColumnType("integer");
+
+            b.Property(a => a.MontoPagado)
+                .IsRequired()
+                .HasPrecision(18, 2);
+
+            b.Property(a => a.Moneda)
+                .IsRequired()
+                .HasMaxLength(10);
+
+            b.Property(a => a.OrderIdPayPal)
+                .HasMaxLength(64);
+
+            b.Property(a => a.UrlCapturaTransferencia)
+                .HasMaxLength(500);
+
+            b.Property(a => a.EstadoTransferencia)
+                .HasColumnType("integer");
+
+            b.Property(a => a.Prioridad)
+                .IsRequired();
+
+            b.Property(a => a.Impresiones)
+                .IsRequired();
+
+            b.Property(a => a.Clicks)
+                .IsRequired();
+
+            b.Property(a => a.FechaRecordatorioEnviadoUtc)
+                .HasColumnType("timestamp with time zone");
+
+            b.Property(a => a.FechaCreacionUtc)
+                .IsRequired()
+                .HasColumnType("timestamp with time zone");
+
+            b.HasOne(a => a.AdSlot)
+                .WithMany(s => s.Anuncios)
+                .HasForeignKey(a => a.AdSlotId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            b.HasOne(a => a.PerfilDealer)
+                .WithMany()
+                .HasForeignKey(a => a.PerfilDealerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            b.HasIndex(a => a.PerfilDealerId)
+                .HasDatabaseName("IX_AdSlotsAnuncios_PerfilDealerId");
+
+            b.HasIndex(a => new { a.AdSlotId, a.Estado })
+                .HasDatabaseName("IX_AdSlotsAnuncios_Slot_Estado");
+
+            b.HasIndex(a => new { a.Estado, a.FechaFinUtc })
+                .HasDatabaseName("IX_AdSlotsAnuncios_Estado_FechaFin");
+
+            b.HasIndex(a => a.FechaRecordatorioEnviadoUtc)
+                .HasDatabaseName("IX_AdSlotsAnuncios_Recordatorio");
         });
     }
 }
