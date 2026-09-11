@@ -1,5 +1,6 @@
 using AutoMarket.Application.DTOs;
-using AutoMarket.Application.Interfaces;
+using AutoMarket.Application.Features.Contacto.Commands;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -8,36 +9,20 @@ namespace AutoMarket.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-/// <summary>
-/// Controlador para gestionar Contacto.
-/// </summary>
-public class ContactoController : ControllerBase
+public class ContactoController : BaseApiController
 {
-    private readonly IContactoService _contactoService;
     private readonly ILogger<ContactoController> _logger;
 
-/// <summary>
-/// Inicializa una nueva instancia de la clase ContactoController.
-/// </summary>
-    public ContactoController(
-        IContactoService contactoService,
-        ILogger<ContactoController> logger)
+    public ContactoController(IMediator mediator, ILogger<ContactoController> logger) : base(mediator)
     {
-        _contactoService = contactoService;
         _logger = logger;
     }
 
-    /// <summary>
-    /// Recibe un mensaje del formulario público de contacto
-    /// (página /contacto) y lo reenvía al correo de soporte configurado.
-    /// </summary>
     [HttpPost]
     [AllowAnonymous]
     [EnableRateLimiting("PoliticaLeads")]
     public async Task<IActionResult> EnviarMensajeContacto([FromBody] ContactoCreateDto dto)
     {
-        // Honeypot anti-spam: si el campo "Website" viene lleno, es un bot.
-        // Se responde 200 OK para que el bot crea que tuvo éxito y no reintente.
         if (!string.IsNullOrWhiteSpace(dto.Website))
         {
             _logger.LogWarning("Mensaje de contacto descartado por honeypot.");
@@ -45,11 +30,9 @@ public class ContactoController : ControllerBase
         }
 
         if (!ModelState.IsValid)
-        {
             return BadRequest(ModelState);
-        }
 
-        var enviado = await _contactoService.ProcesarMensajeContactoAsync(dto);
+        var enviado = await Mediator.Send(new ProcesarMensajeContactoCommand(dto));
 
         if (!enviado)
         {
@@ -60,4 +43,3 @@ public class ContactoController : ControllerBase
         return Ok(new { mensaje = "Tu mensaje ha sido enviado exitosamente. Te responderemos lo antes posible." });
     }
 }
-

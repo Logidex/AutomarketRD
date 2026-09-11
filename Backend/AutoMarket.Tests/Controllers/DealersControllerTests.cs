@@ -2,9 +2,14 @@ using System.Security.Claims;
 using AutoMarket.API.Controllers;
 using AutoMarket.Application.DTOs.Suscripcion;
 using AutoMarket.Application.DTOs.Usuario;
-using AutoMarket.Application.Interfaces;
+using AutoMarket.Application.Features.Dashboard.Queries;
+using AutoMarket.Application.Features.PerfilDealer.Commands;
+using AutoMarket.Application.Features.PerfilDealer.Queries;
+using AutoMarket.Application.Features.Suscripciones.Commands;
+using AutoMarket.Application.Features.Suscripciones.Queries;
 using AutoMarket.Core.Entities.Enums;
 using AutoMarket.Core.Exceptions;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -13,21 +18,13 @@ namespace AutoMarket.Tests.Controllers;
 
 public class DealersControllerTests
 {
-    private readonly Mock<IPerfilDealerService> _mockPerfilDealer;
-    private readonly Mock<IDashboardService> _mockDashboard;
-    private readonly Mock<ISuscripcionService> _mockSuscripcion;
+    private readonly Mock<IMediator> _mockMediator;
     private readonly DealersController _controller;
 
     public DealersControllerTests()
     {
-        _mockPerfilDealer = new Mock<IPerfilDealerService>();
-        _mockDashboard = new Mock<IDashboardService>();
-        _mockSuscripcion = new Mock<ISuscripcionService>();
-
-        _controller = new DealersController(
-            _mockPerfilDealer.Object,
-            _mockDashboard.Object,
-            _mockSuscripcion.Object);
+        _mockMediator = new Mock<IMediator>();
+        _controller = new DealersController(_mockMediator.Object);
     }
 
     // =========================================================================
@@ -85,8 +82,8 @@ public class DealersControllerTests
     public async Task ObtenerPerfilPublico_NoExiste_DebeRetornarNotFound()
     {
         // Arrange
-        _mockPerfilDealer
-            .Setup(s => s.ObtenerPerfilPublicoAsync(99))
+        _mockMediator
+            .Setup(s => s.Send(It.IsAny<ObtenerPerfilPublicoQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((PerfilDealerPublicoDto?)null);
 
         // Act
@@ -100,8 +97,8 @@ public class DealersControllerTests
     public async Task ObtenerPerfilPublico_Existe_DebeRetornarOk()
     {
         // Arrange
-        _mockPerfilDealer
-            .Setup(s => s.ObtenerPerfilPublicoAsync(15))
+        _mockMediator
+            .Setup(s => s.Send(It.IsAny<ObtenerPerfilPublicoQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(CrearPerfilDto());
 
         // Act
@@ -137,8 +134,8 @@ public class DealersControllerTests
     {
         // Arrange
         SimularUsuarioAutenticado("15");
-        _mockPerfilDealer
-            .Setup(s => s.ActualizarMiPerfilAsync(15, It.IsAny<PerfilDealerUpdateDto>()))
+        _mockMediator
+            .Setup(s => s.Send(It.IsAny<ActualizarMiPerfilCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((PerfilDealerPublicoDto?)null);
 
         // Act
@@ -153,8 +150,8 @@ public class DealersControllerTests
     {
         // Arrange
         SimularUsuarioAutenticado("15");
-        _mockPerfilDealer
-            .Setup(s => s.ActualizarMiPerfilAsync(15, It.IsAny<PerfilDealerUpdateDto>()))
+        _mockMediator
+            .Setup(s => s.Send(It.IsAny<ActualizarMiPerfilCommand>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new ArgumentException("El nombre de la agencia es obligatorio."));
 
         // Act
@@ -164,13 +161,13 @@ public class DealersControllerTests
         Assert.IsType<BadRequestObjectResult>(resultado);
     }
 
-[Fact]
+    [Fact]
     public async Task ActualizarMiPerfil_Exitoso_DebeRetornarOk()
     {
         // Arrange
         SimularUsuarioAutenticado("15");
-        _mockPerfilDealer
-            .Setup(s => s.ActualizarMiPerfilAsync(15, It.IsAny<PerfilDealerUpdateDto>()))
+        _mockMediator
+            .Setup(s => s.Send(It.IsAny<ActualizarMiPerfilCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(CrearPerfilDto());
 
         // Act
@@ -206,8 +203,8 @@ public class DealersControllerTests
     {
         // Arrange
         SimularUsuarioAutenticado("15");
-        _mockDashboard
-            .Setup(s => s.ObtenerResumenAsync(15))
+        _mockMediator
+            .Setup(s => s.Send(It.IsAny<ObtenerResumenDashboardQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new AutoMarket.Application.DTOs.Admin.DashboardResumenDto());
 
         // Act
@@ -215,7 +212,7 @@ public class DealersControllerTests
 
         // Assert
         Assert.IsType<OkObjectResult>(resultado);
-        _mockDashboard.Verify(s => s.ObtenerResumenAsync(15), Times.Once);
+        _mockMediator.Verify(s => s.Send(It.IsAny<ObtenerResumenDashboardQuery>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     // =========================================================================
@@ -227,8 +224,8 @@ public class DealersControllerTests
     {
         // Arrange
         SimularUsuarioAutenticado("15");
-        _mockSuscripcion
-            .Setup(s => s.ObtenerSuscripcionAsync(15))
+        _mockMediator
+            .Setup(s => s.Send(It.IsAny<ObtenerSuscripcionPorUsuarioIdQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((SuscripcionDealerDto?)null);
 
         // Act
@@ -242,11 +239,9 @@ public class DealersControllerTests
     public async Task ObtenerMiSuscripcion_ConSuscripcion_DebeRetornarOk()
     {
         // Arrange
-        // El usuario simulado solo tiene claim NameIdentifier (sin DealerId),
-        // por lo que el controlador consulta la suscripción por usuario.
         SimularUsuarioAutenticado("15");
-        _mockSuscripcion
-            .Setup(s => s.ObtenerSuscripcionPorUsuarioIdAsync(15))
+        _mockMediator
+            .Setup(s => s.Send(It.IsAny<ObtenerSuscripcionPorUsuarioIdQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(CrearSuscripcionDto());
 
         // Act
@@ -266,8 +261,8 @@ public class DealersControllerTests
     {
         // Arrange
         SimularUsuarioAutenticado("15");
-        _mockSuscripcion
-            .Setup(s => s.ObtenerHistorialPagosAsync(15))
+        _mockMediator
+            .Setup(s => s.Send(It.IsAny<ObtenerHistorialPagosQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<PagoSuscripcionDto>
             {
                 new PagoSuscripcionDto { Id = 1, PerfilDealerId = 15, Nivel = PlanNivel.Pro, Monto = 3000m, Moneda = "USD" }
@@ -291,8 +286,8 @@ public class DealersControllerTests
     {
         // Arrange
         SimularUsuarioAutenticado("15");
-        _mockSuscripcion
-            .Setup(s => s.CancelarSuscripcionAsync(15))
+        _mockMediator
+            .Setup(s => s.Send(It.IsAny<CancelarSuscripcionCommand>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new KeyNotFoundException("No existe suscripción."));
 
         // Act
@@ -307,8 +302,8 @@ public class DealersControllerTests
     {
         // Arrange
         SimularUsuarioAutenticado("15");
-        _mockSuscripcion
-            .Setup(s => s.CancelarSuscripcionAsync(15))
+        _mockMediator
+            .Setup(s => s.Send(It.IsAny<CancelarSuscripcionCommand>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new BusinessRuleException("La suscripción ya está cancelada."));
 
         // Act
@@ -329,6 +324,6 @@ public class DealersControllerTests
 
         // Assert
         Assert.IsType<OkObjectResult>(resultado);
-        _mockSuscripcion.Verify(s => s.CancelarSuscripcionAsync(15), Times.Once);
+        _mockMediator.Verify(s => s.Send(It.IsAny<CancelarSuscripcionCommand>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 }

@@ -1,8 +1,10 @@
+using AutoMarket.API.Controllers;
 using AutoMarket.API.Helpers;
 using AutoMarket.Application.DTOs;
 using AutoMarket.Application.DTOs.Auth;
 using AutoMarket.Application.DTOs.Usuario;
-using AutoMarket.Application.Interfaces;
+using AutoMarket.Application.Features.Auth.Commands;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -12,15 +14,15 @@ namespace AutoMarket.Tests.Controllers;
 
 public class AuthControllerTests
 {
-    private readonly Mock<IAuthService> _mockAuthService;
+    private readonly Mock<IMediator> _mockMediator;
     private readonly AuthController _controller;
     private readonly DefaultHttpContext _httpContext;
 
     public AuthControllerTests()
     {
-        _mockAuthService = new Mock<IAuthService>();
+        _mockMediator = new Mock<IMediator>();
 
-        _controller = new AuthController(_mockAuthService.Object);
+        _controller = new AuthController(_mockMediator.Object);
 
         _httpContext = new DefaultHttpContext();
         _controller.ControllerContext = new ControllerContext
@@ -42,8 +44,8 @@ public class AuthControllerTests
             TelefonoPersonal = "8090000000"
         };
 
-        _mockAuthService
-            .Setup(s => s.RegistrarUsuarioAsync(dto))
+        _mockMediator
+            .Setup(s => s.Send(It.IsAny<RegistrarUsuarioCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((true, "Usuario registrado exitosamente"));
 
         var resultado = await _controller.Registrar(dto);
@@ -56,7 +58,7 @@ public class AuthControllerTests
         Assert.True(exito);
         Assert.Equal("Usuario registrado exitosamente", mensaje);
 
-        _mockAuthService.Verify(s => s.RegistrarUsuarioAsync(dto), Times.Once);
+        _mockMediator.Verify(s => s.Send(It.IsAny<RegistrarUsuarioCommand>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -72,8 +74,8 @@ public class AuthControllerTests
             TelefonoPersonal = "8090000000"
         };
 
-        _mockAuthService
-            .Setup(s => s.RegistrarUsuarioAsync(dto))
+        _mockMediator
+            .Setup(s => s.Send(It.IsAny<RegistrarUsuarioCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((false, "El correo electrónico ya está registrado."));
 
         var resultado = await _controller.Registrar(dto);
@@ -84,7 +86,7 @@ public class AuthControllerTests
 
         Assert.Equal("El correo electrónico ya está registrado.", mensaje);
 
-        _mockAuthService.Verify(s => s.RegistrarUsuarioAsync(dto), Times.Once);
+        _mockMediator.Verify(s => s.Send(It.IsAny<RegistrarUsuarioCommand>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -96,8 +98,8 @@ public class AuthControllerTests
             Password = "123456"
         };
 
-        _mockAuthService
-            .Setup(s => s.LoginAsync(dto))
+        _mockMediator
+            .Setup(s => s.Send(It.IsAny<LoginCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new LoginResultDto
             {
                 Exito = true,
@@ -123,10 +125,8 @@ public class AuthControllerTests
 
         Assert.Equal("Inicio de sesión exitoso.", mensaje);
 
-        // El token no debe viajar en el cuerpo de la respuesta
         Assert.Null(tipo.GetProperty("Token"));
 
-        // El token viaja como cookie HttpOnly
         var setCookie = _httpContext.Response.Headers["Set-Cookie"].ToString();
         Assert.Contains(
             AuthCookieHelper.CookieName,
@@ -141,7 +141,7 @@ public class AuthControllerTests
             setCookie,
             StringComparison.OrdinalIgnoreCase);
 
-        _mockAuthService.Verify(s => s.LoginAsync(dto), Times.Once);
+        _mockMediator.Verify(s => s.Send(It.IsAny<LoginCommand>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -153,8 +153,8 @@ public class AuthControllerTests
             Password = "incorrecta"
         };
 
-        _mockAuthService
-            .Setup(s => s.LoginAsync(dto))
+        _mockMediator
+            .Setup(s => s.Send(It.IsAny<LoginCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new LoginResultDto
             {
                 Exito = false,
@@ -173,12 +173,16 @@ public class AuthControllerTests
             ?.ToString();
         Assert.Equal("Credenciales incorrectas.", propMensaje);
 
-        _mockAuthService.Verify(s => s.LoginAsync(dto), Times.Once);
+        _mockMediator.Verify(s => s.Send(It.IsAny<LoginCommand>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
     public async Task Logout_DebeEliminarLaCookieDelToken()
     {
+        _mockMediator
+            .Setup(s => s.Send(It.IsAny<LogoutCommand>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
         var resultado = await _controller.Logout();
 
         Assert.IsType<OkObjectResult>(resultado);
@@ -192,5 +196,7 @@ public class AuthControllerTests
             "expires=",
             setCookie,
             StringComparison.OrdinalIgnoreCase);
+
+        _mockMediator.Verify(s => s.Send(It.IsAny<LogoutCommand>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 }

@@ -1,23 +1,19 @@
-using AutoMarket.Application.Interfaces;
+using AutoMarket.Application.Features.CuentasBancarias.Queries;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AutoMarket.API.Controllers;
 
 [Route("api/cuentas-bancarias")]
 [ApiController]
-public class CuentasBancariasController : ControllerBase
+public class CuentasBancariasController : BaseApiController
 {
-    private readonly ICuentasBancariasService _cuentasBancariasService;
-
-    public CuentasBancariasController(ICuentasBancariasService cuentasBancariasService)
-    {
-        _cuentasBancariasService = cuentasBancariasService;
-    }
+    public CuentasBancariasController(IMediator mediator) : base(mediator) { }
 
     [HttpGet]
     public async Task<IActionResult> ObtenerCuentasActivas()
     {
-        var cuentas = await _cuentasBancariasService.ObtenerCuentasActivasAsync();
+        var cuentas = await Mediator.Send(new ObtenerCuentasActivasQuery());
         return Ok(cuentas);
     }
 }

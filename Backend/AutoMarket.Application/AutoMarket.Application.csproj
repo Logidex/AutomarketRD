@@ -2,11 +2,14 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AutoMarket.Core\AutoMarket.Core.csproj" />
+    <!-- NOTA: FrameworkReference se mantiene porque IFormFile se usa en DTOs.
+         Si se necesita reutilizar Application sin ASP.NET, extraer IFormFile a abstracciones. -->
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.2.0" />
+    <PackageReference Include="MediatR" Version="14.2.0" />
   </ItemGroup>
 
   <PropertyGroup>

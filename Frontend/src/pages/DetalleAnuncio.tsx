@@ -38,7 +38,6 @@ import { formatearPrecio } from "../utils/formato";
 import HeaderPublico from "../components/layout/HeaderPublico";
 import SectionBackground from "../components/SectionBackground";
 import BadgeVerificado from "../components/BadgeVerificado";
-import AdUnit from "../components/ads/AdUnit";
 import {
   TIPOS_VEHICULO,
   TRANSMISIONES,
@@ -1235,12 +1234,6 @@ export default function DetalleAnuncio() {
               <motion.div variants={{ hidden: { opacity: 0, y: 14 }, visible: { opacity: 1, y: 0 } }}>
                 <FichaTecnica anuncio={anuncio} propsMostradas={propsMostradas} />
               </motion.div>
-
-              {!esPropietario && (
-                <motion.div variants={{ hidden: { opacity: 0, y: 14 }, visible: { opacity: 1, y: 0 } }}>
-                  <AdUnit className="rounded-2xl border border-line bg-surface p-4" />
-                </motion.div>
-              )}
 
               <motion.div variants={{ hidden: { opacity: 0, y: 14 }, visible: { opacity: 1, y: 0 } }}>
                 <SeccionContacto

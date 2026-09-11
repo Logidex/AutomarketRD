@@ -1,243 +1,162 @@
+using AutoMarket.API.Extensions;
 using AutoMarket.API.Helpers;
 using AutoMarket.Application.DTOs;
 using AutoMarket.Application.DTOs.Auth;
 using AutoMarket.Application.DTOs.Usuario;
-using AutoMarket.Application.Interfaces;
+using AutoMarket.Application.Features.Auth.Commands;
+using AutoMarket.Application.Features.Auth.Queries;
 using AutoMarket.Core.Exceptions;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
-/// <summary>
-/// Controlador para manejar la autenticación de usuarios: registro, inicio de sesión,
-/// recuperación y restablecimiento de contraseña.
-/// </summary>
+namespace AutoMarket.API.Controllers;
+
 [ApiController]
 [Route("api/[controller]")]
-/// <summary>
-/// Controlador para gestionar Auth.
-/// </summary>
-public class AuthController : ControllerBase
+public class AuthController : BaseApiController
 {
-    private readonly IAuthService _authService;
+    public AuthController(IMediator mediator) : base(mediator) { }
 
-/// <summary>
-/// Inicializa una nueva instancia de la clase AuthController. Parámetro authService (IAuthService)
-/// </summary>
-    public AuthController(IAuthService authService)
+    [HttpPost("registrar")]
+    [AllowAnonymous]
+    [EnableRateLimiting("PoliticaRegistro")]
+    public async Task<IActionResult> Registrar([FromBody] RegistroDto dto)
     {
-        _authService = authService;
+        var resultado = await Mediator.Send(new RegistrarUsuarioCommand(dto));
+
+        if (!resultado.Exito)
+            return BadRequest(new { mensaje = resultado.Mensaje });
+
+        return Ok(new { exito = true, mensaje = resultado.Mensaje });
     }
 
-     /// <summary>
-     /// Registra un nuevo usuario en el sistema.
-     /// Acceso anónimo permitido.
-     /// </summary>
-     /// <param name="dto">Datos de registro del usuario.</param>
-     /// <returns>Resultado del registro.</returns>
-     [HttpPost("registrar")]
-     [AllowAnonymous]
-     [EnableRateLimiting("PoliticaRegistro")]
-     public async Task<IActionResult> Registrar([FromBody] RegistroDto dto)
-     {
-         var resultado = await _authService.RegistrarUsuarioAsync(dto);
+    [HttpPost("login")]
+    [AllowAnonymous]
+    [EnableRateLimiting("PoliticaLogin")]
+    public async Task<IActionResult> Login([FromBody] LoginDto dto)
+    {
+        var resultado = await Mediator.Send(new LoginCommand(dto));
 
-         if (!resultado.Exito)
-         {
-             return BadRequest(new { mensaje = resultado.Mensaje });
-         }
+        if (!resultado.Exito)
+            return BadRequest(new { mensaje = resultado.Mensaje });
 
-         return Ok(new { exito = true, mensaje = resultado.Mensaje });
-     }
+        AuthCookieHelper.EstablecerTokenCookie(Response, resultado.Token!, Request);
+        AuthCookieHelper.EstablecerRefreshCookie(Response, resultado.RefreshToken!, Request);
 
-     /// <summary>
-     /// Inicia sesión de un usuario. El JWT se devuelve como cookie HttpOnly
-     /// (no legible por JavaScript); el cuerpo solo incluye datos del usuario.
-     /// Acceso anónimo permitido. Aplica rate limiting por IP.
-     /// </summary>
-     /// <param name="dto">Credenciales de inicio de sesión.</param>
-     /// <returns>Datos del usuario autenticado (sin token en el cuerpo).</returns>
-     [HttpPost("login")]
-     [AllowAnonymous]
-     [EnableRateLimiting("PoliticaLogin")]
-     public async Task<IActionResult> Login([FromBody] LoginDto dto)
-     {
-         var resultado = await _authService.LoginAsync(dto);
+        return Ok(new
+        {
+            resultado.Exito,
+            resultado.Mensaje,
+            resultado.Usuario
+        });
+    }
 
-         if (!resultado.Exito)
-         {
-             return BadRequest(new { mensaje = resultado.Mensaje });
-         }
+    [HttpPost("refrescar")]
+    [AllowAnonymous]
+    public async Task<IActionResult> Refrescar()
+    {
+        var refreshToken = Request.Cookies[AuthCookieHelper.RefreshCookieName];
 
-         AuthCookieHelper.EstablecerTokenCookie(
-             Response,
-             resultado.Token!,
-             Request);
+        if (string.IsNullOrWhiteSpace(refreshToken))
+            return Unauthorized(new { mensaje = "Sesión inválida." });
 
-         AuthCookieHelper.EstablecerRefreshCookie(
-             Response,
-             resultado.RefreshToken!,
-             Request);
+        try
+        {
+            var resultado = await Mediator.Send(new RefrescarSesionCommand(refreshToken));
 
-         return Ok(new
-         {
-             resultado.Exito,
-             resultado.Mensaje,
-             resultado.Usuario
-         });
-     }
+            AuthCookieHelper.EstablecerTokenCookie(Response, resultado.Token!, Request);
+            AuthCookieHelper.EstablecerRefreshCookie(Response, resultado.RefreshToken!, Request);
 
-     /// <summary>
-     /// Renueva la sesión usando el refresh token de la cookie (rotación).
-     /// Devuelve nuevo JWT en cookie automarket_token y rota automarket_rt.
-     /// Acceso anónimo: el refresh token ES la credencial.
-     /// </summary>
-     /// <returns>Datos del usuario con la sesión renovada.</returns>
-     [HttpPost("refrescar")]
-     [AllowAnonymous]
-     public async Task<IActionResult> Refrescar()
-     {
-         var refreshToken = Request.Cookies[AuthCookieHelper.RefreshCookieName];
+            return Ok(new
+            {
+                resultado.Exito,
+                resultado.Usuario
+            });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            AuthCookieHelper.LimpiarTokenCookie(Response, Request);
+            return Unauthorized(new { mensaje = "Sesión inválida." });
+        }
+    }
 
-         if (string.IsNullOrWhiteSpace(refreshToken))
-             return Unauthorized(new { mensaje = "Sesión inválida." });
+    [HttpPost("logout")]
+    [AllowAnonymous]
+    public async Task<IActionResult> Logout()
+    {
+        await Mediator.Send(new LogoutCommand(
+            Request.Cookies[AuthCookieHelper.RefreshCookieName]));
 
-         try
-         {
-             var resultado = await _authService.RefrescarSesionAsync(refreshToken);
+        AuthCookieHelper.LimpiarTokenCookie(Response, Request);
+        return Ok(new { exito = true, mensaje = "Sesión cerrada." });
+    }
 
-             AuthCookieHelper.EstablecerTokenCookie(
-                 Response,
-                 resultado.Token!,
-                 Request);
+    [HttpPost("recuperar-password")]
+    [AllowAnonymous]
+    [EnableRateLimiting("PoliticaLogin")]
+    public async Task<IActionResult> SolicitarRecuperacion([FromBody] SolicitarRecuperacionDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.Email))
+            return BadRequest(new { mensaje = "El correo es obligatorio." });
 
-             AuthCookieHelper.EstablecerRefreshCookie(
-                 Response,
-                 resultado.RefreshToken!,
-                 Request);
+        await Mediator.Send(new SolicitarRecuperacionCommand(dto.Email));
 
-             return Ok(new
-             {
-                 resultado.Exito,
-                 resultado.Usuario
-             });
-         }
-         catch (UnauthorizedAccessException)
-         {
-             AuthCookieHelper.LimpiarTokenCookie(Response, Request);
-             return Unauthorized(new { mensaje = "Sesión inválida." });
-         }
-     }
+        return Ok(new { exito = true, mensaje = "Si el correo está registrado, recibirás un código para restablecer tu contraseña." });
+    }
 
-     /// <summary>
-     /// Cierra la sesión: revoca el refresh token en el servidor y elimina
-     /// ambas cookies. Acceso anónimo permitido.
-     /// </summary>
-     /// <returns>Confirmación de cierre de sesión.</returns>
-     [HttpPost("logout")]
-     [AllowAnonymous]
-     public async Task<IActionResult> Logout()
-     {
-         await _authService.RevocarSesionAsync(
-             Request.Cookies[AuthCookieHelper.RefreshCookieName]);
+    [HttpPost("restablecer-password")]
+    [AllowAnonymous]
+    [EnableRateLimiting("PoliticaLogin")]
+    public async Task<IActionResult> RestablecerPassword([FromBody] RestablecerPasswordDto dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
 
-         AuthCookieHelper.LimpiarTokenCookie(Response, Request);
-         return Ok(new { exito = true, mensaje = "Sesión cerrada." });
-     }
+        try
+        {
+            await Mediator.Send(new RestablecerPasswordCommand(dto));
+            return Ok(new { exito = true, mensaje = "Tu contraseña fue restablecida. Ya puedes iniciar sesión." });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return BadRequest(new { mensaje = ex.Message });
+        }
+        catch (BusinessRuleException ex)
+        {
+            return BadRequest(new { mensaje = ex.Message });
+        }
+    }
 
-     /// <summary>
-     /// Envía un código de recuperación al correo del usuario.
-     /// Responde igual si el correo existe o no, para no revelar cuentas registradas.
-     /// Aplica rate limiting por IP (o intenta por email si se implementa).
-     /// </summary>
-     /// <param name="dto">Datos que contienen el correo electrónico.</param>
-     /// <returns>Mensaje indicando que si el correo está registrado se enviará un código.</returns>
-     [HttpPost("recuperar-password")]
-     [AllowAnonymous]
-     [EnableRateLimiting("PoliticaLogin")]
-     public async Task<IActionResult> SolicitarRecuperacion([FromBody] SolicitarRecuperacionDto dto)
-     {
-         if (string.IsNullOrWhiteSpace(dto.Email))
-             return BadRequest(new { mensaje = "El correo es obligatorio." });
+    [HttpPost("confirmar-correo")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ConfirmarCorreo([FromBody] ConfirmarCorreoDto dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
 
-         await _authService.SolicitarRecuperacionAsync(dto.Email);
+        try
+        {
+            await Mediator.Send(new ConfirmarCorreoCommand(dto.Token));
+            return Ok(new { exito = true, mensaje = "Tu correo fue confirmado exitosamente." });
+        }
+        catch (BusinessRuleException ex)
+        {
+            return BadRequest(new { mensaje = ex.Message });
+        }
+    }
 
-         return Ok(new { exito = true, mensaje = "Si el correo está registrado, recibirás un código para restablecer tu contraseña." });
-     }
+    [HttpPost("reenviar-confirmacion")]
+    [AllowAnonymous]
+    [EnableRateLimiting("PoliticaLogin")]
+    public async Task<IActionResult> ReenviarConfirmacion([FromBody] ReenviarConfirmacionDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.Email))
+            return BadRequest(new { mensaje = "El correo es obligatorio." });
 
-     /// <summary>
-     /// Valida el código de recuperación y aplica la nueva contraseña.
-     /// Acceso anónimo permitido. Aplica rate limiting por IP (o intenta por email si se implementa).
-     /// </summary>
-     /// <param name="dto">Datos para restablecer la contraseña (código y nueva contraseña).</param>
-     /// <returns>Resultado del restablecimiento de contraseña.</returns>
-     [HttpPost("restablecer-password")]
-     [AllowAnonymous]
-     [EnableRateLimiting("PoliticaLogin")]
-     public async Task<IActionResult> RestablecerPassword([FromBody] RestablecerPasswordDto dto)
-     {
-         if (!ModelState.IsValid)
-             return BadRequest(ModelState);
+        await Mediator.Send(new ReenviarConfirmacionCommand(dto.Email));
 
-         try
-         {
-             await _authService.RestablecerPasswordAsync(dto);
-             return Ok(new { exito = true, mensaje = "Tu contraseña fue restablecida. Ya puedes iniciar sesión." });
-         }
-         catch (UnauthorizedAccessException ex)
-         {
-             return BadRequest(new { mensaje = ex.Message });
-         }
-         catch (BusinessRuleException ex)
-         {
-             return BadRequest(new { mensaje = ex.Message });
-         }
-     }
-
-     /// <summary>
-     /// Confirma el correo de una cuenta usando el token del enlace enviado al registrarse.
-     /// Acceso anónimo permitido (el token es la credencial).
-     /// </summary>
-     /// <param name="dto">Datos que contienen el token de confirmación.</param>
-     /// <returns>Resultado de la confirmación.</returns>
-     [HttpPost("confirmar-correo")]
-     [AllowAnonymous]
-     public async Task<IActionResult> ConfirmarCorreo([FromBody] ConfirmarCorreoDto dto)
-     {
-         if (!ModelState.IsValid)
-             return BadRequest(ModelState);
-
-         try
-         {
-             await _authService.ConfirmarCorreoAsync(dto.Token);
-             return Ok(new { exito = true, mensaje = "Tu correo fue confirmado exitosamente." });
-         }
-         catch (BusinessRuleException ex)
-         {
-             return BadRequest(new { mensaje = ex.Message });
-         }
-     }
-
-     /// <summary>
-     /// Reenvía el correo de confirmación a un dealer con correo sin confirmar.
-     /// Responde igual si el correo existe o no, para no revelar cuentas registradas.
-     /// Aplica rate limiting por IP.
-     /// </summary>
-     /// <param name="dto">Datos que contienen el correo electrónico.</param>
-     /// <returns>Mensaje genérico de reenvío.</returns>
-     [HttpPost("reenviar-confirmacion")]
-     [AllowAnonymous]
-     [EnableRateLimiting("PoliticaLogin")]
-     public async Task<IActionResult> ReenviarConfirmacion([FromBody] ReenviarConfirmacionDto dto)
-     {
-         if (string.IsNullOrWhiteSpace(dto.Email))
-             return BadRequest(new { mensaje = "El correo es obligatorio." });
-
-         await _authService.ReenviarConfirmacionCorreoAsync(dto.Email);
-
-         return Ok(new { exito = true, mensaje = "Si el correo está registrado y sin confirmar, recibirás un nuevo enlace de confirmación." });
-     }
- }
-
-
-
+        return Ok(new { exito = true, mensaje = "Si el correo está registrado y sin confirmar, recibirás un nuevo enlace de confirmación." });
+    }
+}
