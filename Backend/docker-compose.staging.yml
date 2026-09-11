@@ -119,10 +119,6 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_API_URL: /api
-        # Anuncios permanentes en staging (no son secretos). Toggle a "false"
-        # para apagarlos temporalmente (p. ej. durante pruebas de carga).
-        VITE_ADSENSE_ENABLED: "true"
-        VITE_ADSENSE_CLIENT: ca-pub-7789207730134520
     container_name: automarket-frontend-staging
     ports:
       - "5174:80"
