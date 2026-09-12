@@ -147,7 +147,7 @@ public class AdSlotService : IAdSlotService
             ?? throw new KeyNotFoundException($"No existe precio para {dto.DuracionDias} días en este slot.");
 
         // Calcular monto con descuento
-        var usuario = await _usuarioRepository.ObtenerPorIdAsync(perfilDealerId)
+        var usuario = await _usuarioRepository.ObtenerDealerConPerfilPorIdAsync(perfilDealerId)
             ?? throw new KeyNotFoundException("El usuario no existe.");
 
         var perfil = usuario.PerfilDealer
