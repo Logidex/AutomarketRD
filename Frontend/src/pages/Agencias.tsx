@@ -219,45 +219,56 @@ export default function Agencias() {
               {isFetching && !isLoading ? " · actualizando..." : ""}
             </p>
 
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {agencias.map((agencia) => (
-                <TarjetaAgencia key={agencia.id} agencia={agencia} />
-              ))}
-            </div>
+            <div className="flex gap-6">
+              <div className="min-w-0 flex-1">
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                  {agencias.map((agencia) => (
+                    <TarjetaAgencia key={agencia.id} agencia={agencia} />
+                  ))}
+                </div>
 
-            <div className="mt-8 flex justify-center">
-              <AdSlotRenderer ubicacion="AgenciasLateral" orientacion="horizontal" />
-            </div>
-
-            {/* Paginación */}
-            {totalPaginas > 1 && (
-              <div className="mt-10 flex items-center justify-center gap-4">
-                <button
-                  type="button"
-                  onClick={() => setPagina((p) => Math.max(1, p - 1))}
-                  disabled={pagina <= 1}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-surface px-4 py-2 text-sm font-semibold text-ink-2 transition-colors hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  <FaChevronLeft className="text-xs" />
-                  Anterior
-                </button>
-                <span className="text-sm text-ink-2">
-                  Página {pagina} de {totalPaginas}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
-                  disabled={pagina >= totalPaginas}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-surface px-4 py-2 text-sm font-semibold text-ink-2 transition-colors hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  Siguiente
-                  <FaChevronRight className="text-xs" />
-                </button>
+                {/* Paginación */}
+                {totalPaginas > 1 && (
+                  <div className="mt-10 flex items-center justify-center gap-4">
+                    <button
+                      type="button"
+                      onClick={() => setPagina((p) => Math.max(1, p - 1))}
+                      disabled={pagina <= 1}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-surface px-4 py-2 text-sm font-semibold text-ink-2 transition-colors hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      <FaChevronLeft className="text-xs" />
+                      Anterior
+                    </button>
+                    <span className="text-sm text-ink-2">
+                      Página {pagina} de {totalPaginas}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
+                      disabled={pagina >= totalPaginas}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-surface px-4 py-2 text-sm font-semibold text-ink-2 transition-colors hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      Siguiente
+                      <FaChevronRight className="text-xs" />
+                    </button>
+                  </div>
+                )}
               </div>
-            )}
+
+              <div className="hidden w-[300px] shrink-0 lg:block">
+                <div className="sticky top-24 space-y-6">
+                  <AdSlotRenderer ubicacion="AgenciasLateral" orientacion="vertical" />
+                </div>
+              </div>
+            </div>
           </>
         )}
       </main>
+
+      <div className="mx-auto max-w-6xl px-6 sm:px-8">
+        <AdSlotRenderer ubicacion="AgenciasFooter" orientacion="horizontal" />
+      </div>
+
       </SectionBackground>
     </div>
   );

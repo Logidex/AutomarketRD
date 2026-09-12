@@ -29,5 +29,6 @@ public interface IAdSlotRepository
     Task<List<AdSlotAnuncio>> ObtenerAnunciosPorVencerAsync(int diasAntes);
     Task AgregarAnuncioAsync(AdSlotAnuncio anuncio);
     Task ActualizarAnuncioAsync(AdSlotAnuncio anuncio);
+    Task EliminarAnuncioAsync(int anuncioId);
     Task<bool> ExisteCapturaTransferenciaAdSlotAsync(string clave);
 }
