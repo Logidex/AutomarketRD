@@ -189,8 +189,9 @@ public class AdSlotRepository : IAdSlotRepository
     public async Task<bool> ExisteCapturaTransferenciaAdSlotAsync(string clave)
     {
         return await _context.AdSlotsAnuncios
-            .AnyAsync(a => a.UrlCapturaTransferencia != null &&
-                           (a.UrlCapturaTransferencia == clave ||
-                            a.UrlCapturaTransferencia.Contains(clave)));
+            .AnyAsync(a =>
+                a.ImagenOriginalUrl == clave ||
+                a.ImagenRedimensionadaUrl == clave ||
+                (a.UrlCapturaTransferencia != null && a.UrlCapturaTransferencia == clave));
     }
 }
