@@ -531,10 +531,15 @@ function Recientes({
             </button>
           </div>
         ) : anuncios.length > 0 ? (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {anuncios.map((anuncio) => (
-              <TarjetaReciente key={anuncio.id} anuncio={anuncio} />
-            ))}
+          <div className="flex gap-6">
+            <div className="grid min-w-0 flex-1 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {anuncios.map((anuncio) => (
+                <TarjetaReciente key={anuncio.id} anuncio={anuncio} />
+              ))}
+            </div>
+            <div className="hidden w-[300px] shrink-0 lg:block">
+              <AdSlotRenderer ubicacion="HomepageLateral" orientacion="vertical" />
+            </div>
           </div>
         ) : (
           <div className="rounded-2xl border border-dashed border-line bg-surface p-12 text-center">
