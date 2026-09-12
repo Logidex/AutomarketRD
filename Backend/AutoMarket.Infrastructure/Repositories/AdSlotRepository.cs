@@ -186,12 +186,33 @@ public class AdSlotRepository : IAdSlotRepository
         await _context.SaveChangesAsync();
     }
 
+    public async Task EliminarAnuncioAsync(int anuncioId)
+    {
+        var anuncio = await _context.AdSlotsAnuncios.FindAsync(anuncioId);
+        if (anuncio != null)
+        {
+            _context.AdSlotsAnuncios.Remove(anuncio);
+            await _context.SaveChangesAsync();
+        }
+    }
+
     public async Task<bool> ExisteCapturaTransferenciaAdSlotAsync(string clave)
     {
+        var claveSinPrefijo = clave.StartsWith("uploads/")
+            ? clave["uploads/".Length..]
+            : clave;
+        var claveConPrefijo = clave.StartsWith("uploads/")
+            ? clave
+            : $"uploads/{clave}";
+
         return await _context.AdSlotsAnuncios
             .AnyAsync(a =>
                 a.ImagenOriginalUrl == clave ||
+                a.ImagenOriginalUrl == claveSinPrefijo ||
+                a.ImagenOriginalUrl == claveConPrefijo ||
                 a.ImagenRedimensionadaUrl == clave ||
+                a.ImagenRedimensionadaUrl == claveSinPrefijo ||
+                a.ImagenRedimensionadaUrl == claveConPrefijo ||
                 (a.UrlCapturaTransferencia != null && a.UrlCapturaTransferencia == clave));
     }
 }

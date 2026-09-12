@@ -12,17 +12,20 @@ public class AdSlotService : IAdSlotService
     private readonly IUsuarioRepository _usuarioRepository;
     private readonly IPlanCatalogoRepository _planRepository;
     private readonly ISuscripcionRepository _suscripcionRepository;
+    private readonly IAlmacenadorArchivos _almacenadorArchivos;
 
     public AdSlotService(
         IAdSlotRepository repository,
         IUsuarioRepository usuarioRepository,
         IPlanCatalogoRepository planRepository,
-        ISuscripcionRepository suscripcionRepository)
+        ISuscripcionRepository suscripcionRepository,
+        IAlmacenadorArchivos almacenadorArchivos)
     {
         _repository = repository;
         _usuarioRepository = usuarioRepository;
         _planRepository = planRepository;
         _suscripcionRepository = suscripcionRepository;
+        _almacenadorArchivos = almacenadorArchivos;
     }
 
     // ============================
@@ -210,11 +213,14 @@ public class AdSlotService : IAdSlotService
         if (anuncio.PerfilDealerId != perfilDealerId)
             throw new UnauthorizedAccessException("No tienes permiso para cancelar este anuncio.");
 
-        if (anuncio.Estado != EstadoAdSlot.Activo)
-            throw new InvalidOperationException("Solo se pueden cancelar anuncios activos.");
+        if (!string.IsNullOrEmpty(anuncio.ImagenOriginalUrl))
+            await _almacenadorArchivos.EliminarArchivoAsync(anuncio.ImagenOriginalUrl);
 
-        anuncio.MarcarVencido();
-        await _repository.ActualizarAnuncioAsync(anuncio);
+        if (!string.IsNullOrEmpty(anuncio.ImagenRedimensionadaUrl) &&
+            anuncio.ImagenRedimensionadaUrl != anuncio.ImagenOriginalUrl)
+            await _almacenadorArchivos.EliminarArchivoAsync(anuncio.ImagenRedimensionadaUrl);
+
+        await _repository.EliminarAnuncioAsync(anuncioId);
     }
 
     public async Task<AdSlotStatsDto> ObtenerEstadisticasAsync(int perfilDealerId)
@@ -370,7 +376,14 @@ public class AdSlotService : IAdSlotService
         var anuncio = await _repository.ObtenerAnuncioPorIdAsync(anuncioId)
             ?? throw new KeyNotFoundException("El anuncio no existe.");
 
-        await _repository.ActualizarAnuncioAsync(anuncio);
+        if (!string.IsNullOrEmpty(anuncio.ImagenOriginalUrl))
+            await _almacenadorArchivos.EliminarArchivoAsync(anuncio.ImagenOriginalUrl);
+
+        if (!string.IsNullOrEmpty(anuncio.ImagenRedimensionadaUrl) &&
+            anuncio.ImagenRedimensionadaUrl != anuncio.ImagenOriginalUrl)
+            await _almacenadorArchivos.EliminarArchivoAsync(anuncio.ImagenRedimensionadaUrl);
+
+        await _repository.EliminarAnuncioAsync(anuncioId);
     }
 
     public async Task<List<AdSlotAnuncioAdminDto>> ObtenerAnunciosPorVencerAsync(int diasAntes)
