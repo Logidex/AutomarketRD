@@ -39,8 +39,8 @@ public class AdSlotImageService
         var clave = $"adslots/{perfilDealerId}-{guid}{extension}";
 
         stream.Position = 0;
-        await _almacenadorArchivos.GuardarArchivoAsync(stream, clave, contentType);
+        var claveAlmacenada = await _almacenadorArchivos.GuardarArchivoAsync(stream, clave, contentType);
 
-        return (clave, clave);
+        return (claveAlmacenada, claveAlmacenada);
     }
 }
