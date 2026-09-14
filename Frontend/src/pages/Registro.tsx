@@ -1,34 +1,54 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { AnimatePresence, motion } from "motion/react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import Swal from "sweetalert2";
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 import { authService } from "../services/auth.service";
 import SectionBackground from "../components/SectionBackground";
 import logo from "../assets/AutoMarketRD_Logo.svg";
 
-interface RegistroFormData {
-  nombre: string;
-  apellido: string;
-  email: string;
-  password: string;
-  rol: string;
-  telefonoPersonal: string;
-  nombreAgencia: string;
-  agenciaRNC: string;
-  ubicacionAgencia: string;
-  telefonoAgencia: string;
-  aceptaTerminos: boolean;
-}
+const registroSchema = z.object({
+  nombre: z.string().min(1, "El nombre es requerido"),
+  apellido: z.string().min(1, "El apellido es requerido"),
+  email: z.string().min(1, "El email es requerido").email("Email inválido"),
+  password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
+  confirmarPassword: z.string(),
+  rol: z.enum(["Comprador", "Vendedor", "Dealer"]),
+  telefonoPersonal: z.string().optional(),
+  nombreAgencia: z.string().optional(),
+  agenciaRNC: z.string().optional(),
+  ubicacionAgencia: z.string().optional(),
+  telefonoAgencia: z.string().optional(),
+  aceptaTerminos: z.literal(true, {
+    errorMap: () => ({ message: "Debes aceptar los términos y condiciones" }),
+  }),
+}).refine((data) => data.password === data.confirmarPassword, {
+  message: "Las contraseñas no coinciden",
+  path: ["confirmarPassword"],
+}).refine(
+  (data) => {
+    if (data.rol === "Dealer") {
+      return data.nombreAgencia && data.agenciaRNC && data.ubicacionAgencia && data.telefonoAgencia;
+    }
+    return true;
+  },
+  {
+    message: "Los campos de agencia son requeridos para Dealers",
+    path: ["nombreAgencia"],
+  }
+);
+
+type RegistroFormData = z.infer<typeof registroSchema>;
 
 interface CamposDealerProps {
-  formData: RegistroFormData;
-  handleChange: (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => void;
+  errors: ReturnType<typeof useForm<RegistroFormData>>["formState"]["errors"];
+  register: ReturnType<typeof useForm<RegistroFormData>>["register"];
 }
 
-function CamposDealer({ formData, handleChange }: CamposDealerProps) {
+function CamposDealer({ errors, register }: CamposDealerProps) {
   return (
     <div className="border-t border-line pt-5 mt-3">
       <h3 className="text-lg font-semibold text-blue-500 mb-4">
@@ -46,13 +66,15 @@ function CamposDealer({ formData, handleChange }: CamposDealerProps) {
           <input
             id="nombreAgencia"
             type="text"
-            name="nombreAgencia"
-            value={formData.nombreAgencia}
-            onChange={handleChange}
+            {...register("nombreAgencia")}
             placeholder="AutoVentas RD"
-            className="w-full px-4 py-3 bg-input text-ink border border-line rounded-lg focus:outline-none focus:border-blue-500 transition-colors placeholder:text-ink-3"
-            required
+            className={`w-full px-4 py-3 bg-input text-ink border rounded-lg focus:outline-none focus:border-blue-500 transition-colors placeholder:text-ink-3 ${
+              errors.nombreAgencia ? "border-red-500" : "border-line"
+            }`}
           />
+          {errors.nombreAgencia && (
+            <p className="mt-1 text-sm text-red-500">{errors.nombreAgencia.message}</p>
+          )}
         </div>
         <div>
           <label
@@ -64,13 +86,15 @@ function CamposDealer({ formData, handleChange }: CamposDealerProps) {
           <input
             id="agenciaRNC"
             type="text"
-            name="agenciaRNC"
-            value={formData.agenciaRNC}
-            onChange={handleChange}
+            {...register("agenciaRNC")}
             placeholder="1-30-12345-6"
-            className="w-full px-4 py-3 bg-input text-ink border border-line rounded-lg focus:outline-none focus:border-blue-500 transition-colors placeholder:text-ink-3"
-            required
+            className={`w-full px-4 py-3 bg-input text-ink border rounded-lg focus:outline-none focus:border-blue-500 transition-colors placeholder:text-ink-3 ${
+              errors.agenciaRNC ? "border-red-500" : "border-line"
+            }`}
           />
+          {errors.agenciaRNC && (
+            <p className="mt-1 text-sm text-red-500">{errors.agenciaRNC.message}</p>
+          )}
         </div>
       </div>
 
@@ -85,13 +109,15 @@ function CamposDealer({ formData, handleChange }: CamposDealerProps) {
           <input
             id="ubicacionAgencia"
             type="text"
-            name="ubicacionAgencia"
-            value={formData.ubicacionAgencia}
-            onChange={handleChange}
+            {...register("ubicacionAgencia")}
             placeholder="Santo Domingo"
-            className="w-full px-4 py-3 bg-input text-ink border border-line rounded-lg focus:outline-none focus:border-blue-500 transition-colors placeholder:text-ink-3"
-            required
+            className={`w-full px-4 py-3 bg-input text-ink border rounded-lg focus:outline-none focus:border-blue-500 transition-colors placeholder:text-ink-3 ${
+              errors.ubicacionAgencia ? "border-red-500" : "border-line"
+            }`}
           />
+          {errors.ubicacionAgencia && (
+            <p className="mt-1 text-sm text-red-500">{errors.ubicacionAgencia.message}</p>
+          )}
         </div>
         <div>
           <label
@@ -103,13 +129,15 @@ function CamposDealer({ formData, handleChange }: CamposDealerProps) {
           <input
             id="telefonoAgencia"
             type="tel"
-            name="telefonoAgencia"
-            value={formData.telefonoAgencia}
-            onChange={handleChange}
+            {...register("telefonoAgencia")}
             placeholder="809-555-5555"
-            className="w-full px-4 py-3 bg-input text-ink border border-line rounded-lg focus:outline-none focus:border-blue-500 transition-colors placeholder:text-ink-3"
-            required
+            className={`w-full px-4 py-3 bg-input text-ink border rounded-lg focus:outline-none focus:border-blue-500 transition-colors placeholder:text-ink-3 ${
+              errors.telefonoAgencia ? "border-red-500" : "border-line"
+            }`}
           />
+          {errors.telefonoAgencia && (
+            <p className="mt-1 text-sm text-red-500">{errors.telefonoAgencia.message}</p>
+          )}
         </div>
       </div>
     </div>
@@ -117,75 +145,45 @@ function CamposDealer({ formData, handleChange }: CamposDealerProps) {
 }
 
 export default function Registro() {
-  const [formData, setFormData] = useState<RegistroFormData>({
-    nombre: "",
-    apellido: "",
-    email: "",
-    password: "",
-    rol: "Comprador",
-    telefonoPersonal: "",
-    nombreAgencia: "",
-    agenciaRNC: "",
-    ubicacionAgencia: "",
-    telefonoAgencia: "",
-    aceptaTerminos: false,
-  });
-
   const [loading, setLoading] = useState(false);
   const [mostrarPassword, setMostrarPassword] = useState(false);
-  const [confirmarPassword, setConfirmarPassword] = useState("");
   const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
-  const [aceptoTerminos, setAceptoTerminos] = useState(false);
   const navigate = useNavigate();
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<RegistroFormData>({
+    resolver: zodResolver(registroSchema),
+    defaultValues: {
+      rol: "Comprador",
+      aceptaTerminos: undefined,
+    },
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const rolSeleccionado = watch("rol");
+  const esDealer = rolSeleccionado === "Dealer";
 
-    if (!aceptoTerminos) {
-      await Swal.fire({
-        icon: "warning",
-        title: "Falta aceptar los términos",
-        text: "Debes aceptar los Términos y Condiciones y la Política de Privacidad para crear tu cuenta.",
-        confirmButtonColor: "#3b82f6",
-      });
-      return;
-    }
-
-    if (formData.password !== confirmarPassword) {
-      await Swal.fire({
-        icon: "error",
-        title: "Las contraseñas no coinciden",
-        text: "Verifica que ambos campos de contraseña sean iguales.",
-        confirmButtonColor: "#3b82f6",
-      });
-      return;
-    }
-
+  const onSubmit = async (data: RegistroFormData) => {
     setLoading(true);
 
     try {
       const response = await authService.register({
-        ...formData,
-        aceptaTerminos: aceptoTerminos,
+        ...data,
+        ubicacionAgencia: data.ubicacionAgencia ?? "",
+        telefonoAgencia: data.telefonoAgencia ?? "",
       });
 
       if (response.exito) {
-        const esDealerRegistrado = formData.rol === "Dealer";
+        const esDealerRegistrado = data.rol === "Dealer";
 
         if (esDealerRegistrado) {
           try {
             await authService.login({
-              email: formData.email,
-              password: formData.password,
+              email: data.email,
+              password: data.password,
             });
           } catch {
             // Si el auto-login falla, la página de suscripción lo redirigirá a /login
@@ -194,7 +192,7 @@ export default function Registro() {
           await Swal.fire({
             icon: "success",
             title: "¡Registro exitoso!",
-            html: `Tu cuenta Dealer fue creada con el plan <strong>Gratis</strong> (1 anuncio).<br/><br/>Te enviamos un correo de confirmación a <strong>${formData.email}</strong>. Confírmalo para poder obtener la insignia de <strong>Dealer Verificado</strong>.<br/><br/>⭐ <strong>No te pierdas este paso:</strong> entra a tu panel y completa <strong>Mi Perfil</strong> con el logo, horarios y descripción de tu agencia — los compradores confían más en perfiles completos.<br/><br/>Ahora elige la suscripción que mejor se adapte a tu agencia.`,
+            html: `Tu cuenta Dealer fue creada con el plan <strong>Gratis</strong> (1 anuncio).<br/><br/>Te enviamos un correo de confirmación a <strong>${data.email}</strong>. Confírmalo para poder obtener la insignia de <strong>Dealer Verificado</strong>.<br/><br/>⭐ <strong>No te pierdas este paso:</strong> entra a tu panel y completa <strong>Mi Perfil</strong> con el logo, horarios y descripción de tu agencia — los compradores confían más en perfiles completos.<br/><br/>Ahora elige la suscripción que mejor se adapte a tu agencia.`,
             confirmButtonColor: "#3b82f6",
           });
           navigate("/suscripcion");
@@ -226,8 +224,6 @@ export default function Registro() {
       setLoading(false);
     }
   };
-
-  const esDealer = formData.rol === "Dealer";
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-page flex items-center justify-center p-4">
@@ -267,7 +263,7 @@ export default function Registro() {
             Crear Cuenta
           </h2>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             {/* Nombre y Apellido */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -280,13 +276,15 @@ export default function Registro() {
                 <input
                   id="nombre"
                   type="text"
-                  name="nombre"
-                  value={formData.nombre}
-                  onChange={handleChange}
+                  {...register("nombre")}
                   placeholder="Juan"
-                  className="w-full px-4 py-3 bg-input text-ink border border-line rounded-lg focus:outline-none focus:border-blue-500 transition-colors placeholder:text-ink-3"
-                  required
+                  className={`w-full px-4 py-3 bg-input text-ink border rounded-lg focus:outline-none focus:border-blue-500 transition-colors placeholder:text-ink-3 ${
+                    errors.nombre ? "border-red-500" : "border-line"
+                  }`}
                 />
+                {errors.nombre && (
+                  <p className="mt-1 text-sm text-red-500">{errors.nombre.message}</p>
+                )}
               </div>
               <div>
                 <label
@@ -298,13 +296,15 @@ export default function Registro() {
                 <input
                   id="apellido"
                   type="text"
-                  name="apellido"
-                  value={formData.apellido}
-                  onChange={handleChange}
+                  {...register("apellido")}
                   placeholder="Pérez"
-                  className="w-full px-4 py-3 bg-input text-ink border border-line rounded-lg focus:outline-none focus:border-blue-500 transition-colors placeholder:text-ink-3"
-                  required
+                  className={`w-full px-4 py-3 bg-input text-ink border rounded-lg focus:outline-none focus:border-blue-500 transition-colors placeholder:text-ink-3 ${
+                    errors.apellido ? "border-red-500" : "border-line"
+                  }`}
                 />
+                {errors.apellido && (
+                  <p className="mt-1 text-sm text-red-500">{errors.apellido.message}</p>
+                )}
               </div>
             </div>
 
@@ -320,13 +320,15 @@ export default function Registro() {
                 <input
                   id="email"
                   type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
+                  {...register("email")}
                   placeholder="tu@email.com"
-                  className="w-full px-4 py-3 bg-input text-ink border border-line rounded-lg focus:outline-none focus:border-blue-500 transition-colors placeholder:text-ink-3"
-                  required
+                  className={`w-full px-4 py-3 bg-input text-ink border rounded-lg focus:outline-none focus:border-blue-500 transition-colors placeholder:text-ink-3 ${
+                    errors.email ? "border-red-500" : "border-line"
+                  }`}
                 />
+                {errors.email && (
+                  <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>
+                )}
               </div>
               <div>
                 <label
@@ -338,9 +340,7 @@ export default function Registro() {
                 <input
                   id="telefonoPersonal"
                   type="tel"
-                  name="telefonoPersonal"
-                  value={formData.telefonoPersonal}
-                  onChange={handleChange}
+                  {...register("telefonoPersonal")}
                   placeholder="809-555-5555"
                   className="w-full px-4 py-3 bg-input text-ink border border-line rounded-lg focus:outline-none focus:border-blue-500 transition-colors placeholder:text-ink-3"
                 />
@@ -360,13 +360,11 @@ export default function Registro() {
                   <input
                     id="password"
                     type={mostrarPassword ? "text" : "password"}
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
+                    {...register("password")}
                     placeholder="••••••••"
-                    className="w-full px-4 py-3 pr-12 bg-input text-ink border border-line rounded-lg focus:outline-none focus:border-blue-500 transition-colors placeholder:text-ink-3"
-                    required
-                    minLength={6}
+                    className={`w-full px-4 py-3 pr-12 bg-input text-ink border rounded-lg focus:outline-none focus:border-blue-500 transition-colors placeholder:text-ink-3 ${
+                      errors.password ? "border-red-500" : "border-line"
+                    }`}
                   />
                   <button
                     type="button"
@@ -377,6 +375,9 @@ export default function Registro() {
                     {mostrarPassword ? <MdVisibilityOff /> : <MdVisibility />}
                   </button>
                 </div>
+                {errors.password && (
+                  <p className="mt-1 text-sm text-red-500">{errors.password.message}</p>
+                )}
               </div>
               <div>
                 <label
@@ -389,12 +390,11 @@ export default function Registro() {
                   <input
                     id="confirmarPassword"
                     type={mostrarConfirmacion ? "text" : "password"}
-                    value={confirmarPassword}
-                    onChange={(e) => setConfirmarPassword(e.target.value)}
+                    {...register("confirmarPassword")}
                     placeholder="••••••••"
-                    className="w-full px-4 py-3 pr-12 bg-input text-ink border border-line rounded-lg focus:outline-none focus:border-blue-500 transition-colors placeholder:text-ink-3"
-                    required
-                    minLength={6}
+                    className={`w-full px-4 py-3 pr-12 bg-input text-ink border rounded-lg focus:outline-none focus:border-blue-500 transition-colors placeholder:text-ink-3 ${
+                      errors.confirmarPassword ? "border-red-500" : "border-line"
+                    }`}
                   />
                   <button
                     type="button"
@@ -405,6 +405,9 @@ export default function Registro() {
                     {mostrarConfirmacion ? <MdVisibilityOff /> : <MdVisibility />}
                   </button>
                 </div>
+                {errors.confirmarPassword && (
+                  <p className="mt-1 text-sm text-red-500">{errors.confirmarPassword.message}</p>
+                )}
               </div>
             </div>
 
@@ -419,11 +422,10 @@ export default function Registro() {
                 </label>
                 <select
                   id="rol"
-                  name="rol"
-                  value={formData.rol}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 bg-input text-ink border border-line rounded-lg focus:outline-none focus:border-blue-500 transition-colors placeholder:text-ink-3"
-                  required
+                  {...register("rol")}
+                  className={`w-full px-4 py-3 bg-input text-ink border rounded-lg focus:outline-none focus:border-blue-500 transition-colors placeholder:text-ink-3 ${
+                    errors.rol ? "border-red-500" : "border-line"
+                  }`}
                 >
                   <option value="Comprador">Comprador</option>
                   <option value="Vendedor">Vendedor</option>
@@ -443,7 +445,7 @@ export default function Registro() {
                   transition={{ duration: 0.25, ease: "easeInOut" }}
                   className="overflow-hidden"
                 >
-                  <CamposDealer formData={formData} handleChange={handleChange} />
+                  <CamposDealer errors={errors} register={register} />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -453,9 +455,7 @@ export default function Registro() {
               <input
                 id="aceptaTerminos"
                 type="checkbox"
-                checked={aceptoTerminos}
-                onChange={(e) => setAceptoTerminos(e.target.checked)}
-                required
+                {...register("aceptaTerminos")}
                 className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border-line accent-blue-600"
               />
               <label
@@ -480,6 +480,9 @@ export default function Registro() {
                 </Link>
               </label>
             </div>
+            {errors.aceptaTerminos && (
+              <p className="text-sm text-red-500">{errors.aceptaTerminos.message}</p>
+            )}
 
             <button
               type="submit"
