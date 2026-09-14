@@ -13,6 +13,26 @@ const api = axios.create({
   withCredentials: true,
 });
 
+// --- CSRF: leer cookie y enviar header en métodos mutantes ---
+function obtenerCookie(nombre: string): string | null {
+  const Valor = document.cookie
+    .split("; ")
+    .find((fila) => fila.startsWith(`${nombre}=`))
+    ?.split("=")[1];
+  return Valor ?? null;
+}
+
+api.interceptors.request.use((config) => {
+  const method = (config.method ?? "get").toUpperCase();
+  if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
+    const token = obtenerCookie("automarket_csrf");
+    if (token) {
+      config.headers["X-CSRF-Token"] = token;
+    }
+  }
+  return config;
+});
+
 export const API_BASE_URL = baseURL;
 
 // Manejar respuestas y errores
@@ -81,6 +101,15 @@ api.interceptors.response.use(
     if (status === 429) {
       error.message =
         "Has hecho demasiadas solicitudes. Espera unos minutos e inténtalo de nuevo.";
+    }
+
+    // CSRF token inválido
+    if (status === 403) {
+      const mensaje = error.response?.data?.mensaje;
+      if (mensaje?.includes("CSRF")) {
+        error.message =
+          "Tu sesión ha expirado. Recarga la página e inténtalo de nuevo.";
+      }
     }
 
     // Procesar errores enviados por el backend

@@ -158,7 +158,7 @@ public class AdSlotMonitorService : BackgroundService
                 var asunto = $"Tu anuncio publicitario en \"{ubicacion}\" vence pronto";
 
                 var cuerpoHtml = $@"
-                    <p>Hola <strong>{anuncio.PerfilDealer?.Usuario?.Nombre}</strong>,</p>
+                    <p>Hola <strong>{AutoMarket.Application.Helpers.PlantillaCorreoHelper.EscaparHtml(anuncio.PerfilDealer?.Usuario?.Nombre)}</strong>,</p>
                     <p>Tu anuncio publicitario en <strong>{ubicacion}</strong> vence el
                     <strong>{fechaVencimiento}</strong> (quedan {diasRestantes} día(s)).</p>
                     <p>Renueva a tiempo para que tu negocio siga apareciendo en la vitrina

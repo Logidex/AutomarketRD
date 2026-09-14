@@ -75,6 +75,7 @@ public static class WebApplicationExtensions
         app.UseResponseCompression();
         app.UseMiddleware<SecurityHeadersMiddleware>();
         app.UseCors(frontendPolicy);
+        app.UseMiddleware<CsrfMiddleware>();
         app.UseRateLimiter();
         app.UseAuthentication();
         app.UseAuthorization();
