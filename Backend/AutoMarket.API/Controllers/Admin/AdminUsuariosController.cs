@@ -31,10 +31,17 @@ public class AdminUsuariosController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> ListarUsuarios()
+    public async Task<IActionResult> ListarUsuarios([FromQuery] int pagina = 1, [FromQuery] int tamanoPagina = 20)
     {
-        var usuarios = await _adminUsuarioService.ListarUsuariosAsync();
-        return Ok(usuarios);
+        var (items, total) = await _adminUsuarioService.ListarUsuariosPaginadosAsync(pagina, tamanoPagina);
+        return Ok(new
+        {
+            items,
+            totalRegistros = total,
+            paginaActual = pagina,
+            cantidadPorPagina = tamanoPagina,
+            totalPaginas = (int)Math.Ceiling(total / (double)tamanoPagina)
+        });
     }
 
     [HttpPatch("{id:int}/suspender")]

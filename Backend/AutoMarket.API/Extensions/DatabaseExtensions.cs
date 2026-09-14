@@ -21,6 +21,10 @@ public static class DatabaseExtensions
                     errorCodesToAdd: null);
             }));
 
+        // DbContextFactory para servicios que necesitan crear contextos en scope separado
+        services.AddDbContextFactory<ApplicationDbContext>(options =>
+            options.UseNpgsql(connectionString));
+
         return connectionString;
     }
 

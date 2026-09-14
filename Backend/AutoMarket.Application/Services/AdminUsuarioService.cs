@@ -27,16 +27,16 @@ public class AdminUsuarioService : IAdminUsuarioService
     public async Task<IEnumerable<UsuarioAdminListDto>> ListarUsuariosAsync()
     {
         var usuarios = await _usuarioRepository.ObtenerTodosAsync();
-        return usuarios.Select(u => new UsuarioAdminListDto
-        {
-            UsuarioId = u.UsuarioId,
-            Nombre = u.Nombre,
-            Apellido = u.Apellido,
-            Email = u.Email,
-            Rol = u.Rol,
-            IsActivo = u.IsActivo,
-            FechaRegistro = u.CreatedAt
-        });
+        return usuarios.Select(MapToDto);
+    }
+
+    public async Task<(IEnumerable<UsuarioAdminListDto> Items, int Total)> ListarUsuariosPaginadosAsync(int pagina, int tamanoPagina)
+    {
+        if (pagina < 1) pagina = 1;
+        if (tamanoPagina < 1 || tamanoPagina > 100) tamanoPagina = 20;
+
+        var (usuarios, total) = await _usuarioRepository.ObtenerPaginadosAsync(pagina, tamanoPagina);
+        return (usuarios.Select(MapToDto), total);
     }
 
     public async Task<UsuarioAdminListDto?> SuspenderUsuarioAsync(int usuarioId, int adminId)

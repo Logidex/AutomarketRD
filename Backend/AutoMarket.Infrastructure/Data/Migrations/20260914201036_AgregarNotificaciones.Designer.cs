@@ -4,17 +4,20 @@ using System.Collections.Generic;
 using AutoMarket.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace AutoMarket.Infrastructure.Migrations
+namespace AutoMarket.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260914201036_AgregarNotificaciones")]
+    partial class AgregarNotificaciones
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -502,50 +505,6 @@ namespace AutoMarket.Infrastructure.Migrations
                         .HasDatabaseName("IX_CuponesRedencion_Cupon_PerfilDealer");
 
                     b.ToTable("RedencionesCupon");
-                });
-
-            modelBuilder.Entity("AutoMarket.Core.Entities.EmailJob", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Asunto")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("CuerpoHtml")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Destinatario")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Estado")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("FechaCreacionUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("Intentos")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("MaxIntentos")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("ProximoReintentoUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("UltimoError")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("EmailJobs");
                 });
 
             modelBuilder.Entity("AutoMarket.Core.Entities.Encuesta", b =>

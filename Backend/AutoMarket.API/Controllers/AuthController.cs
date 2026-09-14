@@ -55,6 +55,7 @@ public class AuthController : BaseApiController
 
     [HttpPost("refrescar")]
     [AllowAnonymous]
+    [EnableRateLimiting("PoliticaRefresh")]
     public async Task<IActionResult> Refrescar()
     {
         var refreshToken = Request.Cookies[AuthCookieHelper.RefreshCookieName];

@@ -46,6 +46,13 @@ public static class PlantillaCorreoHelper
 </html>";
     }
 
+    /// <summary>
+    /// Escapa caracteres HTML para prevenir inyección de código en correos.
+    /// Usar siempre que se interpolen datos de usuario en el cuerpo del correo.
+    /// </summary>
+    public static string EscaparHtml(string? input) =>
+        System.Net.WebUtility.HtmlEncode(input ?? string.Empty);
+
     private static string? ConstruirLogoUrl(string? frontendUrl)
     {
         if (string.IsNullOrWhiteSpace(frontendUrl))

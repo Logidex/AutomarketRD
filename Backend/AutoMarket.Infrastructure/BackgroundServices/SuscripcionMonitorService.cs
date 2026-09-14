@@ -180,7 +180,7 @@ public class SuscripcionMonitorService : BackgroundService
                 var asunto = $"Tu suscripción {nombrePlan} de AutoMarket RD vence pronto";
 
                 var cuerpoHtml = $@"
-                    <p>Hola <strong>{suscripcion.PerfilDealer?.Usuario?.Nombre}</strong>,</p>
+                    <p>Hola <strong>{AutoMarket.Application.Helpers.PlantillaCorreoHelper.EscaparHtml(suscripcion.PerfilDealer?.Usuario?.Nombre)}</strong>,</p>
                     <p>Tu suscripción <strong>{nombrePlan}</strong> vence el <strong>{fechaVencimiento}</strong>
                     (quedan {diasRestantes} día(s)).</p>
                     <p>Renueva a tiempo para que tus anuncios sigan visibles en la vitrina

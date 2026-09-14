@@ -4,17 +4,20 @@ using System.Collections.Generic;
 using AutoMarket.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace AutoMarket.Infrastructure.Migrations
+namespace AutoMarket.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260914200725_AgregarBusquedaFullText")]
+    partial class AgregarBusquedaFullText
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -350,49 +353,6 @@ namespace AutoMarket.Infrastructure.Migrations
                     b.ToTable("Anuncios");
                 });
 
-            modelBuilder.Entity("AutoMarket.Core.Entities.AuditLog", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Accion")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Entidad")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("EntidadId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("FechaUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("IpAddress")
-                        .HasColumnType("text");
-
-                    b.Property<string>("JsonAntes")
-                        .HasColumnType("text");
-
-                    b.Property<string>("JsonDespues")
-                        .HasColumnType("text");
-
-                    b.Property<string>("UserAgent")
-                        .HasColumnType("text");
-
-                    b.Property<int?>("UsuarioId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("AuditLogs");
-                });
-
             modelBuilder.Entity("AutoMarket.Core.Entities.CuentaBancaria", b =>
                 {
                     b.Property<int>("Id")
@@ -502,50 +462,6 @@ namespace AutoMarket.Infrastructure.Migrations
                         .HasDatabaseName("IX_CuponesRedencion_Cupon_PerfilDealer");
 
                     b.ToTable("RedencionesCupon");
-                });
-
-            modelBuilder.Entity("AutoMarket.Core.Entities.EmailJob", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Asunto")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("CuerpoHtml")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Destinatario")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Estado")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("FechaCreacionUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("Intentos")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("MaxIntentos")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("ProximoReintentoUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("UltimoError")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("EmailJobs");
                 });
 
             modelBuilder.Entity("AutoMarket.Core.Entities.Encuesta", b =>
@@ -715,45 +631,6 @@ namespace AutoMarket.Infrastructure.Migrations
                     b.HasIndex("AnuncioId");
 
                     b.ToTable("Leads", (string)null);
-                });
-
-            modelBuilder.Entity("AutoMarket.Core.Entities.Notificacion", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("FechaUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("Leido")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Mensaje")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Tipo")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Titulo")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("UrlDestino")
-                        .HasColumnType("text");
-
-                    b.Property<int>("UsuarioId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UsuarioId");
-
-                    b.ToTable("Notificaciones");
                 });
 
             modelBuilder.Entity("AutoMarket.Core.Entities.PagoSuscripcion", b =>
@@ -1386,17 +1263,6 @@ namespace AutoMarket.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Anuncio");
-                });
-
-            modelBuilder.Entity("AutoMarket.Core.Entities.Notificacion", b =>
-                {
-                    b.HasOne("AutoMarket.Core.Entities.Usuario", "Usuario")
-                        .WithMany()
-                        .HasForeignKey("UsuarioId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Usuario");
                 });
 
             modelBuilder.Entity("AutoMarket.Core.Entities.PagoSuscripcion", b =>

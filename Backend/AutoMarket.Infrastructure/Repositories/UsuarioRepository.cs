@@ -165,6 +165,21 @@ public class UsuarioRepository : IUsuarioRepository
             .ToListAsync();
     }
 
+    public async Task<(IEnumerable<Usuario> Items, int Total)> ObtenerPaginadosAsync(int pagina, int tamanoPagina)
+    {
+        var query = _context.Usuarios.AsNoTracking();
+
+        var total = await query.CountAsync();
+
+        var items = await query
+            .OrderByDescending(u => u.CreatedAt)
+            .Skip((pagina - 1) * tamanoPagina)
+            .Take(tamanoPagina)
+            .ToListAsync();
+
+        return (items, total);
+    }
+
     public async Task<bool> ActualizarContrasenaAsync(string email, string nuevoPasswordHash)
     {
         var usuario = await _context.Usuarios

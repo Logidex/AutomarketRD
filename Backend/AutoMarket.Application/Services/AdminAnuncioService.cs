@@ -28,6 +28,24 @@ public class AdminAnuncioService : IAdminAnuncioService
         });
     }
 
+    public async Task<(IEnumerable<object> Items, int Total)> ListarAnunciosPaginadosAsync(int pagina, int tamanoPagina)
+    {
+        if (pagina < 1) pagina = 1;
+        if (tamanoPagina < 1 || tamanoPagina > 100) tamanoPagina = 20;
+
+        var (anuncios, total) = await _anuncioRepository.ObtenerTodosPaginadosAsync(pagina, tamanoPagina);
+        var items = anuncios.Select(a => new
+        {
+            a.Id,
+            a.Marca,
+            a.Modelo,
+            a.Precio,
+            a.Moneda,
+            a.UsuarioId
+        });
+        return (items, total);
+    }
+
     public async Task<bool> EliminarAnuncioForzosoAsync(int anuncioId)
     {
         var anuncio = await _anuncioRepository.ObtenerPorIdAsync(anuncioId);

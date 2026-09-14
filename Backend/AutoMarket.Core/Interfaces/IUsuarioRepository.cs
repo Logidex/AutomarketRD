@@ -24,6 +24,7 @@ public interface IUsuarioRepository
         int cantidadPorPagina);
     Task GuardarCambiosAsync();
     Task<IEnumerable<Usuario>> ObtenerTodosAsync();
+    Task<(IEnumerable<Usuario> Items, int Total)> ObtenerPaginadosAsync(int pagina, int tamanoPagina);
     Task<bool> ActualizarContrasenaAsync(string email, string nuevoPasswordHash);
 
     /// <summary>Marca el usuario para eliminación (cascade de dependientes al guardar).</summary>
