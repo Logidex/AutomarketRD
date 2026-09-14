@@ -23,7 +23,7 @@ export const useVehiculosInfinite = ({
       }),
     initialPageParam: 1,
     getNextPageParam: (lastPage, allPages) => {
-      const totalPaginas = Math.ceil(lastPage.totalAnuncios / TAMANO_PAGINA);
+      const totalPaginas = lastPage.totalPaginas ?? Math.ceil(lastPage.totalRegistros / TAMANO_PAGINA);
       return allPages.length < totalPaginas ? allPages.length + 1 : undefined;
     },
     enabled,
@@ -34,7 +34,7 @@ export const useVehiculosInfinite = ({
 
 export const useVehiculosInfiniteFlat = (filtros: Omit<AnuncioBusquedaDto, 'paginaActual' | 'cantidadAnuncios'>, enabled = true) => {
   const query = useVehiculosInfinite({ filtros, enabled });
-  const items = query.data?.pages.flatMap((p) => p.lista) ?? [];
-  const total = query.data?.pages[0]?.totalAnuncios ?? 0;
+  const items = query.data?.pages.flatMap((p) => p.items) ?? [];
+  const total = query.data?.pages[0]?.totalRegistros ?? 0;
   return { ...query, items, total };
 };
