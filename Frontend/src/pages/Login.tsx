@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "motion/react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import Swal from "sweetalert2";
 import { FaArrowLeft } from "react-icons/fa";
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";
@@ -8,27 +11,31 @@ import { authService } from "../services/auth.service";
 import SectionBackground from "../components/SectionBackground";
 import logo from "../assets/AutoMarketRD_Logo.svg";
 
+const loginSchema = z.object({
+  email: z.string().min(1, "El email es requerido").email("Email inválido"),
+  password: z.string().min(1, "La contraseña es requerida"),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
+
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [mostrarPassword, setMostrarPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-
   const navigate = useNavigate();
 
-  const handleSubmit = async (e?: React.FormEvent) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+  });
 
+  const onSubmit = async (data: LoginFormData) => {
     setLoading(true);
 
     try {
-      const response = await authService.login({
-        email,
-        password,
-      });
+      const response = await authService.login(data);
 
       if (!response.usuario) {
         await Swal.fire({
@@ -37,7 +44,6 @@ export default function Login() {
           text: "El servidor no devolvió la información del usuario.",
           confirmButtonColor: "#3b82f6",
         });
-
         return;
       }
 
@@ -52,38 +58,22 @@ export default function Login() {
       const rol = response.usuario.rol?.trim().toLowerCase();
 
       if (rol === "dealer") {
-        navigate("/dashboard", {
-          replace: true,
-        });
-
+        navigate("/dashboard", { replace: true });
         return;
       }
-
       if (rol === "vendedor") {
-        navigate("/vendedor", {
-          replace: true,
-        });
-
+        navigate("/vendedor", { replace: true });
         return;
       }
-
       if (rol === "comprador") {
-        navigate("/", {
-          replace: true,
-        });
-
+        navigate("/", { replace: true });
         return;
       }
-
       if (rol === "admin") {
-        navigate("/admin", {
-          replace: true,
-        });
-
+        navigate("/admin", { replace: true });
         return;
       }
 
-      // Si el rol no está definido o no es reconocido
       authService.logout();
 
       await Swal.fire({
@@ -93,9 +83,7 @@ export default function Login() {
         confirmButtonColor: "#3b82f6",
       });
 
-      navigate("/login", {
-        replace: true,
-      });
+      navigate("/login", { replace: true });
     } catch (err) {
       const status = (err as { response?: { status?: number } })?.response?.status;
 
@@ -171,7 +159,7 @@ export default function Login() {
             Iniciar Sesión
           </h2>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div>
               <label
                 htmlFor="loginEmail"
@@ -182,12 +170,15 @@ export default function Login() {
               <input
                 id="loginEmail"
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                {...register("email")}
                 placeholder="tu@email.com"
-                className="w-full px-4 py-3 bg-input text-ink border border-line rounded-lg focus:outline-none focus:border-blue-500 transition-colors placeholder:text-ink-3"
-                required
+                className={`w-full px-4 py-3 bg-input text-ink border rounded-lg focus:outline-none focus:border-blue-500 transition-colors placeholder:text-ink-3 ${
+                  errors.email ? "border-red-500" : "border-line"
+                }`}
               />
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>
+              )}
             </div>
 
             <div>
@@ -197,25 +188,28 @@ export default function Login() {
               >
                 Contraseña
               </label>
-            <div className="relative">
-              <input
-                id="loginPassword"
-                type={mostrarPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full px-4 py-3 pr-12 bg-input text-ink border border-line rounded-lg focus:outline-none focus:border-blue-500 transition-colors placeholder:text-ink-3"
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setMostrarPassword((v) => !v)}
-                aria-label={mostrarPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
-                className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors hover:text-blue-500 ${mostrarPassword ? "text-blue-500" : "text-ink-3"}`}
-              >
-                {mostrarPassword ? <MdVisibilityOff /> : <MdVisibility />}
-              </button>
-            </div>
+              <div className="relative">
+                <input
+                  id="loginPassword"
+                  type={mostrarPassword ? "text" : "password"}
+                  {...register("password")}
+                  placeholder="••••••••"
+                  className={`w-full px-4 py-3 pr-12 bg-input text-ink border rounded-lg focus:outline-none focus:border-blue-500 transition-colors placeholder:text-ink-3 ${
+                    errors.password ? "border-red-500" : "border-line"
+                  }`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setMostrarPassword((v) => !v)}
+                  aria-label={mostrarPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                  className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors hover:text-blue-500 ${mostrarPassword ? "text-blue-500" : "text-ink-3"}`}
+                >
+                  {mostrarPassword ? <MdVisibilityOff /> : <MdVisibility />}
+                </button>
+              </div>
+              {errors.password && (
+                <p className="mt-1 text-sm text-red-500">{errors.password.message}</p>
+              )}
             </div>
 
             <button
