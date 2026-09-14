@@ -15,6 +15,9 @@ public static class ServiceCollectionExtensions
         services.AddMediatR(cfg =>
             cfg.RegisterServicesFromAssembly(typeof(AutoMarket.Application.Features.Anuncios.Handlers.AnuncioCommandHandler).Assembly));
 
+        // Caché distribuida (Redis en producción, memoria en desarrollo)
+        services.AddSingleton<ICacheService, RedisCacheService>();
+
         if (builder.Environment.IsDevelopment()
             && string.Equals(builder.Configuration["AWS:AccessKey"], "dummy", StringComparison.OrdinalIgnoreCase))
         {

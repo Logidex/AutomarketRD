@@ -1,5 +1,6 @@
 using Moq;
 using Xunit;
+using AutoMarket.Application.Interfaces;
 using AutoMarket.Application.Services;
 using AutoMarket.Application.DTOs.Planes;
 using AutoMarket.Core.Interfaces;
@@ -12,12 +13,14 @@ namespace AutoMarket.Tests.Services;
 public class PlanCatalogoServiceTests
 {
     private readonly Mock<IPlanCatalogoRepository> _mockRepo;
+    private readonly Mock<ICacheService> _mockCache;
     private readonly PlanCatalogoService _servicio;
 
     public PlanCatalogoServiceTests()
     {
         _mockRepo = new Mock<IPlanCatalogoRepository>();
-        _servicio = new PlanCatalogoService(_mockRepo.Object);
+        _mockCache = new Mock<ICacheService>();
+        _servicio = new PlanCatalogoService(_mockRepo.Object, _mockCache.Object);
     }
 
     private PlanCatalogo CrearPlan(

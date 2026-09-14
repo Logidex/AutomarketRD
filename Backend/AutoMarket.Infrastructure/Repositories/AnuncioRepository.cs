@@ -408,6 +408,22 @@ public class AnuncioRepository : IAnuncioRepository
             .ToListAsync();
     }
 
+    public async Task<(IEnumerable<Anuncio> Anuncios, int Total)>
+        ObtenerTodosPaginadosAsync(int pagina, int tamanoPagina)
+    {
+        var query = _context.Anuncios.AsNoTracking();
+
+        var total = await query.CountAsync();
+
+        var anuncios = await query
+            .OrderByDescending(a => a.CreatedAt)
+            .Skip((pagina - 1) * tamanoPagina)
+            .Take(tamanoPagina)
+            .ToListAsync();
+
+        return (anuncios, total);
+    }
+
     public void Eliminar(Anuncio anuncio)
     {
         _context.Anuncios.Remove(anuncio);
