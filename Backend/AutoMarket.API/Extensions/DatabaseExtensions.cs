@@ -11,7 +11,10 @@ public static class DatabaseExtensions
             builder.Configuration.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException("Falta ConnectionStrings:DefaultConnection");
 
-        services.AddDbContext<ApplicationDbContext>(options =>
+        // DbContextFactory con pooling: registra ApplicationDbContext como
+        // scoped y IDbContextFactory<ApplicationDbContext> como singleton,
+        // sin el conflicto de validación de DI que rompía el arranque.
+        services.AddPooledDbContextFactory<ApplicationDbContext>(options =>
             options.UseNpgsql(connectionString, npgsql =>
             {
                 npgsql.CommandTimeout(30);
@@ -20,10 +23,6 @@ public static class DatabaseExtensions
                     maxRetryDelay: TimeSpan.FromSeconds(5),
                     errorCodesToAdd: null);
             }));
-
-        // DbContextFactory para servicios que necesitan crear contextos en scope separado
-        services.AddDbContextFactory<ApplicationDbContext>(options =>
-            options.UseNpgsql(connectionString));
 
         return connectionString;
     }
