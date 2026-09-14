@@ -72,9 +72,23 @@ services:
       # (default 5/15min) para no 429-el auto-login ni los registros.
       RateLimiting__LoginPermitLimit: "50"
       RateLimiting__RegistroPermitLimit: "50"
+      Redis__Host: redis
+      Redis__Port: "6379"
+      Redis__Password: ""
+      Redis__InstanceName: automarket_e2e_
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
 
   web:
     build:

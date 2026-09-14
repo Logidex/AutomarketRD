@@ -22,9 +22,7 @@ const registroSchema = z.object({
   agenciaRNC: z.string().optional(),
   ubicacionAgencia: z.string().optional(),
   telefonoAgencia: z.string().optional(),
-  aceptaTerminos: z.literal(true, {
-    errorMap: () => ({ message: "Debes aceptar los términos y condiciones" }),
-  }),
+  aceptaTerminos: z.boolean().optional(),
 }).refine((data) => data.password === data.confirmarPassword, {
   message: "Las contraseñas no coinciden",
   path: ["confirmarPassword"],
@@ -167,11 +165,22 @@ export default function Registro() {
   const esDealer = rolSeleccionado === "Dealer";
 
   const onSubmit = async (data: RegistroFormData) => {
+    if (!data.aceptaTerminos) {
+      await Swal.fire({
+        icon: "warning",
+        title: "Falta aceptar los términos",
+        text: "Debes aceptar los Términos y Condiciones y la Política de Privacidad para crear tu cuenta.",
+        confirmButtonColor: "#3b82f6",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
       const response = await authService.register({
         ...data,
+        aceptaTerminos: true,
         ubicacionAgencia: data.ubicacionAgencia ?? "",
         telefonoAgencia: data.telefonoAgencia ?? "",
       });
@@ -480,9 +489,6 @@ export default function Registro() {
                 </Link>
               </label>
             </div>
-            {errors.aceptaTerminos && (
-              <p className="text-sm text-red-500">{errors.aceptaTerminos.message}</p>
-            )}
 
             <button
               type="submit"

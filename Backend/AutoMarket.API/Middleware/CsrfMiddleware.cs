@@ -70,11 +70,18 @@ public sealed class CsrfMiddleware
             return;
 
         var token = RandomNumberGenerator.GetBytes(TOKEN_LENGTH);
-        var tokenBase64 = Convert.ToBase64String(token);
+        // URL-safe base64 (sin '+', '/', '=') para que el token no se
+        // URL-encodee en la cookie y coincida byte a byte con el header.
+        var tokenBase64 = Convert.ToBase64String(token)
+            .TrimEnd('=')
+            .Replace('+', '-')
+            .Replace('/', '_');
 
         context.Response.Cookies.Append(COOKIE_NAME, tokenBase64, new CookieOptions
         {
-            HttpOnly = true,
+            // NO HttpOnly: el patrón double-submit exige que el JS lea la
+            // cookie para enviarla en el header X-CSRF-Token en mutaciones.
+            HttpOnly = false,
             Secure = context.Request.IsHttps,
             SameSite = SameSiteMode.Strict,
             Path = "/",

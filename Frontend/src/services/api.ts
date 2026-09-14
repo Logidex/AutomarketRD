@@ -35,6 +35,22 @@ api.interceptors.request.use((config) => {
 
 export const API_BASE_URL = baseURL;
 
+// Asegura que la cookie CSRF exista antes de cualquier mutación.
+// El patrón double-submit exige que el frontend lea la cookie y la envíe
+// en X-CSRF-Token; la cookie se establece en la primera respuesta de la API.
+// Se invoca una vez al arrancar la app.
+let csrfBootstrapped = false;
+export async function bootstrapCsrf(): Promise<void> {
+  if (csrfBootstrapped) return;
+  try {
+    await api.get("/api/csrf");
+  } catch {
+    // Si falla, la próxima respuesta de la API establecerá la cookie.
+  } finally {
+    csrfBootstrapped = true;
+  }
+}
+
 // Manejar respuestas y errores
 // Evita redirigir varias veces cuando varias peticiones fallan en paralelo
 // con la sesión expirada (p. ej. al cargar un dashboard con varias consultas).

@@ -77,7 +77,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITicketRepository, TicketRepository>();
         services.AddScoped<ITicketService, TicketService>();
 
-        services.AddScoped<IEmailSenderService, SmtpEmailSenderService>();
+        services.AddScoped<SmtpEmailSenderService>();
         // ResilientEmailSender wrappear el servicio SMTP real con cola de reintentos
         services.AddScoped<ResilientEmailSender>();
         services.AddScoped<IEmailSenderService>(sp =>
