@@ -79,6 +79,7 @@ public static class WebApplicationExtensions
         app.UseRateLimiter();
         app.UseAuthentication();
         app.UseAuthorization();
+        app.UseMiddleware<AuditMiddleware>();
         app.UseMiddleware<ExceptionHandlingMiddleware>();
         app.MapControllers();
 
