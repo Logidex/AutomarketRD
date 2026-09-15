@@ -13,39 +13,35 @@ const api = axios.create({
   withCredentials: true,
 });
 
-// --- CSRF: leer cookie y enviar header en métodos mutantes ---
-function obtenerCookie(nombre: string): string | null {
-  const Valor = document.cookie
-    .split("; ")
-    .find((fila) => fila.startsWith(`${nombre}=`))
-    ?.split("=")[1];
-  return Valor ?? null;
-}
+// --- CSRF: token en memoria (funciona cross-origin) ---
+// El patrón double-submit original leía la cookie con document.cookie, pero
+// esto no funciona cuando el frontend y la API están en orígenes distintos
+// (ej. Cloudflare Pages + api-staging.automarket-rd.com).
+// Solución: GET /api/csrf retorna el token en el body Y en la cookie.
+// El frontend almacena el token del body y lo envía en X-CSRF-Token.
+let csrfToken: string | null = null;
 
 api.interceptors.request.use((config) => {
   const method = (config.method ?? "get").toUpperCase();
-  if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
-    const token = obtenerCookie("automarket_csrf");
-    if (token) {
-      config.headers["X-CSRF-Token"] = token;
-    }
+  if (["POST", "PUT", "PATCH", "DELETE"].includes(method) && csrfToken) {
+    config.headers["X-CSRF-Token"] = csrfToken;
   }
   return config;
 });
 
 export const API_BASE_URL = baseURL;
 
-// Asegura que la cookie CSRF exista antes de cualquier mutación.
-// El patrón double-submit exige que el frontend lea la cookie y la envíe
-// en X-CSRF-Token; la cookie se establece en la primera respuesta de la API.
-// Se invoca una vez al arrancar la app.
+// Asegura que el token CSRF exista antes de cualquier mutación.
+// GET /api/csrf retorna el token en el body; lo almacenamos en memoria
+// para enviarlo en X-CSRF-Token en cada mutación.
 let csrfBootstrapped = false;
 export async function bootstrapCsrf(): Promise<void> {
   if (csrfBootstrapped) return;
   try {
-    await api.get("/api/csrf");
+    const { data } = await api.get<{ token: string }>("/api/csrf");
+    csrfToken = data?.token ?? null;
   } catch {
-    // Si falla, la próxima respuesta de la API establecerá la cookie.
+    // Si falla, se reintentará en el próximo 403 CSRF.
   } finally {
     csrfBootstrapped = true;
   }
@@ -125,6 +121,7 @@ api.interceptors.response.use(
       if (mensaje?.includes("CSRF") && !error.config?._csrfRetry) {
         error.config._csrfRetry = true;
         csrfBootstrapped = false;
+        csrfToken = null;
         await bootstrapCsrf();
         return api.request(error.config);
       }

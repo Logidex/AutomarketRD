@@ -21,9 +21,6 @@ public sealed class CsrfMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        // Siempre asegurar que la cookie CSRF exista para que el frontend pueda leerla
-        EstablecerCookieSiNecesaria(context);
-
         var method = context.Request.Method;
 
         if (HttpMethods.IsGet(method) ||
@@ -59,44 +56,5 @@ public sealed class CsrfMiddleware
         }
 
         await _next(context);
-    }
-
-    /// <summary>
-    /// Establece la cookie CSRF en la respuesta si no existe.
-    /// Usa HttpContext.Items como guardia para evitar duplicados dentro
-    /// del mismo request (ej. si algún otro componente o framework la llama).
-    /// </summary>
-    public static void EstablecerCookieSiNecesaria(HttpContext context)
-    {
-        if (context.Items.ContainsKey("csrf_cookie_set"))
-            return;
-
-        if (context.Request.Cookies.ContainsKey(COOKIE_NAME))
-            return;
-
-        context.Items["csrf_cookie_set"] = true;
-
-        var token = RandomNumberGenerator.GetBytes(TOKEN_LENGTH);
-        // URL-safe base64 (sin '+', '/', '=') para que el token no se
-        // URL-encodee en la cookie y coincida byte a byte con el header.
-        var tokenBase64 = Convert.ToBase64String(token)
-            .TrimEnd('=')
-            .Replace('+', '-')
-            .Replace('/', '_');
-
-        var forwardedProto = context.Request.Headers["X-Forwarded-Proto"].FirstOrDefault();
-        var isSecure = context.Request.IsHttps
-            || string.Equals(forwardedProto, "https", StringComparison.OrdinalIgnoreCase);
-
-        context.Response.Cookies.Append(COOKIE_NAME, tokenBase64, new CookieOptions
-        {
-            // NO HttpOnly: el patrón double-submit exige que el JS lea la
-            // cookie para enviarla en el header X-CSRF-Token en mutaciones.
-            HttpOnly = false,
-            Secure = isSecure,
-            SameSite = SameSiteMode.Lax,
-            Path = "/",
-            MaxAge = TimeSpan.FromHours(2)
-        });
     }
 }
