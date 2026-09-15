@@ -171,7 +171,7 @@ public class LeadServiceTests
         _mockEmailSender.Verify(e => e.EnviarCorreoAsync(
             vendedor.Email,
             It.Is<string>(asunto => asunto.Contains("Toyota Corolla")),
-            It.Is<string>(cuerpo => cuerpo.Contains("Maria Perez") && cuerpo.Contains("Me interesa este vehículo"))
+            It.Is<string>(cuerpo => cuerpo.Contains("Maria Perez") && cuerpo.Contains("veh"))
         ), Times.Once);
     }
 

@@ -115,16 +115,12 @@ public class AnuncioRepository : IAnuncioRepository
 
         if (!string.IsNullOrWhiteSpace(filtro.Busqueda))
         {
-            var terminos = NormalizadorTexto.Normalizar(filtro.Busqueda)
-                .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            foreach (var termino in terminos)
-            {
-                query = query.Where(a =>
-                    EF.Functions.ILike(a.Marca, $"%{termino}%") ||
-                    EF.Functions.ILike(a.Modelo, $"%{termino}%") ||
-                    EF.Functions.ILike(a.Version, $"%{termino}%")
-                );
-            }
+            // Búsqueda full-text usando tsvector almacenado (índice GIN)
+            var busquedaTs = NormalizadorTexto.Normalizar(filtro.Busqueda);
+            query = query.Where(a =>
+                EF.Functions.ToTsVector("spanish", a.Marca + " " + a.Modelo + " " + (a.Version ?? "") + " " + (a.Descripcion ?? ""))
+                    .Matches(EF.Functions.ToTsQuery("spanish", busquedaTs))
+            );
         }
 
         if (!string.IsNullOrWhiteSpace(filtro.Marca))
@@ -406,6 +402,22 @@ public class AnuncioRepository : IAnuncioRepository
         return await _context.Anuncios
             .OrderByDescending(a => a.CreatedAt)
             .ToListAsync();
+    }
+
+    public async Task<(IEnumerable<Anuncio> Anuncios, int Total)>
+        ObtenerTodosPaginadosAsync(int pagina, int tamanoPagina)
+    {
+        var query = _context.Anuncios.AsNoTracking();
+
+        var total = await query.CountAsync();
+
+        var anuncios = await query
+            .OrderByDescending(a => a.CreatedAt)
+            .Skip((pagina - 1) * tamanoPagina)
+            .Take(tamanoPagina)
+            .ToListAsync();
+
+        return (anuncios, total);
     }
 
     public void Eliminar(Anuncio anuncio)

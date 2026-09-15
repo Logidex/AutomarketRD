@@ -32,6 +32,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<AdSlot> AdSlots { get; set; }
     public DbSet<AdSlotPrecio> AdSlotsPrecios { get; set; }
     public DbSet<AdSlotAnuncio> AdSlotsAnuncios { get; set; }
+    public DbSet<AuditLog> AuditLogs { get; set; }
+    public DbSet<Notificacion> Notificaciones { get; set; }
+    public DbSet<EmailJob> EmailJobs { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -13,6 +13,7 @@ public interface IAnuncioRepository
     Task<int> ContarAnunciosActivosVendedorAsync(int usuarioId);
     Task<int> ContarDestacadosPorUsuarioAsync(int usuarioId);
     Task<IEnumerable<Anuncio>> ObtenerTodosParaAdminAsync();
+    Task<(IEnumerable<Anuncio> Anuncios, int Total)> ObtenerTodosPaginadosAsync(int pagina, int tamanoPagina);
     void Eliminar(Anuncio anuncio);
     Task<IEnumerable<Anuncio>> ObtenerPorIdsAsync(IEnumerable<int> ids);
     Task<(IEnumerable<Anuncio> Anuncios, int Total)> ObtenerPaginadosAsync(int pagina, int tamanoPagina);

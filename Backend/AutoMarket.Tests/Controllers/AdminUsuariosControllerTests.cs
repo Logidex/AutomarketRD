@@ -40,14 +40,16 @@ public class AdminUsuariosControllerTests
         };
 
         mockAdminUsuarios
-            .Setup(s => s.ListarUsuariosAsync())
-            .ReturnsAsync(usuarios);
+            .Setup(s => s.ListarUsuariosPaginadosAsync(1, 20))
+            .ReturnsAsync((usuarios, 2));
 
-        var resultado = await controller.ListarUsuarios();
+        var resultado = await controller.ListarUsuarios(1, 20);
 
         var okResult = Assert.IsType<OkObjectResult>(resultado);
-        var lista = Assert.IsAssignableFrom<IEnumerable<UsuarioAdminListDto>>(okResult.Value);
-        Assert.Equal(2, lista.Count());
+        var dynamic = okResult.Value!;
+        var items = Assert.IsAssignableFrom<IEnumerable<UsuarioAdminListDto>>(
+            dynamic.GetType().GetProperty("items")!.GetValue(dynamic));
+        Assert.Equal(2, items.Count());
     }
 
     [Fact]

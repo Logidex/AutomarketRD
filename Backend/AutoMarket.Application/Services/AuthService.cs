@@ -369,7 +369,7 @@ public class AuthService : IAuthService
                 PlantillaCorreoHelper.Envolver(
                     _configuration["App:FrontendUrl"],
                     "Recupera tu contraseña",
-                    "<p>Hola <strong>" + usuario.Nombre + "</strong>,</p>" +
+                    "<p>Hola <strong>" + PlantillaCorreoHelper.EscaparHtml(usuario.Nombre) + "</strong>,</p>" +
                     "<p>Usa este código para restablecer tu contraseña:</p>" +
                     "<h2 style='letter-spacing:6px'>" + codigo + "</h2>" +
                     "<p>El código expira en 15 minutos. Si no solicitaste esto, ignora este correo.</p>"));
@@ -415,7 +415,7 @@ public class AuthService : IAuthService
                 PlantillaCorreoHelper.Envolver(
                     _configuration["App:FrontendUrl"],
                     "Contraseña restablecida",
-                    "<p>Hola <strong>" + usuario.Nombre + "</strong>,</p>" +
+                    "<p>Hola <strong>" + PlantillaCorreoHelper.EscaparHtml(usuario.Nombre) + "</strong>,</p>" +
                     "<p>Tu contraseña fue restablecida exitosamente.</p>" +
                     "<p>Si no realizaste este cambio, contacta a soporte de inmediato.</p>"));
         }
@@ -465,7 +465,7 @@ public class AuthService : IAuthService
             : "<p>Gracias por crear tu cuenta de Vendedor en AutoMarket RD.</p>" +
               "<p>Para activar tu cuenta y empezar a publicar tus vehículos, confirma tu dirección de correo:</p>";
 
-        var cuerpo = "<p>Hola <strong>" + usuario.Nombre + "</strong>,</p>" +
+        var cuerpo = "<p>Hola <strong>" + PlantillaCorreoHelper.EscaparHtml(usuario.Nombre) + "</strong>,</p>" +
             bienvenida +
             "<p style='text-align:center'><a href='" + enlace + "' style='background-color:#2563eb;color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold'>Confirmar mi correo</a></p>" +
             "<p>El enlace expira en 48 horas. Si no creaste esta cuenta, ignora este correo.</p>" +

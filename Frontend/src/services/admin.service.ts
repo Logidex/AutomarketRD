@@ -100,6 +100,14 @@ export interface PlanAdminForm {
 const respuesta = async <T>(promesa: Promise<{ data: T }>): Promise<T> =>
   (await promesa).data;
 
+interface PaginatedResponse<T> {
+  items: T[];
+  totalRegistros: number;
+  paginaActual: number;
+  cantidadPorPagina: number;
+  totalPaginas: number;
+}
+
 // ===== Reportes de anuncios =====
 export type MotivoReporte =
   | "ContenidoInapropiado"
@@ -138,7 +146,7 @@ export const adminService = {
 
   // ===== Usuarios =====
   async listarUsuarios(): Promise<UsuarioAdmin[]> {
-    return respuesta(api.get<UsuarioAdmin[]>("/api/admin/usuarios"));
+    return respuesta(api.get<PaginatedResponse<UsuarioAdmin>>("/api/admin/usuarios")).then(r => r.items);
   },
 
   async suspenderUsuario(id: number): Promise<{ exito: boolean; mensaje: string }> {
@@ -155,7 +163,7 @@ export const adminService = {
 
   // ===== Anuncios =====
   async listarAnuncios(): Promise<AnuncioAdmin[]> {
-    return respuesta(api.get<AnuncioAdmin[]>("/api/admin/anuncios"));
+    return respuesta(api.get<PaginatedResponse<AnuncioAdmin>>("/api/admin/anuncios")).then(r => r.items);
   },
 
   async eliminarAnuncio(id: number): Promise<{ exito: boolean; mensaje: string }> {

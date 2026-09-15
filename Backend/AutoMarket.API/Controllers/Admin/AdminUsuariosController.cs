@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AutoMarket.API.Controllers;
 
-[Route("api/admin/[controller]")]
+[Route("api/admin/usuarios")]
 [ApiController]
 [Authorize(Roles = Roles.Admin)]
 public class AdminUsuariosController : ControllerBase
@@ -23,7 +23,7 @@ public class AdminUsuariosController : ControllerBase
         _adminUsuarioService = adminUsuarioService;
     }
 
-    [HttpGet("dashboard/resumen")]
+    [HttpGet("~/api/admin/dashboard/resumen")]
     public async Task<IActionResult> ObtenerResumen()
     {
         var resumen = await _dashboardService.ObtenerResumenAsync();
@@ -31,10 +31,17 @@ public class AdminUsuariosController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> ListarUsuarios()
+    public async Task<IActionResult> ListarUsuarios([FromQuery] int pagina = 1, [FromQuery] int tamanoPagina = 20)
     {
-        var usuarios = await _adminUsuarioService.ListarUsuariosAsync();
-        return Ok(usuarios);
+        var (items, total) = await _adminUsuarioService.ListarUsuariosPaginadosAsync(pagina, tamanoPagina);
+        return Ok(new
+        {
+            items,
+            totalRegistros = total,
+            paginaActual = pagina,
+            cantidadPorPagina = tamanoPagina,
+            totalPaginas = (int)Math.Ceiling(total / (double)tamanoPagina)
+        });
     }
 
     [HttpPatch("{id:int}/suspender")]

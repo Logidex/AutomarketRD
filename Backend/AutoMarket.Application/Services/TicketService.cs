@@ -242,13 +242,13 @@ public class TicketService : ITicketService
 
         var cuerpoHtml = $@"
             <h2>{titulo}</h2>
-            <p><strong>Cliente:</strong> {nombreCliente} ({emailCliente})</p>
-            <p><strong>Asunto:</strong> {ticket.Asunto}</p>
+            <p><strong>Cliente:</strong> {PlantillaCorreoHelper.EscaparHtml(nombreCliente)} ({PlantillaCorreoHelper.EscaparHtml(emailCliente)})</p>
+            <p><strong>Asunto:</strong> {PlantillaCorreoHelper.EscaparHtml(ticket.Asunto)}</p>
             <p><strong>Categoría:</strong> {ticket.Categoria}</p>
             <p><strong>Prioridad:</strong> {ticket.Prioridad}</p>
             <hr/>
             <p><strong>Mensaje:</strong></p>
-            <p><i>{mensaje}</i></p>
+            <p><i>{PlantillaCorreoHelper.EscaparHtml(mensaje)}</i></p>
             <p>Gestiona este ticket desde el panel de administración de AutoMarket RD.</p>";
 
         await EnviarCorreoSeguroAsync(adminEmail, titulo, cuerpoHtml);
@@ -264,10 +264,10 @@ public class TicketService : ITicketService
 
         var cuerpoHtml = $@"
             <h2>Respondimos a tu ticket #{ticket.Id}</h2>
-            <p><strong>Asunto:</strong> {ticket.Asunto}</p>
+            <p><strong>Asunto:</strong> {PlantillaCorreoHelper.EscaparHtml(ticket.Asunto)}</p>
             <hr/>
             <p><strong>Mensaje del equipo:</strong></p>
-            <p><i>{mensaje}</i></p>
+            <p><i>{PlantillaCorreoHelper.EscaparHtml(mensaje)}</i></p>
             <p>Puedes continuar la conversación desde el panel de soporte de AutoMarket RD.</p>";
 
         await EnviarCorreoSeguroAsync(destinatario, asunto, cuerpoHtml);
@@ -287,7 +287,7 @@ public class TicketService : ITicketService
 
         var cuerpoHtml = $@"
             <h2>Actualización de tu ticket #{ticket.Id}</h2>
-            <p><strong>Asunto:</strong> {ticket.Asunto}</p>
+            <p><strong>Asunto:</strong> {PlantillaCorreoHelper.EscaparHtml(ticket.Asunto)}</p>
             <p><strong>Nuevo estado:</strong> {estado}</p>
             <p>{notaAdicional}</p>";
 

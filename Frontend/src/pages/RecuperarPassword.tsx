@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import Swal from "sweetalert2";
 import {
   FaArrowLeft,
@@ -12,32 +15,48 @@ import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 import { authService } from "../services/auth.service";
 import logo from "../assets/AutoMarketRD_Logo.svg";
 
-const PASSWORD_MIN = 6;
+const emailSchema = z.object({
+  email: z.string().min(1, "El email es requerido").email("Email inválido"),
+});
+
+const resetSchema = z.object({
+  codigo: z.string().min(6, "El código debe tener 6 dígitos").max(6),
+  nuevaPassword: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
+  repetirPassword: z.string(),
+}).refine((data) => data.nuevaPassword === data.repetirPassword, {
+  message: "Las contraseñas no coinciden",
+  path: ["repetirPassword"],
+});
+
+type EmailFormData = z.infer<typeof emailSchema>;
+type ResetFormData = z.infer<typeof resetSchema>;
+
+const inputClase =
+  "w-full px-4 py-3 bg-[#f7f9fc] border border-[#e1e7f0] rounded-lg focus:outline-none focus:border-blue-500 transition-colors";
 
 export default function RecuperarPassword() {
   const navigate = useNavigate();
 
   const [paso, setPaso] = useState<"email" | "codigo">("email");
-  const [email, setEmail] = useState("");
-  const [codigo, setCodigo] = useState("");
-  const [nuevaPassword, setNuevaPassword] = useState("");
-  const [repetirPassword, setRepetirPassword] = useState("");
+  const [emailGuardado, setEmailGuardado] = useState("");
+  const [enviando, setEnviando] = useState(false);
   const [mostrarNueva, setMostrarNueva] = useState(false);
   const [mostrarRepetir, setMostrarRepetir] = useState(false);
-  const [enviando, setEnviando] = useState(false);
 
-  const enviarCodigo = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const emailForm = useForm<EmailFormData>({
+    resolver: zodResolver(emailSchema),
+  });
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      Swal.fire("Correo inválido", "Ingresa un correo electrónico válido.", "warning");
-      return;
-    }
+  const resetForm = useForm<ResetFormData>({
+    resolver: zodResolver(resetSchema),
+  });
 
+  const enviarCodigo = async (data: EmailFormData) => {
     setEnviando(true);
     try {
-      const resultado = await authService.solicitarRecuperacion(email);
+      const resultado = await authService.solicitarRecuperacion(data.email);
       Swal.fire("Revisa tu correo", resultado.mensaje, "success");
+      setEmailGuardado(data.email);
       setPaso("codigo");
     } catch (err) {
       Swal.fire(
@@ -50,38 +69,13 @@ export default function RecuperarPassword() {
     }
   };
 
-  const restablecer = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (codigo.trim().length < 6) {
-      Swal.fire("Código incompleto", "Ingresa el código de 6 dígitos que recibiste.", "warning");
-      return;
-    }
-
-    if (nuevaPassword.length < PASSWORD_MIN) {
-      Swal.fire(
-        "Contraseña corta",
-        `La nueva contraseña debe tener al menos ${PASSWORD_MIN} caracteres.`,
-        "warning",
-      );
-      return;
-    }
-
-    if (nuevaPassword !== repetirPassword) {
-      Swal.fire(
-        "No coinciden",
-        "La nueva contraseña y su confirmación no coinciden.",
-        "warning",
-      );
-      return;
-    }
-
+  const restablecer = async (data: ResetFormData) => {
     setEnviando(true);
     try {
       const resultado = await authService.restablecerPassword({
-        email,
-        codigo,
-        nuevaPassword,
+        email: emailGuardado,
+        codigo: data.codigo,
+        nuevaPassword: data.nuevaPassword,
       });
       await Swal.fire("¡Listo!", resultado.mensaje, "success");
       navigate("/login", { replace: true });
@@ -95,9 +89,6 @@ export default function RecuperarPassword() {
       setEnviando(false);
     }
   };
-
-  const inputClase =
-    "w-full px-4 py-3 bg-[#f7f9fc] border border-[#e1e7f0] rounded-lg focus:outline-none focus:border-blue-500 transition-colors";
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-page p-4">
@@ -145,7 +136,7 @@ export default function RecuperarPassword() {
                 Te enviaremos un código de 6 dígitos a tu correo.
               </p>
 
-              <form onSubmit={enviarCodigo} className="space-y-5">
+              <form onSubmit={emailForm.handleSubmit(enviarCodigo)} className="space-y-5">
                 <div>
                   <label
                     htmlFor="emailRecuperacion"
@@ -158,13 +149,18 @@ export default function RecuperarPassword() {
                     <input
                       id="emailRecuperacion"
                       type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      {...emailForm.register("email")}
                       placeholder="tu@email.com"
-                      className={`${inputClase} pl-11`}
-                      required
+                      className={`${inputClase} pl-11 ${
+                        emailForm.formState.errors.email ? "border-red-500" : ""
+                      }`}
                     />
                   </div>
+                  {emailForm.formState.errors.email && (
+                    <p className="mt-1 text-sm text-red-500">
+                      {emailForm.formState.errors.email.message}
+                    </p>
+                  )}
                 </div>
 
                 <button
@@ -183,10 +179,10 @@ export default function RecuperarPassword() {
                 Ingresa el código y tu nueva contraseña
               </h2>
               <p className="mb-6 text-sm text-gray-500">
-                Código enviado a <strong className="text-gray-700">{email}</strong>. Vigencia: 15 minutos.
+                Código enviado a <strong className="text-gray-700">{emailGuardado}</strong>. Vigencia: 15 minutos.
               </p>
 
-              <form onSubmit={restablecer} className="space-y-5">
+              <form onSubmit={resetForm.handleSubmit(restablecer)} className="space-y-5">
                 <div>
                   <label
                     htmlFor="codigoRecuperacion"
@@ -200,14 +196,18 @@ export default function RecuperarPassword() {
                       id="codigoRecuperacion"
                       type="text"
                       inputMode="numeric"
-                      maxLength={6}
-                      value={codigo}
-                      onChange={(e) => setCodigo(e.target.value.replace(/\D/g, ""))}
+                      {...resetForm.register("codigo")}
                       placeholder="123456"
-                      className={`${inputClase} pl-11 tracking-[0.5em]`}
-                      required
+                      className={`${inputClase} pl-11 tracking-[0.5em] ${
+                        resetForm.formState.errors.codigo ? "border-red-500" : ""
+                      }`}
                     />
                   </div>
+                  {resetForm.formState.errors.codigo && (
+                    <p className="mt-1 text-sm text-red-500">
+                      {resetForm.formState.errors.codigo.message}
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -222,11 +222,11 @@ export default function RecuperarPassword() {
                     <input
                       id="nuevaPassword"
                       type={mostrarNueva ? "text" : "password"}
-                      value={nuevaPassword}
-                      onChange={(e) => setNuevaPassword(e.target.value)}
+                      {...resetForm.register("nuevaPassword")}
                       placeholder="••••••••"
-                      className={`${inputClase} pl-11 pr-12`}
-                      required
+                      className={`${inputClase} pl-11 pr-12 ${
+                        resetForm.formState.errors.nuevaPassword ? "border-red-500" : ""
+                      }`}
                     />
                     <button
                       type="button"
@@ -237,6 +237,11 @@ export default function RecuperarPassword() {
                       {mostrarNueva ? <MdVisibilityOff /> : <MdVisibility />}
                     </button>
                   </div>
+                  {resetForm.formState.errors.nuevaPassword && (
+                    <p className="mt-1 text-sm text-red-500">
+                      {resetForm.formState.errors.nuevaPassword.message}
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -250,11 +255,11 @@ export default function RecuperarPassword() {
                     <input
                       id="repetirPassword"
                       type={mostrarRepetir ? "text" : "password"}
-                      value={repetirPassword}
-                      onChange={(e) => setRepetirPassword(e.target.value)}
+                      {...resetForm.register("repetirPassword")}
                       placeholder="••••••••"
-                      className={`${inputClase} pr-12`}
-                      required
+                      className={`${inputClase} pr-12 ${
+                        resetForm.formState.errors.repetirPassword ? "border-red-500" : ""
+                      }`}
                     />
                     <button
                       type="button"
@@ -265,6 +270,11 @@ export default function RecuperarPassword() {
                       {mostrarRepetir ? <MdVisibilityOff /> : <MdVisibility />}
                     </button>
                   </div>
+                  {resetForm.formState.errors.repetirPassword && (
+                    <p className="mt-1 text-sm text-red-500">
+                      {resetForm.formState.errors.repetirPassword.message}
+                    </p>
+                  )}
                 </div>
 
                 <button
