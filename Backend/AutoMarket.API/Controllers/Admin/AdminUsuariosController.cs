@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AutoMarket.API.Controllers;
 
-[Route("api/admin/[controller]")]
+[Route("api/admin/usuarios")]
 [ApiController]
 [Authorize(Roles = Roles.Admin)]
 public class AdminUsuariosController : ControllerBase
@@ -23,7 +23,7 @@ public class AdminUsuariosController : ControllerBase
         _adminUsuarioService = adminUsuarioService;
     }
 
-    [HttpGet("dashboard/resumen")]
+    [HttpGet("~/api/admin/dashboard/resumen")]
     public async Task<IActionResult> ObtenerResumen()
     {
         var resumen = await _dashboardService.ObtenerResumenAsync();

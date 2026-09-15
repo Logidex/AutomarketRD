@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AutoMarket.API.Controllers;
 
-[Route("api/admin/[controller]")]
+[Route("api/admin/anuncios")]
 [ApiController]
 [Authorize(Roles = Roles.Admin)]
 public class AdminAnunciosController : ControllerBase
