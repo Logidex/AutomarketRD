@@ -35,7 +35,7 @@ public class CsrfController : ControllerBase
         {
             HttpOnly = false,
             Secure = isSecure,
-            SameSite = SameSiteMode.Lax,
+            SameSite = isSecure ? SameSiteMode.None : SameSiteMode.Lax,
             Path = "/",
             MaxAge = TimeSpan.FromHours(2)
         });

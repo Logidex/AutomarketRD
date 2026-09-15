@@ -9,10 +9,9 @@ namespace AutoMarket.API.Middleware;
 /// El frontend debe enviar el mismo valor en el header "X-CSRF-Token".
 /// Solo aplica a métodos mutantes (POST, PUT, PATCH, DELETE).
 ///
-/// Cross-origin: cuando el frontend y la API están en orígenes distintos,
-/// document.cookie no puede leer la cookie, por lo que el frontend no puede
-/// enviar el header. En ese caso, la protección recae en SameSite=Lax
-/// (el browser no envía la cookie en requests cross-site).
+/// Cross-origin: la cookie se emite con SameSite=None+Secure sobre HTTPS para
+/// que el navegador la envíe en requests cross-site y el frontend pueda leer el
+/// token del body de GET /api/csrf para enviarlo en X-CSRF-Token.
 /// Solo se bloquea cuando el header está presente pero no coincide con la cookie.
 /// </summary>
 public sealed class CsrfMiddleware
