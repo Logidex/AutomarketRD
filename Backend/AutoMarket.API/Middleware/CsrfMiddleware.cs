@@ -63,11 +63,18 @@ public sealed class CsrfMiddleware
 
     /// <summary>
     /// Establece la cookie CSRF en la respuesta si no existe.
+    /// Usa HttpContext.Items como guardia para evitar duplicados dentro
+    /// del mismo request (ej. si algún otro componente o framework la llama).
     /// </summary>
     public static void EstablecerCookieSiNecesaria(HttpContext context)
     {
+        if (context.Items.ContainsKey("csrf_cookie_set"))
+            return;
+
         if (context.Request.Cookies.ContainsKey(COOKIE_NAME))
             return;
+
+        context.Items["csrf_cookie_set"] = true;
 
         var token = RandomNumberGenerator.GetBytes(TOKEN_LENGTH);
         // URL-safe base64 (sin '+', '/', '=') para que el token no se
