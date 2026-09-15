@@ -1,5 +1,7 @@
-import { useState, type FormEvent } from 'react';
 import { FaEnvelope, FaClock, FaHeadset, FaShieldAlt, FaSpinner } from 'react-icons/fa';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import Swal from 'sweetalert2';
 import LayoutPublico from '../../components/layout/LayoutPublico';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -16,36 +18,46 @@ const ASUNTOS_PREDEFINIDOS = [
   'Otro',
 ];
 
+const contactoSchema = z.object({
+  nombre: z.string().min(1, "El nombre es requerido").max(100),
+  email: z.string().min(1, "El email es requerido").email("Email inválido").max(150),
+  asunto: z.string().min(1, "Selecciona un asunto"),
+  mensaje: z.string().min(1, "El mensaje es requerido").max(2000),
+  website: z.string().optional(),
+});
+
+type ContactoFormData = z.infer<typeof contactoSchema>;
+
 export default function Contacto() {
   const enviarContacto = useEnviarContacto();
   const [searchParams] = useSearchParams();
-  const [form, setForm] = useState({
-    nombre: '',
-    email: '',
-    asunto: searchParams.get('asunto') || '',
-    mensaje: '',
-    website: '',
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    reset,
+    formState: { errors },
+  } = useForm<ContactoFormData>({
+    resolver: zodResolver(contactoSchema),
+    defaultValues: {
+      asunto: searchParams.get('asunto') || '',
+    },
   });
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
-  ) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
+  const mensajeLength = watch('mensaje')?.length || 0;
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const onSubmit = async (data: ContactoFormData) => {
     if (enviarContacto.isPending) return;
     try {
-      await enviarContacto.mutateAsync(form);
+      await enviarContacto.mutateAsync(data);
       await Swal.fire({
         icon: 'success',
         title: 'Mensaje enviado',
         text: 'Gracias por contactarnos. Te responderemos lo antes posible.',
         confirmButtonColor: '#3b82f6',
       });
-      setForm({ nombre: '', email: '', asunto: '', mensaje: '', website: '' });
+      reset();
     } catch (err) {
       await Swal.fire({
         icon: 'error',
@@ -56,8 +68,10 @@ export default function Contacto() {
     }
   };
 
-  const inputClass =
-    'w-full rounded-lg border border-line bg-hover p-3 text-ink placeholder-white/30 transition-colors focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500';
+  const inputClass = (hasError: boolean) =>
+    `w-full rounded-lg border bg-hover p-3 text-ink placeholder-white/30 transition-colors focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+      hasError ? 'border-red-500' : 'border-line'
+    }`;
   const labelClass = 'mb-1.5 block text-sm font-medium text-ink/80';
 
   return (
@@ -136,8 +150,8 @@ export default function Contacto() {
             panel de soporte de tu cuenta para un seguimiento más rápido.
           </p>
 
-          <form onSubmit={handleSubmit} className='space-y-5'>
-            {/* Honeypot anti-spam: oculto visualmente pero presente en el DOM */}
+          <form onSubmit={handleSubmit(onSubmit)} className='space-y-5'>
+            {/* Honeypot anti-spam */}
             <div className='hidden' aria-hidden='true'>
               <label htmlFor='website'>
                 No llenes este campo si eres humano
@@ -145,11 +159,9 @@ export default function Contacto() {
               <input
                 type='text'
                 id='website'
-                name='website'
                 tabIndex={-1}
                 autoComplete='off'
-                value={form.website}
-                onChange={handleChange}
+                {...register('website')}
               />
             </div>
 
@@ -160,15 +172,14 @@ export default function Contacto() {
                 </label>
                 <input
                   id='nombre'
-                  name='nombre'
                   type='text'
-                  required
-                  maxLength={100}
-                  value={form.nombre}
-                  onChange={handleChange}
+                  {...register('nombre')}
                   placeholder='Tu nombre'
-                  className={inputClass}
+                  className={inputClass(!!errors.nombre)}
                 />
+                {errors.nombre && (
+                  <p className="mt-1 text-sm text-red-500">{errors.nombre.message}</p>
+                )}
               </div>
 
               <div>
@@ -177,15 +188,14 @@ export default function Contacto() {
                 </label>
                 <input
                   id='email'
-                  name='email'
                   type='email'
-                  required
-                  maxLength={150}
-                  value={form.email}
-                  onChange={handleChange}
+                  {...register('email')}
                   placeholder='tucorreo@ejemplo.com'
-                  className={inputClass}
+                  className={inputClass(!!errors.email)}
                 />
+                {errors.email && (
+                  <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>
+                )}
               </div>
             </div>
 
@@ -195,11 +205,8 @@ export default function Contacto() {
               </label>
               <select
                 id='asunto'
-                name='asunto'
-                required
-                value={form.asunto}
-                onChange={handleChange}
-                className={inputClass}
+                {...register('asunto')}
+                className={inputClass(!!errors.asunto)}
               >
                 <option value=''>Selecciona un asunto...</option>
                 {ASUNTOS_PREDEFINIDOS.map((a) => (
@@ -208,6 +215,9 @@ export default function Contacto() {
                   </option>
                 ))}
               </select>
+              {errors.asunto && (
+                <p className="mt-1 text-sm text-red-500">{errors.asunto.message}</p>
+              )}
             </div>
 
             <div>
@@ -216,18 +226,19 @@ export default function Contacto() {
               </label>
               <textarea
                 id='mensaje'
-                name='mensaje'
-                required
-                maxLength={2000}
+                {...register('mensaje')}
                 rows={6}
-                value={form.mensaje}
-                onChange={handleChange}
                 placeholder='Escribe aquí tu mensaje...'
-                className={`${inputClass} resize-y`}
+                className={`${inputClass(!!errors.mensaje)} resize-y`}
               />
-              <p className='mt-1 text-right text-xs text-ink/40'>
-                {form.mensaje.length}/2000
-              </p>
+              <div className="flex justify-between mt-1">
+                {errors.mensaje && (
+                  <p className="text-sm text-red-500">{errors.mensaje.message}</p>
+                )}
+                <p className='text-right text-xs text-ink/40 ml-auto'>
+                  {mensajeLength}/2000
+                </p>
+              </div>
             </div>
 
             <div>

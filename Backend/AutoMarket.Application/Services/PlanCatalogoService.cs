@@ -12,19 +12,31 @@ namespace AutoMarket.Application.Services;
 public class PlanCatalogoService : IPlanCatalogoService
 {
     private readonly IPlanCatalogoRepository _repository;
+    private readonly ICacheService _cache;
+
+    private const string CACHE_CATALOGO = "planes:catalogo";
+    private const string CACHE_ADMIN = "planes:admin";
+    private static readonly TimeSpan TTL = TimeSpan.FromMinutes(30);
 
 /// <summary>
 /// Inicializa una nueva instancia de la clase PlanCatalogoService. Parámetro repository (IPlanCatalogoRepository)
 /// </summary>
-    public PlanCatalogoService(IPlanCatalogoRepository repository)
+    public PlanCatalogoService(IPlanCatalogoRepository repository, ICacheService cache)
     {
         _repository = repository;
+        _cache = cache;
     }
 
     public async Task<List<PlanCatalogoDto>> ObtenerCatalogoPublicoAsync()
     {
+        var cached = await _cache.GetAsync<List<PlanCatalogoDto>>(CACHE_CATALOGO);
+        if (cached is not null) return cached;
+
         var planes = await _repository.ObtenerTodosAsync(soloActivos: true);
-        return planes.Select(p => MapearPublico(p)).ToList();
+        var result = planes.Select(p => MapearPublico(p)).ToList();
+
+        await _cache.SetAsync(CACHE_CATALOGO, result, TTL);
+        return result;
     }
 
     public async Task<PlanCatalogoDto?> ObtenerPlanPorNivelAsync(Core.Entities.Enums.PlanNivel nivel)
@@ -74,6 +86,7 @@ public class PlanCatalogoService : IPlanCatalogoService
         };
 
         await _repository.AgregarAsync(plan);
+        await InvalidarCachePlanesAsync();
         return MapearAdmin(plan);
     }
 
@@ -103,6 +116,7 @@ public class PlanCatalogoService : IPlanCatalogoService
         plan.Activo = dto.Activo;
 
         await _repository.ActualizarAsync(plan);
+        await InvalidarCachePlanesAsync();
         return MapearAdmin(plan);
     }
 
@@ -120,6 +134,13 @@ public class PlanCatalogoService : IPlanCatalogoService
 
         plan.Activo = false;
         await _repository.ActualizarAsync(plan);
+        await InvalidarCachePlanesAsync();
+    }
+
+    private async Task InvalidarCachePlanesAsync()
+    {
+        await _cache.RemoveAsync(CACHE_CATALOGO);
+        await _cache.RemoveAsync(CACHE_ADMIN);
     }
 
 private static PlanCatalogoDto MapearPublico(PlanCatalogo plan)

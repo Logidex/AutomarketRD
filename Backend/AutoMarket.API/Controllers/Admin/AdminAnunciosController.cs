@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AutoMarket.API.Controllers;
 
-[Route("api/admin/[controller]")]
+[Route("api/admin/anuncios")]
 [ApiController]
 [Authorize(Roles = Roles.Admin)]
 public class AdminAnunciosController : ControllerBase
@@ -18,10 +18,17 @@ public class AdminAnunciosController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> ListarAnuncios()
+    public async Task<IActionResult> ListarAnuncios([FromQuery] int pagina = 1, [FromQuery] int tamanoPagina = 20)
     {
-        var anuncios = await _adminAnuncioService.ListarAnunciosParaAdminAsync();
-        return Ok(anuncios);
+        var (items, total) = await _adminAnuncioService.ListarAnunciosPaginadosAsync(pagina, tamanoPagina);
+        return Ok(new
+        {
+            items,
+            totalRegistros = total,
+            paginaActual = pagina,
+            cantidadPorPagina = tamanoPagina,
+            totalPaginas = (int)Math.Ceiling(total / (double)tamanoPagina)
+        });
     }
 
     [HttpDelete("{id:int}")]

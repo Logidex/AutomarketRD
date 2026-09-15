@@ -80,14 +80,14 @@ public class LeadService : ILeadService
             // Plantilla básica en HTML para que luzca profesional
             string cuerpoHtml = $@"
                 <h2>¡Tienes un nuevo interesado en tu vehículo!</h2>
-                <p><strong>Vehículo:</strong> {anuncio.Marca} {anuncio.Modelo} ({anuncio.Anio})</p>
-                <p><strong>Nombre del cliente:</strong> {lead.NombreContacto}</p>
-                <p><strong>Teléfono:</strong> {lead.TelefonoContacto}</p>
-                <p><strong>Email:</strong> {lead.EmailContacto}</p>
-                <p><strong>Canal de origen:</strong> {lead.Canal}</p>
+                <p><strong>Vehículo:</strong> {PlantillaCorreoHelper.EscaparHtml(anuncio.Marca)} {PlantillaCorreoHelper.EscaparHtml(anuncio.Modelo)} ({anuncio.Anio})</p>
+                <p><strong>Nombre del cliente:</strong> {PlantillaCorreoHelper.EscaparHtml(lead.NombreContacto)}</p>
+                <p><strong>Teléfono:</strong> {PlantillaCorreoHelper.EscaparHtml(lead.TelefonoContacto)}</p>
+                <p><strong>Email:</strong> {PlantillaCorreoHelper.EscaparHtml(lead.EmailContacto)}</p>
+                <p><strong>Canal de origen:</strong> {PlantillaCorreoHelper.EscaparHtml(lead.Canal.ToString())}</p>
                 <hr/>
                 <p><strong>Mensaje:</strong></p>
-                <p><i>{lead.Mensaje}</i></p>";
+                <p><i>{PlantillaCorreoHelper.EscaparHtml(lead.Mensaje)}</i></p>";
 
             // Asumiendo que tu entidad Usuario tiene la propiedad Email/Correo
             await _emailSender.EnviarCorreoAsync(

@@ -62,6 +62,24 @@ public static class RateLimitingExtensions
 
             var limiteGlobal = builder.Configuration.GetValue("RateLimiting:GlobalPermitLimit", 300);
 
+            options.AddPolicy<string>("PoliticaRefresh", context =>
+            {
+                var ip = context.Connection.RemoteIpAddress?.ToString() ?? "desconocido";
+                var clave = $"refresh:{ip}";
+
+                var limiteRefresh = builder.Configuration.GetValue("RateLimiting:RefreshPermitLimit", 20);
+                var ventanaRefresh = builder.Configuration.GetValue("RateLimiting:RefreshWindowMinutes", 15);
+
+                return RateLimitPartition.GetFixedWindowLimiter(clave, _ =>
+                    new FixedWindowRateLimiterOptions
+                    {
+                        AutoReplenishment = true,
+                        PermitLimit = limiteRefresh,
+                        Window = TimeSpan.FromMinutes(ventanaRefresh),
+                        QueueLimit = 0
+                    });
+            });
+
             options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
             {
                 if (context.Request.Path.StartsWithSegments("/health"))

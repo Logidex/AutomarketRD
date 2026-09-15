@@ -70,19 +70,16 @@ public class AlmacenadorS3 : IAlmacenadorArchivos
         var key = $"{PREFIJO_OBJECT_KEY}{nombreArchivo}";
 
         // R2 no implementa la subida chunked del SDK (STREAMING-AWS4-HMAC-SHA256-PAYLOAD[-TRAILER]).
-        // Se desactiva el chunking y se bufferiza el stream (longitud conocida) para que el SDK
+        // Se desactiva el chunking y se usa la longitud conocida del stream para que el SDK
         // firme el payload completo con la firma estándar (AWS4-HMAC-SHA256-PAYLOAD).
-        using var memoria = new MemoryStream();
-        await stream.CopyToAsync(memoria);
-        memoria.Position = 0;
-
         var putRequest = new PutObjectRequest
         {
             BucketName = _bucketName,
             Key = key,
-            InputStream = memoria,
+            InputStream = stream,
             ContentType = contentType,
-            UseChunkEncoding = false
+            UseChunkEncoding = false,
+            Headers = { ContentLength = stream.Length }
         };
 
         if (_esAws)

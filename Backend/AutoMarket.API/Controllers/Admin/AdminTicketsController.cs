@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AutoMarket.API.Controllers;
 
-[Route("api/admin/[controller]")]
+[Route("api/admin/tickets")]
 [ApiController]
 [Authorize(Roles = Roles.Admin)]
 public class AdminTicketsController : BaseApiController

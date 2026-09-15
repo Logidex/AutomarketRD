@@ -1,5 +1,6 @@
 using AutoMarket.Application.DTOs.Anuncio;
 using AutoMarket.Application.DTOs;
+using AutoMarket.Application.Interfaces;
 using AutoMarket.Application.Services;
 using AutoMarket.Core.Entities;
 using AutoMarket.Core.Interfaces;
@@ -11,12 +12,14 @@ namespace AutoMarket.Tests.Services;
 public class CatalogoServiceTests
 {
     private readonly Mock<IAnuncioRepository> _mockAnuncioRepository;
+    private readonly Mock<ICacheService> _mockCache;
     private readonly CatalogoService _service;
 
     public CatalogoServiceTests()
     {
         _mockAnuncioRepository = new Mock<IAnuncioRepository>();
-        _service = new CatalogoService(_mockAnuncioRepository.Object);
+        _mockCache = new Mock<ICacheService>();
+        _service = new CatalogoService(_mockAnuncioRepository.Object, _mockCache.Object);
     }
 
     private static Anuncio CrearAnuncioSimulado(

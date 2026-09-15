@@ -12,25 +12,28 @@ namespace AutoMarket.Application.Services;
 public class CatalogoService : ICatalogoService
 {
     private readonly IAnuncioRepository _anuncioRepository;
+    private readonly ICacheService _cache;
 
-/// <summary>
-/// Inicializa una nueva instancia de la clase CatalogoService. Parámetro anuncioRepository (IAnuncioRepository)
-/// </summary>
-    public CatalogoService(IAnuncioRepository anuncioRepository)
+    public CatalogoService(IAnuncioRepository anuncioRepository, ICacheService cache)
     {
         _anuncioRepository = anuncioRepository;
+        _cache = cache;
     }
 
     public async Task<PagedResult<AnuncioCatalogoDto>> ObtenerCatalogoPaginadoAsync(int pagina, int tamanoPagina)
     {
-        // 1. Reglas de seguridad para la paginación
         if (pagina < 1) pagina = 1;
-        if (tamanoPagina < 1 || tamanoPagina > 50) tamanoPagina = 20; // Máximo 50 vehículos por petición
+        if (tamanoPagina < 1 || tamanoPagina > 50) tamanoPagina = 20;
 
-        // 2. Pedimos los datos al repositorio
+        // Caché solo para la primera página (la más visitada)
+        if (pagina == 1 && tamanoPagina == 20)
+        {
+            var cached = await _cache.GetAsync<PagedResult<AnuncioCatalogoDto>>("catalogo:pagina:1");
+            if (cached is not null) return cached;
+        }
+
         var (anuncios, total) = await _anuncioRepository.ObtenerPaginadosAsync(pagina, tamanoPagina);
 
-        // 3. Mapeamos la respuesta
         var items = anuncios.Select(a => new AnuncioCatalogoDto
         {
             Id = a.Id,
@@ -45,7 +48,11 @@ public class CatalogoService : ICatalogoService
             CreatedAt = a.CreatedAt
         }).ToList();
 
-        // 4. Empaquetamos todo en nuestra caja maestra
-        return new PagedResult<AnuncioCatalogoDto>(items, total, pagina, tamanoPagina);
+        var result = new PagedResult<AnuncioCatalogoDto>(items, total, pagina, tamanoPagina);
+
+        if (pagina == 1 && tamanoPagina == 20)
+            await _cache.SetAsync("catalogo:pagina:1", result, TimeSpan.FromMinutes(3));
+
+        return result;
     }
 }

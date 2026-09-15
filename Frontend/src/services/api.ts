@@ -13,7 +13,39 @@ const api = axios.create({
   withCredentials: true,
 });
 
+// --- CSRF: token en memoria (funciona cross-origin) ---
+// El patrón double-submit original leía la cookie con document.cookie, pero
+// esto no funciona cuando el frontend y la API están en orígenes distintos
+// (ej. Cloudflare Pages + api-staging.automarket-rd.com).
+// Solución: GET /api/csrf retorna el token en el body Y en la cookie.
+// El frontend almacena el token del body y lo envía en X-CSRF-Token.
+let csrfToken: string | null = null;
+
+api.interceptors.request.use((config) => {
+  const method = (config.method ?? "get").toUpperCase();
+  if (["POST", "PUT", "PATCH", "DELETE"].includes(method) && csrfToken) {
+    config.headers["X-CSRF-Token"] = csrfToken;
+  }
+  return config;
+});
+
 export const API_BASE_URL = baseURL;
+
+// Asegura que el token CSRF exista antes de cualquier mutación.
+// GET /api/csrf retorna el token en el body; lo almacenamos en memoria
+// para enviarlo en X-CSRF-Token en cada mutación.
+let csrfBootstrapped = false;
+export async function bootstrapCsrf(): Promise<void> {
+  if (csrfBootstrapped) return;
+  try {
+    const { data } = await api.get<{ token: string }>("/api/csrf");
+    csrfToken = data?.token ?? null;
+  } catch {
+    // Si falla, se reintentará en el próximo 403 CSRF.
+  } finally {
+    csrfBootstrapped = true;
+  }
+}
 
 // Manejar respuestas y errores
 // Evita redirigir varias veces cuando varias peticiones fallan en paralelo
@@ -81,6 +113,20 @@ api.interceptors.response.use(
     if (status === 429) {
       error.message =
         "Has hecho demasiadas solicitudes. Espera unos minutos e inténtalo de nuevo.";
+    }
+
+    // CSRF token inválido: re-obtener token y reintentar una vez
+    if (status === 403) {
+      const mensaje = error.response?.data?.mensaje;
+      if (mensaje?.includes("CSRF") && !error.config?._csrfRetry) {
+        error.config._csrfRetry = true;
+        csrfBootstrapped = false;
+        csrfToken = null;
+        await bootstrapCsrf();
+        return api.request(error.config);
+      }
+      error.message =
+        "Tu sesión ha expirado. Recarga la página e inténtalo de nuevo.";
     }
 
     // Procesar errores enviados por el backend

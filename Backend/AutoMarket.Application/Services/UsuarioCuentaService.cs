@@ -209,7 +209,7 @@ public class UsuarioCuentaService : IUsuarioCuentaService
         NotificarPorCorreo(
             usuario.Email,
             "Confirma el cambio de contraseña en AutoMarket RD",
-            "<p>Hola <strong>" + usuario.Nombre + "</strong>,</p>" +
+            "<p>Hola <strong>" + PlantillaCorreoHelper.EscaparHtml(usuario.Nombre) + "</strong>,</p>" +
             "<p>Usa este código para confirmar el cambio de tu contraseña:</p>" +
             "<h2 style='letter-spacing:6px'>" + codigo + "</h2>" +
             "<p>El código expira en 15 minutos. Si no solicitaste este cambio, ignora este correo.</p>");
@@ -238,7 +238,7 @@ public class UsuarioCuentaService : IUsuarioCuentaService
         NotificarPorCorreo(
             usuario.Email,
             "Tu contraseña en AutoMarket RD ha sido cambiada",
-            "<p>Hola <strong>" + usuario.Nombre + "</strong>,</p>" +
+            "<p>Hola <strong>" + PlantillaCorreoHelper.EscaparHtml(usuario.Nombre) + "</strong>,</p>" +
             "<p>Te confirmamos que tu contraseña fue actualizada correctamente.</p>" +
             "<p>Si no realizaste este cambio, contacta a soporte de inmediato.</p>");
     }
@@ -285,7 +285,7 @@ public class UsuarioCuentaService : IUsuarioCuentaService
         NotificarPorCorreo(
             nuevoEmail,
             "Confirma tu nuevo correo en AutoMarket RD",
-            "<p>Hola <strong>" + usuario.Nombre + "</strong>,</p>" +
+            "<p>Hola <strong>" + PlantillaCorreoHelper.EscaparHtml(usuario.Nombre) + "</strong>,</p>" +
             "<p>Usa este código para confirmar tu nuevo correo electrónico:</p>" +
             "<h2 style='letter-spacing:6px'>" + codigo + "</h2>" +
             "<p>El código expira en 15 minutos. Si no solicitaste este cambio, ignora este correo.</p>");
@@ -308,7 +308,7 @@ public class UsuarioCuentaService : IUsuarioCuentaService
         NotificarPorCorreo(
             usuario.Email,
             "Tu correo en AutoMarket RD ha sido actualizado",
-            "<p>Hola <strong>" + usuario.Nombre + "</strong>,</p>" +
+            "<p>Hola <strong>" + PlantillaCorreoHelper.EscaparHtml(usuario.Nombre) + "</strong>,</p>" +
             "<p>Tu correo electrónico fue actualizado exitosamente.</p>");
     }
 

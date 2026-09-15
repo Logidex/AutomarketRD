@@ -39,6 +39,8 @@ import HeaderPublico from "../components/layout/HeaderPublico";
 import SectionBackground from "../components/SectionBackground";
 import BadgeVerificado from "../components/BadgeVerificado";
 import AdSlotRenderer from "../components/ads/AdSlotRenderer";
+import SeoHead from "../components/SeoHead";
+import { SkeletonDetalle } from "../components/Skeleton";
 import {
   TIPOS_VEHICULO,
   TRANSMISIONES,
@@ -1157,8 +1159,39 @@ export default function DetalleAnuncio() {
     };
   }, [anuncio]);
 
+  const seoJsonLd = anuncio ? {
+    "@context": "https://schema.org",
+    "@type": "Vehicle",
+    name: anuncio.nombreAnuncio,
+    description: anuncio.descripcion,
+    brand: { "@type": "Brand", name: anuncio.marca },
+    model: anuncio.modelo,
+    vehicleModelDate: anuncio.anio,
+    mileageFromOdometer: anuncio.kilometraje,
+    vehicleTransmission: anuncio.transmision,
+    fuelType: anuncio.combustible,
+    vehicleCondition: esVehiculoNuevo ? "NewCondition" : "UsedCondition",
+    offers: {
+      "@type": "Offer",
+      price: anuncio.precio,
+      priceCurrency: anuncio.moneda || "DOP",
+      availability: "https://schema.org/InStock",
+    },
+    image: anuncio.fotos?.[0],
+    seller: {
+      "@type": "Organization",
+      name: anuncio.nombreVendedor || "AutoMarket RD",
+    },
+  } : undefined;
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-page text-ink">
+      <SeoHead
+        titulo={anuncio?.nombreAnuncio || "Detalle del vehículo"}
+        descripcion={anuncio?.descripcion?.slice(0, 160) || "Encuentra los mejores vehículos en AutoMarket RD"}
+        imagen={anuncio?.fotos?.[0]}
+        jsonLd={seoJsonLd}
+      />
       <HeaderPublico />
 
       <SectionBackground variant="gallery" className="mx-auto max-w-6xl px-6 py-8 sm:px-8">
@@ -1174,9 +1207,7 @@ export default function DetalleAnuncio() {
         </button>
 
         {cargando ? (
-          <div className="flex items-center justify-center py-32">
-            <div className="h-10 w-10 animate-spin rounded-full border-2 border-line border-t-blue-500" />
-          </div>
+          <SkeletonDetalle />
         ) : (errorCarga || !idValido) && !anuncio ? (
           <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-12 text-center">
             <FaCar className="mx-auto text-5xl text-red-400/60" />

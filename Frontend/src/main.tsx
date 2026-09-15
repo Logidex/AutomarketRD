@@ -7,7 +7,11 @@ import ErrorBoundary from './components/ErrorBoundary'
 import { LoadingProvider } from './context/LoadingContext'
 import { ComparadorProvider } from './context/ComparadorContext'
 import { ThemeProvider } from './context/TemaContext'
+import { bootstrapCsrf } from './services/api'
 import './index.css'
+
+// Asegura la cookie CSRF antes de que la app haga mutaciones.
+void bootstrapCsrf()
 
 const Devtools = import.meta.env.DEV
   ? lazy(() =>
