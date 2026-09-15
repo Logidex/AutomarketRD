@@ -77,13 +77,17 @@ public sealed class CsrfMiddleware
             .Replace('+', '-')
             .Replace('/', '_');
 
+        var forwardedProto = context.Request.Headers["X-Forwarded-Proto"].FirstOrDefault();
+        var isSecure = context.Request.IsHttps
+            || string.Equals(forwardedProto, "https", StringComparison.OrdinalIgnoreCase);
+
         context.Response.Cookies.Append(COOKIE_NAME, tokenBase64, new CookieOptions
         {
             // NO HttpOnly: el patrón double-submit exige que el JS lea la
             // cookie para enviarla en el header X-CSRF-Token en mutaciones.
             HttpOnly = false,
-            Secure = context.Request.IsHttps,
-            SameSite = SameSiteMode.Strict,
+            Secure = isSecure,
+            SameSite = SameSiteMode.Lax,
             Path = "/",
             MaxAge = TimeSpan.FromHours(2)
         });
