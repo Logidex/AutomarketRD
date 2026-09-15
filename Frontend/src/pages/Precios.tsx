@@ -11,6 +11,7 @@ import HeaderPublico from "../components/layout/HeaderPublico";
 import SectionBackground from "../components/SectionBackground";
 import ShinyText from "../components/ShinyText";
 import PlanCard from "../components/PlanCard";
+import SeoHead from "../components/SeoHead";
 import {
   usePlanesCatalogo,
 } from "../hooks/useSuscripcion";
@@ -85,6 +86,11 @@ export default function Precios() {
 
   return (
     <div className="min-h-screen bg-page text-ink">
+      <SeoHead
+        titulo="Planes y precios"
+        descripcion="Elige el plan perfecto para vender tu vehículo en AutoMarket RD. Planes desde gratis hasta Elite."
+        tipo="website"
+      />
       <HeaderPublico />
 
       <SectionBackground
