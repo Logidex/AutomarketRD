@@ -24,6 +24,8 @@ import SectionBackground from "../components/SectionBackground";
 import MeshGradientCanvas from "../components/MeshGradientCanvas";
 import ShinyText from "../components/ShinyText";
 import AdSlotRenderer from "../components/ads/AdSlotRenderer";
+import SeoHead from "../components/SeoHead";
+import { SkeletonCardGrid } from "../components/Skeleton";
 
 const CANTIDAD_DESTACADOS = 5;
 const CANTIDAD_RECIENTES = 6;
@@ -463,22 +465,7 @@ function TarjetaReciente({ anuncio }: { anuncio: AnuncioListado }) {
 }
 
 function EstadoCarga() {
-  return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {Array.from({ length: CANTIDAD_RECIENTES }).map((_, indice) => (
-        <div
-          key={indice}
-          className="overflow-hidden rounded-2xl border border-line bg-surface sm:block"
-        >
-          <div className="h-32 w-36 shimmer sm:h-auto sm:w-auto sm:aspect-[16/10]" />
-          <div className="space-y-3 p-4">
-            <div className="h-4 w-3/4 shimmer rounded" />
-            <div className="h-5 w-1/2 shimmer rounded" />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
+  return <SkeletonCardGrid count={CANTIDAD_RECIENTES} />;
 }
 
 function Recientes({
@@ -673,6 +660,11 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-page text-ink">
+      <SeoHead
+        titulo="Compra y vende vehículos en República Dominicana"
+        descripcion="Explora vehículos de agencias verificadas y vendedores particulares en toda República Dominicana. Compara, contacta directo y cierra tu trato hoy."
+        tipo="website"
+      />
       <HeaderPublico />
 
       <section className="relative overflow-hidden border-b border-line bg-surface">
@@ -705,12 +697,7 @@ export default function Home() {
             <div className="mt-5 grid gap-4 lg:grid-cols-[1.45fr_1fr]">
               <div className="min-h-[420px] shimmer rounded-2xl" />
               <div className="grid grid-cols-2 gap-4">
-                {Array.from({ length: 4 }).map((_, indice) => (
-                  <div
-                    key={indice}
-                    className="min-h-[200px] shimmer rounded-2xl"
-                  />
-                ))}
+                <SkeletonCardGrid count={4} />
               </div>
             </div>
           </SectionBackground>

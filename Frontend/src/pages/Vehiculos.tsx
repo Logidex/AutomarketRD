@@ -1,15 +1,17 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
+import { useInView } from "react-intersection-observer";
 import {
   FaBalanceScale,
   FaCar,
   FaCalendarAlt,
   FaMapMarkerAlt,
   FaSearch,
+  FaSpinner,
   FaTachometerAlt,
 } from "react-icons/fa";
-import { useVehiculos } from "../hooks/useVehiculos";
+import { useVehiculosInfiniteFlat } from "../hooks/useVehiculosInfinite";
 import type { AnuncioListado } from "../types/anuncio.types";
 import { urlImagen } from "../utils/imagen";
 import { urlAnuncio } from "../utils/slug";
@@ -19,6 +21,8 @@ import HeaderPublico from "../components/layout/HeaderPublico";
 import SectionBackground from "../components/SectionBackground";
 import BadgeVerificado from "../components/BadgeVerificado";
 import AdSlotRenderer from "../components/ads/AdSlotRenderer";
+import SeoHead from "../components/SeoHead";
+import { SkeletonCardGrid } from "../components/Skeleton";
 import {
   TIPOS_VEHICULO,
   TRANSMISIONES,
@@ -468,75 +472,6 @@ function TarjetaAnuncio({
   );
 }
 
-interface PropsPaginacion {
-  pagina: number;
-  totalPaginas: number;
-  cargando: boolean;
-  isError: boolean;
-  onCambiarPagina: (pagina: number) => void;
-}
-
-function Paginacion({
-  pagina,
-  totalPaginas,
-  cargando,
-  isError,
-  onCambiarPagina,
-}: PropsPaginacion) {
-  if (cargando || isError || totalPaginas <= 1) return null;
-
-  const paginasVisibles = Array.from(
-    { length: totalPaginas },
-    (_, i) => i + 1,
-  ).filter((p) => {
-    if (
-      totalPaginas > 7 &&
-      p !== 1 &&
-      p !== totalPaginas &&
-      Math.abs(p - pagina) > 2
-    )
-      return false;
-    return true;
-  });
-
-  return (
-    <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
-      <button
-        type="button"
-        onClick={() => onCambiarPagina(pagina - 1)}
-        disabled={pagina <= 1}
-        className="rounded-lg border border-line px-4 py-2 text-sm font-medium transition-colors hover:border-ink-3 disabled:cursor-not-allowed disabled:opacity-40"
-      >
-        Anterior
-      </button>
-
-      {paginasVisibles.map((p) => (
-        <button
-          key={p}
-          type="button"
-          onClick={() => onCambiarPagina(p)}
-          className={`min-w-10 rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${
-            p === pagina
-              ? "bg-blue-500 text-white"
-              : "border border-line hover:border-ink-3"
-          }`}
-        >
-          {p}
-        </button>
-      ))}
-
-      <button
-        type="button"
-        onClick={() => onCambiarPagina(pagina + 1)}
-        disabled={pagina >= totalPaginas}
-        className="rounded-lg border border-line px-4 py-2 text-sm font-medium transition-colors hover:border-ink-3 disabled:cursor-not-allowed disabled:opacity-40"
-      >
-        Siguiente
-      </button>
-    </div>
-  );
-}
-
 interface PropsBarraComparador {
   seleccionados: number[];
   maxVehiculos: number;
@@ -608,11 +543,9 @@ export default function Vehiculos() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  const [pagina, setPagina] = useState(1);
   const [filtros, setFiltros] = useState<Filtros>(FILTROS_INICIALES);
   const [filtrosAplicados, setFiltrosAplicados] = useState<Filtros>(FILTROS_INICIALES);
 
-  // Selección para el comparador (compartida y persistida en localStorage)
   const {
     seleccionados,
     esSeleccionado,
@@ -627,7 +560,6 @@ export default function Vehiculos() {
     navigate(`/comparador?${qs}`);
   }, [seleccionados, navigate]);
 
-  // Sincronizar filtros con URL al cargar
   useEffect(() => {
     const desdeParams = filtrosDesdeParams(searchParams);
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -636,40 +568,42 @@ export default function Vehiculos() {
   }, [searchParams]);
 
   const {
-    data,
+    items: anuncios,
     isLoading,
     isError,
     error,
     isFetching,
     refetch,
-  } = useVehiculos({
-    filtros: {
-      busqueda: filtrosAplicados.busqueda || undefined,
-      marca: filtrosAplicados.marca || undefined,
-      modelo: filtrosAplicados.modelo || undefined,
-      tipoVehiculo: filtrosAplicados.tipoVehiculo || undefined,
-      transmision: filtrosAplicados.transmision || undefined,
-      combustible: filtrosAplicados.combustible || undefined,
-      ubicacion: filtrosAplicados.ubicacion || undefined,
-      condicion: filtrosAplicados.condicion || undefined,
-      enOferta: filtrosAplicados.enOferta ? true : undefined,
-      anioDesde: filtrosAplicados.anioDesde ? Number(filtrosAplicados.anioDesde) : undefined,
-      anioHasta: filtrosAplicados.anioHasta ? Number(filtrosAplicados.anioHasta) : undefined,
-      precioMinimo: filtrosAplicados.precioMinimo ? Number(filtrosAplicados.precioMinimo) : undefined,
-      precioMaximo: filtrosAplicados.precioMaximo ? Number(filtrosAplicados.precioMaximo) : undefined,
-      kilometrajeMaximo: filtrosAplicados.kilometrajeMaximo ? Number(filtrosAplicados.kilometrajeMaximo) : undefined,
-    },
-    pagina,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    total,
+  } = useVehiculosInfiniteFlat({
+    busqueda: filtrosAplicados.busqueda || undefined,
+    marca: filtrosAplicados.marca || undefined,
+    modelo: filtrosAplicados.modelo || undefined,
+    tipoVehiculo: filtrosAplicados.tipoVehiculo || undefined,
+    transmision: filtrosAplicados.transmision || undefined,
+    combustible: filtrosAplicados.combustible || undefined,
+    ubicacion: filtrosAplicados.ubicacion || undefined,
+    condicion: filtrosAplicados.condicion || undefined,
+    enOferta: filtrosAplicados.enOferta ? true : undefined,
+    anioDesde: filtrosAplicados.anioDesde ? Number(filtrosAplicados.anioDesde) : undefined,
+    anioHasta: filtrosAplicados.anioHasta ? Number(filtrosAplicados.anioHasta) : undefined,
+    precioMinimo: filtrosAplicados.precioMinimo ? Number(filtrosAplicados.precioMinimo) : undefined,
+    precioMaximo: filtrosAplicados.precioMaximo ? Number(filtrosAplicados.precioMaximo) : undefined,
+    kilometrajeMaximo: filtrosAplicados.kilometrajeMaximo ? Number(filtrosAplicados.kilometrajeMaximo) : undefined,
   });
 
-  const anuncios = data?.items ?? [];
-  const totalRegistros = data?.totalRegistros ?? 0;
-  const cantidadPorPagina = data?.cantidadPorPagina ?? 12;
-  const totalPaginas = cantidadPorPagina > 0
-    ? Math.ceil(totalRegistros / cantidadPorPagina)
-    : 1;
-
   const cargando = isLoading || isFetching;
+
+  const { ref: sentinelRef, inView } = useInView({ threshold: 0 });
+
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const aplicarBusqueda = (e: React.FormEvent) => {
     e.preventDefault();
@@ -677,7 +611,6 @@ export default function Vehiculos() {
     const params = paramsDesdeFiltros(aplicados);
     setSearchParams(params, { replace: true });
     setFiltrosAplicados(aplicados);
-    setPagina(1);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -685,20 +618,18 @@ export default function Vehiculos() {
     setSearchParams({}, { replace: true });
     setFiltros(FILTROS_INICIALES);
     setFiltrosAplicados({ ...FILTROS_INICIALES });
-    setPagina(1);
     window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const irAPagina = (p: number) => {
-    if (p < 1 || p > totalPaginas || p === pagina) return;
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    setPagina(p);
   };
 
 
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-page text-ink">
+      <SeoHead
+        titulo="Vehículos en venta en República Dominicana"
+        descripcion="Explora nuestro catálogo completo de vehículos. Filtra por marca, modelo, año, precio y más."
+        tipo="website"
+      />
       <HeaderPublico />
 
       <SectionBackground variant="search" className="px-6 sm:px-8">
@@ -707,9 +638,9 @@ export default function Vehiculos() {
         <div className="mx-auto max-w-6xl px-6 py-10 sm:px-8">
           <h1 className="text-3xl font-bold">
             Todos los vehículos
-            {totalRegistros > 0 && (
+            {total > 0 && (
               <span className="ml-2 text-base font-normal text-ink-2">
-                ({totalRegistros})
+                ({total})
               </span>
             )}
           </h1>
@@ -731,9 +662,7 @@ export default function Vehiculos() {
       {/* VITRINA */}
       <main className="mx-auto max-w-6xl px-6 py-10 sm:px-8">
         {isLoading ? (
-          <div className="flex items-center justify-center py-24">
-            <div className="h-10 w-10 animate-spin rounded-full border-2 border-line border-t-blue-500" />
-          </div>
+          <SkeletonCardGrid count={8} />
         ) : isError ? (
           <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-8 text-center">
             <p className="text-red-400">
@@ -801,14 +730,16 @@ export default function Vehiculos() {
           </div>
         )}
 
-        {/* PAGINACIÓN */}
-        <Paginacion
-          pagina={pagina}
-          totalPaginas={totalPaginas}
-          cargando={cargando}
-          isError={isError}
-          onCambiarPagina={irAPagina}
-        />
+        {hasNextPage && (
+          <div ref={sentinelRef} className="flex items-center justify-center py-8">
+            {isFetchingNextPage && <FaSpinner className="h-6 w-6 animate-spin text-blue-500" />}
+          </div>
+        )}
+        {!hasNextPage && anuncios.length > 0 && (
+          <p className="mt-8 text-center text-sm text-ink-2">
+            Se mostraron {anuncios.length} de {total} vehículos
+          </p>
+        )}
       </main>
 
       </SectionBackground>

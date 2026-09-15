@@ -7,6 +7,7 @@ import SectionBackground from "../components/SectionBackground";
 import Spinner from "../components/ui/Spinner";
 import BadgeVerificado from "../components/BadgeVerificado";
 import AdSlotRenderer from "../components/ads/AdSlotRenderer";
+import SeoHead from "../components/SeoHead";
 import { dealerService, type AgenciaListado } from "../services/dealer.service";
 import { urlImagen } from "../utils/imagen";
 import { urlVendedor } from "../utils/slug";
@@ -147,6 +148,11 @@ export default function Agencias() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-page text-ink">
+      <SeoHead
+        titulo="Agencias de vehículos"
+        descripcion="Encuentra las agencias de vehículos que operan en AutoMarket RD, compara su inventario y contacta directamente."
+        tipo="website"
+      />
       <HeaderPublico titulo="" />
 
       <SectionBackground variant="search" className="mx-auto max-w-6xl px-6 py-12 sm:px-8">

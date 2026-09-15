@@ -40,6 +40,7 @@ import SectionBackground from "../components/SectionBackground";
 import BadgeVerificado from "../components/BadgeVerificado";
 import AdSlotRenderer from "../components/ads/AdSlotRenderer";
 import SeoHead from "../components/SeoHead";
+import { SkeletonDetalle } from "../components/Skeleton";
 import {
   TIPOS_VEHICULO,
   TRANSMISIONES,
@@ -1206,9 +1207,7 @@ export default function DetalleAnuncio() {
         </button>
 
         {cargando ? (
-          <div className="flex items-center justify-center py-32">
-            <div className="h-10 w-10 animate-spin rounded-full border-2 border-line border-t-blue-500" />
-          </div>
+          <SkeletonDetalle />
         ) : (errorCarga || !idValido) && !anuncio ? (
           <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-12 text-center">
             <FaCar className="mx-auto text-5xl text-red-400/60" />
