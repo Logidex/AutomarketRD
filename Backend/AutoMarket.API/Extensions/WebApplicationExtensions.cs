@@ -73,17 +73,27 @@ public static class WebApplicationExtensions
         }
 
         app.UseResponseCompression();
+        app.UseMiddleware<CorrelationIdMiddleware>();
         app.UseMiddleware<SecurityHeadersMiddleware>();
         app.UseCors(frontendPolicy);
         app.UseMiddleware<CsrfMiddleware>();
         app.UseRateLimiter();
         app.UseAuthentication();
         app.UseAuthorization();
+        app.UseMiddleware<IdempotencyMiddleware>();
         app.UseMiddleware<AuditMiddleware>();
         app.UseMiddleware<ExceptionHandlingMiddleware>();
         app.MapControllers();
 
-        app.MapHealthChecks("/health");
+        app.MapHealthChecks("/health", new HealthCheckOptions
+        {
+            Predicate = check => check.Tags.Contains("live") || check.Name == "self"
+        });
+
+        app.MapHealthChecks("/health/live", new HealthCheckOptions
+        {
+            Predicate = _ => false
+        });
 
         app.MapHealthChecks("/health/ready", new HealthCheckOptions
         {

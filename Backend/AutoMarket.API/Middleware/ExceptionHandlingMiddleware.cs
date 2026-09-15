@@ -34,9 +34,12 @@ public class ExceptionHandlingMiddleware
 
     private async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
+        var correlationId = context.Items["CorrelationId"] as string;
+
         _logger.LogError(
             exception,
-            "Error no manejado en {Path} - {Method}",
+            "[{CorrelationId}] Error no manejado en {Path} - {Method}",
+            correlationId ?? "N/A",
             context.Request.Path,
             context.Request.Method
         );
