@@ -119,13 +119,17 @@ api.interceptors.response.use(
         "Has hecho demasiadas solicitudes. Espera unos minutos e inténtalo de nuevo.";
     }
 
-    // CSRF token inválido
+    // CSRF token inválido: re-obtener token y reintentar una vez
     if (status === 403) {
       const mensaje = error.response?.data?.mensaje;
-      if (mensaje?.includes("CSRF")) {
-        error.message =
-          "Tu sesión ha expirado. Recarga la página e inténtalo de nuevo.";
+      if (mensaje?.includes("CSRF") && !error.config?._csrfRetry) {
+        error.config._csrfRetry = true;
+        csrfBootstrapped = false;
+        await bootstrapCsrf();
+        return api.request(error.config);
       }
+      error.message =
+        "Tu sesión ha expirado. Recarga la página e inténtalo de nuevo.";
     }
 
     // Procesar errores enviados por el backend
