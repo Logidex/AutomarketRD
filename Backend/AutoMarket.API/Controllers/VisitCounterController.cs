@@ -5,7 +5,7 @@ using AutoMarket.Application.Interfaces;
 namespace AutoMarket.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/visit-counter")]
 public class VisitCounterController : ControllerBase
 {
     private readonly IVisitCounterService _service;
