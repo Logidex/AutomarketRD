@@ -81,11 +81,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAdminUsuarioService, AdminUsuarioService>();
         services.AddScoped<IPagoOrquestacionService, PagoOrquestacionService>();
 
-        services.AddScoped<IAuditLogRepository, AuditLogRepository>();
-
-        services.AddScoped<INotificacionRepository, NotificacionRepository>();
-        services.AddScoped<NotificacionService>();
-
         services.AddScoped<IVisitCounterRepository, VisitCounterRepository>();
         services.AddScoped<IVisitCounterService, VisitCounterService>();
 
