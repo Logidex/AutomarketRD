@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AutoMarket.API.Controllers;
 
-[Route("api/admin/[controller]")]
+[Route("api/admin/suscripciones")]
 [ApiController]
 [Authorize(Roles = Roles.Admin)]
 public class AdminSuscripcionesController : BaseApiController
@@ -32,14 +32,14 @@ public class AdminSuscripcionesController : BaseApiController
         return Ok(new { exito = true, mensaje = $"Suscripción extendida y activada hasta {fechaUtc:dd/MM/yyyy}." });
     }
 
-    [HttpGet("pagos")]
+    [HttpGet("~/api/admin/pagos")]
     public async Task<IActionResult> ListarPagos()
     {
         var pagos = await Mediator.Send(new ObtenerPagosAdminQuery());
         return Ok(pagos);
     }
 
-    [HttpPost("pagos/{id:int}/reembolsar")]
+    [HttpPost("~/api/admin/pagos/{id:int}/reembolsar")]
     public async Task<IActionResult> ReembolsarPago(int id)
     {
         try
@@ -60,14 +60,14 @@ public class AdminSuscripcionesController : BaseApiController
         }
     }
 
-    [HttpGet("transferencias")]
+    [HttpGet("~/api/admin/transferencias")]
     public async Task<IActionResult> ListarTransferenciasPendientes()
     {
         var transferencias = await Mediator.Send(new ObtenerTransferenciasPendientesQuery());
         return Ok(transferencias);
     }
 
-    [HttpPost("transferencias/{id:int}/aprobar")]
+    [HttpPost("~/api/admin/transferencias/{id:int}/aprobar")]
     public async Task<IActionResult> AprobarTransferencia(int id, [FromBody] NotasTransferenciaDto? dto = null)
     {
         try
@@ -85,7 +85,7 @@ public class AdminSuscripcionesController : BaseApiController
         }
     }
 
-    [HttpPost("transferencias/{id:int}/rechazar")]
+    [HttpPost("~/api/admin/transferencias/{id:int}/rechazar")]
     public async Task<IActionResult> RechazarTransferencia(int id, [FromBody] NotasTransferenciaDto? dto = null)
     {
         try
