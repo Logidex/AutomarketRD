@@ -33,21 +33,6 @@ function AnimatedNumber({ value }: { value: number }) {
   return <span>{display.toLocaleString("es-DO")}</span>;
 }
 
-function tiempoRelativo(fecha: Date): string {
-  const ahora = new Date();
-  const diffMs = ahora.getTime() - fecha.getTime();
-  const diffMin = Math.floor(diffMs / 60000);
-
-  if (diffMin < 1) return "ahora mismo";
-  if (diffMin < 60) return `hace ${diffMin}m`;
-
-  const diffHoras = Math.floor(diffMin / 60);
-  if (diffHoras < 24) return `hace ${diffHoras}h`;
-
-  const diffDias = Math.floor(diffHoras / 24);
-  return `hace ${diffDias}d`;
-}
-
 export default function ContadorVisitas() {
   const queryClient = useQueryClient();
 
@@ -74,26 +59,18 @@ export default function ContadorVisitas() {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.6 }}
-      className="mx-auto max-w-6xl px-6 sm:px-8"
+      className="mt-7 flex justify-center"
     >
-      <div className="flex items-center justify-center gap-3 rounded-2xl border border-line bg-surface/80 px-6 py-3.5 shadow-sm backdrop-blur-sm sm:gap-4">
-        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-soft">
-          <FaEye className="h-4 w-4 text-brand" />
+      <span className="inline-flex items-center gap-2 rounded-full border border-line/70 bg-surface/60 px-4 py-1.5 text-xs text-ink-3 backdrop-blur-sm">
+        <FaEye className="h-3.5 w-3.5 text-brand/80" aria-hidden="true" />
+        <span className="font-semibold tabular-nums text-ink-2">
+          <AnimatedNumber value={total} />
         </span>
-        <div className="flex items-baseline gap-2 text-sm">
-          <span className="font-bold tabular-nums text-ink">
-            <AnimatedNumber value={total} />
-          </span>
-          <span className="text-ink-2">visitas</span>
-        </div>
-        <span className="hidden h-4 w-px bg-line sm:block" />
-        <span className="hidden text-xs text-ink-3 sm:block">
-          Última visita: {tiempoRelativo(new Date())}
-        </span>
-      </div>
+        <span>visitas hasta hoy</span>
+      </span>
     </motion.div>
   );
 }

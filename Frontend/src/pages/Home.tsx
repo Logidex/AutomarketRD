@@ -685,12 +685,10 @@ export default function Home() {
             en toda República Dominicana. Compara, contacta directo y cierra tu
             trato hoy.
           </motion.p>
+
+          <ContadorVisitas />
         </div>
       </section>
-
-      <div className="relative -mt-5 z-10">
-        <ContadorVisitas />
-      </div>
 
       {destacadosCargando ? (
         <section className="relative overflow-hidden py-12 sm:py-16">
