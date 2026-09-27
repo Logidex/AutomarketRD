@@ -23,6 +23,10 @@ import HeaderPublico from "../components/layout/HeaderPublico";
 import SectionBackground from "../components/SectionBackground";
 import MeshGradientCanvas from "../components/MeshGradientCanvas";
 import ShinyText from "../components/ShinyText";
+import AdSlotRenderer from "../components/ads/AdSlotRenderer";
+import SeoHead from "../components/SeoHead";
+import ContadorVisitas from "../components/ContadorVisitas";
+import { SkeletonCardGrid } from "../components/Skeleton";
 
 const CANTIDAD_DESTACADOS = 5;
 const CANTIDAD_RECIENTES = 6;
@@ -686,6 +690,10 @@ export default function Home() {
           </motion.p>
         </div>
       </section>
+
+      <div className="relative -mt-5 z-10">
+        <ContadorVisitas />
+      </div>
 
       {destacadosCargando ? (
         <section className="relative overflow-hidden py-12 sm:py-16">
